@@ -134,11 +134,7 @@ public class SIP2ResponseFactory {
         } else if (code.equals("82")) {
             parser = new SIP2CreateBibResponseParser();
             return parser.parse(data);
-        } else if (code.equals("86")) {
-            parser = new SIP2DeleteBibResponseParser();
-            return parser.parse(data);
         }
-        System.out.print("Test JSIP Code");
         throw new InvalidSIP2ResponseException("Unsupported response type! Command identifier: " + code);
     }
 }
