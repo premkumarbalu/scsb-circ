@@ -27,7 +27,7 @@ public abstract class JSIPConnector {
         return connection;
     }
 
-    private boolean jSIPLogin(SIP2SocketConnection connection,String institutionId, String patronIdentifier) throws InvalidSIP2ResponseException, InvalidSIP2ResponseValueException{
+    public boolean jSIPLogin(SIP2SocketConnection connection,String institutionId, String patronIdentifier) throws InvalidSIP2ResponseException, InvalidSIP2ResponseValueException{
         SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
         SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
         SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(institutionId, patronIdentifier, getOperatorPassword());
@@ -36,6 +36,28 @@ public abstract class JSIPConnector {
         if(loginResponse.isOk() && response.isValidPatron() && response.isValidPatronPassword()){
             loginPatronStatus=true;
         }
+        return loginPatronStatus;
+    }
+
+
+    public boolean patronValidation(String institutionId, String patronIdentifier){
+        boolean loginPatronStatus=false;
+        SIP2SocketConnection connection = getSocketConnection();
+        try {
+            SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
+            SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
+            SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(institutionId, patronIdentifier, getOperatorPassword());
+            SIP2PatronInformationResponse response = (SIP2PatronInformationResponse) connection.send(request);
+            loginPatronStatus = false;
+            if(loginResponse.isOk() && response.isValidPatron() && response.isValidPatronPassword()){
+                loginPatronStatus=true;
+            }
+        }catch(Exception ex){
+            logger.error(ex.getMessage());
+        } finally{
+            connection.close();
+        }
+
         return loginPatronStatus;
     }
 
