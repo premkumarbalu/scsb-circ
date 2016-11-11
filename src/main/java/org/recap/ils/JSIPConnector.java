@@ -23,10 +23,22 @@ public abstract class JSIPConnector {
             connection.connect();
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return null;
         }
         return connection;
     }
+
+    private boolean jSIPLogin(SIP2SocketConnection connection,String institutionId, String patronIdentifier) throws InvalidSIP2ResponseException, InvalidSIP2ResponseValueException{
+        SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
+        SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
+        SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(institutionId, patronIdentifier, getOperatorPassword());
+        SIP2PatronInformationResponse response = (SIP2PatronInformationResponse) connection.send(request);
+        boolean loginPatronStatus=false;
+        if(loginResponse.isOk() && response.isValidPatron() && response.isValidPatronPassword()){
+            loginPatronStatus=true;
+        }
+        return loginPatronStatus;
+    }
+
 
     public abstract String getHost();
 
@@ -36,22 +48,26 @@ public abstract class JSIPConnector {
 
     public abstract String getOperatorLocation();
 
-    public SIP2ItemInformationResponse lookupItem(String itemIdentifier) {
+    public SIP2ItemInformationResponse lookupItem(String itemIdentifier, String institutionId, String patronIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2ItemInformationResponse itemResponse = null;
         try {
-            if (connection.connect()) {
+            if (connection.connect() && jSIPLogin(connection,institutionId, patronIdentifier)) {
                 SIP2ItemInformationRequest itemRequest = new SIP2ItemInformationRequest(itemIdentifier);
                 logger.info(itemRequest.getData());
                 itemResponse = (SIP2ItemInformationResponse) connection.send(itemRequest);
-//                logger.info(itemResponse.getData());
+            }else{
+                logger.info("Item Request Failed");
             }
-
         } catch (InvalidSIP2ResponseException e) {
-            e.printStackTrace();
+            logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
         } catch (InvalidSIP2ResponseValueException e) {
-            e.printStackTrace();
-        } finally {
+            logger.error("Connection Invalid SIP2 Value = " + e.getMessage());
+
+        } catch (Exception e) {
+            logger.error("Exception = " + e.getMessage());
+
+        }finally {
             connection.close();
         }
         return itemResponse;
@@ -61,29 +77,13 @@ public abstract class JSIPConnector {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2CheckoutResponse checkoutResponse = null;
         try {
-            if (connection.connect()) { // Connect to the SIP Server - Princton, Voyager, ILS
-                /* Login to the ILS */
-                /* Create a login request */
-                SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
-                /* Send the request */
-                SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
-
-                /* Check the response*/
-                if (loginResponse.isOk()) {
-                    /* Send SCStatusRequest */
+            if (connection.connect()) {
+                if (jSIPLogin(connection,institutionId, patronIdentifier)) {
                     SIP2SCStatusRequest status = new SIP2SCStatusRequest();
                     SIP2ACSStatusResponse statusResponse = (SIP2ACSStatusResponse) connection.send(status);
-
-                    /* The patron must be validated before placing a hold */
-                    SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(institutionId, patronIdentifier, getOperatorPassword());
-                    SIP2PatronInformationResponse response = (SIP2PatronInformationResponse) connection.send(request);
-
-                    /* Check if the patron and patron password are valid */
-                    if (response.isValidPatron() && response.isValidPatronPassword()) {
+                    if(statusResponse.getSupportedMessages().isCheckout()) {
                         SIP2CheckoutRequest checkoutRequest = new SIP2CheckoutRequest(patronIdentifier, itemIdentifier);
                         checkoutResponse = (SIP2CheckoutResponse) connection.send(checkoutRequest);
-
-                        /* Check that the hold was placed succesfully */
                         if (checkoutResponse.isOk()) {
                             logger.info("checkout Request Successful");
                         } else {
@@ -95,6 +95,7 @@ public abstract class JSIPConnector {
                 } else {
                     logger.info("Login Failed");
                 }
+
             }
         } catch (InvalidSIP2ResponseException e) {
             logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
@@ -251,7 +252,7 @@ public abstract class JSIPConnector {
 
                     /* Check if the patron and patron password are valid */
                     if (response.isValidPatron() && response.isValidPatronPassword()) {
-                        SIP2CreateBibRequest createBibRequest = new SIP2CreateBibRequest(patronIdentifier, titleIdentifier, itemIdentifier,bibId);
+                        SIP2CreateBibRequest createBibRequest = new SIP2CreateBibRequest(patronIdentifier, titleIdentifier, itemIdentifier, bibId);
 
 
                         logger.info("Request Create -> " + createBibRequest.getData());
@@ -282,50 +283,5 @@ public abstract class JSIPConnector {
 
     }
 
-    /**
-     *
-     * @param itemIdentifier
-     * @param patronIdentifier
-     * @param institutionId
-     * @param titleIdentifier
-     * @param bibId
-     * @return
-     */
-    public SIP2DeleteBibResponse deleteBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier,String bibId) {
-        SIP2SocketConnection connection = getSocketConnection();
-        SIP2DeleteBibResponse deleteBibResponse = null;
-        try {
-            if (connection.connect()) {
-                SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
-                SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
-                if (loginResponse.isOk()) {
-                    SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(institutionId, patronIdentifier, getOperatorPassword());
-                    SIP2PatronInformationResponse response = (SIP2PatronInformationResponse) connection.send(request);
 
-                    if (response.isValidPatron() && response.isValidPatronPassword()) {
-                        SIP2DeleteBibRequest deleteBibRequest = new SIP2DeleteBibRequest(patronIdentifier, titleIdentifier, itemIdentifier, bibId);
-                        logger.info("Request Delete -> " + deleteBibRequest.getData());
-                        deleteBibResponse = (SIP2DeleteBibResponse) connection.send(deleteBibRequest);
-
-                        if (deleteBibResponse.isOk()) {
-                            logger.info("Delete Request Successful");
-                        } else {
-                            logger.info("Delete Failed");
-                            logger.info("Response Hold -> " + deleteBibResponse.getData());
-//                            logger.info(deleteBibResponse.getScreenMessage().get(0));
-                        }
-                    }
-                } else {
-                    logger.info("Login Failed");
-                }
-            }
-        } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
-        } catch (InvalidSIP2ResponseValueException e) {
-            logger.error("Connection Invalid SIP2 Value = " + e.getMessage());
-        } finally {
-            connection.close();
-        }
-        return deleteBibResponse;
-    }
 }

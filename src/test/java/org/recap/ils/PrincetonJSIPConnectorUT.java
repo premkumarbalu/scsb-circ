@@ -22,8 +22,9 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
     @Test
     public void lookupItem() throws Exception {
         String[] itemIdentifier = {"32101077423406", "32101061738587","77777","77777777777779"};
-
-        SIP2ItemInformationResponse itemInformationResponse = princetonESIPConnector.lookupItem(itemIdentifier[1]);
+        String patronIdentifier = "198572368";
+        String institutionId = "htccul";
+        SIP2ItemInformationResponse itemInformationResponse = princetonESIPConnector.lookupItem(itemIdentifier[1],institutionId,patronIdentifier);
 
 //        assertEquals(itemIdentifier,itemInformationResponse.getItemIdentifier());
 //        assertEquals("Bolshevism, by an eye-witness from Wisconsin, by Lieutenant A. W. Kliefoth ...",itemInformationResponse.getTitleIdentifier());
@@ -130,10 +131,10 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void createBib() throws Exception {
-        String itemIdentifier = "77777777777779";
+        String itemIdentifier = "77777777777799";
         String patronIdentifier = "198572368"; //Not required
         String institutionId = "htccul"; // Not Required
-        String titleIdentifier ="RECAP TEST TITLE - 001";
+        String titleIdentifier ="RECAP TEST TITLE - 002";
         String bibId =""; //Not Required
         SIP2CreateBibResponse createBibResponse;
 
@@ -141,22 +142,6 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
         assertNotNull(createBibResponse);
         assertTrue(createBibResponse.isOk());
-    }
-
-    @Test
-    public void deleteBib() throws Exception {
-        String itemIdentifier = "77777777777777";
-        String patronIdentifier = "198572368";
-        String institutionId = "htccul";
-        String titleIdentifier ="RECAP TEST TITLE";
-        String bibId ="10001";
-
-        SIP2DeleteBibResponse deleteBibResponse;
-
-        deleteBibResponse = princetonESIPConnector.deleteBib(itemIdentifier,patronIdentifier,institutionId ,titleIdentifier,bibId);
-
-        assertNotNull(deleteBibResponse);
-        assertTrue(deleteBibResponse.isOk());
     }
 
 

@@ -3,10 +3,6 @@ package com.pkrete.jsip2.parser;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.messages.SIP2MessageResponse;
-import com.pkrete.jsip2.messages.responses.SIP2CheckoutResponse;
-import com.pkrete.jsip2.variables.CurrencyTypeFactory;
-import com.pkrete.jsip2.variables.FeeTypeFactory;
-import com.pkrete.jsip2.variables.MediaTypeFactory;
 import org.recap.ils.jsipmessages.SIP2CreateBibResponse;
 
 /**
