@@ -3,7 +3,6 @@ package org.recap.controller;
 import org.recap.ReCAPConstants;
 import org.recap.ils.JSIPConnector;
 import org.recap.model.ItemRequestInformation;
-import org.recap.request.PatronValidatorService;
 import org.recap.request.RequestParamaterValidatorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -26,9 +25,6 @@ public class RequestItemValidatorController{
 
     @Autowired
     RequestParamaterValidatorService requestParamaterValidatorService;
-
-    @Autowired
-    PatronValidatorService patronValidatorService;
 
     @Autowired
     JSIPConnector jsipConnector;
