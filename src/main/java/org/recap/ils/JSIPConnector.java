@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by sudhishk on 9/11/16.
  */
-public abstract class JSIPConnector {
+public abstract class JSIPConnector implements IJSIPConnector {
     private Logger logger = LoggerFactory.getLogger(JSIPConnector.class);
 
     private SIP2SocketConnection getSocketConnection() {
@@ -28,14 +28,30 @@ public abstract class JSIPConnector {
     }
 
     public boolean jSIPLogin(SIP2SocketConnection connection,String institutionId, String patronIdentifier) throws InvalidSIP2ResponseException, InvalidSIP2ResponseValueException{
-        SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
-        SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
-        SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(institutionId, patronIdentifier, getOperatorPassword());
-        SIP2PatronInformationResponse response = (SIP2PatronInformationResponse) connection.send(request);
-        boolean loginPatronStatus=false;
-        if(loginResponse.isOk() && response.isValidPatron() && response.isValidPatronPassword()){
-            loginPatronStatus=true;
+        SIP2LoginRequest login =null;
+        boolean loginPatronStatus= false;
+        try {
+            if(connection == null) {
+                connection = getSocketConnection();
+            }
+            if (connection.connect()) {
+                login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
+                SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
+                SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(patronIdentifier);
+                SIP2PatronInformationResponse response = (SIP2PatronInformationResponse) connection.send(request);
+                loginPatronStatus = false;
+                if (loginResponse.isOk() && response.isValidPatron() && response.isValidPatronPassword()) {
+                    loginPatronStatus = true;
+                }
+            }
+        } catch (InvalidSIP2ResponseException e) {
+            logger.error("InvalidSIP2Response "+e.getMessage());
+        } catch (InvalidSIP2ResponseValueException e) {
+            logger.error("InvalidSIP2ResponseValue "+e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception "+ e.getMessage());
         }
+
         return loginPatronStatus;
     }
 
@@ -93,6 +109,29 @@ public abstract class JSIPConnector {
             connection.close();
         }
         return itemResponse;
+    }
+
+    public SIP2PatronStatusResponse lookupUser(String institutionId, String patronIdentifier) {
+        SIP2SocketConnection connection = getSocketConnection();
+        SIP2PatronStatusResponse patronStatusResponse = null;
+        try {
+            if (connection.connect()) {
+                SIP2PatronStatusRequest patronStatusRequest = new SIP2PatronStatusRequest(institutionId, patronIdentifier);
+                logger.info(patronStatusRequest.getData());
+                patronStatusResponse = (SIP2PatronStatusResponse) connection.send(patronStatusRequest);
+            }else{
+                logger.info("Item Request Failed");
+            }
+        } catch (InvalidSIP2ResponseException e) {
+            logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
+        } catch (InvalidSIP2ResponseValueException e) {
+            logger.error("Connection Invalid SIP2 Value = " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception = " + e.getMessage());
+        }finally {
+            connection.close();
+        }
+        return patronStatusResponse;
     }
 
     public SIP2CheckoutResponse checkOutItem(String itemIdentifier, String institutionId, String patronIdentifier) {
@@ -242,14 +281,6 @@ public abstract class JSIPConnector {
 
         return holdResponse;
     }
-
-    /*              SIP2PatronStatusRequest patronStatusRequest = new SIP2PatronStatusRequest(institutionId, patronIdentifier, getOperatorPassword());
-                    SIP2PatronStatusResponse patronStatusResponse = (SIP2PatronStatusResponse) connection.send(patronStatusRequest);
-                    logger.info(patronStatusRequest.getData());
-
-                    SIP2ItemInformationRequest itemRequest = new SIP2ItemInformationRequest(itemIdentifier);
-                    SIP2ItemInformationResponse itemResponse = (SIP2ItemInformationResponse)  connection.send(itemRequest);
-                    logger.info(itemResponse.getData());*/
 
     public SIP2CreateBibResponse createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier, String bibId) {
         SIP2SocketConnection connection = getSocketConnection();
