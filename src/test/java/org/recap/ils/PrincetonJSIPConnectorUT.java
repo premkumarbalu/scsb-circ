@@ -30,14 +30,16 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 //        assertEquals("Bolshevism, by an eye-witness from Wisconsin, by Lieutenant A. W. Kliefoth ...",itemInformationResponse.getTitleIdentifier());
     }
 
-//    @Test
-//    public void lookupUser() throws Exception {
-//        String patronIdentifier = "45678915";
-//        PatronInformationResponse patronInformationResponse = princetonESIPConnector.lookupUser(patronIdentifier);
-//        assertNotNull(patronInformationResponse);
-//        assertTrue(patronInformationResponse.isValidPatron());
-//        assertTrue(patronInformationResponse.isValidPatronPassword());
-//    }
+    @Test
+    public void lookupUser() throws Exception {
+        String itemIdentifier = "32101095533293";
+        String patronIdentifier = "198572368";
+        String institutionId = "htccul";
+        SIP2ItemInformationResponse patronInformationResponse = princetonESIPConnector.lookupItem(itemIdentifier,institutionId, patronIdentifier);
+        assertNotNull(patronInformationResponse);
+        assertTrue(patronInformationResponse.isValid());
+
+    }
 
     @Test
     public void checkout() throws Exception {
@@ -91,9 +93,6 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         assertTrue(holdResponse.isOk());
     }
 
-    // Test itemIdentifier I77777777777778
-    // bibId="9959081";
-    //9959082
     @Test
     public void placeHold() throws Exception {
         String itemIdentifier = "77777777777779";
