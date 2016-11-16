@@ -28,7 +28,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
     @Test
     public void login() throws Exception {
 
-        boolean sip2LoginRequest = columbiaJSIPConnector.jSIPLogin(null,institutionId,patronIdentifier);
+        boolean sip2LoginRequest = columbiaJSIPConnector.jSIPLogin(null,patronIdentifier);
         assertTrue(sip2LoginRequest);
     }
 
@@ -55,7 +55,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "CULTST52345";
         String patronIdentifier = "RECAPTST01";
         String institutionId = "";
-        SIP2CheckoutResponse checkOutResponse = columbiaJSIPConnector.checkOutItem(itemIdentifier, institutionId, patronIdentifier);
+        SIP2CheckoutResponse checkOutResponse = columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
         assertNotNull(checkOutResponse);
         assertTrue(checkOutResponse.isOk());
     }
@@ -65,7 +65,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "";
         String patronIdentifier = "";
         String institutionId = "";
-        SIP2CheckinResponse checkInResponse = columbiaJSIPConnector.checkInItem(itemIdentifier,institutionId,patronIdentifier);
+        SIP2CheckinResponse checkInResponse = columbiaJSIPConnector.checkInItem(itemIdentifier,patronIdentifier);
         assertNotNull(checkInResponse);
         assertTrue(checkInResponse.isOk());
     }
@@ -75,10 +75,10 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "";
         String patronIdentifier = "";
         String institutionId = "";
-        SIP2CheckoutResponse checkOutResponse = columbiaJSIPConnector.checkOutItem(itemIdentifier, institutionId, patronIdentifier);
+        SIP2CheckoutResponse checkOutResponse = columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
         assertNotNull(checkOutResponse);
         assertTrue(checkOutResponse.isOk());
-        SIP2CheckinResponse checkInResponse = columbiaJSIPConnector.checkInItem(itemIdentifier,institutionId,patronIdentifier);
+        SIP2CheckinResponse checkInResponse = columbiaJSIPConnector.checkInItem(itemIdentifier,patronIdentifier);
         assertNotNull(checkInResponse);
         assertTrue(checkInResponse.isOk());
     }
@@ -140,14 +140,9 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String bibId ="";
         SIP2CreateBibResponse createBibResponse;
 
-        createBibResponse = columbiaJSIPConnector.createBib(itemIdentifier,patronIdentifier,institutionId ,titleIdentifier,bibId);
+        createBibResponse = columbiaJSIPConnector.createBib(itemIdentifier,patronIdentifier,institutionId ,titleIdentifier);
 
         assertNotNull(createBibResponse);
         assertTrue(createBibResponse.isOk());
     }
-
-
-//    Staff Identifier      Voyager operator ID.
-//    Item Identifier       item barcode.
-//    Bibliographic         ID MARC bibliographic field 001.
 }
