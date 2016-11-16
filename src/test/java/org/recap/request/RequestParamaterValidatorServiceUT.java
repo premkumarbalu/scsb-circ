@@ -77,7 +77,8 @@ public class RequestParamaterValidatorServiceUT extends BaseTestCase{
         itemBarcodeList.add("33433012968222");
         itemRequestInformation.setItemBarcodes(itemBarcodeList);
         itemRequestInformation.setPatronBarcode("45678915");
-        itemRequestInformation.setRequestType("EDD");
+        itemRequestInformation.setRequestType(ReCAPConstants.RECALL);
+        itemRequestInformation.setDeliveryLocation("AC");
         itemRequestInformation.setRequestingInstitution("PUL");
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
         itemRequestInformation.setStartPage(0);

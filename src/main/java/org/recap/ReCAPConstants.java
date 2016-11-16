@@ -1,9 +1,12 @@
 package org.recap;
 
 /**
- * Created by hemalathas on 10/11/16.
+ * Created by premkb on 19/8/16.
  */
 public class ReCAPConstants {
+
+    public static final String FAILURE = "Failure";
+    public static final String SUCCESS = "Success";
 
     public static final String COLUMBIA = "CUL";
     public static final String PRINCETON = "PUL";
@@ -30,4 +33,12 @@ public class ReCAPConstants {
     public static final String INVALID_PATRON = "Patron is not available";
     public static final String VALID_PATRON = "Patron validated successfully.";
     public static final String AVAILABLE = "Available";
+    public static final String ITEMBARCODE_WITH_DIFFERENT_BIB = "Item should belongs to same bib.Given item barcodes are in different bibs";
+    public static final String INVALID_CUSTOMER_CODE = "Please enter the valid Customer Code or scsb solr client service unavailable";
+    public static final String INVALID_ITEM_BARCODE = "Item is not available";
+    public static final String ITEM_BARCODE_IS_REQUIRED = "Item Barcode is required";
+    public static final String VALID_CUSTOMER_CODE = "Customer code is valid";
+    public static final String MULTIPLE_ITEMS_NOT_ALLOWED_FOR_EDD = "Multiple item request not allowed for EDD request type";
+    public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
+
 }
