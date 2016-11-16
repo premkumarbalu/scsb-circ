@@ -22,5 +22,5 @@ public interface IJSIPConnector {
     public SIP2HoldResponse             placeHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation);
     public SIP2HoldResponse             cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation);
     public SIP2CreateBibResponse        createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier, String bibId);
-
+    public boolean                      patronValidation(String institutionId, String patronIdentifier);
 }
