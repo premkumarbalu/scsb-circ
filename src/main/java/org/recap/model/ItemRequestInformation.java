@@ -17,7 +17,33 @@ public class ItemRequestInformation {
     private String emailAddress;
     private Integer startPage;
     private Integer endPage;
+    private String titleIdentifier;
+    private String bibiid;
+    private String expirationDate;
 
+    public String getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(String expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
+    public String getBibiid() {
+        return bibiid;
+    }
+
+    public void setBibiid(String bibiid) {
+        this.bibiid = bibiid;
+    }
+
+    public String getTitleIdentifier() {
+        return titleIdentifier;
+    }
+
+    public void setTitleIdentifier(String titleIdentifier) {
+        this.titleIdentifier = titleIdentifier;
+    }
 
     public String getPatronBarcode() {
         return patronBarcode;

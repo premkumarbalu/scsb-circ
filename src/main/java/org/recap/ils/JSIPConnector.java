@@ -27,7 +27,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return connection;
     }
 
-    public boolean jSIPLogin(SIP2SocketConnection connection,String institutionId, String patronIdentifier) throws InvalidSIP2ResponseException, InvalidSIP2ResponseValueException{
+    public boolean jSIPLogin(SIP2SocketConnection connection, String patronIdentifier) throws InvalidSIP2ResponseException, InvalidSIP2ResponseValueException{
         SIP2LoginRequest login =null;
         boolean loginPatronStatus= false;
         try {
@@ -90,7 +90,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2ItemInformationResponse itemResponse = null;
         try {
-            if (connection.connect() && jSIPLogin(connection,institutionId, patronIdentifier)) {
+            if (connection.connect() && jSIPLogin(connection, patronIdentifier)) {
                 SIP2ItemInformationRequest itemRequest = new SIP2ItemInformationRequest(itemIdentifier);
                 logger.info(itemRequest.getData());
                 itemResponse = (SIP2ItemInformationResponse) connection.send(itemRequest);
@@ -134,12 +134,12 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return patronStatusResponse;
     }
 
-    public SIP2CheckoutResponse checkOutItem(String itemIdentifier, String institutionId, String patronIdentifier) {
+    public SIP2CheckoutResponse checkOutItem(String itemIdentifier, String patronIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2CheckoutResponse checkoutResponse = null;
         try {
             if (connection.connect()) {
-                if (jSIPLogin(connection,institutionId, patronIdentifier)) {
+                if (jSIPLogin(connection, patronIdentifier)) {
                     SIP2SCStatusRequest status = new SIP2SCStatusRequest();
                     SIP2ACSStatusResponse statusResponse = (SIP2ACSStatusResponse) connection.send(status);
                     if(statusResponse.getSupportedMessages().isCheckout()) {
@@ -168,33 +168,17 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return checkoutResponse;
     }
 
-    public SIP2CheckinResponse checkInItem(String itemIdentifier, String institutionId, String patronIdentifier) {
+    public SIP2CheckinResponse checkInItem(String itemIdentifier, String patronIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2CheckinResponse checkinResponse = null;
         try {
             if (connection.connect()) { // Connect to the SIP Server - Princton, Voyager, ILS
-                /* Login to the ILS */
-                /* Create a login request */
-                SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
-                /* Send the request */
-                SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
-
-                /* Check the response*/
-                if (loginResponse.isOk()) {
-                    /* Send SCStatusRequest */
+                if (jSIPLogin(connection, patronIdentifier)) {
                     SIP2SCStatusRequest status = new SIP2SCStatusRequest();
                     SIP2ACSStatusResponse statusResponse = (SIP2ACSStatusResponse) connection.send(status);
-
-                    /* The patron must be validated before placing a hold */
-                    SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(institutionId, patronIdentifier, getOperatorPassword());
-                    SIP2PatronInformationResponse response = (SIP2PatronInformationResponse) connection.send(request);
-
-                    /* Check if the patron and patron password are valid */
-                    if (response.isValidPatron() && response.isValidPatronPassword()) {
+                    if(statusResponse.getSupportedMessages().isCheckin()) {
                         SIP2CheckinRequest checkinRequest = new SIP2CheckinRequest(itemIdentifier);
                         checkinResponse = (SIP2CheckinResponse) connection.send(checkinRequest);
-
-                        /* Check that the hold was placed succesfully */
                         if (checkinResponse.isOk()) {
                             logger.info("Check In Request Successful");
                         } else {
@@ -282,7 +266,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return holdResponse;
     }
 
-    public SIP2CreateBibResponse createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier, String bibId) {
+    public SIP2CreateBibResponse createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2CreateBibResponse createBibResponse = null;
         try {
@@ -305,7 +289,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
                     /* Check if the patron and patron password are valid */
                     if (response.isValidPatron() && response.isValidPatronPassword()) {
-                        SIP2CreateBibRequest createBibRequest = new SIP2CreateBibRequest(patronIdentifier, titleIdentifier, itemIdentifier, bibId);
+                        SIP2CreateBibRequest createBibRequest = new SIP2CreateBibRequest(patronIdentifier, titleIdentifier, itemIdentifier);
 
 
                         logger.info("Request Create -> " + createBibRequest.getData());
