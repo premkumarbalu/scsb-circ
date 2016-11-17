@@ -33,6 +33,7 @@ public class ReCAPConstants {
     public static final String INVALID_PATRON = "Patron is not available";
     public static final String VALID_PATRON = "Patron validated successfully.";
     public static final String AVAILABLE = "Available";
+    public static final String NOT_AVAILABLE = "Not Available";
     public static final String ITEMBARCODE_WITH_DIFFERENT_BIB = "Item should belongs to same bib.Given item barcodes are in different bibs";
     public static final String INVALID_CUSTOMER_CODE = "Please enter the valid Customer Code or scsb solr client service unavailable";
     public static final String INVALID_ITEM_BARCODE = "Item is not available";
@@ -40,5 +41,7 @@ public class ReCAPConstants {
     public static final String VALID_CUSTOMER_CODE = "Customer code is valid";
     public static final String MULTIPLE_ITEMS_NOT_ALLOWED_FOR_EDD = "Multiple item request not allowed for EDD request type";
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
+    public static final String HOLD_REQUEST_NOT_FOR_AVAILABLE_ITEM = "Request type cannot be hold if the item status is available";
+    public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Request type cannot be retrieval if the item status is unAvailable";
 
 }

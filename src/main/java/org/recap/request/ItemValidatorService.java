@@ -1,25 +1,24 @@
-
 package org.recap.request;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
+import org.recap.controller.ItemController;
 import org.recap.model.BibliographicEntity;
 import org.recap.model.ItemEntity;
 import org.recap.model.ItemRequestInformation;
 import org.recap.model.ItemStatusEntity;
+import org.recap.repository.ItemDetailsRepository;
+import org.recap.repository.ItemStatusDetailsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
-
-import static org.apache.camel.component.jms.JmsMessageType.Map;
 
 
 /**
@@ -33,54 +32,52 @@ public class ItemValidatorService {
     String serverProtocol;
     @Value("${scsb.solr.client.url}")
     String scsbSolrClientUrl;
+    @Autowired
+    ItemStatusDetailsRepository itemStatusDetailsRepository;
+    @Autowired
+    ItemDetailsRepository itemDetailsRepository;
+    @Autowired
+    ItemController itemController;
 
-    public ResponseEntity itemValidation(ItemRequestInformation itemRequestInformation){
+    public ResponseEntity itemValidation(ItemRequestInformation itemRequestInformation) {
         ResponseEntity responseEntity = null;
-        String availabilityStatus="";
+        String availabilityStatus = "";
         List<Integer> bibliographicIds = new ArrayList<>();
         List<BibliographicEntity> bibliographicList = new ArrayList<>();
-        RestTemplate restTemplate = new RestTemplate();
         List<ItemEntity> itemEntityList = new ArrayList<>();
-        List<String> itemBarcodeList = new ArrayList<>();
-        if(CollectionUtils.isNotEmpty(itemRequestInformation.getItemBarcodes())){
-            String itemBarcodes = itemRequestInformation.getItemBarcodes().toString();
-            itemBarcodeList = splitStringAndGetList(itemBarcodes);
-        }else{
-            return new ResponseEntity(ReCAPConstants.ITEM_BARCODE_IS_REQUIRED,getHttpHeaders(),HttpStatus.OK);
+        String itemBarcodes = "";
+        if (CollectionUtils.isNotEmpty(itemRequestInformation.getItemBarcodes())) {
+            itemBarcodes = itemRequestInformation.getItemBarcodes().toString();
+        } else {
+            return new ResponseEntity(ReCAPConstants.ITEM_BARCODE_IS_REQUIRED, getHttpHeaders(), HttpStatus.OK);
         }
-        if(itemBarcodeList.size() != 0){
-            try {
-                itemEntityList = restTemplate.getForObject(serverProtocol + scsbSolrClientUrl + "item/findByBarcodeIn?barcodes=" + StringUtils.join(itemBarcodeList, ","), List.class);
-            }catch(Exception ex){
-                responseEntity = new ResponseEntity("Scsb solr client Service is Unavailable.", getHttpHeaders(), HttpStatus.SERVICE_UNAVAILABLE);
-                return responseEntity;
-            }
-            if(itemEntityList.size() != 0){
-                if(itemBarcodeList.size() == itemEntityList.size()){
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    ItemEntity itemEntity = objectMapper.convertValue(itemEntityList.get(0),ItemEntity.class);
-                    availabilityStatus = getItemStatus(itemEntity.getItemAvailabilityStatusId());
-                    bibliographicList = objectMapper.convertValue(itemEntity.getBibliographicEntities(),new TypeReference<List<BibliographicEntity>>(){});
-                    for(BibliographicEntity bibliographicEntityDetails: bibliographicList){
-                        bibliographicIds .add(bibliographicEntityDetails.getBibliographicId());
-                    }
-                    if(availabilityStatus.equalsIgnoreCase(ReCAPConstants.AVAILABLE)){
-                        if(itemEntityList.size()>1){
-                            String status = requestItemStatus(itemEntityList,itemEntity.getCustomerCode(),itemEntity.getItemAvailabilityStatusId(),bibliographicIds);
-                            return new ResponseEntity(status,getHttpHeaders(),HttpStatus.OK);
-                        }else{
-                            return new ResponseEntity(ReCAPConstants.VALID_REQUEST,getHttpHeaders(),HttpStatus.OK);
-                        }
-                    }else{
-                        responseEntity = new ResponseEntity(ReCAPConstants.INVALID_ITEM_BARCODE, getHttpHeaders(), HttpStatus.OK);
-                        return responseEntity;
-                    }
-                }else{
-                    return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE,getHttpHeaders(),HttpStatus.OK);
+        itemEntityList = itemController.findByBarcodeIn(itemBarcodes);
+        if (itemEntityList.size() != 0) {
+            if (splitStringAndGetList(itemBarcodes).size() == itemEntityList.size()) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                ItemEntity itemEntity = objectMapper.convertValue(itemEntityList.get(0), ItemEntity.class);
+                availabilityStatus = getItemStatus(itemEntity.getItemAvailabilityStatusId());
+                if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.HOLD)) {
+                    return new ResponseEntity(ReCAPConstants.HOLD_REQUEST_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.OK);
+                } else if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.NOT_AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)) {
+                    return new ResponseEntity(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM, getHttpHeaders(), HttpStatus.OK);
                 }
+                bibliographicList = objectMapper.convertValue(itemEntity.getBibliographicEntities(), new TypeReference<List<BibliographicEntity>>() {});
+                for (BibliographicEntity bibliographicEntityDetails : bibliographicList) {
+                    bibliographicIds.add(bibliographicEntityDetails.getBibliographicId());
+                }
+                if (itemEntityList.size() == 1) {
+                    return new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
+                } else {
+                    String status = multipleRequestItemValidation(itemEntityList, itemEntity.getCustomerCode(), itemEntity.getItemAvailabilityStatusId(), bibliographicIds);
+                    return new ResponseEntity(status, getHttpHeaders(), HttpStatus.OK);
+                }
+            } else {
+                return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.OK);
             }
+        } else {
+            return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.OK);
         }
-        return responseEntity;
     }
 
     private List<String> splitStringAndGetList(String inputString){
@@ -97,20 +94,15 @@ public class ItemValidatorService {
 
     public String getItemStatus(Integer itemAvailabilityStatusId){
         String status="";
-        RestTemplate restTemplate = new RestTemplate();
         ItemStatusEntity itemStatusEntity = new ItemStatusEntity();
-        try{
-            itemStatusEntity = restTemplate.getForObject(serverProtocol + scsbSolrClientUrl + "itemStatus/search/findByItemStatusId?itemStatusId="+itemAvailabilityStatusId, ItemStatusEntity.class);
-        }catch(Exception ex){
-            status = "Scsb solr client Service is Unavailable.";
-        }
+        itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(itemAvailabilityStatusId);
         if(itemStatusEntity != null){
             status = itemStatusEntity.getStatusCode();
         }
         return status;
     }
 
-    public String requestItemStatus(List<ItemEntity> itemEntityList,String customerCode,Integer itemAvailabilityStatusId,List<Integer> bibliographicIds){
+    public String multipleRequestItemValidation(List<ItemEntity> itemEntityList, String customerCode, Integer itemAvailabilityStatusId, List<Integer> bibliographicIds){
         String status = "";
         List<BibliographicEntity> bibliographicList = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
