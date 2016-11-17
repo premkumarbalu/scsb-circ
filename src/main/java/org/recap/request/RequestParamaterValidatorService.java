@@ -1,8 +1,11 @@
 package org.recap.request;
 
 import org.recap.ReCAPConstants;
+import org.recap.controller.ItemController;
 import org.recap.model.CustomerCodeEntity;
 import org.recap.model.ItemRequestInformation;
+import org.recap.repository.CustomerCodeDetailsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,6 +30,10 @@ public class RequestParamaterValidatorService {
     String serverProtocol;
     @Value("${scsb.solr.client.url}")
     String scsbSolrClientUrl;
+    @Autowired
+    CustomerCodeDetailsRepository customerCodeDetailsRepository;
+    @Autowired
+    ItemController itemController;
 
     public ResponseEntity validateItemRequestParameters(ItemRequestInformation itemRequestInformation){
         ResponseEntity responseEntity = null;
@@ -48,7 +55,7 @@ public class RequestParamaterValidatorService {
         }else{
             if(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.EDD_REQUEST)){
                 if(!CollectionUtils.isEmpty(itemRequestInformation.getItemBarcodes())){
-                    if(itemRequestInformation.getItemBarcodes().size()>0){
+                    if(itemController.splitStringAndGetList(itemRequestInformation.getItemBarcodes().toString()).size()>1){
                         errorMessageMap.put(errorCount,ReCAPConstants.MULTIPLE_ITEMS_NOT_ALLOWED_FOR_EDD);
                         errorCount++;
                     }
@@ -105,18 +112,11 @@ public class RequestParamaterValidatorService {
     private String customerCodeValidation(String deliveryLocation){
         String customerCodeStatus = "";
         CustomerCodeEntity customerCodeEntity = new CustomerCodeEntity();
-        RestTemplate restTemplate = new RestTemplate();
-        try{
-            customerCodeEntity = restTemplate.getForObject(serverProtocol + scsbSolrClientUrl + "customerCode/search/findByCustomerCode?customerCode=" +deliveryLocation , CustomerCodeEntity.class);
-        }catch(Exception ex){
-            if(ex.getMessage().contains("Connection refused")){
-                customerCodeStatus =  "Scsb solr client Service is Unavailable.";
-            }else{
-                customerCodeStatus =  ReCAPConstants.INVALID_CUSTOMER_CODE;
-            }
-
-        }if(!StringUtils.isEmpty(customerCodeEntity.getCustomerCode())){
+        customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(deliveryLocation);
+        if(!StringUtils.isEmpty(customerCodeEntity.getCustomerCode())){
             customerCodeStatus =  ReCAPConstants.VALID_CUSTOMER_CODE;
+        }else{
+            customerCodeStatus = ReCAPConstants.INVALID_CUSTOMER_CODE;
         }
         return customerCodeStatus;
     }

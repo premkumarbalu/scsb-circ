@@ -1,4 +1,3 @@
-
 package org.recap.request;
 
 import org.apache.commons.lang3.StringUtils;
@@ -8,8 +7,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.recap.BaseTestCase;
 import org.recap.ReCAPConstants;
+import org.recap.model.BibliographicEntity;
+import org.recap.model.HoldingsEntity;
 import org.recap.model.ItemEntity;
 import org.recap.model.ItemRequestInformation;
+import org.recap.repository.BibliographicDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -21,8 +23,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -41,11 +44,15 @@ public class ItemValidatorServiceUT extends BaseTestCase{
     @Value("${scsb.solr.client.url}")
     String scsbSolrClientUrl;
 
+    @Autowired
+    BibliographicDetailsRepository bibliographicDetailsRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
     protected MockMvc mockMvc;
     @Autowired
     ItemValidatorService itemValidatorService;
-    @Mock
-    ItemValidatorService mockItemValidatorService;
     @Autowired
     private WebApplicationContext webApplicationContext;
     @Before
@@ -56,43 +63,146 @@ public class ItemValidatorServiceUT extends BaseTestCase{
 
 
     @Test
-    public void testValidItem(){
-        ResponseEntity responseEntity = new ResponseEntity("Available",getHttpHeaders(), HttpStatus.OK);
+    public void testValidItem() throws Exception{
+        saveBibSingleHoldingsMultipleItem();
         List<String> itemBarcodes = new ArrayList<>();
-        itemBarcodes.add("33433003796665");
-        itemBarcodes.add("33433003796673");
+        itemBarcodes.add("100");
+        itemBarcodes.add("101");
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         itemRequestInformation.setItemBarcodes(itemBarcodes);
-        Mockito.when(mockItemValidatorService.itemValidation(itemRequestInformation)).thenReturn(responseEntity);
-        ResponseEntity responseEntity1 = mockItemValidatorService.itemValidation(itemRequestInformation);
-        assertNotNull(responseEntity1);
-        assertEquals(responseEntity1.getBody(), "Available");
+        itemRequestInformation.setRequestType(ReCAPConstants.RECALL);
+        ResponseEntity responseEntity = itemValidatorService.itemValidation(itemRequestInformation);
+        assertNotNull(responseEntity);
+        assertEquals(responseEntity.getBody(), ReCAPConstants.VALID_REQUEST);
     }
-
-
-
 
     @Test
-    public void testInValidItem(){
-        ResponseEntity responseEntity = new ResponseEntity("Item barcodes should have same bib",getHttpHeaders(), HttpStatus.OK);
+    public void testInValidItem() throws Exception{
+        saveBibSingleHoldingsMultipleItem();
+        saveBibSingleHoldingsSingleItem();
         List<String> itemBarcodes = new ArrayList<>();
-        itemBarcodes.add("33433005249010");
-        itemBarcodes.add("33433003796665");
-        itemBarcodes.add("33433005249028");
-        itemBarcodes.add("33433005249044");
+        itemBarcodes.add("100");
+        itemBarcodes.add("101");
+        itemBarcodes.add("123");
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
+        itemRequestInformation.setRequestType(ReCAPConstants.RECALL);
         itemRequestInformation.setItemBarcodes(itemBarcodes);
-        Mockito.when(mockItemValidatorService.itemValidation(itemRequestInformation)).thenReturn(responseEntity);
-        ResponseEntity responseEntity1 = mockItemValidatorService.itemValidation(itemRequestInformation);
-        assertNotNull(responseEntity1);
-        assertEquals(responseEntity1.getBody(), "Item barcodes should have same bib");
+        ResponseEntity responseEntity = itemValidatorService.itemValidation(itemRequestInformation);
+        assertNotNull(responseEntity);
+        assertEquals(responseEntity.getBody(), ReCAPConstants.ITEMBARCODE_WITH_DIFFERENT_BIB);
     }
 
-    private HttpHeaders getHttpHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("api_key", "recap");
-        return headers;
+    public void saveBibSingleHoldingsMultipleItem() throws Exception {
+        Random random = new Random();
+        BibliographicEntity bibliographicEntity = getBibliographicEntity(1, String.valueOf(random.nextInt()));
+
+        HoldingsEntity holdingsEntity = getHoldingsEntity(random, 1);
+
+        ItemEntity itemEntity1 = new ItemEntity();
+        itemEntity1.setCreatedDate(new Date());
+        itemEntity1.setCreatedBy("etl");
+        itemEntity1.setLastUpdatedDate(new Date());
+        itemEntity1.setLastUpdatedBy("etl");
+        itemEntity1.setCustomerCode("1");
+        itemEntity1.setItemAvailabilityStatusId(1);
+        itemEntity1.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
+        itemEntity1.setOwningInstitutionId(1);
+        itemEntity1.setBarcode("100");
+        itemEntity1.setCallNumber("x.12321");
+        itemEntity1.setCollectionGroupId(1);
+        itemEntity1.setCallNumberType("1");
+        itemEntity1.setHoldingsEntities(Arrays.asList(holdingsEntity));
+
+        ItemEntity itemEntity2 = new ItemEntity();
+        itemEntity2.setCreatedDate(new Date());
+        itemEntity2.setCreatedBy("etl");
+        itemEntity2.setLastUpdatedDate(new Date());
+        itemEntity2.setLastUpdatedBy("etl");
+        itemEntity2.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
+        itemEntity2.setOwningInstitutionId(1);
+        itemEntity2.setCustomerCode("1");
+        itemEntity2.setBarcode("101");
+        itemEntity2.setItemAvailabilityStatusId(1);
+        itemEntity2.setCallNumber("x.12321");
+        itemEntity2.setCollectionGroupId(1);
+        itemEntity2.setCallNumberType("1");
+        itemEntity2.setHoldingsEntities(Arrays.asList(holdingsEntity));
+
+        bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        bibliographicEntity.setItemEntities(Arrays.asList(itemEntity1, itemEntity2));
+
+        bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        bibliographicEntity.setItemEntities(Arrays.asList(itemEntity1, itemEntity2));
+
+        BibliographicEntity savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(bibliographicEntity);
+        entityManager.refresh(savedBibliographicEntity);
+
+        assertNotNull(savedBibliographicEntity);
+        assertNotNull(savedBibliographicEntity.getBibliographicId());
+        assertNotNull(savedBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId());
+        assertNotNull(savedBibliographicEntity.getItemEntities().get(0).getItemId());
+        assertNotNull(savedBibliographicEntity.getItemEntities().get(1).getItemId());
+
+
     }
+
+    public void saveBibSingleHoldingsSingleItem() throws Exception {
+        Random random = new Random();
+        BibliographicEntity bibliographicEntity = getBibliographicEntity(1, String.valueOf(random.nextInt()));
+
+        HoldingsEntity holdingsEntity = getHoldingsEntity(random, 1);
+
+        ItemEntity itemEntity = new ItemEntity();
+        itemEntity.setLastUpdatedDate(new Date());
+        itemEntity.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
+        itemEntity.setOwningInstitutionId(1);
+        itemEntity.setCreatedDate(new Date());
+        itemEntity.setCreatedBy("etl");
+        itemEntity.setLastUpdatedDate(new Date());
+        itemEntity.setLastUpdatedBy("etl");
+        itemEntity.setBarcode("123");
+        itemEntity.setCallNumber("x.12321");
+        itemEntity.setCollectionGroupId(1);
+        itemEntity.setCallNumberType("1");
+        itemEntity.setCustomerCode("1");
+        itemEntity.setItemAvailabilityStatusId(1);
+        itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+
+        bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
+
+        BibliographicEntity savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(bibliographicEntity);
+        entityManager.refresh(savedBibliographicEntity);
+
+        assertNotNull(savedBibliographicEntity);
+        assertNotNull(savedBibliographicEntity.getBibliographicId());
+        assertNotNull(savedBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId());
+        assertNotNull(savedBibliographicEntity.getItemEntities().get(0).getItemId());
+    }
+
+    private HoldingsEntity getHoldingsEntity(Random random, Integer institutionId) {
+        HoldingsEntity holdingsEntity = new HoldingsEntity();
+        holdingsEntity.setContent("mock holdings".getBytes());
+        holdingsEntity.setCreatedDate(new Date());
+        holdingsEntity.setCreatedBy("etl");
+        holdingsEntity.setLastUpdatedDate(new Date());
+        holdingsEntity.setLastUpdatedBy("etl");
+        holdingsEntity.setOwningInstitutionId(institutionId);
+        holdingsEntity.setOwningInstitutionHoldingsId(String.valueOf(random.nextInt()));
+        return holdingsEntity;
+    }
+
+    private BibliographicEntity getBibliographicEntity(Integer institutionId, String owningInstitutionBibId1) {
+        BibliographicEntity bibliographicEntity1 = new BibliographicEntity();
+        bibliographicEntity1.setContent("mock Content".getBytes());
+        bibliographicEntity1.setCreatedDate(new Date());
+        bibliographicEntity1.setCreatedBy("etl");
+        bibliographicEntity1.setLastUpdatedBy("etl");
+        bibliographicEntity1.setLastUpdatedDate(new Date());
+        bibliographicEntity1.setOwningInstitutionId(institutionId);
+        bibliographicEntity1.setOwningInstitutionBibId(owningInstitutionBibId1);
+        return bibliographicEntity1;
+    }
+
 
 }
