@@ -57,7 +57,7 @@ public class RequestItemController {
         SIP2HoldResponse sip2SIP2HoldResponse= jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).placeHold(itembarcode,   itemRequestInformation.getPatronBarcode(),
                                                                                                                                                                 itemRequestInformation.getRequestingInstitution(),
                                                                                                                                                                 itemRequestInformation.getExpirationDate(),
-                                                                                                                                                                itemRequestInformation.getBibiid(),
+                                                                                                                                                                itemRequestInformation.getBibId(),
                                                                                                                                                                 itemRequestInformation.getDeliveryLocation());
         itemResponseInformation.setItemBarcode(sip2SIP2HoldResponse.getItemIdentifier());
         itemResponseInformation.setScreenMessage(sip2SIP2HoldResponse.getScreenMessage().get(0));
@@ -74,7 +74,7 @@ public class RequestItemController {
         SIP2HoldResponse sip2SIP2HoldResponse= jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).cancelHold(itembarcode,  itemRequestInformation.getPatronBarcode(),
                                                                                                                                                                 itemRequestInformation.getRequestingInstitution(),
                                                                                                                                                                 itemRequestInformation.getExpirationDate(),
-                                                                                                                                                                itemRequestInformation.getBibiid(),
+                                                                                                                                                                itemRequestInformation.getBibId(),
                                                                                                                                                                 itemRequestInformation.getDeliveryLocation());
         itemResponseInformation.setItemBarcode(sip2SIP2HoldResponse.getItemIdentifier());
         itemResponseInformation.setScreenMessage(sip2SIP2HoldResponse.getScreenMessage().get(0));

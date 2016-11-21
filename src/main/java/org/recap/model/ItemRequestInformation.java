@@ -17,8 +17,9 @@ public class ItemRequestInformation {
     private String emailAddress;
     private Integer startPage;
     private Integer endPage;
+    private String chapterTitle;
     private String titleIdentifier;
-    private String bibiid;
+    private String bibId;
     private String expirationDate;
 
     public String getExpirationDate() {
@@ -29,12 +30,12 @@ public class ItemRequestInformation {
         this.expirationDate = expirationDate;
     }
 
-    public String getBibiid() {
-        return bibiid;
+    public String getBibId() {
+        return bibId;
     }
 
-    public void setBibiid(String bibiid) {
-        this.bibiid = bibiid;
+    public void setBibId(String bibId) {
+        this.bibId = bibId;
     }
 
     public String getTitleIdentifier() {
@@ -107,5 +108,13 @@ public class ItemRequestInformation {
 
     public void setEndPage(Integer endPage) {
         this.endPage = endPage;
+    }
+
+    public String getChapterTitle() {
+        return chapterTitle;
+    }
+
+    public void setChapterTitle(String chapterTitle) {
+        this.chapterTitle = chapterTitle;
     }
 }
