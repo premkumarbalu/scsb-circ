@@ -63,6 +63,10 @@ public class RequestParamaterValidatorService {
                     errorMessageMap.put(errorCount,ReCAPConstants.ITEM_BARCODE_IS_REQUIRED);
                     errorCount++;
                 }
+                if(StringUtils.isEmpty(itemRequestInformation.getChapterTitle())){
+                    errorMessageMap.put(errorCount,ReCAPConstants.CHAPTER_TITLE_IS_REQUIRED);
+                    errorCount++;
+                }
                 if(itemRequestInformation.getStartPage() == null || itemRequestInformation.getEndPage() == null){
                     errorMessageMap.put(errorCount,ReCAPConstants.START_PAGE_AND_END_PAGE_REQUIRED);
                     errorCount++;

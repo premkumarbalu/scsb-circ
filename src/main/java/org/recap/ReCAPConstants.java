@@ -18,7 +18,7 @@ public class ReCAPConstants {
     public static final String INVALID_REQUEST_INSTITUTION = "Please enter valid Institution PUL/CUL/NYPL for requestingInstitution";
     public static final String INVALID_EMAIL_ADDRESS = "Please enter valid emailAddress";
     public static final String START_PAGE_AND_END_PAGE_REQUIRED = "Startpage and endpage information is required for the request type EDD";
-    public static final String INVALID_PAGE_NUMBER = "Page number should starts with 1";
+    public static final String INVALID_PAGE_NUMBER = "Page number should not be 0. Page number starts with 1";
     public static final String INVALID_END_PAGE = "End page should not be 0 and less than or equal to start page";
     public static final String DELIVERY_LOCATION_REQUIRED = "Delivery Location is required for request type Recall/hold/retrieval";
     public static final String EMPTY_PATRON_BARCODE = "Patron barcode should not be null or empty.Please enter the valid patron barcode";
@@ -43,5 +43,6 @@ public class ReCAPConstants {
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
     public static final String HOLD_REQUEST_NOT_FOR_AVAILABLE_ITEM = "Request type cannot be hold if the item status is available";
     public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Request type cannot be retrieval if the item status is unAvailable";
+    public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
 }
