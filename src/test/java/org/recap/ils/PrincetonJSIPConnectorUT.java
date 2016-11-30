@@ -46,17 +46,18 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "32101095533293";
         String patronIdentifier = "198572368";
         String institutionId = "htccul";
-        SIP2CheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier, institutionId, patronIdentifier);
+        SIP2CheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
         assertNotNull(checkOutResponse);
         assertTrue(checkOutResponse.isOk());
     }
 
     @Test
     public void checkIn() throws Exception {
-        String itemIdentifier = "32101077423406";
+//        String itemIdentifier = "32101077423406";
+        String itemIdentifier = "32101095533293";
         String patronIdentifier = "198572368";
         String institutionId = "htccul";
-        SIP2CheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier,institutionId,patronIdentifier);
+        SIP2CheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier,patronIdentifier);
         assertNotNull(checkInResponse);
         assertTrue(checkInResponse.isOk());
     }
@@ -66,10 +67,10 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "32101077423406";
         String patronIdentifier = "198572368";
         String institutionId = "htccul";
-        SIP2CheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier, institutionId, patronIdentifier);
+        SIP2CheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier , patronIdentifier);
         assertNotNull(checkOutResponse);
         assertTrue(checkOutResponse.isOk());
-        SIP2CheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier,institutionId,patronIdentifier);
+        SIP2CheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier,patronIdentifier);
         assertNotNull(checkInResponse);
         assertTrue(checkInResponse.isOk());
     }
@@ -137,7 +138,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         String bibId =""; //Not Required
         SIP2CreateBibResponse createBibResponse;
 
-        createBibResponse = princetonESIPConnector.createBib(itemIdentifier,patronIdentifier,institutionId ,titleIdentifier,bibId);
+        createBibResponse = princetonESIPConnector.createBib(itemIdentifier,patronIdentifier,institutionId ,titleIdentifier);
 
         assertNotNull(createBibResponse);
         assertTrue(createBibResponse.isOk());

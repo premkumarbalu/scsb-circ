@@ -1,12 +1,20 @@
 package org.recap.request;
 
 import org.recap.ReCAPConstants;
+import org.recap.controller.ItemController;
+import org.recap.model.CustomerCodeEntity;
 import org.recap.model.ItemRequestInformation;
+import org.recap.repository.CustomerCodeDetailsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -18,6 +26,14 @@ import java.util.regex.Pattern;
 @Component
 public class RequestParamaterValidatorService {
 
+    @Value("${server.protocol}")
+    String serverProtocol;
+    @Value("${scsb.solr.client.url}")
+    String scsbSolrClientUrl;
+    @Autowired
+    CustomerCodeDetailsRepository customerCodeDetailsRepository;
+    @Autowired
+    ItemController itemController;
 
     public ResponseEntity validateItemRequestParameters(ItemRequestInformation itemRequestInformation){
         ResponseEntity responseEntity = null;
@@ -38,6 +54,19 @@ public class RequestParamaterValidatorService {
             errorCount++;
         }else{
             if(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.EDD_REQUEST)){
+                if(!CollectionUtils.isEmpty(itemRequestInformation.getItemBarcodes())){
+                    if(itemController.splitStringAndGetList(itemRequestInformation.getItemBarcodes().toString()).size()>1){
+                        errorMessageMap.put(errorCount,ReCAPConstants.MULTIPLE_ITEMS_NOT_ALLOWED_FOR_EDD);
+                        errorCount++;
+                    }
+                }else{
+                    errorMessageMap.put(errorCount,ReCAPConstants.ITEM_BARCODE_IS_REQUIRED);
+                    errorCount++;
+                }
+                if(StringUtils.isEmpty(itemRequestInformation.getChapterTitle())){
+                    errorMessageMap.put(errorCount,ReCAPConstants.CHAPTER_TITLE_IS_REQUIRED);
+                    errorCount++;
+                }
                 if(itemRequestInformation.getStartPage() == null || itemRequestInformation.getEndPage() == null){
                     errorMessageMap.put(errorCount,ReCAPConstants.START_PAGE_AND_END_PAGE_REQUIRED);
                     errorCount++;
@@ -54,6 +83,12 @@ public class RequestParamaterValidatorService {
                 if(StringUtils.isEmpty(itemRequestInformation.getDeliveryLocation())){
                     errorMessageMap.put(errorCount,ReCAPConstants.DELIVERY_LOCATION_REQUIRED);
                     errorCount++;
+                }else{
+                    String customerCodeStatus = customerCodeValidation(itemRequestInformation.getDeliveryLocation());
+                    if(customerCodeStatus.equalsIgnoreCase(ReCAPConstants.INVALID_CUSTOMER_CODE)){
+                        errorMessageMap.put(errorCount, ReCAPConstants.INVALID_CUSTOMER_CODE);
+                        errorCount++;
+                    }
                 }
             }
         }
@@ -72,10 +107,22 @@ public class RequestParamaterValidatorService {
         return matcher.matches();
     }
 
-    private HttpHeaders getHttpHeaders() {
+    public HttpHeaders getHttpHeaders() {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(ReCAPConstants.RESPONSE_DATE, new Date().toString());
         return responseHeaders;
+    }
+
+    private String customerCodeValidation(String deliveryLocation){
+        String customerCodeStatus = "";
+        CustomerCodeEntity customerCodeEntity = new CustomerCodeEntity();
+        customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(deliveryLocation);
+        if(!StringUtils.isEmpty(customerCodeEntity.getCustomerCode())){
+            customerCodeStatus =  ReCAPConstants.VALID_CUSTOMER_CODE;
+        }else{
+            customerCodeStatus = ReCAPConstants.INVALID_CUSTOMER_CODE;
+        }
+        return customerCodeStatus;
     }
 
     private String buildErrorMessage(Map<Integer,String> erroMessageMap){
@@ -84,10 +131,5 @@ public class RequestParamaterValidatorService {
             errorMessageBuilder.append(entry.getValue()).append("\n");
         });
         return errorMessageBuilder.toString();
-    }
-    private List<String> splitStringAndGetList(String inputString){
-        String[] splittedString = inputString.split(",");
-        List<String> stringList = Arrays.asList(splittedString);
-        return stringList;
     }
 }

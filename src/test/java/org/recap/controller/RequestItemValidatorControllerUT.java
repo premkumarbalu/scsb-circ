@@ -7,6 +7,8 @@ import org.recap.model.ItemRequestInformation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 /**
@@ -24,7 +26,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
         itemRequestInformation.setDeliveryLocation("AC");
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
         itemRequestInformation.setRequestingInstitution("PUL");
-
+        itemRequestInformation.setItemBarcodes(Arrays.asList("33433003796665","33433003796673"));
         ResponseEntity responseEntity = requestItemValidatorController.validateItemRequestInformations(itemRequestInformation);
         assertNotNull(responseEntity);
         assertEquals(responseEntity.getBody(), ReCAPConstants.VALID_REQUEST);
@@ -39,7 +41,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
         itemRequestInformation.setDeliveryLocation("AC");
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
         itemRequestInformation.setRequestingInstitution("PUL");
-
+        itemRequestInformation.setItemBarcodes(Arrays.asList("33433003796665","33433003796673"));
         ResponseEntity responseEntity = requestItemValidatorController.validateItemRequestInformations(itemRequestInformation);
         assertNotNull(responseEntity);
         assertEquals(responseEntity.getBody(), ReCAPConstants.INVALID_PATRON);
