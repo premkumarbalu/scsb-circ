@@ -21,6 +21,7 @@ public class ItemRequestInformation {
     private String titleIdentifier;
     private String bibId;
     private String expirationDate;
+    private String itemOwningInstitution;
 
     public String getExpirationDate() {
         return expirationDate;
@@ -116,5 +117,13 @@ public class ItemRequestInformation {
 
     public void setChapterTitle(String chapterTitle) {
         this.chapterTitle = chapterTitle;
+    }
+
+    public String getItemOwningInstitution() {
+        return itemOwningInstitution;
+    }
+
+    public void setItemOwningInstitution(String itemOwningInstitution) {
+        this.itemOwningInstitution = itemOwningInstitution;
     }
 }
