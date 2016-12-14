@@ -3,7 +3,7 @@ package org.recap.controller;
 import com.pkrete.jsip2.messages.responses.SIP2CheckinResponse;
 import com.pkrete.jsip2.messages.responses.SIP2CheckoutResponse;
 import com.pkrete.jsip2.messages.responses.SIP2HoldResponse;
-import org.recap.ils.JSIPConectorFactory;
+
 import org.recap.ils.jsipmessages.SIP2CreateBibResponse;
 import org.recap.model.ItemRequestInformation;
 import org.recap.model.ItemResponseInformation;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.recap.ils.JSIPConnectorFactory;
 
 /**
  * Created by sudhishk on 16/11/16.
@@ -22,13 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class RequestItemController {
 
     @Autowired
-    JSIPConectorFactory jsipConectorFactory;
+    JSIPConnectorFactory jsipConectorFactory;
 
     @RequestMapping(value = "/checkoutItem" , method = RequestMethod.POST ,consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ItemResponseInformation checkoutItem(@RequestBody ItemRequestInformation itemRequestInformation){
+    public ItemResponseInformation checkoutItem(@RequestBody ItemRequestInformation itemRequestInformation,String callInstitition){
         ItemResponseInformation itemResponseInformation = new ItemResponseInformation();
         String itembarcode =(String)itemRequestInformation.getItemBarcodes().get(0);
-        SIP2CheckoutResponse sip2CheckoutResponse= jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).checkOutItem(itembarcode,itemRequestInformation.getPatronBarcode());
+        SIP2CheckoutResponse sip2CheckoutResponse= (SIP2CheckoutResponse)jsipConectorFactory.getJSIPConnector(callInstitition).checkOutItem(itembarcode,itemRequestInformation.getPatronBarcode());
         itemResponseInformation.setItemBarcode(sip2CheckoutResponse.getItemIdentifier());
         itemResponseInformation.setScreenMessage(sip2CheckoutResponse.getScreenMessage().get(0));
         itemResponseInformation.setSuccess(sip2CheckoutResponse.isOk());
@@ -41,7 +42,7 @@ public class RequestItemController {
     public ItemResponseInformation checkinItem(@RequestBody ItemRequestInformation itemRequestInformation){
         ItemResponseInformation itemResponseInformation = new ItemResponseInformation();
         String itembarcode =(String)itemRequestInformation.getItemBarcodes().get(0);
-        SIP2CheckinResponse sip2CheckinResponse= jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).checkInItem(itembarcode,itemRequestInformation.getPatronBarcode());
+        SIP2CheckinResponse sip2CheckinResponse= (SIP2CheckinResponse)jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).checkInItem(itembarcode,itemRequestInformation.getPatronBarcode());
         itemResponseInformation.setItemBarcode(sip2CheckinResponse.getItemIdentifier());
         itemResponseInformation.setScreenMessage(sip2CheckinResponse.getScreenMessage().get(0));
         itemResponseInformation.setSuccess(sip2CheckinResponse.isOk());
@@ -51,10 +52,10 @@ public class RequestItemController {
     }
 
     @RequestMapping(value = "/holdItem" , method = RequestMethod.POST ,consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ItemResponseInformation holdItem(@RequestBody ItemRequestInformation itemRequestInformation){
+    public ItemResponseInformation holdItem(@RequestBody ItemRequestInformation itemRequestInformation,String callInstitition){
         ItemResponseInformation itemResponseInformation = new ItemResponseInformation();
         String itembarcode =(String)itemRequestInformation.getItemBarcodes().get(0);
-        SIP2HoldResponse sip2SIP2HoldResponse= jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).placeHold(itembarcode,   itemRequestInformation.getPatronBarcode(),
+        SIP2HoldResponse sip2SIP2HoldResponse= (SIP2HoldResponse)jsipConectorFactory.getJSIPConnector(callInstitition).placeHold(itembarcode,   itemRequestInformation.getPatronBarcode(),
                                                                                                                                                                 itemRequestInformation.getRequestingInstitution(),
                                                                                                                                                                 itemRequestInformation.getExpirationDate(),
                                                                                                                                                                 itemRequestInformation.getBibId(),
@@ -71,7 +72,7 @@ public class RequestItemController {
     public ItemResponseInformation cancelHoldItem(@RequestBody ItemRequestInformation itemRequestInformation){
         ItemResponseInformation itemResponseInformation = new ItemResponseInformation();
         String itembarcode =(String)itemRequestInformation.getItemBarcodes().get(0);
-        SIP2HoldResponse sip2SIP2HoldResponse= jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).cancelHold(itembarcode,  itemRequestInformation.getPatronBarcode(),
+        SIP2HoldResponse sip2SIP2HoldResponse= (SIP2HoldResponse)jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).cancelHold(itembarcode,  itemRequestInformation.getPatronBarcode(),
                                                                                                                                                                 itemRequestInformation.getRequestingInstitution(),
                                                                                                                                                                 itemRequestInformation.getExpirationDate(),
                                                                                                                                                                 itemRequestInformation.getBibId(),
@@ -85,14 +86,15 @@ public class RequestItemController {
     }
 
     @RequestMapping(value = "/createBib" , method = RequestMethod.POST ,consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ItemResponseInformation createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation){
+    public ItemResponseInformation createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation,String callInstitition){
         ItemResponseInformation itemResponseInformation = new ItemResponseInformation();
         String itembarcode =(String)itemRequestInformation.getItemBarcodes().get(0);
-        SIP2CreateBibResponse sip2CreateBibResponse= jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).createBib(itembarcode,itemRequestInformation.getPatronBarcode(),itemRequestInformation.getRequestingInstitution(),itemRequestInformation.getTitleIdentifier());
+        SIP2CreateBibResponse sip2CreateBibResponse= (SIP2CreateBibResponse)jsipConectorFactory.getJSIPConnector(callInstitition).createBib(itembarcode,itemRequestInformation.getPatronBarcode(),itemRequestInformation.getRequestingInstitution(),itemRequestInformation.getTitleIdentifier());
         itemResponseInformation.setItemBarcode(sip2CreateBibResponse.getItemIdentifier());
         itemResponseInformation.setScreenMessage(sip2CreateBibResponse.getScreenMessage().get(0));
         itemResponseInformation.setSuccess(sip2CreateBibResponse.isOk());
         itemResponseInformation.setTitleIdentifier(sip2CreateBibResponse.getTitleIdentifier());
+        itemRequestInformation.setBibId(sip2CreateBibResponse.getBibId());
         return itemResponseInformation;
     }
 }

@@ -134,6 +134,9 @@ public class SIP2ResponseFactory {
         } else if (code.equals("82")) {
             parser = new SIP2CreateBibResponseParser();
             return parser.parse(data);
+        } else if (code.equals("87")) {
+            parser = new SIP2RecallResponseParser();
+            return parser.parse(data);
         }
         throw new InvalidSIP2ResponseException("Unsupported response type! Command identifier: " + code);
     }

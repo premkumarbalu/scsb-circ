@@ -117,7 +117,7 @@ public class RequestParamaterValidatorService {
         String customerCodeStatus = "";
         CustomerCodeEntity customerCodeEntity = new CustomerCodeEntity();
         customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(deliveryLocation);
-        if(!StringUtils.isEmpty(customerCodeEntity.getCustomerCode())){
+        if(customerCodeEntity != null && !StringUtils.isEmpty(customerCodeEntity.getCustomerCode())){
             customerCodeStatus =  ReCAPConstants.VALID_CUSTOMER_CODE;
         }else{
             customerCodeStatus = ReCAPConstants.INVALID_CUSTOMER_CODE;

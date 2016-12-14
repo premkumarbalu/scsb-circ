@@ -45,4 +45,32 @@ public class ReCAPConstants {
     public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Request type cannot be retrieval if the item status is unAvailable";
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
+    // Retrieval,EDD, Hold, Recall, Borrow Direct
+    public static final String REQUEST_TYPE_RETRIEVAL="Retrieval";
+    public static final String REQUEST_TYPE_EDD="EDD";
+    public static final String REQUEST_TYPE_HOLD="Hold";
+    public static final String REQUEST_TYPE_RECALL="Recall";
+    public static final String REQUEST_TYPE_BORROW_DIRECT="Borrow Direct";
+
+    // MQ URI
+    public static final String REQUEST_ITEM_QUEUE = "scsbactivemq:queue:RequestItemQ";
+
+    public static final String PUL_REQUEST_TOPIC = "scsbactivemq:topic:PUL.RequestT";
+    public static final String PUL_EDD_TOPIC = "scsbactivemq:topic:PUL.EDDT";
+    public static final String PUL_HOLD_TOPIC = "scsbactivemq:topic:PUL.HoldT";
+    public static final String PUL_RECALL_TOPIC = "scsbactivemq:topic:PUL.RecallT";
+    public static final String PUL_BORROW_DIRECT_TOPIC = "scsbactivemq:topic:PUL.BorrowDirectT";
+
+    // Queue Header
+    public static final String REQUEST_TYPE_QUEUE_HEADER = "RequestType";
+
+    //RoutId
+    public static final String REQUEST_ITEM_QUEUE_ROUTEID = "RequestItemRouteId";
+
+    public static final String PUL_REQUEST_TOPIC_ROUTEID = "PULRequestTopicRouteId";
+    public static final String PUL_EDD_TOPIC_ROUTEID = "PULEDDTopicRouteId";
+    public static final String PUL_HOLD_TOPIC_ROUTEID = "PULHoldTopicRouteId";
+    public static final String PUL_RECALL_TOPIC_ROUTEID = "PULRecallTopicRouteId";
+    public static final String PUL_BORROW_DIRECT_TOPIC_ROUTEID = "PULBorrowDirectTopicRouteId";
+
 }

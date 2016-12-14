@@ -1,10 +1,8 @@
 package org.recap.ils;
 
-import com.pkrete.jsip2.messages.responses.SIP2CheckinResponse;
-import com.pkrete.jsip2.messages.responses.SIP2CheckoutResponse;
-import com.pkrete.jsip2.messages.responses.SIP2HoldResponse;
-import com.pkrete.jsip2.messages.responses.SIP2ItemInformationResponse;
+import com.pkrete.jsip2.messages.responses.*;
 import org.recap.ils.jsipmessages.SIP2CreateBibResponse;
+import org.recap.ils.jsipmessages.SIP2RecallResponse;
 
 /**
  * Created by sudhishk on 11/11/16.
@@ -16,11 +14,14 @@ public interface IJSIPConnector {
     public abstract String getOperatorPassword();
     public abstract String getOperatorLocation();
 
-    public SIP2ItemInformationResponse  lookupItem  (String itemIdentifier, String institutionId, String patronIdentifier);
-    public SIP2CheckoutResponse         checkOutItem(String itemIdentifier, String institutionId, String patronIdentifier);
-    public SIP2CheckinResponse          checkInItem (String itemIdentifier, String institutionId, String patronIdentifier);
-    public SIP2HoldResponse             placeHold   (String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation);
-    public SIP2HoldResponse             cancelHold  (String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation);
-    public SIP2CreateBibResponse        createBib   (String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier, String bibId);
+    public Object lookupItem(String itemIdentifier);
+    public Object checkOutItem(String itemIdentifier, String patronIdentifier);
+    public Object checkInItem(String itemIdentifier, String patronIdentifier);
+    public Object placeHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation);
+    public Object cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation);
+    public Object createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier);
+    public boolean                      patronValidation(String institutionId, String patronIdentifier);
+    public Object lookupPatron(String patronIdentifier);
+    public Object recallItem(String  itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String pickupLocation, String bibId);
 
 }
