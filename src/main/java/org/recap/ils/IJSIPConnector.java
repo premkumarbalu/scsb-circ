@@ -1,9 +1,5 @@
 package org.recap.ils;
 
-import com.pkrete.jsip2.messages.responses.*;
-import org.recap.ils.jsipmessages.SIP2CreateBibResponse;
-import org.recap.ils.jsipmessages.SIP2RecallResponse;
-
 /**
  * Created by sudhishk on 11/11/16.
  */
@@ -20,8 +16,8 @@ public interface IJSIPConnector {
     public Object placeHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation);
     public Object cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation);
     public Object createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier);
-    public boolean                      patronValidation(String institutionId, String patronIdentifier);
+    public boolean patronValidation(String institutionId, String patronIdentifier);
     public Object lookupPatron(String patronIdentifier);
-    public Object recallItem(String  itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String pickupLocation, String bibId);
+    public Object recallItem(String  itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId,String pickupLocation);
 
 }

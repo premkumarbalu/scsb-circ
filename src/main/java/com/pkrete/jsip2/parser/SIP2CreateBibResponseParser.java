@@ -3,7 +3,7 @@ package com.pkrete.jsip2.parser;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.messages.SIP2MessageResponse;
-import org.recap.ils.jsipmessages.SIP2CreateBibResponse;
+import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
 
 /**
  * Created by sudhishk on 9/11/16.

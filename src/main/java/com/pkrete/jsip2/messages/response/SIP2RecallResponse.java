@@ -1,4 +1,4 @@
-package org.recap.ils.jsipmessages;
+package com.pkrete.jsip2.messages.response;
 
 import com.pkrete.jsip2.messages.responses.SIP2CirculationTransactionResponse;
 import com.pkrete.jsip2.util.MessageUtil;

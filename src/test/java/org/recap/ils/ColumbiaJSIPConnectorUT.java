@@ -1,13 +1,11 @@
 package org.recap.ils;
 
-import com.pkrete.jsip2.messages.requests.SIP2LoginRequest;
-import com.pkrete.jsip2.messages.requests.SIP2PatronStatusRequest;
 import com.pkrete.jsip2.messages.responses.*;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Test;
 import org.recap.BaseTestCase;
-import org.recap.ils.jsipmessages.SIP2CreateBibResponse;
-import org.recap.ils.jsipmessages.SIP2RecallResponse;
+import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
+import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.Assert.assertNotNull;

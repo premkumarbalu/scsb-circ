@@ -27,7 +27,6 @@ package com.pkrete.jsip2.messages;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.parser.*;
-import org.recap.ils.jsipmessages.SIP2CreateBibResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
