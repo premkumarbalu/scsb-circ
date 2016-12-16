@@ -9,12 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -94,7 +94,7 @@ public class RequestParamaterValidatorService {
         }
 
         if(errorMessageMap.size()>0){
-            responseEntity = new ResponseEntity(buildErrorMessage(errorMessageMap),getHttpHeaders(), HttpStatus.OK);
+            return new ResponseEntity(buildErrorMessage(errorMessageMap),getHttpHeaders(), HttpStatus.BAD_REQUEST);
         }
 
         return responseEntity;
@@ -115,9 +115,8 @@ public class RequestParamaterValidatorService {
 
     private String customerCodeValidation(String deliveryLocation){
         String customerCodeStatus = "";
-        CustomerCodeEntity customerCodeEntity = new CustomerCodeEntity();
-        customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(deliveryLocation);
-        if(customerCodeEntity != null && !StringUtils.isEmpty(customerCodeEntity.getCustomerCode())){
+        CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(deliveryLocation);
+        if(!StringUtils.isEmpty(customerCodeEntity)){
             customerCodeStatus =  ReCAPConstants.VALID_CUSTOMER_CODE;
         }else{
             customerCodeStatus = ReCAPConstants.INVALID_CUSTOMER_CODE;

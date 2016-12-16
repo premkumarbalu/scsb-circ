@@ -1,45 +1,27 @@
 package org.recap.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 
 /**
  * Created by hemalathas on 1/11/16.
  */
-//@JsonIgnoreProperties({"itemBarcodes", "titleIdentifier", "patronBarcode","patronBarcode","emailAddress","requestingInstitution","requestingInstitution","requestType","deliveryLocation","requestNotes","startPage","endPage","chapterTitle"})
+
 public class ItemRequestInformation {
 
+    private String patronBarcode;
     private List<String> itemBarcodes;
+    private String requestType;
+    private String deliveryLocation;
+    private String requestingInstitution;
+    private String emailAddress;
+    private Integer startPage;
+    private Integer endPage;
+    private String chapterTitle;
     private String titleIdentifier;
-    private String itemOwningInstitution=""; // PUL, CUL, NYPL
-    private String patronBarcode="";
-    private String emailAddress="";
-    private String requestingInstitution=""; // PUL, CUL, NYPL
-    private String requestType=""; // Retrieval,EDD, Hold, Recall, Borrow Direct
-    private String deliveryLocation="";
-    private String requestNotes="";
-
-    /**
-     * EDD Request
-     */
-    private Integer startPage=0;
-    private Integer endPage=0;
-    private String chapterTitle="";
-    private String expirationDate;
     private String bibId;
-
-    public String getBibId() {
-        return bibId;
-    }
-
-    public void setBibId(String bibId) {
-        this.bibId = bibId;
-    }
+    private String expirationDate;
+    private String itemOwningInstitution;
 
     public String getExpirationDate() {
         return expirationDate;
@@ -49,20 +31,20 @@ public class ItemRequestInformation {
         this.expirationDate = expirationDate;
     }
 
+    public String getBibId() {
+        return bibId;
+    }
+
+    public void setBibId(String bibId) {
+        this.bibId = bibId;
+    }
+
     public String getTitleIdentifier() {
         return titleIdentifier;
     }
 
     public void setTitleIdentifier(String titleIdentifier) {
         this.titleIdentifier = titleIdentifier;
-    }
-
-    public String getRequestNotes() {
-        return requestNotes;
-    }
-
-    public void setRequestNotes(String requestNotes) {
-        this.requestNotes = requestNotes;
     }
 
     public String getPatronBarcode() {
@@ -137,21 +119,11 @@ public class ItemRequestInformation {
         this.chapterTitle = chapterTitle;
     }
 
-    public void setItemOwningInstitution(String itemOwningInstitution) {
-        this.itemOwningInstitution = itemOwningInstitution;
+    public String getItemOwningInstitution() {
+        return itemOwningInstitution;
     }
 
-    public String getItemOwningInstitution() {
-        return this.itemOwningInstitution;
-    }
-    @JsonIgnore
-    public boolean isOwningInstitutionItem(){
-        boolean bSuccess=false;
-        if (itemOwningInstitution.equalsIgnoreCase(requestingInstitution)){
-            bSuccess=true;
-        }else {
-            bSuccess=false;
-        }
-        return bSuccess;
+    public void setItemOwningInstitution(String itemOwningInstitution) {
+        this.itemOwningInstitution = itemOwningInstitution;
     }
 }

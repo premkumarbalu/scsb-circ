@@ -53,7 +53,7 @@ public class ItemValidatorService {
         if (CollectionUtils.isNotEmpty(itemRequestInformation.getItemBarcodes())) {
             itemBarcodes = itemRequestInformation.getItemBarcodes().toString();
         } else {
-            return new ResponseEntity(ReCAPConstants.ITEM_BARCODE_IS_REQUIRED, getHttpHeaders(), HttpStatus.OK);
+            return new ResponseEntity(ReCAPConstants.ITEM_BARCODE_IS_REQUIRED, getHttpHeaders(), HttpStatus.BAD_REQUEST);
         }
         itemEntityList = itemController.findByBarcodeIn(itemBarcodes);
         if (itemEntityList.size() != 0) {
@@ -63,29 +63,29 @@ public class ItemValidatorService {
                 // Item availability Status from SCSB Item table
                 availabilityStatus = getItemStatus(itemEntity.getItemAvailabilityStatusId());
                 if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.HOLD)) {
-                    return new ResponseEntity(ReCAPConstants.HOLD_REQUEST_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.OK);
+                    return new ResponseEntity(ReCAPConstants.HOLD_REQUEST_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                 } else if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.NOT_AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)) {
-                    return new ResponseEntity(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM, getHttpHeaders(), HttpStatus.OK);
+                    return new ResponseEntity(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                 }
-                bibliographicList = objectMapper.convertValue(itemEntity.getBibliographicEntities(), new TypeReference<List<BibliographicEntity>>() {});
+                bibliographicList = objectMapper.convertValue(itemEntity.getBibliographicEntities(), new TypeReference<List<BibliographicEntity>>() {
+                });
                 for (BibliographicEntity bibliographicEntityDetails : bibliographicList) {
                     bibliographicIds.add(bibliographicEntityDetails.getBibliographicId());
                 }
                 if (itemEntityList.size() == 1) {
                     return new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
                 } else {
-                    String status = multipleRequestItemValidation(itemEntityList, itemEntity.getCustomerCode(), itemEntity.getItemAvailabilityStatusId(), bibliographicIds);
-                    return new ResponseEntity(status, getHttpHeaders(), HttpStatus.OK);
+                    return multipleRequestItemValidation(itemEntityList, itemEntity.getCustomerCode(), itemEntity.getItemAvailabilityStatusId(), bibliographicIds);
                 }
             } else {
-                return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.OK);
+                return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
             }
         } else {
-            return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.OK);
+            return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    private List<String> splitStringAndGetList(String inputString){
+    private List<String> splitStringAndGetList(String inputString) {
         String[] splittedString = inputString.split(",");
         List<String> stringList = Arrays.asList(splittedString);
         return stringList;
@@ -97,46 +97,49 @@ public class ItemValidatorService {
         return responseHeaders;
     }
 
-    public String getItemStatus(Integer itemAvailabilityStatusId){
-        String status="";
+    public String getItemStatus(Integer itemAvailabilityStatusId) {
+        String status = "";
         ItemStatusEntity itemStatusEntity = new ItemStatusEntity();
         itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(itemAvailabilityStatusId);
-        if(itemStatusEntity != null){
+        if (itemStatusEntity != null) {
             status = itemStatusEntity.getStatusCode();
         }
         return status;
     }
 
-    public String multipleRequestItemValidation(List<ItemEntity> itemEntityList, String customerCode, Integer itemAvailabilityStatusId, List<Integer> bibliographicIds){
+    public ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, String customerCode, Integer itemAvailabilityStatusId, List<Integer> bibliographicIds) {
         String status = "";
         List<BibliographicEntity> bibliographicList = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
-        List<ItemEntity> itemEntities = objectMapper.convertValue(itemEntityList,new TypeReference<List<ItemEntity>>(){});
-        for(ItemEntity itemEntity :itemEntities){
-            if(itemEntity.getItemAvailabilityStatusId() == itemAvailabilityStatusId){
-                if(itemEntity.getCustomerCode().equalsIgnoreCase(customerCode)){
-                    if(itemEntity.getBibliographicEntities().size() == bibliographicIds.size()){
-                        bibliographicList = objectMapper.convertValue(itemEntity.getBibliographicEntities(),new TypeReference<List<BibliographicEntity>>(){});
-                        for(BibliographicEntity bibliographicEntity : bibliographicList){
+        List<ItemEntity> itemEntities = objectMapper.convertValue(itemEntityList, new TypeReference<List<ItemEntity>>() {
+        });
+        for (ItemEntity itemEntity : itemEntities) {
+            if (itemEntity.getItemAvailabilityStatusId() == itemAvailabilityStatusId) {
+                if (itemEntity.getCustomerCode().equalsIgnoreCase(customerCode)) {
+                    if (itemEntity.getBibliographicEntities().size() == bibliographicIds.size()) {
+                        bibliographicList = objectMapper.convertValue(itemEntity.getBibliographicEntities(), new TypeReference<List<BibliographicEntity>>() {
+                        });
+                        for (BibliographicEntity bibliographicEntity : bibliographicList) {
                             Integer bibliographicId = bibliographicEntity.getBibliographicId();
-                            if(!bibliographicIds.contains(bibliographicId)){
-                                return ReCAPConstants.ITEMBARCODE_WITH_DIFFERENT_BIB;
-                            }else{
+                            if (!bibliographicIds.contains(bibliographicId)) {
+                                return new ResponseEntity(ReCAPConstants.ITEMBARCODE_WITH_DIFFERENT_BIB, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                            } else {
                                 status = ReCAPConstants.VALID_REQUEST;
                             }
                         }
-                    }else{
-                        return ReCAPConstants.ITEMBARCODE_WITH_DIFFERENT_BIB;
+                    } else {
+                        return new ResponseEntity(ReCAPConstants.ITEMBARCODE_WITH_DIFFERENT_BIB, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                     }
-                }else{
-                    return ReCAPConstants.INVALID_CUSTOMER_CODE;
+                } else {
+                    return new ResponseEntity(ReCAPConstants.INVALID_CUSTOMER_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                 }
-            }else{
-                return ReCAPConstants.INVALID_ITEM_BARCODE;
+            } else {
+                return new ResponseEntity(ReCAPConstants.INVALID_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
             }
         }
-        return status;
+        return new ResponseEntity(status,getHttpHeaders(),HttpStatus.OK);
     }
-
 }
+
+
 

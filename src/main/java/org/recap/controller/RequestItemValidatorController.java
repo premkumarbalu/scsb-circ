@@ -38,7 +38,7 @@ public class RequestItemValidatorController{
             if(jsipConnectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).patronValidation(itemRequestInformation.getRequestingInstitution(),itemRequestInformation.getPatronBarcode())){
                 responseEntity = itemValidatorService.itemValidation(itemRequestInformation);
             }else{
-                responseEntity = new ResponseEntity(ReCAPConstants.INVALID_PATRON,requestParamaterValidatorService.getHttpHeaders(), HttpStatus.OK);
+                responseEntity = new ResponseEntity(ReCAPConstants.INVALID_PATRON,requestParamaterValidatorService.getHttpHeaders(), HttpStatus.BAD_REQUEST);
             }
         }
         return responseEntity;
