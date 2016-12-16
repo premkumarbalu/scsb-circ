@@ -9,6 +9,9 @@ import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.controller.RequestItemController;
 import org.recap.controller.RequestItemValidatorController;
+import org.recap.ils.model.AbstractResponseItem;
+import org.recap.ils.model.ItemCreateBibResponse;
+import org.recap.ils.model.ItemHoldResponse;
 import org.recap.model.*;
 import org.recap.mqconsumer.RequestItemQueueConsumer;
 import org.recap.repository.*;
@@ -202,7 +205,7 @@ public class ItemRequestService {
         String messagePublish="";
         boolean bsuccess=false;
         if (itemRequestInfo.isOwningInstitutionItem()) {
-            itemResponseInformation = requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
+            ItemHoldResponse itemHoldResponse = (ItemHoldResponse)requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
             if (itemResponseInformation.isSuccess()) { // If Hold command is successfully
                 itemResponseInformation =checkInstAfterPlacingRequest(itemRequestInfo,itemResponseInformation,itemEntities,requestTypeEntity);
             } else { // If Hold command Failure
@@ -210,9 +213,9 @@ public class ItemRequestService {
                 bsuccess = false;
             }
         } else {// Not the Owning Institute
-            ItemResponseInformation createItemResponse = requestItemController.createBibliogrphicItem(itemRequestInfo,itemRequestInfo.getItemOwningInstitution());
-            itemRequestInfo.setBibId(createItemResponse.getBibiid());
-            itemResponseInformation = requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
+            ItemCreateBibResponse createItemResponse = (ItemCreateBibResponse)requestItemController.createBibliogrphicItem(itemRequestInfo,itemRequestInfo.getItemOwningInstitution());
+            itemRequestInfo.setBibId(createItemResponse.getBibId());
+            ItemHoldResponse itemHoldResponse = (ItemHoldResponse)requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
 
             itemResponseInformation =checkInstAfterPlacingRequest(itemRequestInfo,itemResponseInformation,itemEntities,requestTypeEntity);
             bsuccess = true;
@@ -230,7 +233,7 @@ public class ItemRequestService {
             updateRecap(itemRequestInfo, itemEntities, requestTypeEntity);
             bsuccess = true;
         } else { // Item does not belong to requesting Institute
-            ItemResponseInformation checkoutItemResponse = requestItemController.checkoutItem(itemRequestInfo,itemRequestInfo.getRequestingInstitution());
+            AbstractResponseItem checkoutItemResponse = requestItemController.checkoutItem(itemRequestInfo,itemRequestInfo.getRequestingInstitution());
             if (checkoutItemResponse.isSuccess()) {
                 // Update Recap DB
                 updateRecap(itemRequestInfo, itemEntities, requestTypeEntity);

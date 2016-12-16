@@ -3,12 +3,10 @@ package org.recap.ils.model;
 /**
  * Created by sudhishk on 15/12/16.
  */
-public class ItemInformationResponse {
+public class ItemInformationResponse extends AbstractResponseItem{
 
-    private String itemBarcode;
     private String expirationDate;
-    private String screenMessage;
-    private boolean success;
+
     private String titleIdentifier;
     private String dueDate;
     private String circulationStatus;
@@ -27,36 +25,12 @@ public class ItemInformationResponse {
     private String LCCN;
     private String currencyType;
 
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
-    public String getItemBarcode() {
-        return itemBarcode;
-    }
-
-    public void setItemBarcode(String itemBarcode) {
-        this.itemBarcode = itemBarcode;
-    }
-
     public String getExpirationDate() {
         return expirationDate;
     }
 
     public void setExpirationDate(String expirationDate) {
         this.expirationDate = expirationDate;
-    }
-
-    public String getScreenMessage() {
-        return screenMessage;
-    }
-
-    public void setScreenMessage(String screenMessage) {
-        this.screenMessage = screenMessage;
     }
 
     public String getTitleIdentifier() {
