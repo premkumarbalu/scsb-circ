@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 import org.recap.BaseTestCase;
 import org.recap.ReCAPConstants;
+import org.recap.ils.model.AbstractResponseItem;
+import org.recap.ils.model.ItemCheckoutResponse;
 import org.recap.model.ItemRequestInformation;
 import org.recap.model.ItemResponseInformation;
 import org.slf4j.Logger;
@@ -50,7 +52,7 @@ public class RequestItemControllerUT extends BaseTestCase {
         itemRequestInformation.setPatronBarcode("198572368");
         itemRequestInformation.setRequestingInstitution("PUL");
 
-        ItemResponseInformation itemResponseInformation = requestItemController.checkoutItem(itemRequestInformation,"PUL");
+        ItemCheckoutResponse itemResponseInformation = (ItemCheckoutResponse) requestItemController.checkoutItem(itemRequestInformation,"PUL");
         assertNotNull(itemResponseInformation);
         logger.info(itemResponseInformation.getTitleIdentifier());
         logger.info(itemResponseInformation.getScreenMessage());
