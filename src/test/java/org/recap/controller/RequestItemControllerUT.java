@@ -50,7 +50,7 @@ public class RequestItemControllerUT extends BaseTestCase {
         itemRequestInformation.setPatronBarcode("198572368");
         itemRequestInformation.setRequestingInstitution("PUL");
 
-        ItemResponseInformation itemResponseInformation = requestItemController.checkoutItem(itemRequestInformation);
+        ItemResponseInformation itemResponseInformation = requestItemController.checkoutItem(itemRequestInformation,"PUL");
         assertNotNull(itemResponseInformation);
         logger.info(itemResponseInformation.getTitleIdentifier());
         logger.info(itemResponseInformation.getScreenMessage());

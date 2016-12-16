@@ -83,7 +83,7 @@ public class ItemEntity implements Serializable {
     @JoinColumn(name = "OWNING_INST_ID", insertable = false, updatable = false)
     private InstitutionEntity institutionEntity;
 
-    @ManyToMany(mappedBy = "itemEntities")
+    @ManyToMany(mappedBy = "itemEntities",fetch = FetchType.EAGER)
     private List<BibliographicEntity> bibliographicEntities;
 
     public ItemEntity() {

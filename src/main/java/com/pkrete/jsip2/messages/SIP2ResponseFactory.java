@@ -27,7 +27,6 @@ package com.pkrete.jsip2.messages;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.parser.*;
-import org.recap.ils.jsipmessages.SIP2CreateBibResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,6 +132,9 @@ public class SIP2ResponseFactory {
             return parser.parse(data);
         } else if (code.equals("82")) {
             parser = new SIP2CreateBibResponseParser();
+            return parser.parse(data);
+        } else if (code.equals("87")) {
+            parser = new SIP2RecallResponseParser();
             return parser.parse(data);
         }
         throw new InvalidSIP2ResponseException("Unsupported response type! Command identifier: " + code);

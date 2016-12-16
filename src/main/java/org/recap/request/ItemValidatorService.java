@@ -30,12 +30,16 @@ public class ItemValidatorService {
 
     @Value("${server.protocol}")
     String serverProtocol;
+
     @Value("${scsb.solr.client.url}")
     String scsbSolrClientUrl;
+
     @Autowired
     ItemStatusDetailsRepository itemStatusDetailsRepository;
+
     @Autowired
     ItemDetailsRepository itemDetailsRepository;
+
     @Autowired
     ItemController itemController;
 
@@ -56,6 +60,7 @@ public class ItemValidatorService {
             if (splitStringAndGetList(itemBarcodes).size() == itemEntityList.size()) {
                 ObjectMapper objectMapper = new ObjectMapper();
                 ItemEntity itemEntity = objectMapper.convertValue(itemEntityList.get(0), ItemEntity.class);
+                // Item availability Status from SCSB Item table
                 availabilityStatus = getItemStatus(itemEntity.getItemAvailabilityStatusId());
                 if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.HOLD)) {
                     return new ResponseEntity(ReCAPConstants.HOLD_REQUEST_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);

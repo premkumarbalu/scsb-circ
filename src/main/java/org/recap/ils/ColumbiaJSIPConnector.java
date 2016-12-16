@@ -19,8 +19,8 @@ public class ColumbiaJSIPConnector extends JSIPConnector {
     @Value("${ils.columbia.operator.password}")
     private String operatorPassword;
 
-//    @Value("${ils.columbia.operator.location}")
-    private String operatorLocation="CIRCrecap";
+    @Value("${ils.columbia.operator.location}")
+    private String operatorLocation;
 
     private static SIP2SocketConnection thread;
 
