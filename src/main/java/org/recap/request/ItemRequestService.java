@@ -12,6 +12,7 @@ import org.recap.controller.RequestItemValidatorController;
 import org.recap.ils.model.AbstractResponseItem;
 import org.recap.ils.model.ItemCreateBibResponse;
 import org.recap.ils.model.ItemHoldResponse;
+import org.recap.ils.model.ItemRecallResponse;
 import org.recap.model.*;
 import org.recap.mqconsumer.RequestItemQueueConsumer;
 import org.recap.repository.*;
@@ -87,7 +88,8 @@ public class ItemRequestService {
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_HOLD)) {
 
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
-
+                        ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
+                        itemResponseInformation = checkOwningInstitution(itemRequestInfo,itemResponseInformation,itemEntities,requestTypeEntity);
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT)) {
                     }

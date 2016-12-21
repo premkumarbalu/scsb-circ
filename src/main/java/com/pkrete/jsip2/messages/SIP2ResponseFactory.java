@@ -133,7 +133,7 @@ public class SIP2ResponseFactory {
         } else if (code.equals("82")) {
             parser = new SIP2CreateBibResponseParser();
             return parser.parse(data);
-        } else if (code.equals("87")) {
+        } else if (code.equals("88")) {
             parser = new SIP2RecallResponseParser();
             return parser.parse(data);
         }

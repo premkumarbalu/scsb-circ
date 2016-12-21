@@ -15,9 +15,11 @@ public class SIP2CreateBibResponseParser extends  SIP2ResponseParser{
         SIP2CreateBibResponse response = new SIP2CreateBibResponse(data);
         try {
             response.setOk(this.intToBool(data.charAt(2)));
-            response.setBibId(parseVariable("MA", data.substring(8,15), false));
+            response.setItemIdentifier(data.substring(5,12));
+            response.setBibId(data.substring(16,23));
+
             String msg= data.substring(data.indexOf("|"));
-            response.setScreenMessage(parseVariableMulti("AF", data.substring(18,40)));
+            response.setScreenMessage(parseVariableMulti("AF", data.substring(26)));
             if (!parseSequence(data).isEmpty()) {
                 response.setSequence(Integer.parseInt(parseSequence(data)));
             }

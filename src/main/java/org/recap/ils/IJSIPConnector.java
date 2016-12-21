@@ -1,5 +1,7 @@
 package org.recap.ils;
 
+import org.recap.ils.model.AbstractResponseItem;
+
 /**
  * Created by sudhishk on 11/11/16.
  */
@@ -10,7 +12,7 @@ public interface IJSIPConnector {
     public abstract String getOperatorPassword();
     public abstract String getOperatorLocation();
 
-    public Object lookupItem(String itemIdentifier);
+    public AbstractResponseItem lookupItem(String itemIdentifier);
     public Object checkOutItem(String itemIdentifier, String patronIdentifier);
     public Object checkInItem(String itemIdentifier, String patronIdentifier);
     public Object placeHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation);
