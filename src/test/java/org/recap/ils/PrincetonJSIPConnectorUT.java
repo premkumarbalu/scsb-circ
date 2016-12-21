@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.recap.BaseTestCase;
 import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
 import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
+import org.recap.ils.model.ItemInformationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,15 +40,15 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
     @Test
     public void lookupItem() throws Exception {
         String[] itemIdentifier = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414"};
-        SIP2ItemInformationResponse itemInformationResponse = princetonESIPConnector.lookupItem(itemIdentifier[4]);
+        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)princetonESIPConnector.lookupItem(itemIdentifier[4]);
 
-        logger.info("Circulation Status     :" + itemInformationResponse.getCirculationStatus().name());
+        logger.info("Circulation Status     :" + itemInformationResponse.getCirculationStatus());
         logger.info("SecurityMarker         :" + itemInformationResponse.getSecurityMarker());
         logger.info("Fee Type               :" + itemInformationResponse.getFeeType());
         logger.info("Transaction Date       :" + itemInformationResponse.getTransactionDate());
         logger.info("Hold Queue Length (CF) :" + itemInformationResponse.getHoldQueueLength());
 
-        assertEquals(itemIdentifier[4], itemInformationResponse.getItemIdentifier());
+        assertEquals(itemIdentifier[4], itemInformationResponse.getItemBarcode());
     }
 
     @Test

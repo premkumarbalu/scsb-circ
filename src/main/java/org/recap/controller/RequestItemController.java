@@ -9,6 +9,8 @@ import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
 import org.recap.ils.model.*;
 import org.recap.model.ItemRequestInformation;
 import org.recap.model.ItemResponseInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +26,7 @@ import org.recap.ils.JSIPConnectorFactory;
 @RequestMapping("/requestItem")
 public class RequestItemController {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     @Autowired
     JSIPConnectorFactory jsipConectorFactory;
 
@@ -92,6 +95,9 @@ public class RequestItemController {
     @RequestMapping(value = "/holdItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem holdItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
+        try {
+
+
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
@@ -116,7 +122,10 @@ public class RequestItemController {
         itemHoldResponse.setLCCN(sip2SIP2HoldResponse.getLccn());
         itemHoldResponse.setISBN(sip2SIP2HoldResponse.getIsbn());
         itemHoldResponse.setAvailable(sip2SIP2HoldResponse.isAvailable());
-
+        }catch (Exception e){
+            logger.info("Exception",e);
+            itemHoldResponse.setScreenMessage("ILS returned a invalid response");
+        }
 
         return itemHoldResponse;
     }
@@ -124,10 +133,14 @@ public class RequestItemController {
     @RequestMapping(value = "/cancelHoldItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem cancelHoldItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemHoldResponse itemHoldCancelResponse = new ItemHoldResponse();
+        String itembarcode ="";
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
-        String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
+
+        if(itemRequestInformation.getItemBarcodes().size()>0) {
+             itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
+        }
         SIP2HoldResponse sip2SIP2HoldResponse = (SIP2HoldResponse) jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).cancelHold(itembarcode, itemRequestInformation.getPatronBarcode(),
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
@@ -179,28 +192,7 @@ public class RequestItemController {
         }
         String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
 
-        SIP2ItemInformationResponse sip2ItemInformationResponse = (SIP2ItemInformationResponse) jsipConectorFactory.getJSIPConnector(callInstitition).lookupItem(itembarcode);
-
-        itemInformationResponse.setItemBarcode(sip2ItemInformationResponse.getItemIdentifier());
-        itemInformationResponse.setScreenMessage(sip2ItemInformationResponse.getScreenMessage().get(0));
-        itemInformationResponse.setSuccess(sip2ItemInformationResponse.isOk());
-        itemInformationResponse.setTitleIdentifier(sip2ItemInformationResponse.getTitleIdentifier());
-
-        itemInformationResponse.setDueDate(sip2ItemInformationResponse.getDueDate());
-        itemInformationResponse.setRecallDate(sip2ItemInformationResponse.getRecallDate());
-        itemInformationResponse.setHoldPickupDate(sip2ItemInformationResponse.getHoldPickupDate());
-        itemInformationResponse.setTransactionDate(sip2ItemInformationResponse.getTransactionDate());
-        itemInformationResponse.setExpirationDate(sip2ItemInformationResponse.getExpirationDate());
-
-        itemInformationResponse.setCirculationStatus(sip2ItemInformationResponse.getCirculationStatus().name());
-        itemInformationResponse.setCurrentLocation(sip2ItemInformationResponse.getCurrentLocation());
-        itemInformationResponse.setPermanentLocation(sip2ItemInformationResponse.getPermanentLocation());
-        itemInformationResponse.setFeeType(sip2ItemInformationResponse.getFeeType().name());
-        itemInformationResponse.setHoldQueueLength(sip2ItemInformationResponse.getHoldQueueLength());
-        itemInformationResponse.setOwner(sip2ItemInformationResponse.getOwner());
-        itemInformationResponse.setSecurityMarker(sip2ItemInformationResponse.getSecurityMarker().name());
-        itemInformationResponse.setCurrencyType((sip2ItemInformationResponse.getCurrencyType() != null) ? sip2ItemInformationResponse.getCurrencyType().name() : "");
-
+        itemInformationResponse = (ItemInformationResponse)jsipConectorFactory.getJSIPConnector(callInstitition).lookupItem(itembarcode);
         return itemInformationResponse;
     }
 
