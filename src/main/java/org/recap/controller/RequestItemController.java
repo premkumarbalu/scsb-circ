@@ -41,7 +41,7 @@ public class RequestItemController {
         SIP2CheckoutResponse sip2CheckoutResponse = (SIP2CheckoutResponse) jsipConectorFactory.getJSIPConnector(callInstitition).checkOutItem(itembarcode, itemRequestInformation.getPatronBarcode());
 
         itemCheckoutResponse.setItemBarcode(sip2CheckoutResponse.getItemIdentifier());
-        itemCheckoutResponse.setScreenMessage(sip2CheckoutResponse.getScreenMessage().get(0));
+        itemCheckoutResponse.setScreenMessage((sip2CheckoutResponse.getScreenMessage().size() >0)? sip2CheckoutResponse.getScreenMessage().get(0):"");
         itemCheckoutResponse.setSuccess(sip2CheckoutResponse.isOk());
         itemCheckoutResponse.setTitleIdentifier(sip2CheckoutResponse.getTitleIdentifier());
         itemCheckoutResponse.setDesensitize(sip2CheckoutResponse.isDesensitizeSupported());
@@ -67,7 +67,7 @@ public class RequestItemController {
         String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
         SIP2CheckinResponse sip2CheckinResponse = (SIP2CheckinResponse) jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).checkInItem(itembarcode, itemRequestInformation.getPatronBarcode());
         itemCheckinResponse.setItemBarcode(sip2CheckinResponse.getItemIdentifier());
-        itemCheckinResponse.setScreenMessage(sip2CheckinResponse.getScreenMessage().get(0));
+        itemCheckinResponse.setScreenMessage((sip2CheckinResponse.getScreenMessage().size() >0)? sip2CheckinResponse.getScreenMessage().get(0):"");
         itemCheckinResponse.setSuccess(sip2CheckinResponse.isOk());
         itemCheckinResponse.setTitleIdentifier(sip2CheckinResponse.getTitleIdentifier());
         itemCheckinResponse.setDueDate(sip2CheckinResponse.getDueDate());
@@ -109,7 +109,7 @@ public class RequestItemController {
                 itemRequestInformation.getDeliveryLocation());
 
         itemHoldResponse.setItemBarcode(sip2SIP2HoldResponse.getItemIdentifier());
-        itemHoldResponse.setScreenMessage(sip2SIP2HoldResponse.getScreenMessage().get(0));
+        itemHoldResponse.setScreenMessage((sip2SIP2HoldResponse.getScreenMessage().size() >0)? sip2SIP2HoldResponse.getScreenMessage().get(0):"");
         itemHoldResponse.setSuccess(sip2SIP2HoldResponse.isOk());
         itemHoldResponse.setTitleIdentifier(sip2SIP2HoldResponse.getTitleIdentifier());
         itemHoldResponse.setExpirationDate(sip2SIP2HoldResponse.getExpirationDate());
@@ -148,7 +148,7 @@ public class RequestItemController {
                 itemRequestInformation.getDeliveryLocation());
 
         itemHoldCancelResponse.setItemBarcode(sip2SIP2HoldResponse.getItemIdentifier());
-        itemHoldCancelResponse.setScreenMessage(sip2SIP2HoldResponse.getScreenMessage().get(0));
+        itemHoldCancelResponse.setScreenMessage((sip2SIP2HoldResponse.getScreenMessage().size() >0)? sip2SIP2HoldResponse.getScreenMessage().get(0):"");
         itemHoldCancelResponse.setSuccess(sip2SIP2HoldResponse.isOk());
         itemHoldCancelResponse.setTitleIdentifier(sip2SIP2HoldResponse.getTitleIdentifier());
         itemHoldCancelResponse.setTransactionDate(sip2SIP2HoldResponse.getTransactionDate());
@@ -175,7 +175,7 @@ public class RequestItemController {
         SIP2CreateBibResponse sip2CreateBibResponse = (SIP2CreateBibResponse) jsipConectorFactory.getJSIPConnector(callInstitition).createBib(itembarcode, itemRequestInformation.getPatronBarcode(), itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getTitleIdentifier());
 
         itemCreateBibResponse.setItemBarcode(sip2CreateBibResponse.getItemIdentifier());
-        itemCreateBibResponse.setScreenMessage(sip2CreateBibResponse.getScreenMessage().get(0));
+        itemCreateBibResponse.setScreenMessage((sip2CreateBibResponse.getScreenMessage().size() >0)? sip2CreateBibResponse.getScreenMessage().get(0):"");
         itemCreateBibResponse.setSuccess(sip2CreateBibResponse.isOk());
         itemCreateBibResponse.setBibId(sip2CreateBibResponse.getBibId());
         itemCreateBibResponse.setItemId(sip2CreateBibResponse.getItemIdentifier());
@@ -210,7 +210,7 @@ public class RequestItemController {
                 itemRequestInformation.getDeliveryLocation());
 
         itemRecallResponse.setItemBarcode(sip2SIP2HoldResponse.getItemIdentifier());
-        itemRecallResponse.setScreenMessage(sip2SIP2HoldResponse.getScreenMessage().get(0));
+        itemRecallResponse.setScreenMessage((sip2SIP2HoldResponse.getScreenMessage().size() >0)? sip2SIP2HoldResponse.getScreenMessage().get(0):"");
         itemRecallResponse.setSuccess(sip2SIP2HoldResponse.isOk());
         itemRecallResponse.setTitleIdentifier(sip2SIP2HoldResponse.getTitleIdentifier());
         itemRecallResponse.setTransactionDate(sip2SIP2HoldResponse.getDueDate());
