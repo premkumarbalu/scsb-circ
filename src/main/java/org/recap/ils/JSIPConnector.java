@@ -15,6 +15,9 @@ import org.recap.ils.model.ItemInformationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
 /**
  * Created by sudhishk on 9/11/16.
  */
@@ -103,11 +106,11 @@ public abstract class JSIPConnector implements IJSIPConnector {
             itemInformationResponse.setSuccess(sip2ItemInformationResponse.isOk());
             itemInformationResponse.setTitleIdentifier(sip2ItemInformationResponse.getTitleIdentifier());
 
-            itemInformationResponse.setDueDate(sip2ItemInformationResponse.getDueDate());
-            itemInformationResponse.setRecallDate(sip2ItemInformationResponse.getRecallDate());
-            itemInformationResponse.setHoldPickupDate(sip2ItemInformationResponse.getHoldPickupDate());
-            itemInformationResponse.setTransactionDate(sip2ItemInformationResponse.getTransactionDate());
-            itemInformationResponse.setExpirationDate(sip2ItemInformationResponse.getExpirationDate());
+            itemInformationResponse.setDueDate(formatFromSipDate(sip2ItemInformationResponse.getDueDate()));
+            itemInformationResponse.setRecallDate(formatFromSipDate(sip2ItemInformationResponse.getRecallDate()));
+            itemInformationResponse.setHoldPickupDate(formatFromSipDate(sip2ItemInformationResponse.getHoldPickupDate()));
+            itemInformationResponse.setTransactionDate(formatFromSipDate(sip2ItemInformationResponse.getTransactionDate()));
+            itemInformationResponse.setExpirationDate(formatFromSipDate(sip2ItemInformationResponse.getExpirationDate()));
 
             itemInformationResponse.setCirculationStatus(sip2ItemInformationResponse.getCirculationStatus().name());
             itemInformationResponse.setCurrentLocation(sip2ItemInformationResponse.getCurrentLocation());
@@ -458,5 +461,19 @@ public abstract class JSIPConnector implements IJSIPConnector {
             connection.close();
         }
         return sip2RecallResponse;
+    }
+
+    private String formatFromSipDate(String sipDate){
+        SimpleDateFormat sipFormat = new SimpleDateFormat("yyyyMMdd    HHmmss");
+        SimpleDateFormat requiredFormat = new SimpleDateFormat("dd-MMM-YYYY HH:mm:ss");
+        String reformattedStr ="";
+        try {
+            if(sipDate != null && sipDate.trim().length()>0) {
+                reformattedStr = requiredFormat.format(sipFormat.parse(sipDate));
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return reformattedStr;
     }
 }
