@@ -29,6 +29,10 @@ public class ItemCheckinResponse extends AbstractResponseItem {
     private String alertType;
     private String holdPatronId;
     private String holdPatronName;
+    private String jobId;
+    private boolean processed;
+    private String updatedDate;
+    private String createdDate;
 
     public String getPermanentLocation() {
         return permanentLocation;
@@ -222,4 +226,35 @@ public class ItemCheckinResponse extends AbstractResponseItem {
         this.LCCN = LCCN;
     }
 
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
+    }
+
+    public boolean isProcessed() {
+        return processed;
+    }
+
+    public void setProcessed(boolean processed) {
+        this.processed = processed;
+    }
+
+    public String getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(String updatedDate) {
+        this.updatedDate = updatedDate;
+    }
+
+    public String getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(String createdDate) {
+        this.createdDate = createdDate;
+    }
 }

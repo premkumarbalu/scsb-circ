@@ -21,7 +21,10 @@ public class ItemCheckoutResponse extends AbstractResponseItem {
     private String bibId;
     private String ISBN;
     private String LCCN;
-
+    private String jobId;
+    private boolean processed;
+    private String updatedDate;
+    private String createdDate;
 
     public boolean getRenewal() {
         return renewal;
@@ -149,6 +152,38 @@ public class ItemCheckoutResponse extends AbstractResponseItem {
 
     public void setLCCN(String LCCN) {
         this.LCCN = LCCN;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
+    }
+
+    public boolean isProcessed() {
+        return processed;
+    }
+
+    public void setProcessed(boolean processed) {
+        this.processed = processed;
+    }
+
+    public String getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(String updatedDate) {
+        this.updatedDate = updatedDate;
+    }
+
+    public String getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(String createdDate) {
+        this.createdDate = createdDate;
     }
 
 }

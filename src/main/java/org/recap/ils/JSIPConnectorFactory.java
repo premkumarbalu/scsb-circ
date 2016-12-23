@@ -9,17 +9,24 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class JSIPConnectorFactory {
+
     @Autowired
     private ColumbiaJSIPConnector columbiaJSIPConnector;
+
     @Autowired
     private PrincetonJSIPConnector princetonJSIPConnector;
-    public IJSIPConnector getJSIPConnector(String institutionId){
+
+    @Autowired
+    private NyplApiConnector nyplAPIConnector;
+
+    public IJSIPConnector getJSIPConnector(String institutionId) {
         IJSIPConnector ijsipConnector = null;
-        if(institutionId.equalsIgnoreCase(ReCAPConstants.PRINCETON)){
-            ijsipConnector =princetonJSIPConnector;
-        }else if(institutionId.equalsIgnoreCase(ReCAPConstants.COLUMBIA)){
-            ijsipConnector =columbiaJSIPConnector;
-        }if(institutionId.equalsIgnoreCase(ReCAPConstants.NYPL)){
+        if (institutionId.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
+            ijsipConnector = princetonJSIPConnector;
+        } else if (institutionId.equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
+            ijsipConnector = columbiaJSIPConnector;
+        } else if (institutionId.equalsIgnoreCase(ReCAPConstants.NYPL)) {
+            ijsipConnector = nyplAPIConnector;
         }
         return ijsipConnector;
     }

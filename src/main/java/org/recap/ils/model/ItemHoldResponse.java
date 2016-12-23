@@ -16,6 +16,9 @@ public class ItemHoldResponse extends AbstractResponseItem {
     private String bibId;
     private String ISBN;
     private String LCCN;
+    private String trackingId;
+    private String updatedDate;
+    private String createdDate;
 
 
     public boolean getAvailable() {
@@ -106,4 +109,27 @@ public class ItemHoldResponse extends AbstractResponseItem {
         this.LCCN = LCCN;
     }
 
+    public String getTrackingId() {
+        return trackingId;
+    }
+
+    public void setTrackingId(String trackingId) {
+        this.trackingId = trackingId;
+    }
+
+    public String getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(String updatedDate) {
+        this.updatedDate = updatedDate;
+    }
+
+    public String getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(String createdDate) {
+        this.createdDate = createdDate;
+    }
 }
