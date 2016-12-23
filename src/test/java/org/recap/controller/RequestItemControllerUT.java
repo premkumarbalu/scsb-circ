@@ -6,8 +6,7 @@ import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 import org.recap.BaseTestCase;
 import org.recap.ReCAPConstants;
-import org.recap.ils.model.AbstractResponseItem;
-import org.recap.ils.model.ItemCheckoutResponse;
+import org.recap.ils.model.*;
 import org.recap.model.ItemRequestInformation;
 import org.recap.model.ItemResponseInformation;
 import org.slf4j.Logger;
@@ -75,5 +74,71 @@ public class RequestItemControllerUT extends BaseTestCase {
         logger.info(itemResponseInformation.getScreenMessage());
 
 
+    }
+
+    @Test
+    public void testLookupItem() {
+        ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
+        itemRequestInformation.setItemBarcodes(Arrays.asList("2322222222"));
+        itemRequestInformation.setSource("nypl-sierra");
+        itemRequestInformation.setRequestingInstitution("NYPL");
+
+        ItemInformationResponse itemInformationResponse = (ItemInformationResponse) requestItemController.itemInformation(itemRequestInformation, "NYPL");
+        assertNotNull(itemInformationResponse);
+        assertTrue(itemInformationResponse.isSuccess());
+    }
+
+    @Test
+    public void testCheckoutItem() {
+        ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
+        itemRequestInformation.setItemBarcodes(Arrays.asList("33433001888415"));
+        itemRequestInformation.setPatronBarcode("23333095887111");
+
+        ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse) requestItemController.checkoutItem(itemRequestInformation, "NYPL");
+        assertNotNull(itemCheckoutResponse);
+    }
+
+    @Test
+    public void testCheckinItem() {
+        ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
+        itemRequestInformation.setItemBarcodes(Arrays.asList("33433001888415"));
+
+        ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse) requestItemController.checkinItem(itemRequestInformation, "NYPL");
+        assertNotNull(itemCheckinResponse);
+    }
+
+    @Test
+    public void testPlaceHold() {
+        ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
+        itemRequestInformation.setItemBarcodes(Arrays.asList("33433001888415"));
+        itemRequestInformation.setPatronBarcode("23333095887111");
+        itemRequestInformation.setRequestingInstitution("NYPL");
+        itemRequestInformation.setExpirationDate("");
+        itemRequestInformation.setRequestingInstitution("NYPL");
+        itemRequestInformation.setBibId("");
+        itemRequestInformation.setDeliveryLocation("");
+        itemRequestInformation.setTrackingId("");
+        itemRequestInformation.setTitle("");
+        itemRequestInformation.setAuthor("");
+        itemRequestInformation.setCallNumber("");
+
+        ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInformation, "NYPL");
+        assertNotNull(itemHoldResponse);
+    }
+
+    @Test
+    public void testCancelHold() {
+        ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
+        itemRequestInformation.setItemBarcodes(Arrays.asList("33433001888415"));
+        itemRequestInformation.setPatronBarcode("23333095887111");
+        itemRequestInformation.setRequestingInstitution("NYPL");
+        itemRequestInformation.setExpirationDate("");
+        itemRequestInformation.setRequestingInstitution("NYPL");
+        itemRequestInformation.setBibId("");
+        itemRequestInformation.setDeliveryLocation("");
+        itemRequestInformation.setTrackingId("");
+
+        ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.cancelHoldItem(itemRequestInformation, "NYPL");
+        assertNotNull(itemHoldResponse);
     }
 }

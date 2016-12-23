@@ -6,6 +6,9 @@ import org.junit.Test;
 import org.recap.BaseTestCase;
 import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
 import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
+import org.recap.ils.model.ItemCheckinResponse;
+import org.recap.ils.model.ItemCheckoutResponse;
+import org.recap.ils.model.ItemHoldResponse;
 import org.recap.ils.model.ItemInformationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +43,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
     @Test
     public void lookupItem() throws Exception {
         String[] itemIdentifier = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414"};
-        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)princetonESIPConnector.lookupItem(itemIdentifier[4]);
+        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)princetonESIPConnector.lookupItem(itemIdentifier[4], null);
 
         logger.info("Circulation Status     :" + itemInformationResponse.getCirculationStatus());
         logger.info("SecurityMarker         :" + itemInformationResponse.getSecurityMarker());
@@ -71,16 +74,16 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void checkout() throws Exception {
-        SIP2CheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
+        ItemCheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
         assertNotNull(checkOutResponse);
-        assertTrue(checkOutResponse.isOk());
+        assertTrue(checkOutResponse.isSuccess());
     }
 
     @Test
     public void checkIn() throws Exception {
-        SIP2CheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
+        ItemCheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
         assertNotNull(checkInResponse);
-        assertTrue(checkInResponse.isOk());
+        assertTrue(checkInResponse.isSuccess());
     }
 
     @Test
@@ -88,21 +91,21 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "32101077423406";
         String patronIdentifier = "198572368";
         String institutionId = "htccul";
-        SIP2CheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
+        ItemCheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
         assertNotNull(checkOutResponse);
-        assertTrue(checkOutResponse.isOk());
-        SIP2CheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
+        assertTrue(checkOutResponse.isSuccess());
+        ItemCheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
         assertNotNull(checkInResponse);
-        assertTrue(checkInResponse.isOk());
+        assertTrue(checkInResponse.isSuccess());
     }
 
     @Test
     public void cancelHold() throws Exception {
-        SIP2HoldResponse holdResponse = princetonESIPConnector.cancelHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
+        ItemHoldResponse holdResponse = princetonESIPConnector.cancelHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation, null);
 
         try {
             assertNotNull(holdResponse);
-            assertTrue(holdResponse.isOk());
+            assertTrue(holdResponse.isSuccess());
         } catch (AssertionError e) {
             logger.error("Cancel Hold Error - > ", e);
         }
@@ -111,11 +114,11 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void placeHold() throws Exception {
-        SIP2HoldResponse holdResponse = princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
+        ItemHoldResponse holdResponse = princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation, null, null, null, null);
 
         try {
             assertNotNull(holdResponse);
-            assertTrue(holdResponse.isOk());
+            assertTrue(holdResponse.isSuccess());
         } catch (AssertionError e) {
             logger.error("Hold Error - > ", e);
         }
@@ -131,13 +134,13 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         String expirationDate = MessageUtil.getSipDateTime(); // Date Format YYYYMMDDZZZZHHMMSS
         String bibId = "100001";
         String pickupLocation = "htcsc";
-        SIP2HoldResponse holdResponse;
+        ItemHoldResponse holdResponse;
 
-        holdResponse = princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
-        holdResponse = princetonESIPConnector.cancelHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
+        holdResponse = princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation, null, null, null, null);
+        holdResponse = princetonESIPConnector.cancelHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation, null);
 
         assertNotNull(holdResponse);
-        assertTrue(holdResponse.isOk());
+        assertTrue(holdResponse.isSuccess());
     }
 
     @Test

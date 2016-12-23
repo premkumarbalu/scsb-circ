@@ -23,6 +23,11 @@ public class ItemRequestInformation {
     private String requestType=""; // Retrieval,EDD, Hold, Recall, Borrow Direct
     private String deliveryLocation="";
     private String requestNotes="";
+    private String source; // NYPL - nyplSource
+    private String trackingId; // NYPL - trackingId
+    private String title; // NYPL - title
+    private String author; // NYPL - author
+    private String callNumber; // NYPL - callNumber
 
     /**
      * EDD Request
@@ -63,6 +68,46 @@ public class ItemRequestInformation {
 
     public void setRequestNotes(String requestNotes) {
         this.requestNotes = requestNotes;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getTrackingId() {
+        return trackingId;
+    }
+
+    public void setTrackingId(String trackingId) {
+        this.trackingId = trackingId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getCallNumber() {
+        return callNumber;
+    }
+
+    public void setCallNumber(String callNumber) {
+        this.callNumber = callNumber;
     }
 
     public String getPatronBarcode() {
