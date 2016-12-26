@@ -63,7 +63,7 @@ public class BibliographicEntity implements Serializable {
     @JoinColumn(name = "OWNING_INST_ID", insertable = false, updatable = false)
     private InstitutionEntity institutionEntity;
 
-    @ManyToMany(cascade = {CascadeType.ALL,CascadeType.PERSIST})
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "bibliographic_holdings_t", joinColumns = {
             @JoinColumn(name = "OWNING_INST_BIB_ID", referencedColumnName = "OWNING_INST_BIB_ID"),
             @JoinColumn(name = "BIB_INST_ID", referencedColumnName = "OWNING_INST_ID")},
