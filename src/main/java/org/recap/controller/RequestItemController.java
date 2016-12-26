@@ -1,6 +1,5 @@
 package org.recap.controller;
 
-import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
 import org.recap.ils.JSIPConnectorFactory;
 import org.recap.ils.model.*;
 import org.recap.model.ItemRequestInformation;

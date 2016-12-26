@@ -2,7 +2,8 @@ package org.recap.ils;
 
 import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
 import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
-import com.pkrete.jsip2.messages.responses.*;
+import com.pkrete.jsip2.messages.responses.SIP2ItemInformationResponse;
+import com.pkrete.jsip2.messages.responses.SIP2PatronStatusResponse;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Test;
 import org.recap.BaseTestCase;
