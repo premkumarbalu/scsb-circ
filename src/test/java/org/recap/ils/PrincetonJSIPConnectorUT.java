@@ -1,11 +1,13 @@
 package org.recap.ils;
 
+import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
+import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
 import com.pkrete.jsip2.messages.responses.*;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Test;
 import org.recap.BaseTestCase;
-import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
-import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
+import org.recap.ils.model.ItemCheckinResponse;
+import org.recap.ils.model.ItemCheckoutResponse;
 import org.recap.ils.model.ItemInformationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,16 +73,16 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void checkout() throws Exception {
-        SIP2CheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
-        assertNotNull(checkOutResponse);
-        assertTrue(checkOutResponse.isOk());
+        ItemCheckoutResponse itemCheckoutResponse =(ItemCheckoutResponse)princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
+        assertNotNull(itemCheckoutResponse);
+        assertTrue(itemCheckoutResponse.isSuccess());
     }
 
     @Test
     public void checkIn() throws Exception {
-        SIP2CheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
-        assertNotNull(checkInResponse);
-        assertTrue(checkInResponse.isOk());
+        ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse)princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
+        assertNotNull(itemCheckinResponse);
+        assertTrue(itemCheckinResponse.isSuccess());
     }
 
     @Test
@@ -88,12 +90,12 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "32101077423406";
         String patronIdentifier = "198572368";
         String institutionId = "htccul";
-        SIP2CheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
-        assertNotNull(checkOutResponse);
-        assertTrue(checkOutResponse.isOk());
-        SIP2CheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
-        assertNotNull(checkInResponse);
-        assertTrue(checkInResponse.isOk());
+        ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse)princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
+        assertNotNull(itemCheckoutResponse);
+        assertTrue(itemCheckoutResponse.isSuccess());
+        ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse)princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
+        assertNotNull(itemCheckinResponse);
+        assertTrue(itemCheckinResponse.isSuccess());
     }
 
     @Test

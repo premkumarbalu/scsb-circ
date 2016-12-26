@@ -3,20 +3,24 @@ package org.recap.ils;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.messages.SIP2MessageResponse;
-import com.pkrete.jsip2.messages.responses.*;
+import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
+import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
+import com.pkrete.jsip2.messages.responses.SIP2CheckinResponse;
+import com.pkrete.jsip2.messages.responses.SIP2CheckoutResponse;
+import com.pkrete.jsip2.messages.responses.SIP2HoldResponse;
+import com.pkrete.jsip2.messages.responses.SIP2PatronStatusResponse;
 import com.pkrete.jsip2.parser.SIP2CreateBibResponseParser;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Test;
 import org.recap.BaseTestCase;
-import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
-import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
+import org.recap.ils.model.ItemCheckinResponse;
+import org.recap.ils.model.ItemCheckoutResponse;
 import org.recap.ils.model.ItemInformationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -64,7 +68,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
     @Test
     public void lookupUser() throws Exception {
         String patronIdentifier = "RECAPTST01";
-        String institutionId = "htccul";
+        String institutionId = "CUL";
         SIP2PatronStatusResponse patronInformationResponse = columbiaJSIPConnector.lookupUser(institutionId, patronIdentifier);
         assertNotNull(patronInformationResponse);
 //        assertTrue(patronInformationResponse.isValid());
@@ -75,10 +79,10 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = this.itemIdentifier[4];
         String patronIdentifier = "RECAPPUL01";
         String institutionId = "";
-        SIP2CheckoutResponse checkOutResponse = columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
+        ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse)columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
         lookupItem();
-        assertNotNull(checkOutResponse);
-        assertTrue(checkOutResponse.isOk());
+        assertNotNull(itemCheckoutResponse);
+        assertTrue(itemCheckoutResponse.isSuccess());
     }
 
     @Test
@@ -86,10 +90,10 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = this.itemIdentifier[5];
         String patronIdentifier = "RECAPPUL01";
         String institutionId = "";
-        SIP2CheckinResponse checkInResponse = columbiaJSIPConnector.checkInItem(itemIdentifier,patronIdentifier);
+        ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse)columbiaJSIPConnector.checkInItem(itemIdentifier, patronIdentifier);
         lookupItem();
-        assertNotNull(checkInResponse);
-        assertTrue(checkInResponse.isOk());
+        assertNotNull(itemCheckinResponse);
+        assertTrue(itemCheckinResponse.isSuccess());
     }
 
     @Test
@@ -97,12 +101,13 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "";
         String patronIdentifier = "";
         String institutionId = "";
-        SIP2CheckoutResponse checkOutResponse = columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
-        assertNotNull(checkOutResponse);
-        assertTrue(checkOutResponse.isOk());
-        SIP2CheckinResponse checkInResponse = columbiaJSIPConnector.checkInItem(itemIdentifier,patronIdentifier);
-        assertNotNull(checkInResponse);
-        assertTrue(checkInResponse.isOk());
+        ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse)columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
+        assertNotNull(itemCheckoutResponse);
+        assertTrue(itemCheckoutResponse.isSuccess());
+        ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse)columbiaJSIPConnector.checkInItem(itemIdentifier, patronIdentifier);
+        lookupItem();
+        assertNotNull(itemCheckinResponse);
+        assertTrue(itemCheckinResponse.isSuccess());
     }
 
     @Test
