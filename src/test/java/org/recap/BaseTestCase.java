@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.recap.repository.BibliographicDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -14,6 +15,7 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
@@ -24,7 +26,8 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Rollback(false)
+@Transactional
+@Rollback()
 public class BaseTestCase {
 	protected MockMvc mockMvc;
 	protected HttpMessageConverter mappingJackson2HttpMessageConverter;
@@ -34,6 +37,9 @@ public class BaseTestCase {
 
 	@Autowired
 	private WebApplicationContext webApplicationContext;
+
+	@Autowired
+	public BibliographicDetailsRepository bibliographicDetailsRepository;
 
 	@Autowired
 	public void setConverters(HttpMessageConverter<?>[] converters) {
