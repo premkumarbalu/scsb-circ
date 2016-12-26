@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.recap.BaseTestCase;
 import org.recap.ils.model.ItemCheckinResponse;
 import org.recap.ils.model.ItemCheckoutResponse;
+import org.recap.ils.model.ItemHoldResponse;
 import org.recap.ils.model.ItemInformationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
     @Test
     public void lookupItem() throws Exception {
 
-        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)columbiaJSIPConnector.lookupItem(itemIdentifier[4]);
+        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)columbiaJSIPConnector.lookupItem(itemIdentifier[4],null);
         logger.info("");
         logger.info("Circulation Status     :" + itemInformationResponse.getCirculationStatus());
         logger.info("Security Marker        :" + itemInformationResponse.getSecurityMarker());
@@ -119,11 +120,11 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String bibId="12040033";
         String pickupLocation="CIRCrecap";
 
-        SIP2HoldResponse holdResponse = columbiaJSIPConnector.cancelHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation);
+        ItemHoldResponse holdResponse = (ItemHoldResponse) columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation, null, null, null, null);
         lookupItem();
 
         assertNotNull(holdResponse);
-        assertTrue(holdResponse.isOk());
+        assertTrue(holdResponse.isSuccess());
     }
 
     @Test
@@ -135,11 +136,11 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String bibId="12040033";
         String pickupLocation="CIRCrecap";
 
-        SIP2HoldResponse holdResponse = columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation);
+        ItemHoldResponse holdResponse = (ItemHoldResponse) columbiaJSIPConnector.cancelHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation, null);
         lookupItem();
 
         assertNotNull(holdResponse);
-        assertTrue(holdResponse.isOk());
+        assertTrue(holdResponse.isSuccess());
     }
 
     @Test
@@ -151,13 +152,13 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String expirationDate =MessageUtil.getSipDateTime(); // Date Format YYYYMMDDZZZZHHMMSS
         String bibId="100001";
         String pickupLocation="htcsc";
-        SIP2HoldResponse holdResponse;
+        ItemHoldResponse holdResponse;
 
-        holdResponse = columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation);
-        holdResponse = columbiaJSIPConnector.cancelHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation);
+        holdResponse = (ItemHoldResponse) columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation, null, null, null, null);
+        holdResponse = (ItemHoldResponse) columbiaJSIPConnector.cancelHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation, null);
 
         assertNotNull(holdResponse);
-        assertTrue(holdResponse.isOk());
+        assertTrue(holdResponse.isSuccess());
     }
 
     @Test

@@ -86,7 +86,11 @@ public class RequestItemController {
                     itemRequestInformation.getRequestingInstitution(),
                     itemRequestInformation.getExpirationDate(),
                     itemRequestInformation.getBibId(),
-                    itemRequestInformation.getDeliveryLocation());
+                    itemRequestInformation.getDeliveryLocation(),
+                    itemRequestInformation.getTrackingId(),
+                    itemRequestInformation.getTitle(),
+                    itemRequestInformation.getAuthor(),
+                    itemRequestInformation.getCallNumber());
         } catch (Exception e) {
             logger.info("Exception", e);
             itemHoldResponse.setSuccess(false);
@@ -110,7 +114,7 @@ public class RequestItemController {
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                itemRequestInformation.getDeliveryLocation());
+                itemRequestInformation.getDeliveryLocation(),itemRequestInformation.getTrackingId());
         return itemHoldCancelResponse;
     }
 
@@ -135,7 +139,7 @@ public class RequestItemController {
         }
         String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
 
-        itemInformationResponse = (ItemInformationResponse) jsipConectorFactory.getJSIPConnector(callInstitition).lookupItem(itembarcode);
+        itemInformationResponse = (ItemInformationResponse) jsipConectorFactory.getJSIPConnector(callInstitition).lookupItem(itembarcode,itemRequestInformation.getSource());
         return itemInformationResponse;
     }
 

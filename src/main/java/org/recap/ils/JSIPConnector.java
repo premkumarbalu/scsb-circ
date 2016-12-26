@@ -90,7 +90,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
     public abstract String getOperatorLocation();
 
-    public AbstractResponseItem lookupItem(String itemIdentifier) {
+    public AbstractResponseItem lookupItem(String itemIdentifier,String source) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2ItemInformationResponse sip2ItemInformationResponse = null;
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
@@ -296,11 +296,11 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return itemCheckinResponse;
     }
 
-    public AbstractResponseItem placeHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
+    public Object placeHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId, String title, String author, String callNumber) {
         return hold(HoldMode.ADD, itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
     }
 
-    public AbstractResponseItem cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
+    public Object cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId){
         return hold(HoldMode.DELETE, itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
     }
 
