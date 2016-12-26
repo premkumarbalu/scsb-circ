@@ -1,6 +1,7 @@
 package org.recap.ils;
 
 import com.pkrete.jsip2.connection.SIP2SocketConnection;
+import org.recap.ils.model.AbstractResponseItem;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -47,4 +48,5 @@ public class PrincetonJSIPConnector extends JSIPConnector {
     public String getOperatorLocation() {
         return operatorLocation;
     }
+
 }
