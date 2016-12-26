@@ -1,7 +1,5 @@
 package org.recap.ils.model;
 
-import org.recap.model.ItemRequestInformation;
-
 import java.util.List;
 
 /**

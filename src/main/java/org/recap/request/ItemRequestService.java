@@ -9,13 +9,13 @@ import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.controller.RequestItemController;
 import org.recap.controller.RequestItemValidatorController;
-import org.recap.ils.model.AbstractResponseItem;
-import org.recap.ils.model.ItemCreateBibResponse;
-import org.recap.ils.model.ItemHoldResponse;
-import org.recap.ils.model.ItemRecallResponse;
+import org.recap.ils.model.*;
 import org.recap.model.*;
 import org.recap.mqconsumer.RequestItemQueueConsumer;
-import org.recap.repository.*;
+import org.recap.repository.ItemDetailsRepository;
+import org.recap.repository.PatronDetailsRepository;
+import org.recap.repository.RequestItemDetailsRepository;
+import org.recap.repository.RequestTypeDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -54,7 +54,7 @@ public class ItemRequestService {
     @Autowired
     private RequestItemDetailsRepository requestItemDetailsRepository;
 
-    public ItemResponseInformation requestItem(ItemRequestInformation itemRequestInfo, Exchange exchange){
+    public ItemInformationResponse requestItem(ItemRequestInformation itemRequestInfo, Exchange exchange){
 
         String patronResponse = "";
         RestTemplate restTemplate = new RestTemplate();
@@ -64,7 +64,7 @@ public class ItemRequestService {
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
         RequestTypeEntity requestTypeEntity = new RequestTypeEntity();
-        ItemResponseInformation itemResponseInformation =null;
+        ItemInformationResponse itemResponseInformation =new ItemInformationResponse();
         try {
             itemEntities = itemDetailsRepository.findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
@@ -108,10 +108,10 @@ public class ItemRequestService {
             itemResponseInformation.setScreenMessage(messagePublish);
             itemResponseInformation.setSuccess(bsuccess);
             itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
-            itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
+//            itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
             itemResponseInformation.setTitleIdentifier(itemRequestInfo.getTitleIdentifier());
-            itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
-            itemResponseInformation.setBibiid(itemRequestInfo.getBibId());
+//            itemResponseInformation.setPatron(itemRequestInfo.getPatronBarcode());
+            itemResponseInformation.setBibID(itemRequestInfo.getBibId());
 
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), exchange, itemResponseInformation);
@@ -125,7 +125,7 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
-    private void sendMessageToTopic(String owningInstituteId,String requestType,Exchange exchange,ItemResponseInformation itemResponseInfo ){
+    private void sendMessageToTopic(String owningInstituteId,String requestType,Exchange exchange,ItemInformationResponse itemResponseInfo ){
         String selectTopic= ReCAPConstants.PUL_REQUEST_TOPIC;
         if(owningInstituteId.equalsIgnoreCase(ReCAPConstants.PRINCETON) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)){
             selectTopic = ReCAPConstants.PUL_REQUEST_TOPIC;
@@ -203,7 +203,7 @@ public class ItemRequestService {
 
     }
 
-    private ItemResponseInformation checkOwningInstitution(ItemRequestInformation itemRequestInfo,ItemResponseInformation itemResponseInformation,List<ItemEntity> itemEntities,RequestTypeEntity requestTypeEntity){
+    private ItemInformationResponse checkOwningInstitution(ItemRequestInformation itemRequestInfo,ItemInformationResponse itemResponseInformation,List<ItemEntity> itemEntities,RequestTypeEntity requestTypeEntity){
         String messagePublish="";
         boolean bsuccess=false;
         if (itemRequestInfo.isOwningInstitutionItem()) {
@@ -227,7 +227,7 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
-    private ItemResponseInformation checkInstAfterPlacingRequest(ItemRequestInformation itemRequestInfo,ItemResponseInformation itemResponseInformation,List<ItemEntity> itemEntities,RequestTypeEntity requestTypeEntity){
+    private ItemInformationResponse checkInstAfterPlacingRequest(ItemRequestInformation itemRequestInfo,ItemInformationResponse itemResponseInformation,List<ItemEntity> itemEntities,RequestTypeEntity requestTypeEntity){
         String messagePublish="";
         boolean bsuccess=false;
         if (itemRequestInfo.isOwningInstitutionItem()) {
