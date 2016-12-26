@@ -537,7 +537,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         assertNotNull(bibRecordList);
         DataField field912 = (DataField)bibRecordList.get(0).getVariableField("546");
         assertEquals("In Arabic.", field912.getSubfield('a').getData());
-        HoldingsEntity holdingsEntity = fetchedBibliographicEntityList.get(0).getHoldingsEntities().get(0);
+        HoldingsEntity holdingsEntity = fetchedBibliographicEntityList.get(0).getHoldingsEntities().get(1);
         String updatedHoldingMarcXML = new String(holdingsEntity.getContent(),StandardCharsets.UTF_8);
         List<Record> holdingRecordList = readMarcXml(updatedHoldingMarcXML);
         logger.info("updatedHoldingMarcXML-->"+updatedHoldingMarcXML);
