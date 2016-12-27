@@ -312,7 +312,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
             "<subfield code=\"j\">Not Charged</subfield>\n" +
             "<subfield code=\"p\">32101062128309</subfield>\n" +
             "<subfield code=\"t\">1</subfield>\n" +
-            "<subfield code=\"x\">Shared</subfield>\n" +
+            "<subfield code=\"x\">Open</subfield>\n" +
             "<subfield code=\"z\">PA</subfield>\n" +
             "</datafield>\n" +
             "</record>\n" +
@@ -496,7 +496,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
             "                           <subfield code=\"t\">1</subfield>\n" +
             "                        </datafield>\n" +
             "                        <datafield ind1=\" \" ind2=\" \" tag=\"900\">\n" +
-            "                           <subfield code=\"a\">Shared</subfield>\n" +
+            "                           <subfield code=\"a\">Open</subfield>\n" +
             "                           <subfield code=\"b\">NA</subfield>\n" +
             "                        </datafield>\n" +
             "                     </record>\n" +
@@ -510,7 +510,8 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
     @Test
     public void processForPUL() throws JAXBException {
         BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL);
-        submitCollectionService.process(updatedMarcForPUL);
+        List<Integer> processedBibIdList = new ArrayList<>();
+        submitCollectionService.process(updatedMarcForPUL,processedBibIdList);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
         String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
         List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);
@@ -524,13 +525,42 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         TestCase.assertNotNull(holdingRecordList);
         DataField field852 = (DataField)holdingRecordList.get(0).getVariableField("852");
         assertEquals("K25 .xN5", field852.getSubfield('h').getData());
+        String callNumber = fetchedBibliographicEntityList.get(0).getItemEntities().get(0).getCallNumber();
+        assertEquals("K25 .xN5",callNumber);
+        Integer collectionGroupId = fetchedBibliographicEntityList.get(0).getItemEntities().get(0).getCollectionGroupId();
+        assertEquals(new Integer(2),collectionGroupId);
+    }
+
+    @Test
+    public void processForPULRejectedRecord() throws JAXBException {
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",2,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL);
+        List<Integer> processedBibIdList = new ArrayList<>();
+        submitCollectionService.process(updatedMarcForPUL,processedBibIdList);
+        List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
+        String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
+        List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);
+        assertNotNull(bibRecordList);
+        DataField field912 = (DataField)bibRecordList.get(0).getVariableField("912");
+        assertEquals("19970731060735.0", field912.getSubfield('a').getData());
+        HoldingsEntity holdingsEntity = fetchedBibliographicEntityList.get(0).getHoldingsEntities().get(0);
+        String updatedHoldingMarcXML = new String(holdingsEntity.getContent(),StandardCharsets.UTF_8);
+        List<Record> holdingRecordList = readMarcXml(updatedHoldingMarcXML);
+        logger.info("updatedHoldingMarcXML-->"+updatedHoldingMarcXML);
+        TestCase.assertNotNull(holdingRecordList);
+        DataField field852 = (DataField)holdingRecordList.get(0).getVariableField("852");
+        assertEquals("K25 .xN5", field852.getSubfield('h').getData());
+        String callNumber = fetchedBibliographicEntityList.get(0).getItemEntities().get(0).getCallNumber();
+        assertEquals("K25 .xN5",callNumber);
+        Integer collectionGroupId = fetchedBibliographicEntityList.get(0).getItemEntities().get(0).getCollectionGroupId();
+        assertEquals(new Integer(1),collectionGroupId);
     }
 
     @Test
     public void processForNYPL(){
         BibliographicEntity savedBibliographicEntity = getBibliographicEntity(3,".b100000125","123",".i100000034",1,"33433014514719",bibMarcContentForNYPL1,holdingContentForNYPL1);
         String originalXML = new String(savedBibliographicEntity.getContent());
-        submitCollectionService.process(updatedContentForNYPL1);
+        List<Integer> processedBibIdList = new ArrayList<>();
+        submitCollectionService.process(updatedContentForNYPL1,processedBibIdList);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId(".b100000125");
         String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
         List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);

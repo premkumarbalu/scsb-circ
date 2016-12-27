@@ -90,7 +90,12 @@ public class ReCAPConstants {
 
     public static final String SUBMIT_COLLECTION_REPORT = "Submit_Collection_Report";
     public static final String SUBMIT_COLLECTION_REJECTION_REPORT = "Submit_Collection_Rejection_Report";
-    public static final String  SUBMIT_COLLECTION_ITEM_BARCODE= "ItemBarcode";
-    public static final String  SUBMIT_COLLECTION_CUSTOMER_CODE= "CustomerCode";
+    public static final String SUBMIT_COLLECTION_ITEM_BARCODE= "ItemBarcode";
+    public static final String SUBMIT_COLLECTION_CUSTOMER_CODE= "CustomerCode";
+
+    public static final String ITEM_STATUS_AVAILABLE = "Available";
+    public static final String INVALID_SCSB_XML_FORMAT_MESSAGE = "Please provide valid SCSB xml format";
+    public static final String INVALID_MARC_XML_FORMAT_MESSAGE = "Please provide valid Marc xml format";
+    public static final String SUBMIT_COLLECTION_INTERNAL_ERROR = "Internal error occured during submit collection";
 
 }

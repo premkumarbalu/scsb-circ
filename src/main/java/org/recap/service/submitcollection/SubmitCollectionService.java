@@ -11,10 +11,7 @@ import org.recap.model.jaxb.BibRecord;
 import org.recap.model.jaxb.JAXBHandler;
 import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.report.SubmitCollectionRejectionInfo;
-import org.recap.repository.BibliographicDetailsRepository;
-import org.recap.repository.CustomerCodeDetailsRepository;
-import org.recap.repository.ItemDetailsRepository;
-import org.recap.repository.ReportDetailRepository;
+import org.recap.repository.*;
 import org.recap.util.MarcUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.xml.bind.JAXBException;
 import java.util.*;
 
 /**
@@ -56,12 +54,22 @@ public class SubmitCollectionService {
     private ReportDetailRepository reportDetailRepository;
 
     @Autowired
+    private ItemStatusDetailsRepository itemStatusDetailsRepository;
+
+    @Autowired
+    private InstitutionDetailsRepository institutionDetailsRepository;
+
+    @Autowired
     private MarcUtil marcUtil;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     private RestTemplate restTemplate;
+
+    private Map<Integer,String> itemStatusMap;
+
+    private Map<Integer,String> institutionEntityMap;
 
     @Value("${server.protocol}")
     private String serverProtocol;
@@ -70,39 +78,54 @@ public class SubmitCollectionService {
     private String scsbSolrClientUrl;
 
     @Transactional
-    public List<Integer> process(String inputRecords) {
-        List<Integer> bibIdList = new ArrayList<>();
+    public String process(String inputRecords, List<Integer> processedBibIdList) {
+        String reponse = null;
         String format = null;
+        List<SubmitCollectionRejectionInfo> submitCollectionRejectionInfos = new ArrayList<>();
         try{
             if(!inputRecords.equals("")) {
                 if (inputRecords.contains("<bibRecords>")) {
                     format = ReCAPConstants.FORMAT_SCSB;
-                    BibRecords bibRecords = (BibRecords) JAXBHandler.getInstance().unmarshal(inputRecords, BibRecords.class);
+                    BibRecords bibRecords = null;
+                    try {
+                        bibRecords = (BibRecords) JAXBHandler.getInstance().unmarshal(inputRecords, BibRecords.class);
+                    } catch (JAXBException e) {
+                        logger.info(String.valueOf(e.getCause()));
+                        reponse = ReCAPConstants.INVALID_SCSB_XML_FORMAT_MESSAGE;
+                        return reponse;
+                    }
                     for (BibRecord bibRecord : bibRecords.getBibRecords()) {
-                        BibliographicEntity bibliographicEntity = loadData(bibRecord, format);
-                        bibIdList.add(bibliographicEntity.getBibliographicId());
+                        BibliographicEntity bibliographicEntity = loadData(bibRecord, format,submitCollectionRejectionInfos);
+                        processedBibIdList.add(bibliographicEntity.getBibliographicId());
                     }
                 } else {
                     format = ReCAPConstants.FORMAT_MARC;
                     List<Record> records = null;
-                    records = getMarcUtil().convertMarcXmlToRecord(inputRecords);
+                    try {
+                        records = getMarcUtil().convertMarcXmlToRecord(inputRecords);
+                    } catch (Exception e) {
+                        logger.info(String.valueOf(e.getCause()));
+                        reponse = ReCAPConstants.INVALID_MARC_XML_FORMAT_MESSAGE;
+                        return reponse;
+                    }
                     if (CollectionUtils.isNotEmpty(records)) {
                         for (Record record : records) {
-                            BibliographicEntity bibliographicEntity = loadData(record, format);
-                            bibIdList.add(bibliographicEntity.getBibliographicId());
+                            BibliographicEntity bibliographicEntity = loadData(record, format,submitCollectionRejectionInfos);
+                            processedBibIdList.add(bibliographicEntity.getBibliographicId());
                         }
                     }
                 }
+                generateSubmitCollectionRejectionReport(submitCollectionRejectionInfos);
+                reponse = ReCAPConstants.SUCCESS;
             }
         }catch (Exception e){
-            e.printStackTrace();;
+            logger.info(String.valueOf(e.getCause()));
+            reponse = ReCAPConstants.SUBMIT_COLLECTION_INTERNAL_ERROR;
         }
-        return bibIdList;
+        return reponse;
     }
 
-    private BibliographicEntity loadData(Object record, String format){
-        String response = null;
-        List<SubmitCollectionRejectionInfo> submitCollectionRejectionInfoList = new ArrayList<>();
+    private BibliographicEntity loadData(Object record, String format, List<SubmitCollectionRejectionInfo> submitCollectionRejectionInfos){
         BibliographicEntity savedBibliographicEntity = null;
         Map responseMap = getConverter(format).convert(record);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) responseMap.get("bibliographicEntity");
@@ -111,16 +134,29 @@ public class SubmitCollectionService {
             reportDetailRepository.save(reportEntityList);
         }
         if (bibliographicEntity != null) {
-            savedBibliographicEntity = updateBibliographicEntity(bibliographicEntity);
+            savedBibliographicEntity = updateBibliographicEntity(bibliographicEntity,submitCollectionRejectionInfos);
         }
         return savedBibliographicEntity;
+    }
+
+    public void setSubmitCollectionRejectionInfo(BibliographicEntity bibliographicEntity,List<SubmitCollectionRejectionInfo> submitCollectionRejectionInfos){
+        for(ItemEntity itemEntity : bibliographicEntity.getItemEntities()){
+            ItemStatusEntity itemStatusEntity = getItemStatusDetailsRepository().findByItemStatusId(itemEntity.getItemAvailabilityStatusId());
+            if(!itemStatusEntity.getStatusCode().equalsIgnoreCase(ReCAPConstants.ITEM_STATUS_AVAILABLE)){
+                SubmitCollectionRejectionInfo submitCollectionRejectionInfo = new SubmitCollectionRejectionInfo();
+                submitCollectionRejectionInfo.setItemBarcode(itemEntity.getBarcode());
+                submitCollectionRejectionInfo.setCustomerCode(itemEntity.getCustomerCode());
+                submitCollectionRejectionInfo.setOwningInstitution((String) getInstitutionEntityMap().get(itemEntity.getOwningInstitutionId()));
+                submitCollectionRejectionInfos.add(submitCollectionRejectionInfo);
+            }
+        }
     }
 
     public String indexData(List<Integer> bibliographicIdList){
         return getRestTemplate().postForObject(serverProtocol + scsbSolrClientUrl + "solrIndexer/indexByBibliographicId", bibliographicIdList, String.class);
     }
 
-    public BibliographicEntity updateBibliographicEntity(BibliographicEntity bibliographicEntity) {
+    public BibliographicEntity updateBibliographicEntity(BibliographicEntity bibliographicEntity,List<SubmitCollectionRejectionInfo> submitCollectionRejectionInfos) {
         BibliographicEntity savedBibliographicEntity=null;
 
         BibliographicEntity fetchBibliographicEntity = getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(),bibliographicEntity.getOwningInstitutionBibId());
@@ -128,6 +164,7 @@ public class SubmitCollectionService {
             savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(bibliographicEntity);
             entityManager.refresh(savedBibliographicEntity);
         }else{ // Existing bib Record
+            setSubmitCollectionRejectionInfo(fetchBibliographicEntity,submitCollectionRejectionInfos);
             fetchBibliographicEntity.setContent(bibliographicEntity.getContent());
             fetchBibliographicEntity.setCreatedBy(bibliographicEntity.getCreatedBy());
             fetchBibliographicEntity.setCreatedDate(bibliographicEntity.getCreatedDate());
@@ -188,12 +225,21 @@ public class SubmitCollectionService {
         fetchItemEntity.setCallNumber(itemEntity.getCallNumber());
         fetchItemEntity.setCustomerCode(itemEntity.getCustomerCode());
         fetchItemEntity.setCallNumberType(itemEntity.getCallNumberType());
-        fetchItemEntity.setItemAvailabilityStatusId(itemEntity.getItemAvailabilityStatusId());
+        if (isAvailableItem(fetchItemEntity.getItemAvailabilityStatusId())) {
+            fetchItemEntity.setCollectionGroupId(itemEntity.getCollectionGroupId());
+            fetchItemEntity.setUseRestrictions(itemEntity.getUseRestrictions());
+        }
         fetchItemEntity.setCopyNumber(itemEntity.getCopyNumber());
-        fetchItemEntity.setCollectionGroupId(itemEntity.getCollectionGroupId());
-        fetchItemEntity.setUseRestrictions(itemEntity.getUseRestrictions());
         fetchItemEntity.setVolumePartYear(itemEntity.getVolumePartYear());
         return fetchItemEntity;
+    }
+
+    public boolean isAvailableItem(Integer itemAvailabilityStatusId){
+        String itemStatusCode = (String) getItemStatusMap().get(itemAvailabilityStatusId);
+        if (itemStatusCode.equalsIgnoreCase(ReCAPConstants.ITEM_STATUS_AVAILABLE)) {
+            return true;
+        }
+        return false;
     }
 
     private XmlToBibEntityConverterInterface getConverter(String format){
@@ -279,6 +325,22 @@ public class SubmitCollectionService {
         this.itemDetailsRepository = itemDetailsRepository;
     }
 
+    public ItemStatusDetailsRepository getItemStatusDetailsRepository() {
+        return itemStatusDetailsRepository;
+    }
+
+    public void setItemStatusDetailsRepository(ItemStatusDetailsRepository itemStatusDetailsRepository) {
+        this.itemStatusDetailsRepository = itemStatusDetailsRepository;
+    }
+
+    public InstitutionDetailsRepository getInstitutionDetailsRepository() {
+        return institutionDetailsRepository;
+    }
+
+    public void setInstitutionDetailsRepository(InstitutionDetailsRepository institutionDetailsRepository) {
+        this.institutionDetailsRepository = institutionDetailsRepository;
+    }
+
     public EntityManager getEntityManager() {
         return entityManager;
     }
@@ -296,5 +358,37 @@ public class SubmitCollectionService {
 
     public void setRestTemplate(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
+    }
+
+    public Map getItemStatusMap() {
+        if (null == itemStatusMap) {
+            itemStatusMap = new HashMap();
+            try {
+                Iterable<ItemStatusEntity> itemStatusEntities = itemStatusDetailsRepository.findAll();
+                for (Iterator iterator = itemStatusEntities.iterator(); iterator.hasNext(); ) {
+                    ItemStatusEntity itemStatusEntity = (ItemStatusEntity) iterator.next();
+                    itemStatusMap.put(itemStatusEntity.getItemStatusId(), itemStatusEntity.getStatusCode());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return itemStatusMap;
+    }
+
+    public Map getInstitutionEntityMap() {
+        if (null == institutionEntityMap) {
+            institutionEntityMap = new HashMap();
+            try {
+                Iterable<InstitutionEntity> institutionEntities = institutionDetailsRepository.findAll();
+                for (Iterator iterator = institutionEntities.iterator(); iterator.hasNext(); ) {
+                    InstitutionEntity institutionEntity = (InstitutionEntity) iterator.next();
+                    institutionEntityMap.put(institutionEntity.getInstitutionId(), institutionEntity.getInstitutionCode());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return institutionEntityMap;
     }
 }

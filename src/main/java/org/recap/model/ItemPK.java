@@ -36,17 +36,23 @@ public class ItemPK implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        return Integer.valueOf(owningInstitutionId.toString()+owningInstitutionItemId);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ItemPK itemPK = (ItemPK) o;
+
+        if (owningInstitutionId != null ? !owningInstitutionId.equals(itemPK.owningInstitutionId) : itemPK.owningInstitutionId != null)
+            return false;
+        return owningInstitutionItemId != null ? owningInstitutionItemId.equals(itemPK.owningInstitutionItemId) : itemPK.owningInstitutionItemId == null;
+
     }
 
     @Override
-    public boolean equals(Object obj) {
-        ItemPK itemPK  = (ItemPK) obj;
-        if(itemPK.getOwningInstitutionId().equals(owningInstitutionId) && itemPK.getOwningInstitutionItemId().equals(owningInstitutionItemId)){
-            return true;
-        }
-
-        return false;
+    public int hashCode() {
+        int result = owningInstitutionId != null ? owningInstitutionId.hashCode() : 0;
+        result = 31 * result + (owningInstitutionItemId != null ? owningInstitutionItemId.hashCode() : 0);
+        return result;
     }
+
 }

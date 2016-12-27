@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -26,9 +27,12 @@ public class SharedCollectionRestController {
     public ResponseEntity submitCollection(@RequestBody String inputRecords){
         ResponseEntity responseEntity;
         String response;
+        List<Integer> processedBibIdList = new ArrayList<>();
         try {
-            List<Integer> bibIdList = submitCollectionService.process(inputRecords);
-            response = submitCollectionService.indexData(bibIdList);
+            response = submitCollectionService.process(inputRecords,processedBibIdList);
+            if (response.equalsIgnoreCase(ReCAPConstants.SUCCESS)) {
+                response = submitCollectionService.indexData(processedBibIdList);
+            }
             responseEntity = new ResponseEntity(response,getHttpHeaders(), HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
