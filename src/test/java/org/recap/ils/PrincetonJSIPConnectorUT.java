@@ -7,10 +7,7 @@ import com.pkrete.jsip2.messages.responses.SIP2PatronStatusResponse;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Test;
 import org.recap.BaseTestCase;
-import org.recap.ils.model.ItemCheckinResponse;
-import org.recap.ils.model.ItemCheckoutResponse;
-import org.recap.ils.model.ItemHoldResponse;
-import org.recap.ils.model.ItemInformationResponse;
+import org.recap.ils.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,10 +64,8 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
     public void lookupUser() throws Exception {
         String patronIdentifier = "45678912";
         String institutionId = "htccul";
-        SIP2PatronStatusResponse patronInformationResponse = princetonESIPConnector.lookupUser(institutionId, patronIdentifier);
+        PatronInformationResponse patronInformationResponse =  (PatronInformationResponse) princetonESIPConnector.lookupPatron(patronIdentifier);
         assertNotNull(patronInformationResponse);
-//        assertTrue(patronInformationResponse.isValid());
-
     }
 
     @Test

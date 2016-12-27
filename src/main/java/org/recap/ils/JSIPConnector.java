@@ -436,21 +436,57 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
     }
 
-    public SIP2PatronInformationResponse lookupPatron(String patronIdentifier) {
+    public AbstractResponseItem lookupPatron(String patronIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2PatronInformationRequest sip2PatronInformationRequest = null;
         SIP2PatronInformationResponse sip2PatronInformationResponse = null;
+        PatronInformationResponse patronInformationResponse = new PatronInformationResponse();
         try {
             SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
             SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
             sip2PatronInformationRequest = new SIP2PatronInformationRequest(patronIdentifier);
             sip2PatronInformationResponse = (SIP2PatronInformationResponse) connection.send(sip2PatronInformationRequest);
+            patronInformationResponse.setSuccess(true);
+            patronInformationResponse.setScreenMessage((sip2PatronInformationResponse.getScreenMessage() != null)? sip2PatronInformationResponse.getScreenMessage().get(0):"");
+            patronInformationResponse.setPatronName(sip2PatronInformationResponse.getPersonalName());
+            patronInformationResponse.setPatronIdentifier(sip2PatronInformationResponse.getPatronIdentifier());
+            patronInformationResponse.setEmail(sip2PatronInformationResponse.getEmail());
+            patronInformationResponse.setBirthDate(sip2PatronInformationResponse.getBirthDate());
+            patronInformationResponse.setPhone(sip2PatronInformationResponse.getPhone());
+            patronInformationResponse.setPermanentLocation(sip2PatronInformationResponse.getPermanentLocation());
+            patronInformationResponse.setPickupLocation(sip2PatronInformationResponse.getPickupLocation());
+
+            patronInformationResponse.setChargedItemsCount(sip2PatronInformationResponse.getChargedItemsCount());
+            patronInformationResponse.setChargedItemsLimit(sip2PatronInformationResponse.getChargedItemsLimit());
+
+            patronInformationResponse.setFeeLimit(sip2PatronInformationResponse.getFeeLimit());
+            patronInformationResponse.setFeeType((sip2PatronInformationResponse.getFeeType() != null)? sip2PatronInformationResponse.getFeeType().name():"");
+
+            patronInformationResponse.setHoldItemsCount(sip2PatronInformationResponse.getHoldItemsCount());
+            patronInformationResponse.setHoldItemsLimit(sip2PatronInformationResponse.getHoldItemsLimit());
+            patronInformationResponse.setUnavailableHoldsCount(sip2PatronInformationResponse.getUnavailableHoldsCount());
+
+            patronInformationResponse.setFineItemsCount(sip2PatronInformationResponse.getFineItemsCount());
+            patronInformationResponse.setFeeAmount(sip2PatronInformationResponse.getFeeAmount());
+            patronInformationResponse.setHomeAddress(sip2PatronInformationResponse.getHomeAddress());
+            patronInformationResponse.setItems(sip2PatronInformationResponse.getItems());
+            patronInformationResponse.setItemType((sip2PatronInformationResponse.getItemType() != null)? sip2PatronInformationResponse.getItemType().name():"");
+
+            patronInformationResponse.setOverdueItemsCount(sip2PatronInformationResponse.getOverdueItemsCount());
+            patronInformationResponse.setOverdueItemsLimit(sip2PatronInformationResponse.getOverdueItemsLimit());
+            patronInformationResponse.setPacAccessType(sip2PatronInformationResponse.getPacAccessType());
+            patronInformationResponse.setPatronGroup(sip2PatronInformationResponse.getPatronGroup());
+            patronInformationResponse.setPatronType(sip2PatronInformationResponse.getPatronType());
+            patronInformationResponse.setDueDate(sip2PatronInformationResponse.getDueDate());
+            patronInformationResponse.setExpirationDate(sip2PatronInformationResponse.getExpirationDate());
+            patronInformationResponse.setStatus(sip2PatronInformationResponse.getStatus().toString());
+
         } catch (Exception ex) {
-            logger.error(ex.getMessage());
+            logger.error("",ex);
         } finally {
             connection.close();
         }
-        return sip2PatronInformationResponse;
+        return patronInformationResponse;
     }
 
     public SIP2RecallResponse recallItem(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {

@@ -158,6 +158,17 @@ public class RequestItemController {
         return itemRecallResponse;
     }
 
+    @RequestMapping(value = "/patronInformation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public AbstractResponseItem patronInformation(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
+        PatronInformationResponse patronInformationResponse=null;
+        String itembarcode ="";
+        if (callInstitition == null) {
+            callInstitition = itemRequestInformation.getItemOwningInstitution();
+        }
+        patronInformationResponse = (PatronInformationResponse) jsipConectorFactory.getJSIPConnector(callInstitition).lookupPatron(itemRequestInformation.getPatronBarcode());
+        return patronInformationResponse;
+    }
+
     private String formatFromSipDate(String sipDate) {
         SimpleDateFormat sipFormat = new SimpleDateFormat("yyyyMMdd    HHmmss");
         SimpleDateFormat requiredFormat = new SimpleDateFormat("dd-MMM-YYYY HH:mm:ss");
@@ -171,5 +182,4 @@ public class RequestItemController {
         }
         return reformattedStr;
     }
-
 }

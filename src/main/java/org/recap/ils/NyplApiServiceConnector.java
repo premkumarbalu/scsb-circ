@@ -220,7 +220,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
     }
 
     @Override
-    public Object lookupPatron(String patronIdentifier) {
+    public AbstractResponseItem lookupPatron(String patronIdentifier) {
         return null;
     }
 
