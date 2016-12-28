@@ -73,4 +73,30 @@ public class ReCAPConstants {
     public static final String PUL_RECALL_TOPIC_ROUTEID = "PULRecallTopicRouteId";
     public static final String PUL_BORROW_DIRECT_TOPIC_ROUTEID = "PULBorrowDirectTopicRouteId";
 
+    public static final String OWNING_INSTITUTION = "OwningInstitution";
+    public static final String OWNING_INSTITUTION_BIB_ID = "OwningInstitutionBibId";
+    public static final String TITLE = "Title";
+    public static final String OWNING_INSTITUTION_HOLDINGS_ID = "OwningInstitutionHoldingsId";
+    public static final String LOCAL_ITEM_ID = "LocalItemId";
+    public static final String ITEM_BARCODE = "ItemBarcode";
+    public static final String CUSTOMER_CODE = "CustomerCode";
+    public static final String CREATE_DATE_ITEM = "CreateDateItem";
+    public static final String LAST_UPDATED_DATE_ITEM = "LastUpdatedDateItem";
+    public static final String ERROR_DESCRIPTION = "ErrorDescription";
+    public static final String COLLECTION_GROUP_DESIGNATION = "CollectionGroupDesignation";
+
+    public static final String FORMAT_MARC = "marc";
+    public static final String FORMAT_SCSB = "scsb";
+
+    public static final String SUBMIT_COLLECTION_REPORT = "Submit_Collection_Report";
+    public static final String SUBMIT_COLLECTION_REJECTION_REPORT = "Submit_Collection_Rejection_Report";
+    public static final String SUBMIT_COLLECTION_ITEM_BARCODE= "ItemBarcode";
+    public static final String SUBMIT_COLLECTION_CUSTOMER_CODE= "CustomerCode";
+
+    public static final String ITEM_STATUS_AVAILABLE = "Available";
+    public static final String INVALID_SCSB_XML_FORMAT_MESSAGE = "Please provide valid SCSB xml format";
+    public static final String INVALID_MARC_XML_FORMAT_MESSAGE = "Please provide valid Marc xml format";
+    public static final String SUBMIT_COLLECTION_INTERNAL_ERROR = "Internal error occured during submit collection";
+    public static final String SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE = "Maximum allowed input record is ";
+
 }
