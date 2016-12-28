@@ -77,53 +77,76 @@ public class SubmitCollectionService {
     @Value("${scsb.solr.client.url}")
     private String scsbSolrClientUrl;
 
+    @Value(("${submit.collection.input.limit}"))
+    private Integer inputLimit;
+
     @Transactional
     public String process(String inputRecords, List<Integer> processedBibIdList) {
         String reponse = null;
-        String format = null;
         List<SubmitCollectionRejectionInfo> submitCollectionRejectionInfos = new ArrayList<>();
         try{
             if(!inputRecords.equals("")) {
                 if (inputRecords.contains("<bibRecords>")) {
-                    format = ReCAPConstants.FORMAT_SCSB;
-                    BibRecords bibRecords = null;
-                    try {
-                        bibRecords = (BibRecords) JAXBHandler.getInstance().unmarshal(inputRecords, BibRecords.class);
-                    } catch (JAXBException e) {
-                        logger.info(String.valueOf(e.getCause()));
-                        reponse = ReCAPConstants.INVALID_SCSB_XML_FORMAT_MESSAGE;
+                    reponse = processSCSB(inputRecords, processedBibIdList, submitCollectionRejectionInfos);
+                    if (reponse != null)
                         return reponse;
-                    }
-                    for (BibRecord bibRecord : bibRecords.getBibRecords()) {
-                        BibliographicEntity bibliographicEntity = loadData(bibRecord, format,submitCollectionRejectionInfos);
-                        processedBibIdList.add(bibliographicEntity.getBibliographicId());
-                    }
-                } else {
-                    format = ReCAPConstants.FORMAT_MARC;
-                    List<Record> records = null;
-                    try {
-                        records = getMarcUtil().convertMarcXmlToRecord(inputRecords);
-                    } catch (Exception e) {
-                        logger.info(String.valueOf(e.getCause()));
-                        reponse = ReCAPConstants.INVALID_MARC_XML_FORMAT_MESSAGE;
+                } else
+                    reponse = processMarc(inputRecords, processedBibIdList, submitCollectionRejectionInfos);
+                    if (reponse != null)
                         return reponse;
-                    }
-                    if (CollectionUtils.isNotEmpty(records)) {
-                        for (Record record : records) {
-                            BibliographicEntity bibliographicEntity = loadData(record, format,submitCollectionRejectionInfos);
-                            processedBibIdList.add(bibliographicEntity.getBibliographicId());
-                        }
-                    }
-                }
                 generateSubmitCollectionRejectionReport(submitCollectionRejectionInfos);
                 reponse = ReCAPConstants.SUCCESS;
             }
         }catch (Exception e){
-            logger.info(String.valueOf(e.getCause()));
+            e.printStackTrace();
             reponse = ReCAPConstants.SUBMIT_COLLECTION_INTERNAL_ERROR;
         }
         return reponse;
     }
+
+    private String processMarc(String inputRecords, List<Integer> processedBibIdList, List<SubmitCollectionRejectionInfo> submitCollectionRejectionInfos) {
+        String format;
+        format = ReCAPConstants.FORMAT_MARC;
+        List<Record> records = null;
+        try {
+            records = getMarcUtil().convertMarcXmlToRecord(inputRecords);
+            if(records.size() > inputLimit){
+                return ReCAPConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE + inputLimit;
+            }
+        } catch (Exception e) {
+            logger.info(String.valueOf(e.getCause()));
+            e.printStackTrace();
+            return ReCAPConstants.INVALID_MARC_XML_FORMAT_MESSAGE;
+        }
+        if (CollectionUtils.isNotEmpty(records)) {
+            for (Record record : records) {
+                BibliographicEntity bibliographicEntity = loadData(record, format,submitCollectionRejectionInfos);
+                processedBibIdList.add(bibliographicEntity.getBibliographicId());
+            }
+        }
+        return null;
+    }
+
+    private String processSCSB(String inputRecords, List<Integer> processedBibIdList, List<SubmitCollectionRejectionInfo> submitCollectionRejectionInfos) {
+        String format;
+        format = ReCAPConstants.FORMAT_SCSB;
+        BibRecords bibRecords = null;
+        try {
+            bibRecords = (BibRecords) JAXBHandler.getInstance().unmarshal(inputRecords, BibRecords.class);
+            if(bibRecords.getBibRecords().size() > inputLimit){
+                return ReCAPConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE + " " +inputLimit;
+            }
+        } catch (JAXBException e) {
+            logger.info(String.valueOf(e.getCause()));
+            return ReCAPConstants.INVALID_SCSB_XML_FORMAT_MESSAGE;
+        }
+        for (BibRecord bibRecord : bibRecords.getBibRecords()) {
+            BibliographicEntity bibliographicEntity = loadData(bibRecord, format,submitCollectionRejectionInfos);
+            processedBibIdList.add(bibliographicEntity.getBibliographicId());
+        }
+        return null;
+    }
+
 
     private BibliographicEntity loadData(Object record, String format, List<SubmitCollectionRejectionInfo> submitCollectionRejectionInfos){
         BibliographicEntity savedBibliographicEntity = null;
