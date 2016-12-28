@@ -10,13 +10,7 @@ import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
 import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
 import com.pkrete.jsip2.messages.responses.*;
 import com.pkrete.jsip2.variables.HoldMode;
-import org.recap.ils.model.AbstractResponseItem;
-import org.recap.ils.model.ItemInformationResponse;
-import org.recap.ils.model.ItemCheckinResponse;
-import org.recap.ils.model.ItemCheckoutResponse;
-import org.recap.ils.model.ItemHoldResponse;
-import org.recap.ils.model.ItemInformationResponse;
-import org.recap.model.ItemResponseInformation;
+import org.recap.ils.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,49 +90,44 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
     public abstract String getOperatorLocation();
 
-    public ItemInformationResponse lookupItem(String itemIdentifier, String source) {
-        ItemInformationResponse itemInformationResponse = null;
+    public AbstractResponseItem lookupItem(String itemIdentifier,String source) {
         SIP2SocketConnection connection = getSocketConnection();
-        SIP2ItemInformationResponse itemResponse = null;
+        SIP2ItemInformationResponse sip2ItemInformationResponse = null;
+        ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
         try {
             SIP2ItemInformationRequest itemRequest = new SIP2ItemInformationRequest(itemIdentifier);
             logger.info(itemRequest.getData());
-            itemResponse = (SIP2ItemInformationResponse) connection.send(itemRequest);
-            itemInformationResponse = buildItemResponseInformation(itemResponse);
+            sip2ItemInformationResponse = (SIP2ItemInformationResponse) connection.send(itemRequest);
+            itemInformationResponse.setItemBarcode(sip2ItemInformationResponse.getItemIdentifier());
+            if (sip2ItemInformationResponse.getScreenMessage().size() > 0) {
+                itemInformationResponse.setScreenMessage(sip2ItemInformationResponse.getScreenMessage().get(0));
+            }
+            itemInformationResponse.setSuccess(sip2ItemInformationResponse.isOk());
+            itemInformationResponse.setTitleIdentifier(sip2ItemInformationResponse.getTitleIdentifier());
+
+            itemInformationResponse.setDueDate(formatFromSipDate(sip2ItemInformationResponse.getDueDate()));
+            itemInformationResponse.setRecallDate(formatFromSipDate(sip2ItemInformationResponse.getRecallDate()));
+            itemInformationResponse.setHoldPickupDate(formatFromSipDate(sip2ItemInformationResponse.getHoldPickupDate()));
+            itemInformationResponse.setTransactionDate(formatFromSipDate(sip2ItemInformationResponse.getTransactionDate()));
+            itemInformationResponse.setExpirationDate(formatFromSipDate(sip2ItemInformationResponse.getExpirationDate()));
+
+            itemInformationResponse.setCirculationStatus(sip2ItemInformationResponse.getCirculationStatus().name());
+            itemInformationResponse.setCurrentLocation(sip2ItemInformationResponse.getCurrentLocation());
+            itemInformationResponse.setPermanentLocation(sip2ItemInformationResponse.getPermanentLocation());
+            itemInformationResponse.setFeeType(sip2ItemInformationResponse.getFeeType().name());
+            itemInformationResponse.setHoldQueueLength(sip2ItemInformationResponse.getHoldQueueLength());
+            itemInformationResponse.setOwner(sip2ItemInformationResponse.getOwner());
+            itemInformationResponse.setSecurityMarker(sip2ItemInformationResponse.getSecurityMarker().name());
+            itemInformationResponse.setCurrencyType((sip2ItemInformationResponse.getCurrencyType() != null) ? sip2ItemInformationResponse.getCurrencyType().name() : "");
         } catch (InvalidSIP2ResponseException e) {
             logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
         } catch (InvalidSIP2ResponseValueException e) {
             logger.error("Invalid SIP2 Value = ", e);
         } catch (Exception e) {
             logger.error("Exception = ", e);
-
         } finally {
             connection.close();
         }
-        return itemInformationResponse;
-    }
-
-    private ItemInformationResponse buildItemResponseInformation(SIP2ItemInformationResponse sip2ItemInformationResponse) {
-        ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
-        itemInformationResponse.setItemBarcode(sip2ItemInformationResponse.getItemIdentifier());
-        itemInformationResponse.setScreenMessage(sip2ItemInformationResponse.getScreenMessage().get(0));
-        itemInformationResponse.setSuccess(sip2ItemInformationResponse.isOk());
-        itemInformationResponse.setTitleIdentifier(sip2ItemInformationResponse.getTitleIdentifier());
-
-        itemInformationResponse.setDueDate(sip2ItemInformationResponse.getDueDate());
-        itemInformationResponse.setRecallDate(sip2ItemInformationResponse.getRecallDate());
-        itemInformationResponse.setHoldPickupDate(sip2ItemInformationResponse.getHoldPickupDate());
-        itemInformationResponse.setTransactionDate(sip2ItemInformationResponse.getTransactionDate());
-        itemInformationResponse.setExpirationDate(sip2ItemInformationResponse.getExpirationDate());
-
-        itemInformationResponse.setCirculationStatus(sip2ItemInformationResponse.getCirculationStatus().name());
-        itemInformationResponse.setCurrentLocation(sip2ItemInformationResponse.getCurrentLocation());
-        itemInformationResponse.setPermanentLocation(sip2ItemInformationResponse.getPermanentLocation());
-        itemInformationResponse.setFeeType(sip2ItemInformationResponse.getFeeType().name());
-        itemInformationResponse.setHoldQueueLength(sip2ItemInformationResponse.getHoldQueueLength());
-        itemInformationResponse.setOwner(sip2ItemInformationResponse.getOwner());
-        itemInformationResponse.setSecurityMarker(sip2ItemInformationResponse.getSecurityMarker().name());
-        itemInformationResponse.setCurrencyType((sip2ItemInformationResponse.getCurrencyType() != null) ? sip2ItemInformationResponse.getCurrencyType().name() : "");
         return itemInformationResponse;
     }
 
@@ -193,10 +182,10 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return patronStatusResponse;
     }
 
-    public ItemCheckoutResponse checkOutItem(String itemIdentifier, String patronIdentifier) {
-        ItemCheckoutResponse itemCheckoutResponse = null;
+    public AbstractResponseItem checkOutItem(String itemIdentifier, String patronIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2CheckoutResponse checkoutResponse = null;
+        ItemCheckoutResponse itemCheckoutResponse = new ItemCheckoutResponse();
         try {
             if (connection.connect()) {
                 if (jSIPLogin(connection, patronIdentifier)) {
@@ -206,55 +195,56 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         SIP2CheckoutRequest checkoutRequest = new SIP2CheckoutRequest(patronIdentifier, itemIdentifier);
                         checkoutRequest.setCurrentLocation("");
                         checkoutResponse = (SIP2CheckoutResponse) connection.send(checkoutRequest);
-                        itemCheckoutResponse = buildItemCheckoutResponse(checkoutResponse);
                         if (checkoutResponse.isOk()) {
                             logger.info("checkout Request Successful");
+                            itemCheckoutResponse.setItemBarcode(checkoutResponse.getItemIdentifier());
+                            itemCheckoutResponse.setTitleIdentifier(checkoutResponse.getTitleIdentifier());
+                            itemCheckoutResponse.setDesensitize(checkoutResponse.isDesensitizeSupported());
+                            itemCheckoutResponse.setRenewal(checkoutResponse.isRenewalOk());
+                            itemCheckoutResponse.setMagneticMedia(checkoutResponse.isMagneticMedia());
+                            itemCheckoutResponse.setDueDate(formatFromSipDate(checkoutResponse.getDueDate()));
+                            itemCheckoutResponse.setTransactionDate(formatFromSipDate(checkoutResponse.getTransactionDate()));
+                            itemCheckoutResponse.setInstitutionID(checkoutResponse.getInstitutionId());
+                            itemCheckoutResponse.setItemOwningInstitution(checkoutResponse.getInstitutionId());
+                            itemCheckoutResponse.setPatronIdentifier(checkoutResponse.getPatronIdentifier());
+
+                            itemCheckoutResponse.setMediaType((checkoutResponse.getMediaType() != null) ? checkoutResponse.getMediaType().name() : "");
+                            itemCheckoutResponse.setBibId(checkoutResponse.getBibId());
                         } else {
                             logger.info("checkout Request Failed");
                             logger.info("Response -> " + checkoutResponse.getData());
-                            if (checkoutResponse.getScreenMessage().size() > 0) {
-                                logger.info(checkoutResponse.getScreenMessage().get(0));
-                            }
                         }
+                        itemCheckoutResponse.setScreenMessage((checkoutResponse.getScreenMessage().size() > 0) ? checkoutResponse.getScreenMessage().get(0) : "");
+                        itemCheckoutResponse.setSuccess(checkoutResponse.isOk());
                     }
                 } else {
                     logger.info("Login Failed");
+                    itemCheckoutResponse.setScreenMessage("Login to ILS failed");
+                    itemCheckoutResponse.setSuccess(false);
                 }
-
             }
         } catch (InvalidSIP2ResponseException e) {
             logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
+            itemCheckoutResponse.setScreenMessage(e.getMessage());
+            itemCheckoutResponse.setSuccess(false);
         } catch (InvalidSIP2ResponseValueException e) {
             logger.error("Connection Invalid SIP2 Value = " + e.getMessage());
+            itemCheckoutResponse.setScreenMessage(e.getMessage());
+            itemCheckoutResponse.setSuccess(false);
+        } catch (Exception e) {
+            logger.error("Exception = " + e.getMessage());
+            itemCheckoutResponse.setScreenMessage(e.getMessage());
+            itemCheckoutResponse.setSuccess(false);
         } finally {
             connection.close();
         }
         return itemCheckoutResponse;
     }
 
-    private ItemCheckoutResponse buildItemCheckoutResponse(SIP2CheckoutResponse sip2CheckoutResponse) {
-        ItemCheckoutResponse itemCheckoutResponse = new ItemCheckoutResponse();
-        itemCheckoutResponse.setItemBarcode(sip2CheckoutResponse.getItemIdentifier());
-        itemCheckoutResponse.setScreenMessage(sip2CheckoutResponse.getScreenMessage().get(0));
-        itemCheckoutResponse.setSuccess(sip2CheckoutResponse.isOk());
-        itemCheckoutResponse.setTitleIdentifier(sip2CheckoutResponse.getTitleIdentifier());
-        itemCheckoutResponse.setDesensitize(sip2CheckoutResponse.isDesensitizeSupported());
-        itemCheckoutResponse.setRenewal(sip2CheckoutResponse.isRenewalOk());
-        itemCheckoutResponse.setMagneticMedia(sip2CheckoutResponse.isMagneticMedia());
-        itemCheckoutResponse.setDueDate(sip2CheckoutResponse.getDueDate());
-        itemCheckoutResponse.setTransactionDate(sip2CheckoutResponse.getTransactionDate());
-        itemCheckoutResponse.setInstitutionID(sip2CheckoutResponse.getInstitutionId());
-        itemCheckoutResponse.setItemOwningInstitution(sip2CheckoutResponse.getInstitutionId());
-        itemCheckoutResponse.setPatronIdentifier(sip2CheckoutResponse.getPatronIdentifier());
-        itemCheckoutResponse.setMediaType((sip2CheckoutResponse.getMediaType() != null)? sip2CheckoutResponse.getMediaType().name():"");
-        itemCheckoutResponse.setBibId(sip2CheckoutResponse.getBibId());
-        return itemCheckoutResponse;
-    }
-
-    public ItemCheckinResponse checkInItem(String itemIdentifier, String patronIdentifier) {
-        ItemCheckinResponse itemCheckinResponse = null;
+    public AbstractResponseItem checkInItem(String itemIdentifier, String patronIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2CheckinResponse checkinResponse = null;
+        ItemCheckinResponse itemCheckinResponse = new ItemCheckinResponse();
         try {
             if (connection.connect()) { // Connect to the SIP Server - Princton, Voyager, ILS
                 if (jSIPLogin(connection, patronIdentifier)) {
@@ -263,16 +253,34 @@ public abstract class JSIPConnector implements IJSIPConnector {
                     if (statusResponse.getSupportedMessages().isCheckin()) {
                         SIP2CheckinRequest checkinRequest = new SIP2CheckinRequest(itemIdentifier);
                         checkinResponse = (SIP2CheckinResponse) connection.send(checkinRequest);
-                        itemCheckinResponse = buildItemCheckinResponse(checkinResponse);
                         if (checkinResponse.isOk()) {
                             logger.info("Check In Request Successful");
+                            itemCheckinResponse.setItemBarcode(checkinResponse.getItemIdentifier());
+                            itemCheckinResponse.setTitleIdentifier(checkinResponse.getTitleIdentifier());
+                            itemCheckinResponse.setDueDate(formatFromSipDate(checkinResponse.getDueDate()));
+                            itemCheckinResponse.setResensitize(checkinResponse.isResensitize());
+                            itemCheckinResponse.setAlert(checkinResponse.isAlert());
+                            itemCheckinResponse.setMagneticMedia(checkinResponse.isMagneticMedia());
+                            itemCheckinResponse.setTransactionDate(formatFromSipDate(checkinResponse.getTransactionDate()));
+                            itemCheckinResponse.setInstitutionID(checkinResponse.getInstitutionId());
+                            itemCheckinResponse.setItemOwningInstitution(checkinResponse.getInstitutionId());
+                            itemCheckinResponse.setPatronIdentifier(checkinResponse.getPatronIdentifier());
+                            itemCheckinResponse.setMediaType((checkinResponse.getMediaType() != null) ? checkinResponse.getMediaType().name() : "");
+                            itemCheckinResponse.setBibId(checkinResponse.getBibId());
+                            itemCheckinResponse.setPermanentLocation(checkinResponse.getPermanentLocation());
+                            itemCheckinResponse.setCollectionCode(checkinResponse.getCollectionCode());
+                            itemCheckinResponse.setSortBin(checkinResponse.getSortBin());
+                            itemCheckinResponse.setCallNumber(checkinResponse.getCallNumber());
+                            itemCheckinResponse.setDestinationLocation(checkinResponse.getDestinationLocation());
+                            itemCheckinResponse.setAlertType((checkinResponse.getAlertType() != null) ? checkinResponse.getAlertType().name() : "");
+                            itemCheckinResponse.setHoldPatronId(checkinResponse.getHoldPatronId());
+                            itemCheckinResponse.setHoldPatronName(checkinResponse.getHoldPatronName());
                         } else {
                             logger.info("Check In Request Failed");
                             logger.info("Response -> " + checkinResponse.getData());
-                            if (checkinResponse.getScreenMessage().size() > 0) {
-                                logger.info(checkinResponse.getScreenMessage().get(0));
-                            }
                         }
+                        itemCheckinResponse.setScreenMessage((checkinResponse.getScreenMessage().size() > 0) ? checkinResponse.getScreenMessage().get(0) : "");
+                        itemCheckinResponse.setSuccess(checkinResponse.isOk());
                     }
                 } else {
                     logger.info("Login Failed");
@@ -288,45 +296,18 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return itemCheckinResponse;
     }
 
-    private ItemCheckinResponse buildItemCheckinResponse(SIP2CheckinResponse sip2CheckinResponse) {
-        ItemCheckinResponse itemCheckinResponse = new ItemCheckinResponse();
-        itemCheckinResponse.setItemBarcode(sip2CheckinResponse.getItemIdentifier());
-        itemCheckinResponse.setScreenMessage(sip2CheckinResponse.getScreenMessage().get(0));
-        itemCheckinResponse.setSuccess(sip2CheckinResponse.isOk());
-        itemCheckinResponse.setTitleIdentifier(sip2CheckinResponse.getTitleIdentifier());
-        itemCheckinResponse.setDueDate(sip2CheckinResponse.getDueDate());
-        itemCheckinResponse.setResensitize(sip2CheckinResponse.isResensitize());
-        itemCheckinResponse.setAlert(sip2CheckinResponse.isAlert());
-        itemCheckinResponse.setMagneticMedia(sip2CheckinResponse.isMagneticMedia());
-        itemCheckinResponse.setTransactionDate(sip2CheckinResponse.getTransactionDate());
-        itemCheckinResponse.setInstitutionID(sip2CheckinResponse.getInstitutionId());
-        itemCheckinResponse.setItemOwningInstitution(sip2CheckinResponse.getInstitutionId());
-        itemCheckinResponse.setPatronIdentifier(sip2CheckinResponse.getPatronIdentifier());
-        itemCheckinResponse.setMediaType((sip2CheckinResponse.getMediaType() != null)? sip2CheckinResponse.getMediaType().name():"");
-        itemCheckinResponse.setBibId(sip2CheckinResponse.getBibId());
-        itemCheckinResponse.setPermanentLocation(sip2CheckinResponse.getPermanentLocation());
-        itemCheckinResponse.setCollectionCode(sip2CheckinResponse.getCollectionCode());
-        itemCheckinResponse.setSortBin(sip2CheckinResponse.getSortBin());
-        itemCheckinResponse.setCallNumber(sip2CheckinResponse.getCallNumber());
-        itemCheckinResponse.setDestinationLocation(sip2CheckinResponse.getDestinationLocation());
-        itemCheckinResponse.setAlertType((sip2CheckinResponse.getAlertType()!=null)? sip2CheckinResponse.getAlertType().name():"");
-        itemCheckinResponse.setHoldPatronId(sip2CheckinResponse.getHoldPatronId());
-        itemCheckinResponse.setHoldPatronName(sip2CheckinResponse.getHoldPatronName());
-        return itemCheckinResponse;
-    }
-
-    public ItemHoldResponse placeHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId, String title, String author, String callNumber) {
+    public Object placeHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId, String title, String author, String callNumber) {
         return hold(HoldMode.ADD, itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
     }
 
-    public ItemHoldResponse cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId) {
+    public Object cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId){
         return hold(HoldMode.DELETE, itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
     }
 
-    private ItemHoldResponse hold(HoldMode holdMode, String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
-        ItemHoldResponse itemHoldResponse = null;
+    private AbstractResponseItem hold(HoldMode holdMode, String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2HoldResponse holdResponse = null;
+        ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         try {
             if (connection.connect()) { // Connect to the SIP Server - Princton, Voyager, ILS
                 /* Login to the ILS */
@@ -355,7 +336,6 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         holdRequest.setErrorDetectionEnabled(true);
                         logger.info("Request Hold -> " + holdRequest.getData());
                         holdResponse = (SIP2HoldResponse) connection.send(holdRequest);
-                        itemHoldResponse = buildItemHoldResponse(holdResponse, institutionId);
 
                         /* Check that the hold was placed succesfully */
                         if (holdResponse.isOk()) {
@@ -365,14 +345,20 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         } else {
                             logger.info("Hold Failed");
                             logger.info("Response Hold -> " + holdResponse.getData());
-                            if (holdResponse.getScreenMessage().size() == 1) {
-                                logger.info(holdResponse.getScreenMessage().get(0));
-                            } else {
-                                for (int i = 0; i < holdResponse.getScreenMessage().size(); i++) {
-                                    logger.info(holdResponse.getScreenMessage().get(i));
-                                }
-                            }
                         }
+                        itemHoldResponse.setItemBarcode(holdResponse.getItemIdentifier());
+                        itemHoldResponse.setScreenMessage((holdResponse.getScreenMessage().size() > 0) ? holdResponse.getScreenMessage().get(0) : "");
+                        itemHoldResponse.setSuccess(holdResponse.isOk());
+                        itemHoldResponse.setTitleIdentifier(holdResponse.getTitleIdentifier());
+                        itemHoldResponse.setExpirationDate(formatFromSipDate(holdResponse.getExpirationDate()));
+                        itemHoldResponse.setTransactionDate(formatFromSipDate(holdResponse.getTransactionDate()));
+                        itemHoldResponse.setInstitutionID(holdResponse.getInstitutionId());
+                        itemHoldResponse.setPatronIdentifier(holdResponse.getPatronIdentifier());
+                        itemHoldResponse.setBibId(holdResponse.getBibId());
+                        itemHoldResponse.setQueuePosition(holdResponse.getQueuePosition());
+                        itemHoldResponse.setLCCN(holdResponse.getLccn());
+                        itemHoldResponse.setISBN(holdResponse.getIsbn());
+                        itemHoldResponse.setAvailable(holdResponse.isAvailable());
                     }
                 } else {
                     logger.info("Login Failed");
@@ -385,6 +371,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
         } catch (InvalidSIP2ResponseValueException e) {
             logger.error("Connection Invalid SIP2 Value = " + e.getMessage());
             holdResponse.setScreenMessage(java.util.Arrays.asList("Invaild Response Values from ILS"));
+
         } finally {
             connection.close();
         }
@@ -392,28 +379,10 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return itemHoldResponse;
     }
 
-    private ItemHoldResponse buildItemHoldResponse(SIP2HoldResponse sip2SIP2HoldResponse, String itemOwningInstitution) {
-        ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
-        itemHoldResponse.setItemBarcode(sip2SIP2HoldResponse.getItemIdentifier());
-        itemHoldResponse.setScreenMessage(sip2SIP2HoldResponse.getScreenMessage().get(0));
-        itemHoldResponse.setSuccess(sip2SIP2HoldResponse.isOk());
-        itemHoldResponse.setTitleIdentifier(sip2SIP2HoldResponse.getTitleIdentifier());
-        itemHoldResponse.setExpirationDate(sip2SIP2HoldResponse.getExpirationDate());
-        itemHoldResponse.setTransactionDate(sip2SIP2HoldResponse.getTransactionDate());
-        itemHoldResponse.setInstitutionID(sip2SIP2HoldResponse.getInstitutionId());
-        itemHoldResponse.setItemOwningInstitution(itemOwningInstitution);
-        itemHoldResponse.setPatronIdentifier(sip2SIP2HoldResponse.getPatronIdentifier());
-        itemHoldResponse.setBibId(sip2SIP2HoldResponse.getBibId());
-        itemHoldResponse.setQueuePosition(sip2SIP2HoldResponse.getQueuePosition());
-        itemHoldResponse.setLCCN(sip2SIP2HoldResponse.getLccn());
-        itemHoldResponse.setISBN(sip2SIP2HoldResponse.getIsbn());
-        itemHoldResponse.setAvailable(sip2SIP2HoldResponse.isAvailable());
-        return itemHoldResponse;
-    }
-
     public SIP2CreateBibResponse createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2CreateBibResponse createBibResponse = null;
+        ItemCreateBibResponse itemCreateBibResponse = new ItemCreateBibResponse();
         try {
             if (connection.connect()) { // Connect to the SIP Server - Princton, Voyager, ILS
                 /* Login to the ILS */
@@ -436,7 +405,6 @@ public abstract class JSIPConnector implements IJSIPConnector {
                     if (response.isValidPatron() && response.isValidPatronPassword()) {
                         SIP2CreateBibRequest createBibRequest = new SIP2CreateBibRequest(patronIdentifier, titleIdentifier, itemIdentifier);
 
-
                         logger.info("Request Create -> " + createBibRequest.getData());
                         createBibResponse = (SIP2CreateBibResponse) connection.send(createBibRequest);
 
@@ -446,10 +414,12 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         } else {
                             logger.info("Create Failed");
                             logger.info("Response Hold -> " + createBibResponse.getData());
-                            if (createBibResponse.getScreenMessage().size() > 0) {
-                                logger.info(createBibResponse.getScreenMessage().get(0));
-                            }
                         }
+                        itemCreateBibResponse.setItemBarcode(createBibResponse.getItemIdentifier());
+                        itemCreateBibResponse.setScreenMessage((createBibResponse.getScreenMessage().size() > 0) ? createBibResponse.getScreenMessage().get(0) : "");
+                        itemCreateBibResponse.setSuccess(createBibResponse.isOk());
+                        itemCreateBibResponse.setBibId(createBibResponse.getBibId());
+                        itemCreateBibResponse.setItemId(createBibResponse.getItemIdentifier());
                     }
                 } else {
                     logger.info("Login Failed");
@@ -462,31 +432,67 @@ public abstract class JSIPConnector implements IJSIPConnector {
         } finally {
             connection.close();
         }
-
         return createBibResponse;
 
     }
 
-    public SIP2PatronInformationResponse lookupPatron(String patronIdentifier) {
+    public AbstractResponseItem lookupPatron(String patronIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2PatronInformationRequest sip2PatronInformationRequest = null;
         SIP2PatronInformationResponse sip2PatronInformationResponse = null;
+        PatronInformationResponse patronInformationResponse = new PatronInformationResponse();
         try {
             SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
             SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
             sip2PatronInformationRequest = new SIP2PatronInformationRequest(patronIdentifier);
             sip2PatronInformationResponse = (SIP2PatronInformationResponse) connection.send(sip2PatronInformationRequest);
+            patronInformationResponse.setSuccess(true);
+            patronInformationResponse.setScreenMessage((sip2PatronInformationResponse.getScreenMessage() != null)? sip2PatronInformationResponse.getScreenMessage().get(0):"");
+            patronInformationResponse.setPatronName(sip2PatronInformationResponse.getPersonalName());
+            patronInformationResponse.setPatronIdentifier(sip2PatronInformationResponse.getPatronIdentifier());
+            patronInformationResponse.setEmail(sip2PatronInformationResponse.getEmail());
+            patronInformationResponse.setBirthDate(sip2PatronInformationResponse.getBirthDate());
+            patronInformationResponse.setPhone(sip2PatronInformationResponse.getPhone());
+            patronInformationResponse.setPermanentLocation(sip2PatronInformationResponse.getPermanentLocation());
+            patronInformationResponse.setPickupLocation(sip2PatronInformationResponse.getPickupLocation());
+
+            patronInformationResponse.setChargedItemsCount(sip2PatronInformationResponse.getChargedItemsCount());
+            patronInformationResponse.setChargedItemsLimit(sip2PatronInformationResponse.getChargedItemsLimit());
+
+            patronInformationResponse.setFeeLimit(sip2PatronInformationResponse.getFeeLimit());
+            patronInformationResponse.setFeeType((sip2PatronInformationResponse.getFeeType() != null)? sip2PatronInformationResponse.getFeeType().name():"");
+
+            patronInformationResponse.setHoldItemsCount(sip2PatronInformationResponse.getHoldItemsCount());
+            patronInformationResponse.setHoldItemsLimit(sip2PatronInformationResponse.getHoldItemsLimit());
+            patronInformationResponse.setUnavailableHoldsCount(sip2PatronInformationResponse.getUnavailableHoldsCount());
+
+            patronInformationResponse.setFineItemsCount(sip2PatronInformationResponse.getFineItemsCount());
+            patronInformationResponse.setFeeAmount(sip2PatronInformationResponse.getFeeAmount());
+            patronInformationResponse.setHomeAddress(sip2PatronInformationResponse.getHomeAddress());
+            patronInformationResponse.setItems(sip2PatronInformationResponse.getItems());
+            patronInformationResponse.setItemType((sip2PatronInformationResponse.getItemType() != null)? sip2PatronInformationResponse.getItemType().name():"");
+
+            patronInformationResponse.setOverdueItemsCount(sip2PatronInformationResponse.getOverdueItemsCount());
+            patronInformationResponse.setOverdueItemsLimit(sip2PatronInformationResponse.getOverdueItemsLimit());
+            patronInformationResponse.setPacAccessType(sip2PatronInformationResponse.getPacAccessType());
+            patronInformationResponse.setPatronGroup(sip2PatronInformationResponse.getPatronGroup());
+            patronInformationResponse.setPatronType(sip2PatronInformationResponse.getPatronType());
+            patronInformationResponse.setDueDate(sip2PatronInformationResponse.getDueDate());
+            patronInformationResponse.setExpirationDate(sip2PatronInformationResponse.getExpirationDate());
+            patronInformationResponse.setStatus(sip2PatronInformationResponse.getStatus().toString());
+
         } catch (Exception ex) {
-            logger.error(ex.getMessage());
+            logger.error("",ex);
         } finally {
             connection.close();
         }
-        return sip2PatronInformationResponse;
+        return patronInformationResponse;
     }
 
     public SIP2RecallResponse recallItem(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
         SIP2RecallResponse sip2RecallResponse = null;
         SIP2SocketConnection connection = getSocketConnection();
+        ItemRecallResponse itemRecallResponse = new ItemRecallResponse();
         try {
             if (connection.connect()) { // Connect to the SIP Server - Princton, Voyager, ILS
                 /* Login to the ILS */
@@ -523,15 +529,25 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         } else {
                             logger.info("Recall Failed");
                             logger.info("Response Recall -> " + sip2RecallResponse.getData());
-                            if (sip2RecallResponse.getScreenMessage().size() > 0) {
-                                logger.info(sip2RecallResponse.getScreenMessage().get(0));
-                            }
                         }
+                        itemRecallResponse.setItemBarcode(sip2RecallResponse.getItemIdentifier());
+                        itemRecallResponse.setScreenMessage((sip2RecallResponse.getScreenMessage().size() > 0) ? sip2RecallResponse.getScreenMessage().get(0) : "");
+                        itemRecallResponse.setSuccess(sip2RecallResponse.isOk());
+                        itemRecallResponse.setTitleIdentifier(sip2RecallResponse.getTitleIdentifier());
+                        itemRecallResponse.setTransactionDate(formatFromSipDate(sip2RecallResponse.getDueDate()));
+                        itemRecallResponse.setExpirationDate(formatFromSipDate(sip2RecallResponse.getExpirationDate()));
+                        itemRecallResponse.setInstitutionID(sip2RecallResponse.getInstitutionId());
+                        itemRecallResponse.setPickupLocation(sip2RecallResponse.getPickupLocation());
+                        itemRecallResponse.setPatronIdentifier(sip2RecallResponse.getPatronIdentifier());
                     } else {
                         logger.info("Invalid Patron");
+                        itemRecallResponse.setScreenMessage("Invalid Patron");
+                        itemRecallResponse.setSuccess(true);
                     }
                 } else {
                     logger.info("Login Failed");
+                    itemRecallResponse.setScreenMessage("Login failed");
+                    itemRecallResponse.setSuccess(true);
                 }
             }
         } catch (InvalidSIP2ResponseException e) {

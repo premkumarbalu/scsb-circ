@@ -19,7 +19,8 @@ public interface IJSIPConnector {
     public Object cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId);
     public Object createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier);
     public boolean patronValidation(String institutionId, String patronIdentifier);
-    public Object lookupPatron(String patronIdentifier);
+    public AbstractResponseItem lookupPatron(String patronIdentifier);
     public Object recallItem(String  itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId,String pickupLocation);
+
 
 }

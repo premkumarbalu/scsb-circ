@@ -47,4 +47,6 @@ public class ColumbiaJSIPConnector extends JSIPConnector {
     public String getOperatorLocation() {
         return operatorLocation;
     }
+
+
 }

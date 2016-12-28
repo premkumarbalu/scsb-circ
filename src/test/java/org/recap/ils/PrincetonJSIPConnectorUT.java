@@ -1,15 +1,13 @@
 package org.recap.ils;
 
-import com.pkrete.jsip2.messages.responses.*;
+import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
+import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
+import com.pkrete.jsip2.messages.responses.SIP2ItemInformationResponse;
+import com.pkrete.jsip2.messages.responses.SIP2PatronStatusResponse;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Test;
 import org.recap.BaseTestCase;
-import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
-import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
-import org.recap.ils.model.ItemCheckinResponse;
-import org.recap.ils.model.ItemCheckoutResponse;
-import org.recap.ils.model.ItemHoldResponse;
-import org.recap.ils.model.ItemInformationResponse;
+import org.recap.ils.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +41,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
     @Test
     public void lookupItem() throws Exception {
         String[] itemIdentifier = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414"};
-        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)princetonESIPConnector.lookupItem(itemIdentifier[4], null);
+        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)princetonESIPConnector.lookupItem(itemIdentifier[4],null);
 
         logger.info("Circulation Status     :" + itemInformationResponse.getCirculationStatus());
         logger.info("SecurityMarker         :" + itemInformationResponse.getSecurityMarker());
@@ -66,24 +64,22 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
     public void lookupUser() throws Exception {
         String patronIdentifier = "45678912";
         String institutionId = "htccul";
-        SIP2PatronStatusResponse patronInformationResponse = princetonESIPConnector.lookupUser(institutionId, patronIdentifier);
+        PatronInformationResponse patronInformationResponse =  (PatronInformationResponse) princetonESIPConnector.lookupPatron(patronIdentifier);
         assertNotNull(patronInformationResponse);
-//        assertTrue(patronInformationResponse.isValid());
-
     }
 
     @Test
     public void checkout() throws Exception {
-        ItemCheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
-        assertNotNull(checkOutResponse);
-        assertTrue(checkOutResponse.isSuccess());
+        ItemCheckoutResponse itemCheckoutResponse =(ItemCheckoutResponse)princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
+        assertNotNull(itemCheckoutResponse);
+        assertTrue(itemCheckoutResponse.isSuccess());
     }
 
     @Test
     public void checkIn() throws Exception {
-        ItemCheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
-        assertNotNull(checkInResponse);
-        assertTrue(checkInResponse.isSuccess());
+        ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse)princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
+        assertNotNull(itemCheckinResponse);
+        assertTrue(itemCheckinResponse.isSuccess());
     }
 
     @Test
@@ -91,17 +87,17 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "32101077423406";
         String patronIdentifier = "198572368";
         String institutionId = "htccul";
-        ItemCheckoutResponse checkOutResponse = princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
-        assertNotNull(checkOutResponse);
-        assertTrue(checkOutResponse.isSuccess());
-        ItemCheckinResponse checkInResponse = princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
-        assertNotNull(checkInResponse);
-        assertTrue(checkInResponse.isSuccess());
+        ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse)princetonESIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
+        assertNotNull(itemCheckoutResponse);
+        assertTrue(itemCheckoutResponse.isSuccess());
+        ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse)princetonESIPConnector.checkInItem(itemIdentifier, patronIdentifier);
+        assertNotNull(itemCheckinResponse);
+        assertTrue(itemCheckinResponse.isSuccess());
     }
 
     @Test
     public void cancelHold() throws Exception {
-        ItemHoldResponse holdResponse = princetonESIPConnector.cancelHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation, null);
+        ItemHoldResponse holdResponse = (ItemHoldResponse) princetonESIPConnector.cancelHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation,null);
 
         try {
             assertNotNull(holdResponse);
@@ -114,7 +110,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void placeHold() throws Exception {
-        ItemHoldResponse holdResponse = princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation, null, null, null, null);
+        ItemHoldResponse holdResponse = (ItemHoldResponse)  princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation,null,null,null,null);
 
         try {
             assertNotNull(holdResponse);
@@ -136,8 +132,8 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         String pickupLocation = "htcsc";
         ItemHoldResponse holdResponse;
 
-        holdResponse = princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation, null, null, null, null);
-        holdResponse = princetonESIPConnector.cancelHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation, null);
+        holdResponse = (ItemHoldResponse) princetonESIPConnector.cancelHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation,null);
+        holdResponse = (ItemHoldResponse)  princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation,null,null,null,null);
 
         assertNotNull(holdResponse);
         assertTrue(holdResponse.isSuccess());

@@ -135,7 +135,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
     }
 
     @Override
-    public ItemHoldResponse placeHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId, String title, String author, String callNumber) {
+    public AbstractResponseItem placeHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId, String title, String author, String callNumber) {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         try {
             String apiUrl = nyplDataApiUrl + "/recap/hold-requests";
@@ -175,7 +175,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
     }
 
     @Override
-    public ItemHoldResponse cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId) {
+    public AbstractResponseItem cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId) {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         try {
             String apiUrl = nyplDataApiUrl + "/recap/cancel-hold-requests";
@@ -220,7 +220,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
     }
 
     @Override
-    public Object lookupPatron(String patronIdentifier) {
+    public AbstractResponseItem lookupPatron(String patronIdentifier) {
         return null;
     }
 

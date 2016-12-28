@@ -3,12 +3,14 @@ package org.recap.ils.model.response;
 /**
  * Created by rajeshbabuk on 9/12/16.
  */
-import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.recap.ils.model.DebugInfo;
 import org.recap.ils.model.JobData;
+
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({

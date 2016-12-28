@@ -9,7 +9,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by hemalathas on 11/11/16.

@@ -3,7 +3,6 @@ package org.recap.ils.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.recap.ils.model.Description;
 
 /**
  * Created by rajeshbabuk on 7/12/16.
