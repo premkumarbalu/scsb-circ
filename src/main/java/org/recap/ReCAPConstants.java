@@ -23,11 +23,11 @@ public class ReCAPConstants {
     public static final String DELIVERY_LOCATION_REQUIRED = "Delivery Location is required for request type Recall/hold/retrieval";
     public static final String EMPTY_PATRON_BARCODE = "Patron barcode should not be null or empty.Please enter the valid patron barcode";
     public static final String INVALID_REQUEST_TYPE = "Please enter the valid request type";
-    public static final String RETRIEVAL = "Retrieval";
-    public static final String HOLD = "Hold";
-    public static final String RECALL = "Recall";
+    public static final String RETRIEVAL = "RETRIEVAL";
+    public static final String HOLD = "HOLD";
+    public static final String RECALL = "RECALL";
     public static final String EDD_REQUEST = "EDD";
-    public static final String BORROW_DIRECT = "Borrow Direct";
+    public static final String BORROW_DIRECT = "BORROW DIRECT";
     public static final String PHYSICAL_REQUEST = "Physical";
     public static final String VALID_REQUEST = "All request parameters are valid.Patron is eligible to raise a request";
     public static final String INVALID_PATRON = "Patron is not available";
@@ -46,11 +46,11 @@ public class ReCAPConstants {
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
     // Retrieval,EDD, Hold, Recall, Borrow Direct
-    public static final String REQUEST_TYPE_RETRIEVAL="Retrieval";
+    public static final String REQUEST_TYPE_RETRIEVAL="RETRIEVAL";
     public static final String REQUEST_TYPE_EDD="EDD";
-    public static final String REQUEST_TYPE_HOLD="Hold";
-    public static final String REQUEST_TYPE_RECALL="Recall";
-    public static final String REQUEST_TYPE_BORROW_DIRECT="Borrow Direct";
+    public static final String REQUEST_TYPE_HOLD="HOLD";
+    public static final String REQUEST_TYPE_RECALL="RECALL";
+    public static final String REQUEST_TYPE_BORROW_DIRECT="BORROW DIRECT";
 
     // MQ URI
     public static final String REQUEST_ITEM_QUEUE = "scsbactivemq:queue:RequestItemQ";

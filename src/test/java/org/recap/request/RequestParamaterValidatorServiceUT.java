@@ -29,7 +29,7 @@ public class RequestParamaterValidatorServiceUT extends BaseTestCase{
         itemBarcodeList.add("33433012968222");
         itemRequestInformation.setItemBarcodes(itemBarcodeList);
         itemRequestInformation.setPatronBarcode("45678915");
-        itemRequestInformation.setRequestType("Borrow Direct");
+        itemRequestInformation.setRequestType(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT);
         itemRequestInformation.setRequestingInstitution("PULd");
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
         ResponseEntity responseEntity = requestParamaterValidatorService.validateItemRequestParameters(itemRequestInformation);
@@ -45,7 +45,7 @@ public class RequestParamaterValidatorServiceUT extends BaseTestCase{
         itemBarcodeList.add("33433012968222");
         itemRequestInformation.setItemBarcodes(itemBarcodeList);
         itemRequestInformation.setPatronBarcode("45678915");
-        itemRequestInformation.setRequestType("Borrow Direct");
+        itemRequestInformation.setRequestType(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT);
         itemRequestInformation.setRequestingInstitution("PUL");
         itemRequestInformation.setEmailAddress("hemalatha.shtcindia.com");
         ResponseEntity responseEntity = requestParamaterValidatorService.validateItemRequestParameters(itemRequestInformation);
@@ -77,7 +77,7 @@ public class RequestParamaterValidatorServiceUT extends BaseTestCase{
         itemBarcodeList.add("33433012968222");
         itemRequestInformation.setItemBarcodes(itemBarcodeList);
         itemRequestInformation.setPatronBarcode("45678915");
-        itemRequestInformation.setRequestType(ReCAPConstants.RECALL);
+        itemRequestInformation.setRequestType(ReCAPConstants.REQUEST_TYPE_RECALL);
         itemRequestInformation.setDeliveryLocation("AC");
         itemRequestInformation.setRequestingInstitution("PUL");
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
