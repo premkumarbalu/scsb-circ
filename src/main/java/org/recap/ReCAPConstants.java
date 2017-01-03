@@ -90,13 +90,21 @@ public class ReCAPConstants {
 
     public static final String SUBMIT_COLLECTION_REPORT = "Submit_Collection_Report";
     public static final String SUBMIT_COLLECTION_REJECTION_REPORT = "Submit_Collection_Rejection_Report";
+    public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT = "Submit_Collection_Exception_Report";
     public static final String SUBMIT_COLLECTION_ITEM_BARCODE= "ItemBarcode";
     public static final String SUBMIT_COLLECTION_CUSTOMER_CODE= "CustomerCode";
+    public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT_MESSAGE = "Exception report generated";
+    public static final String SUBMIT_COLLECTION_REJECTION_REPORT_MESSAGE = "Rejection report generated";
+    public static final String SUMBIT_COLLECTION_UPDATE_MESSAGE = "One or more record got updated";
+    public static final String SUMBIT_COLLECTION_NOT_UPDATED_MESSAGE = "No record(s) got updated";
 
     public static final String ITEM_STATUS_AVAILABLE = "Available";
     public static final String INVALID_SCSB_XML_FORMAT_MESSAGE = "Please provide valid SCSB xml format";
     public static final String INVALID_MARC_XML_FORMAT_MESSAGE = "Please provide valid Marc xml format";
     public static final String SUBMIT_COLLECTION_INTERNAL_ERROR = "Internal error occured during submit collection";
     public static final String SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE = "Maximum allowed input record is ";
+    public static final String COMPLETE_STATUS = "Complete";
+    public static final String INCOMPLETE_STATUS = "Incomplete";
+    public static final String BIBRECORD_TAG= "<bibRecords>";
 
 }

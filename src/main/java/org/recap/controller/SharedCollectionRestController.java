@@ -30,8 +30,11 @@ public class SharedCollectionRestController {
         List<Integer> processedBibIdList = new ArrayList<>();
         try {
             response = submitCollectionService.process(inputRecords,processedBibIdList);
-            if (response.equalsIgnoreCase(ReCAPConstants.SUCCESS)) {
-                response = submitCollectionService.indexData(processedBibIdList);
+            if (response.contains(ReCAPConstants.SUMBIT_COLLECTION_UPDATE_MESSAGE)) {
+                String indexResponse = submitCollectionService.indexData(processedBibIdList);
+                if(!indexResponse.equalsIgnoreCase(ReCAPConstants.SUCCESS)){
+                    response = indexResponse;
+                }
             }
             responseEntity = new ResponseEntity(response,getHttpHeaders(), HttpStatus.OK);
         } catch (Exception e) {

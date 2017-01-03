@@ -3,7 +3,7 @@ package org.recap.model.report;
 /**
  * Created by premkb on 25/12/16.
  */
-public class SubmitCollectionRejectionInfo {
+public class SubmitCollectionReportInfo {
 
     private String itemBarcode;
 
