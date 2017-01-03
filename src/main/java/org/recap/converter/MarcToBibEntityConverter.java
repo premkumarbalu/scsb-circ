@@ -39,9 +39,6 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
     private ItemStatusDetailsRepository itemStatusDetailsRepository;
 
     @Autowired
-    private BibliographicDetailsRepository bibliographicDetailsRepository;
-
-    @Autowired
     private CustomerCodeDetailsRepository customerCodeDetailsRepository;
 
     private Map itemStatusMap;
