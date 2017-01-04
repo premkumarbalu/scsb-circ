@@ -226,21 +226,40 @@ public class SubmitCollectionService {
 
     public BibliographicEntity updateBibliographicEntity(BibliographicEntity bibliographicEntity,List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,
                                                          List<SubmitCollectionReportInfo> submitCollectionExceptionInfos) {
-        BibliographicEntity savedOrUnsavedBibliographicEntity=null;
-
+        boolean isIncompleteRecord = false;
+        BibliographicEntity savedBibliographicEntity=null;
         BibliographicEntity fetchBibliographicEntity = getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(),bibliographicEntity.getOwningInstitutionBibId());
+        if(fetchBibliographicEntity == null){//Check and update existing incomplete record if any
+            fetchBibliographicEntity = getBibEntityUsingBarcodeForIncompleteRecord(bibliographicEntity);
+            if(fetchBibliographicEntity !=null){
+                isIncompleteRecord = true;
+                savedBibliographicEntity = updateIncompleteRecord(fetchBibliographicEntity,bibliographicEntity);
+            }
+        }
+        if(!isIncompleteRecord){
+                updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionRejectionInfos,submitCollectionExceptionInfos);
+        }
+        return savedBibliographicEntity;
+    }
+
+    private BibliographicEntity getBibEntityUsingBarcodeForIncompleteRecord(BibliographicEntity bibliographicEntity){
+        String itemBarcode = bibliographicEntity.getItemEntities().get(0).getBarcode();
+        List<String> itemBarcodeList = new ArrayList<>();
+        itemBarcodeList.add(itemBarcode);
+        List<ItemEntity> itemEntityList = getItemDetailsRepository().findByBarcodeIn(itemBarcodeList);
+        BibliographicEntity fetchedBibliographicEntity = itemEntityList.get(0).getBibliographicEntities().get(0);
+        return fetchedBibliographicEntity;
+    }
+
+    private BibliographicEntity updateCompleteRecord(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity,List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,
+                                                     List<SubmitCollectionReportInfo> submitCollectionExceptionInfos){
+        BibliographicEntity savedOrUnsavedBibliographicEntity=null;
         if(fetchBibliographicEntity  == null){
             savedOrUnsavedBibliographicEntity = bibliographicEntity;
             setSubmitCollectionExceptionInfo(bibliographicEntity,submitCollectionExceptionInfos);
         }else{ // Existing bib Record
             setSubmitCollectionRejectionInfo(fetchBibliographicEntity,submitCollectionRejectionInfos);
-            fetchBibliographicEntity.setContent(bibliographicEntity.getContent());
-            fetchBibliographicEntity.setCreatedBy(bibliographicEntity.getCreatedBy());
-            fetchBibliographicEntity.setCreatedDate(bibliographicEntity.getCreatedDate());
-            fetchBibliographicEntity.setDeleted(bibliographicEntity.isDeleted());
-            fetchBibliographicEntity.setLastUpdatedBy(bibliographicEntity.getLastUpdatedBy());
-            fetchBibliographicEntity.setLastUpdatedDate(bibliographicEntity.getLastUpdatedDate());
-            fetchBibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
+            copyBibliographicEntity(fetchBibliographicEntity,bibliographicEntity);
             List<HoldingsEntity> fetchHoldingsEntities =fetchBibliographicEntity.getHoldingsEntities();
             List<HoldingsEntity> holdingsEntities = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
             for (Iterator iholdings = holdingsEntities.iterator(); iholdings.hasNext();) {
@@ -284,6 +303,59 @@ public class SubmitCollectionService {
             savedOrUnsavedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(fetchBibliographicEntity);
         }
         return savedOrUnsavedBibliographicEntity;
+    }
+
+    private BibliographicEntity updateIncompleteRecord(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity) {
+        BibliographicEntity savedBibliographicEntity = null;
+        copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity);
+        List<HoldingsEntity> fetchHoldingsEntities = fetchBibliographicEntity.getHoldingsEntities();
+        List<HoldingsEntity> holdingsEntities = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
+        for (Iterator iholdings = holdingsEntities.iterator(); iholdings.hasNext(); ) {
+            HoldingsEntity holdingsEntity = (HoldingsEntity) iholdings.next();
+            for (int j = 0; j < fetchHoldingsEntities.size(); j++) {
+                HoldingsEntity fetchHolding = fetchHoldingsEntities.get(j);
+                List<ItemEntity> fetchedItemEntityList = fetchHolding.getItemEntities();
+                List<ItemEntity> itemEntityList = holdingsEntity.getItemEntities();
+                for (ItemEntity fetchedItemEntity : fetchedItemEntityList) {
+                    for (ItemEntity itemEntity : itemEntityList) {
+                        if (fetchedItemEntity.getBarcode().equals(itemEntity.getBarcode())) {
+                            copyHoldingsEntity(fetchHolding, holdingsEntity);
+                            iholdings.remove();
+                        }
+                    }
+                }
+            }
+        }
+        fetchHoldingsEntities.addAll(holdingsEntities);
+        // Item
+        List<ItemEntity> fetchItemsEntities = fetchBibliographicEntity.getItemEntities();
+        List<ItemEntity> itemsEntities = new ArrayList<>(bibliographicEntity.getItemEntities());
+        for (Iterator iItems = itemsEntities.iterator(); iItems.hasNext(); ) {
+            ItemEntity itemEntity = (ItemEntity) iItems.next();
+            for (Iterator ifetchItems = fetchItemsEntities.iterator(); ifetchItems.hasNext(); ) {
+                ItemEntity fetchItem = (ItemEntity) ifetchItems.next();
+                if (fetchItem.getBarcode().equalsIgnoreCase(itemEntity.getBarcode()) && fetchItem.getOwningInstitutionId().equals(itemEntity.getOwningInstitutionId())) {
+                    copyItemEntity(fetchItem, itemEntity);
+                    iItems.remove();
+                }
+            }
+        }
+        fetchItemsEntities.addAll(itemsEntities);
+        fetchBibliographicEntity.setHoldingsEntities(fetchHoldingsEntities);
+        fetchBibliographicEntity.setItemEntities(fetchItemsEntities);
+        savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(fetchBibliographicEntity);
+        return savedBibliographicEntity;
+    }
+
+    private BibliographicEntity copyBibliographicEntity(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity){
+        fetchBibliographicEntity.setContent(bibliographicEntity.getContent());
+        fetchBibliographicEntity.setCreatedBy(bibliographicEntity.getCreatedBy());
+        fetchBibliographicEntity.setCreatedDate(bibliographicEntity.getCreatedDate());
+        fetchBibliographicEntity.setDeleted(bibliographicEntity.isDeleted());
+        fetchBibliographicEntity.setLastUpdatedBy(bibliographicEntity.getLastUpdatedBy());
+        fetchBibliographicEntity.setLastUpdatedDate(bibliographicEntity.getLastUpdatedDate());
+        fetchBibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
+        return fetchBibliographicEntity;
     }
 
     private HoldingsEntity copyHoldingsEntity(HoldingsEntity fetchHoldingsEntity, HoldingsEntity holdingsEntity){

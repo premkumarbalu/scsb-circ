@@ -7,6 +7,7 @@ import org.marc4j.MarcXmlReader;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 import org.recap.BaseTestCase;
+import org.recap.ReCAPConstants;
 import org.recap.model.BibliographicEntity;
 import org.recap.model.HoldingsEntity;
 import org.recap.model.ItemEntity;
@@ -15,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -507,9 +507,93 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
             "      </holdings>\n" +
             "   </bibRecord>\n" +
             "</bibRecords>";
+
+    private String dummyBibMarcContent = "<collection>\n" +
+            "    <record>\n" +
+            "        <leader>01893cam a2200361 a 4500</leader>\n" +
+            "        <controlfield tag=\"001\">Dummy</controlfield>\n" +
+            "        <controlfield tag=\"005\">dummydummydumm.y</controlfield>\n" +
+            "        <controlfield tag=\"008\">dummydummydummydummydummydummydummydummy</controlfield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"010\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"020\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"020\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"035\">\n" +
+            "            <subfield code=\"a\">(OCoLC)Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"040\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"042\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"043\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\"0\" ind2=\"0\" tag=\"050\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "            <subfield code=\"b\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\"0\" ind2=\"0\" tag=\"245\">\n" +
+            "            <subfield code=\"a\">Dummy Title</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"260\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"300\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"500\">\n" +
+            "            <subfield code=\"a\">\"Dummy\"</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"500\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"504\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\"2\" ind2=\"0\" tag=\"610\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "            <subfield code=\"x\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\"2\" ind2=\"0\" tag=\"610\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "            <subfield code=\"x\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\"0\" tag=\"650\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "            <subfield code=\"z\">Dummy</subfield>\n" +
+            "            <subfield code=\"x\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\"1\" ind2=\" \" tag=\"700\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\"2\" ind2=\" \" tag=\"710\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "            <subfield code=\"0\">(uri)http://id.loc.gov/authorities/names/no</subfield>\n" +
+            "        </datafield>\n" +
+            "        <datafield ind1=\" \" ind2=\" \" tag=\"999\">\n" +
+            "            <subfield code=\"a\">Dummy</subfield>\n" +
+            "        </datafield>\n" +
+            "    </record>\n" +
+            "</collection>";
+
+    private String dummyHoldingMarcContent = "<collection>\n" +
+            "    <record>\n" +
+            "        <datafield ind1=\"0\" ind2=\"0\" tag=\"852\">\n" +
+            "            <subfield code=\"b\">dummy</subfield>\n" +
+            "            <subfield code=\"h\">dummydummydummy</subfield>\n" +
+            "        </datafield>\n" +
+            "    </record>\n" +
+            "</collection>";
     @Test
     public void processForPUL() throws JAXBException {
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL, ReCAPConstants.INCOMPLETE_STATUS);
         List<Integer> processedBibIdList = new ArrayList<>();
         submitCollectionService.process(updatedMarcForPUL,processedBibIdList);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
@@ -532,8 +616,34 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
     }
 
     @Test
+    public void processForPULUpdateIncompleteRecord() throws JAXBException {
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",dummyBibMarcContent,dummyHoldingMarcContent,ReCAPConstants.INCOMPLETE_STATUS);
+        List<Integer> processedBibIdList = new ArrayList<>();
+        submitCollectionService.process(updatedMarcForPUL,processedBibIdList);
+        List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
+        String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
+        List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);
+        assertNotNull(bibRecordList);
+        DataField field912 = (DataField)bibRecordList.get(0).getVariableField("912");
+        assertEquals("19970731060735.0", field912.getSubfield('a').getData());
+        HoldingsEntity holdingsEntity = fetchedBibliographicEntityList.get(0).getHoldingsEntities().get(0);
+        String updatedHoldingMarcXML = new String(holdingsEntity.getContent(),StandardCharsets.UTF_8);
+        List<Record> holdingRecordList = readMarcXml(updatedHoldingMarcXML);
+        logger.info("updatedHoldingMarcXML-->"+updatedHoldingMarcXML);
+        TestCase.assertNotNull(holdingRecordList);
+        DataField field852 = (DataField)holdingRecordList.get(0).getVariableField("852");
+        assertEquals("K25 .xN5", field852.getSubfield('h').getData());
+        String callNumber = fetchedBibliographicEntityList.get(0).getItemEntities().get(0).getCallNumber();
+        assertEquals("K25 .xN5",callNumber);
+        Integer collectionGroupId = fetchedBibliographicEntityList.get(0).getItemEntities().get(0).getCollectionGroupId();
+        assertEquals(new Integer(2),collectionGroupId);
+        String catalogingStatus = fetchedBibliographicEntityList.get(0).getItemEntities().get(0).getCatalogingStatus();
+        assertEquals("Complete",catalogingStatus);
+    }
+
+    @Test
     public void processForPULRejectedRecord() throws JAXBException {
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",2,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",2,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL,ReCAPConstants.INCOMPLETE_STATUS);
         List<Integer> processedBibIdList = new ArrayList<>();
         submitCollectionService.process(updatedMarcForPUL,processedBibIdList);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
@@ -557,7 +667,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
 
     @Test
     public void processForNYPL(){
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(3,".b100000125","123",".i100000034",1,"33433014514719",bibMarcContentForNYPL1,holdingContentForNYPL1);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(3,".b100000125","123",".i100000034",1,"33433014514719",bibMarcContentForNYPL1,holdingContentForNYPL1,ReCAPConstants.INCOMPLETE_STATUS);
         String originalXML = new String(savedBibliographicEntity.getContent());
         List<Integer> processedBibIdList = new ArrayList<>();
         submitCollectionService.process(updatedContentForNYPL1,processedBibIdList);
@@ -579,7 +689,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
     }
 
     private BibliographicEntity getBibliographicEntity(Integer owningInstitutionId, String owningInstitutionBibId, String owningInstitutionHoldingsId,
-                                                       String owningInstitutionItemId, Integer itemAvailabilityStatusId, String itemBarcode, String bibMarcContent , String holdingMarcContent){
+                                                       String owningInstitutionItemId, Integer itemAvailabilityStatusId, String itemBarcode, String bibMarcContent , String holdingMarcContent,String catalogingStatus){
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setContent(bibMarcContent.getBytes());
         bibliographicEntity.setCreatedDate(new Date());
@@ -588,6 +698,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         bibliographicEntity.setLastUpdatedDate(new Date());
         bibliographicEntity.setOwningInstitutionBibId(owningInstitutionBibId);
         bibliographicEntity.setOwningInstitutionId(owningInstitutionId);
+        bibliographicEntity.setCatalogingStatus(catalogingStatus);
 
         HoldingsEntity holdingsEntity = new HoldingsEntity();
         holdingsEntity.setContent(holdingMarcContent.getBytes());
@@ -614,6 +725,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         itemEntity.setItemAvailabilityStatusId(itemAvailabilityStatusId);
         itemEntity.setDeleted(false);
         itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity.setCatalogingStatus(catalogingStatus);
         List<ItemEntity> itemEntityList = new ArrayList<>();
         itemEntityList.add(itemEntity);
         holdingsEntity.setItemEntities(itemEntityList);
