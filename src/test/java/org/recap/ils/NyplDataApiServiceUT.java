@@ -62,7 +62,7 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
     @Test
     public void createRecapHoldRequest() throws Exception {
-        String apiUrl = nyplDataApiUrl + "/v0.1/recap/hold-requests";
+        String apiUrl = nyplDataApiUrl + "/recap/hold-requests";
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
         HttpHeaders headers = new HttpHeaders();
@@ -117,7 +117,7 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
     @Test
     public void nyplBibs() throws Exception {
-        String apiUrl = nyplDataApiUrl + "/v0.1/recap/nypl-bibs?barcode={barcode}&customercode={customercode}";
+        String apiUrl = nyplDataApiUrl + "/recap/nypl-bibs?barcode={barcode}&customercode={customercode}";
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
         HttpHeaders headers = new HttpHeaders();
@@ -172,7 +172,7 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
     @Test
     public void checkin() throws Exception {
-        String apiUrl = nyplDataApiUrl + "/v0.1/checkin-requests";
+        String apiUrl = nyplDataApiUrl + "/checkin-requests";
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
         HttpHeaders headers = new HttpHeaders();
@@ -194,7 +194,7 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
     @Test
     public void checkout() throws Exception {
-        String apiUrl = nyplDataApiUrl + "/v0.1/checkout-requests";
+        String apiUrl = nyplDataApiUrl + "/checkout-requests";
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
         HttpHeaders headers = new HttpHeaders();
@@ -218,7 +218,7 @@ public class NyplDataApiServiceUT extends BaseTestCase {
     @Test
     public void getCheckoutRequestById() throws Exception {
         String checkoutId = "36";
-        String apiUrl = nyplDataApiUrl + "/v0.1/checkout-requests/" + checkoutId;
+        String apiUrl = nyplDataApiUrl + "/checkout-requests/" + checkoutId;
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
         HttpHeaders headers = new HttpHeaders();
@@ -238,7 +238,7 @@ public class NyplDataApiServiceUT extends BaseTestCase {
     @Test
     public void getCheckinRequestById() throws Exception {
         String checkinId = "20";
-        String apiUrl = nyplDataApiUrl + "/v0.1/checkin-requests/" + checkinId;
+        String apiUrl = nyplDataApiUrl + "/checkin-requests/" + checkinId;
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
         HttpHeaders headers = new HttpHeaders();
@@ -257,8 +257,8 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
     @Test
     public void getJobById() throws Exception {
-        String jobId = "352584a82b1591a8";
-        String apiUrl = nyplDataApiUrl + "/v0.1/jobs/" + jobId;
+        String jobId = "51658611ff25b28b";
+        String apiUrl = nyplDataApiUrl + "/jobs/" + jobId;
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
         HttpHeaders headers = new HttpHeaders();
@@ -268,27 +268,21 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity requestEntity = new HttpEntity(headers);
-        ResponseEntity<String> responseEntity = restTemplate.exchange(apiUrl, HttpMethod.GET, requestEntity, String.class);
+        ResponseEntity<JobResponse> responseEntity = restTemplate.exchange(apiUrl, HttpMethod.GET, requestEntity, JobResponse.class);
         assertNotNull(responseEntity);
         assertNotNull(responseEntity.getBody());
-        String responseBody = responseEntity.getBody();
-        JSONObject jobJsonObject = new JSONObject(responseBody);
-        JSONObject jobDataJsonObject = new JSONObject(jobJsonObject.get("data").toString());
-        Boolean started = (Boolean) jobDataJsonObject.get("started");
-        Boolean finished = (Boolean) jobDataJsonObject.get("finished");
-        Boolean success = (Boolean) jobDataJsonObject.get("success");
-        assertNotNull(started);
-        assertNotNull(finished);
-        assertNotNull(success);
-        //JobResponse jobResponse = responseEntity.getBody();
-        //assertNotNull(jobResponse);
+        JobResponse jobResponse = responseEntity.getBody();
+        assertNotNull(jobResponse);
+        assertNotNull(jobResponse.getData().getStarted());
+        assertNotNull(jobResponse.getData().getFinished());
+        assertNotNull(jobResponse.getData().getSuccess());
     }
 
     @Test
     public void getItemByNyplSourceAndId() throws Exception {
         String nyplSource = "recap-PUL";
         String id = "1787347";
-        String apiUrl = nyplDataApiUrl + "/v0.1/items/" + nyplSource + "/" + id;
+        String apiUrl = nyplDataApiUrl + "/items/" + nyplSource + "/" + id;
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
         HttpHeaders headers = new HttpHeaders();
@@ -307,7 +301,7 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
     @Test
     public void getItems() throws Exception {
-        String apiUrl = nyplDataApiUrl + "/v0.1/items?limit={limit}&nyplSource={nyplSource}";
+        String apiUrl = nyplDataApiUrl + "/items?limit={limit}&nyplSource={nyplSource}";
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
         HttpHeaders headers = new HttpHeaders();

@@ -23,7 +23,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
     public void testValidRequest(){
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         itemRequestInformation.setPatronBarcode("45678915");
-        itemRequestInformation.setRequestType("Hold");
+        itemRequestInformation.setRequestType(ReCAPConstants.REQUEST_TYPE_HOLD);
         itemRequestInformation.setDeliveryLocation("AC");
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
         itemRequestInformation.setRequestingInstitution("PUL");
@@ -38,7 +38,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
     public void testInValidRequest(){
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         itemRequestInformation.setPatronBarcode("4567gfdr8915");
-        itemRequestInformation.setRequestType("Hold");
+        itemRequestInformation.setRequestType(ReCAPConstants.REQUEST_TYPE_HOLD);
         itemRequestInformation.setDeliveryLocation("AC");
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
         itemRequestInformation.setRequestingInstitution("PUL");
