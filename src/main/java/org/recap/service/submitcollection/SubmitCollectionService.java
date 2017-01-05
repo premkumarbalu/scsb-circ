@@ -237,7 +237,7 @@ public class SubmitCollectionService {
             }
         }
         if(!isIncompleteRecord){
-                updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionRejectionInfos,submitCollectionExceptionInfos);
+            savedBibliographicEntity = updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionRejectionInfos,submitCollectionExceptionInfos);
         }
         return savedBibliographicEntity;
     }
