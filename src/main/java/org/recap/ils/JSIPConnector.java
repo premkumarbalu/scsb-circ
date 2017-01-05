@@ -333,19 +333,10 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         holdRequest.setExpirationDate(expirationDate);
                         holdRequest.setBibId(bibId);
                         holdRequest.setPickupLocation(pickupLocation);
-                        holdRequest.setErrorDetectionEnabled(true);
+//                        holdRequest.setErrorDetectionEnabled(true);
                         logger.info("Request Hold -> " + holdRequest.getData());
                         holdResponse = (SIP2HoldResponse) connection.send(holdRequest);
 
-                        /* Check that the hold was placed succesfully */
-                        if (holdResponse.isOk()) {
-                            if (holdResponse.getScreenMessage().size() > 0) {
-                                logger.info("" + holdResponse.getScreenMessage().get(0));
-                            }
-                        } else {
-                            logger.info("Hold Failed");
-                            logger.info("Response Hold -> " + holdResponse.getData());
-                        }
                         itemHoldResponse.setItemBarcode(holdResponse.getItemIdentifier());
                         itemHoldResponse.setScreenMessage((holdResponse.getScreenMessage().size() > 0) ? holdResponse.getScreenMessage().get(0) : "");
                         itemHoldResponse.setSuccess(holdResponse.isOk());
@@ -489,7 +480,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return patronInformationResponse;
     }
 
-    public SIP2RecallResponse recallItem(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
+    public ItemRecallResponse recallItem(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
         SIP2RecallResponse sip2RecallResponse = null;
         SIP2SocketConnection connection = getSocketConnection();
         ItemRecallResponse itemRecallResponse = new ItemRecallResponse();
@@ -557,7 +548,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
         } finally {
             connection.close();
         }
-        return sip2RecallResponse;
+        return itemRecallResponse;
     }
 
     private String formatFromSipDate(String sipDate){

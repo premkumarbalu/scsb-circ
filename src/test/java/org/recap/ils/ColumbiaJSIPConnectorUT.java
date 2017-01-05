@@ -182,7 +182,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String pickupLocation="CIRCrecap";
         String bibId="12040033";
 
-        SIP2RecallResponse recallResponse = columbiaJSIPConnector.recallItem(itemIdentifier, patronIdentifier,institutionId ,expirationDate,pickupLocation,bibId);
+//        SIP2RecallResponse recallResponse = columbiaJSIPConnector.recallItem(itemIdentifier, patronIdentifier,institutionId ,expirationDate,pickupLocation,bibId);
 
 //        assertNotNull(recallResponse);
 //        assertTrue(recallResponse.isOk());

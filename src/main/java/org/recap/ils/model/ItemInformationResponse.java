@@ -33,6 +33,8 @@ public class ItemInformationResponse extends AbstractResponseItem{
     private String updatedDate;
     private String deletedDate;
     private boolean isDeleted;
+    private String patronBarcode="";
+    private String requestingInstitution="";
 
     public String getExpirationDate() {
         return expirationDate;
@@ -240,5 +242,21 @@ public class ItemInformationResponse extends AbstractResponseItem{
 
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public String getPatronBarcode() {
+        return patronBarcode;
+    }
+
+    public void setPatronBarcode(String patronBarcode) {
+        this.patronBarcode = patronBarcode;
+    }
+
+    public String getRequestingInstitution() {
+        return requestingInstitution;
+    }
+
+    public void setRequestingInstitution(String requestingInstitution) {
+        this.requestingInstitution = requestingInstitution;
     }
 }

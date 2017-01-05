@@ -7,7 +7,6 @@ import java.util.List;
 /**
  * Created by hemalathas on 1/11/16.
  */
-//@JsonIgnoreProperties({"itemBarcodes", "titleIdentifier", "patronBarcode","patronBarcode","emailAddress","requestingInstitution","requestingInstitution","requestType","deliveryLocation","requestNotes","startPage","endPage","chapterTitle"})
 public class ItemRequestInformation {
 
     private List<String> itemBarcodes;
