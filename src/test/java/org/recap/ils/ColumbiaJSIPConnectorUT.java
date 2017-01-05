@@ -10,10 +10,7 @@ import com.pkrete.jsip2.parser.SIP2CreateBibResponseParser;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Test;
 import org.recap.BaseTestCase;
-import org.recap.ils.model.ItemCheckinResponse;
-import org.recap.ils.model.ItemCheckoutResponse;
-import org.recap.ils.model.ItemHoldResponse;
-import org.recap.ils.model.ItemInformationResponse;
+import org.recap.ils.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +27,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Autowired
     private ColumbiaJSIPConnector columbiaJSIPConnector;
-
-    private String[] itemIdentifier = {"CU55724132", "CULTST12345","MR68799284","1000534323"," CU65897706","CULTST52345"};
+    private String[] itemIdentifier = {"CU55724132", "CULTST12345","MR68799284","1000534323"," CU65897706","CULTST52345","CULTST11345","CULTST13345"};
 
 
     private String patronIdentifier = "RECAPTST01";
@@ -69,11 +65,11 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String institutionId = "CUL";
         SIP2PatronStatusResponse patronInformationResponse = columbiaJSIPConnector.lookupUser(institutionId, patronIdentifier);
         assertNotNull(patronInformationResponse);
-//        assertTrue(patronInformationResponse.isValid());
+        assertTrue(patronInformationResponse.isValid());
     }
 
     @Test
-    public void checkout() throws Exception { // CULTST11345 , CULTST13345 ,
+    public void checkout() throws Exception {
         String itemIdentifier = this.itemIdentifier[4];
         String patronIdentifier = "RECAPPUL01";
         String institutionId = "";
@@ -142,7 +138,6 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void bothHold() throws Exception {
-//        String itemIdentifier = "32101057972166";
         String itemIdentifier = "32101095533293";
         String patronIdentifier = "198572368";
         String institutionId = "htccul";
@@ -182,24 +177,15 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String pickupLocation="CIRCrecap";
         String bibId="12040033";
 
-        SIP2RecallResponse recallResponse = columbiaJSIPConnector.recallItem(itemIdentifier, patronIdentifier,institutionId ,expirationDate,pickupLocation,bibId);
-
-//        assertNotNull(recallResponse);
-//        assertTrue(recallResponse.isOk());
+        ItemRecallResponse itemRecallResponse= columbiaJSIPConnector.recallItem(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
+        assertNotNull(itemRecallResponse);
+        assertTrue(itemRecallResponse.isSuccess());
     }
 
 
     @Test
     public void testCreatebibParser(){
-        //44444444444444
         String createBibEsipResponse="821MJ8967832|MA12040035|AF|";
-        // 3333333333
-        // 821MJ|MA12040036|AF|
-        // 6666666
-        // 821MJ8967833|MA12040037|AF|
-        // 888888
-        // 821MJ8967834|MA12040038|AF|
-
         SIP2CreateBibResponseParser sip2CreateBibResponseParser = new SIP2CreateBibResponseParser();
         try {
             SIP2MessageResponse sIP2MessageResponse =sip2CreateBibResponseParser.parse(createBibEsipResponse);

@@ -33,7 +33,6 @@ public class PatronDetailsRepositoryUT extends BaseTestCase {
         requestItemEntity.setRequestingInstitutionId(1);
 //        requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
         requestItemEntity.setPatronEntity(patronEntity);
-        requestItemEntity.setRequestPosition(99);
         requestItemEntity.setCreatedDate(new Date());
         requestItemEntity.setStopCode("PA");
 

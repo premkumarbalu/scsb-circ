@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
@@ -81,6 +82,7 @@ public class RequestItemController {
                 callInstitition = itemRequestInformation.getItemOwningInstitution();
             }
             String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
+            logMessages(logger,itemRequestInformation);
             itemHoldResponse = (ItemHoldResponse) jsipConectorFactory.getJSIPConnector(callInstitition).placeHold(itembarcode, itemRequestInformation.getPatronBarcode(),
                     itemRequestInformation.getRequestingInstitution(),
                     itemRequestInformation.getExpirationDate(),
@@ -90,6 +92,7 @@ public class RequestItemController {
                     itemRequestInformation.getTitle(),
                     itemRequestInformation.getAuthor(),
                     itemRequestInformation.getCallNumber());
+
         } catch (Exception e) {
             logger.info("Exception", e);
             itemHoldResponse.setSuccess(false);
@@ -181,5 +184,18 @@ public class RequestItemController {
             e.printStackTrace();
         }
         return reformattedStr;
+    }
+
+    public void logMessages(Logger logger, Object clsObject){
+        try {
+            for (Field field : clsObject.getClass().getDeclaredFields()) {
+                field.setAccessible(true);
+                String name = field.getName();
+                Object value = field.get(clsObject);
+                logger.info("Field name: "+ name+"Filed Value :"+value);
+            }
+        } catch (IllegalAccessException e) {
+            logger.error("",e);
+        }
     }
 }

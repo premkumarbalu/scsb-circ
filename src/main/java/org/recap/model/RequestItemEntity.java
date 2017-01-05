@@ -30,9 +30,6 @@ public class RequestItemEntity implements Serializable {
     @Column(name = "PATRON_ID")
     private Integer patronId;
 
-    @Column(name = "REQUEST_POSITION")
-    private Integer requestPosition;
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "REQ_EXP_DATE")
     private Date requestExpirationDate;
@@ -105,14 +102,6 @@ public class RequestItemEntity implements Serializable {
 
     public void setPatronId(Integer patronId) {
         this.patronId = patronId;
-    }
-
-    public Integer getRequestPosition() {
-        return requestPosition;
-    }
-
-    public void setRequestPosition(Integer requestPosition) {
-        this.requestPosition = requestPosition;
     }
 
     public Date getRequestExpirationDate() {
