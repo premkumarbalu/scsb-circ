@@ -26,7 +26,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     private String itemIdentifier = "32101098746470";
     private String patronIdentifier = "45678913";
-    //    private String patronIdentifier = "45678912";45678915
+    private String[] patronId = {"45678912","45678913","45678915"};
     private String pickupLocation = "rcpcirc";
     private String bibId = "59041";
     private String institutionId = "htccul";
@@ -40,7 +40,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void lookupItem() throws Exception {
-        String[] itemIdentifier = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414"};
+        String[] itemIdentifier = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414","32101057972166"};
         ItemInformationResponse itemInformationResponse = (ItemInformationResponse)princetonESIPConnector.lookupItem(this.itemIdentifier,null);
 
         logger.info("\n\n");
@@ -51,7 +51,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         logger.info("Transaction Date       : " + itemInformationResponse.getTransactionDate());
         logger.info("Hold Queue Length (CF) : " + itemInformationResponse.getHoldQueueLength());
 
-//        assertEquals(itemIdentifier[4], itemInformationResponse.getItemBarcode());
+        assertEquals(itemIdentifier[4], this.itemIdentifier);
     }
 
     @Test
@@ -128,7 +128,6 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void bothHold() throws Exception {
-//        String itemIdentifier = "32101057972166";
         String itemIdentifier = "32101095533293";
         String patronIdentifier = "198572368";
         String institutionId = "htccul";
@@ -165,10 +164,10 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         String pickupLocation = "htcsc";
         String bibId = "9959082";
 
-//        SIP2RecallResponse recallResponse = princetonESIPConnector.recallItem(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
+        ItemRecallResponse itemRecallResponse= princetonESIPConnector.recallItem(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
 
-//        assertNotNull(recallResponse);
-//        assertTrue(recallResponse.isOk());
+        assertNotNull(itemRecallResponse);
+        assertTrue(itemRecallResponse.isSuccess());
     }
 
 }
