@@ -81,18 +81,18 @@ public class SubmitCollectionService {
     private Integer inputLimit;
 
     @Transactional
-    public String process(String inputRecords, List<Integer> processedBibIdList) {
+    public String process(String inputRecords, List<Integer> processedBibIdList,Map<String,String> idMapToRemoveIndex) {
         String reponse = null;
         List<SubmitCollectionReportInfo> submitCollectionRejectionInfos = new ArrayList<>();
         List<SubmitCollectionReportInfo> submitCollectionExceptionInfos = new ArrayList<>();
         try{
             if(!inputRecords.equals("")) {
                 if (inputRecords.contains(ReCAPConstants.BIBRECORD_TAG)) {
-                    reponse = processSCSB(inputRecords, processedBibIdList, submitCollectionRejectionInfos,submitCollectionExceptionInfos);
+                    reponse = processSCSB(inputRecords, processedBibIdList, submitCollectionRejectionInfos,submitCollectionExceptionInfos,idMapToRemoveIndex);
                     if (reponse != null)
                         return reponse;
                 } else {
-                    reponse = processMarc(inputRecords, processedBibIdList, submitCollectionRejectionInfos, submitCollectionExceptionInfos);
+                    reponse = processMarc(inputRecords, processedBibIdList, submitCollectionRejectionInfos, submitCollectionExceptionInfos,idMapToRemoveIndex);
                     if (reponse != null)
                         return reponse;
                 }
@@ -133,7 +133,7 @@ public class SubmitCollectionService {
     }
 
     private String processMarc(String inputRecords, List<Integer> processedBibIdList, List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,
-                               List<SubmitCollectionReportInfo> submitCollectionExceptionInfos) {
+                               List<SubmitCollectionReportInfo> submitCollectionExceptionInfos,Map<String,String> idMapToRemoveIndex) {
         String format;
         format = ReCAPConstants.FORMAT_MARC;
         List<Record> records = null;
@@ -149,7 +149,7 @@ public class SubmitCollectionService {
         }
         if (CollectionUtils.isNotEmpty(records)) {
             for (Record record : records) {
-                BibliographicEntity bibliographicEntity = loadData(record, format,submitCollectionRejectionInfos,submitCollectionExceptionInfos);
+                BibliographicEntity bibliographicEntity = loadData(record, format,submitCollectionRejectionInfos,submitCollectionExceptionInfos,idMapToRemoveIndex);
                 if (null != bibliographicEntity.getBibliographicId()) {
                     processedBibIdList.add(bibliographicEntity.getBibliographicId());
                 }
@@ -159,7 +159,7 @@ public class SubmitCollectionService {
     }
 
     private String processSCSB(String inputRecords, List<Integer> processedBibIdList, List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,
-                               List<SubmitCollectionReportInfo> submitCollectionExceptionInfos) {
+                               List<SubmitCollectionReportInfo> submitCollectionExceptionInfos,Map<String,String> idMapToRemoveIndex) {
         String format;
         format = ReCAPConstants.FORMAT_SCSB;
         BibRecords bibRecords = null;
@@ -173,7 +173,7 @@ public class SubmitCollectionService {
             return ReCAPConstants.INVALID_SCSB_XML_FORMAT_MESSAGE;
         }
         for (BibRecord bibRecord : bibRecords.getBibRecords()) {
-            BibliographicEntity bibliographicEntity = loadData(bibRecord, format,submitCollectionRejectionInfos,submitCollectionExceptionInfos);
+            BibliographicEntity bibliographicEntity = loadData(bibRecord, format,submitCollectionRejectionInfos,submitCollectionExceptionInfos,idMapToRemoveIndex);
             if (null != bibliographicEntity.getBibliographicId()) {
                 processedBibIdList.add(bibliographicEntity.getBibliographicId());
             }
@@ -183,7 +183,7 @@ public class SubmitCollectionService {
 
 
     private BibliographicEntity loadData(Object record, String format, List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,
-                                         List<SubmitCollectionReportInfo> submitCollectionExceptionInfos){
+                                         List<SubmitCollectionReportInfo> submitCollectionExceptionInfos,Map<String,String> idMapToRemoveIndex){
         BibliographicEntity savedBibliographicEntity = null;
         Map responseMap = getConverter(format).convert(record);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) responseMap.get("bibliographicEntity");
@@ -192,7 +192,7 @@ public class SubmitCollectionService {
             reportDetailRepository.save(reportEntityList);
         }
         if (bibliographicEntity != null) {
-            savedBibliographicEntity = updateBibliographicEntity(bibliographicEntity,submitCollectionRejectionInfos,submitCollectionExceptionInfos);
+            savedBibliographicEntity = updateBibliographicEntity(bibliographicEntity,submitCollectionRejectionInfos,submitCollectionExceptionInfos,idMapToRemoveIndex);
         }
         return savedBibliographicEntity;
     }
@@ -224,8 +224,12 @@ public class SubmitCollectionService {
         return getRestTemplate().postForObject(serverProtocol + scsbSolrClientUrl + "solrIndexer/indexByBibliographicId", bibliographicIdList, String.class);
     }
 
+    public String removeSolrIndex(Map idMapToRemoveIndex){
+        return getRestTemplate().postForObject(serverProtocol + scsbSolrClientUrl + "solrIndexer/deleteByBibHoldingItemId", idMapToRemoveIndex, String.class);
+    }
+
     public BibliographicEntity updateBibliographicEntity(BibliographicEntity bibliographicEntity,List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,
-                                                         List<SubmitCollectionReportInfo> submitCollectionExceptionInfos) {
+                                                         List<SubmitCollectionReportInfo> submitCollectionExceptionInfos,Map<String,String> idMapToRemoveIndex) {
         boolean isIncompleteRecord = false;
         BibliographicEntity savedBibliographicEntity=null;
         BibliographicEntity fetchBibliographicEntity = getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(),bibliographicEntity.getOwningInstitutionBibId());
@@ -233,7 +237,13 @@ public class SubmitCollectionService {
             fetchBibliographicEntity = getBibEntityUsingBarcodeForIncompleteRecord(bibliographicEntity);
             if(fetchBibliographicEntity !=null){
                 isIncompleteRecord = true;
-                savedBibliographicEntity = updateIncompleteRecord(fetchBibliographicEntity,bibliographicEntity);
+                idMapToRemoveIndex.put(ReCAPConstants.BIB_ID,String.valueOf(fetchBibliographicEntity.getBibliographicId()));
+                idMapToRemoveIndex.put(ReCAPConstants.HOLDING_ID,String.valueOf(fetchBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId()));
+                idMapToRemoveIndex.put(ReCAPConstants.ITEM_ID,String.valueOf(fetchBibliographicEntity.getItemEntities().get(0).getItemId()));
+                getBibliographicDetailsRepository().delete(fetchBibliographicEntity);
+                getBibliographicDetailsRepository().flush();
+                savedBibliographicEntity = getBibliographicDetailsRepository().saveAndFlush(bibliographicEntity);
+                entityManager.refresh(savedBibliographicEntity);
             }
         }
         if(!isIncompleteRecord){

@@ -74,15 +74,15 @@ public class ItemEntity implements Serializable {
     @ManyToMany(mappedBy = "itemEntities")
     private List<HoldingsEntity> holdingsEntities;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "ITEM_AVAIL_STATUS_ID", insertable = false, updatable = false)
     private ItemStatusEntity itemStatusEntity;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "COLLECTION_GROUP_ID", insertable = false, updatable = false)
     private CollectionGroupEntity collectionGroupEntity;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "OWNING_INST_ID", insertable = false, updatable = false)
     private InstitutionEntity institutionEntity;
 

@@ -62,7 +62,7 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionId(owningInstitutionId);
         String institutionName = institutionEntity.getInstitutionName();
         Map<String, Object> bibMap = processAndValidateBibliographicEntity(bibRecord, owningInstitutionId, institutionName);
-        BibliographicEntity bibliographicEntity = (BibliographicEntity) bibMap.get("bibliographicEntity");
+        BibliographicEntity bibliographicEntity = (BibliographicEntity) bibMap.get(ReCAPConstants.BIBLIOGRAPHIC_ENTITY);
         ReportEntity bibReportEntity = (ReportEntity) bibMap.get("bibReportEntity");
         if (bibReportEntity != null) {
             reportEntities.add(bibReportEntity);
@@ -115,7 +115,7 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
             map.put("reportEntities", reportEntities);
         }
         if (processBib) {
-            map.put("bibliographicEntity", bibliographicEntity);
+            map.put(ReCAPConstants.BIBLIOGRAPHIC_ENTITY, bibliographicEntity);
         }
         return map;
     }
@@ -139,9 +139,10 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
             errorMessage.append("Owning Institution Id cannot be null");
         }
         bibliographicEntity.setCreatedDate(new Date());
-        bibliographicEntity.setCreatedBy("submitCollection");
+        bibliographicEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         bibliographicEntity.setLastUpdatedDate(new Date());
-        bibliographicEntity.setLastUpdatedBy("submitCollection");
+        bibliographicEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
+        bibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
 
         String bibContent = marcUtil.writeMarcXml(bibRecord);
         if (StringUtils.isNotBlank(bibContent)) {
@@ -182,7 +183,7 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
             reportEntity.addAll(reportDataEntities);
             map.put("bibReportEntity", reportEntity);
         }
-        map.put("bibliographicEntity", bibliographicEntity);
+        map.put(ReCAPConstants.BIBLIOGRAPHIC_ENTITY, bibliographicEntity);
         return map;
     }
 
@@ -198,9 +199,9 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
             errorMessage.append("Holdings Content cannot be empty");
         }
         holdingsEntity.setCreatedDate(new Date());
-        holdingsEntity.setCreatedBy("submitCollection");
+        holdingsEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         holdingsEntity.setLastUpdatedDate(new Date());
-        holdingsEntity.setLastUpdatedBy("submitCollection");
+        holdingsEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         Integer owningInstitutionId = bibliographicEntity.getOwningInstitutionId();
         holdingsEntity.setOwningInstitutionId(owningInstitutionId);
         String owningInstitutionHoldingsId = marcUtil.getDataFieldValue(holdingsRecord, "852", '0');
@@ -270,9 +271,10 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
             itemEntity.setCollectionGroupId((Integer) getCollectionGroupMap().get("Open"));
         }
         itemEntity.setCreatedDate(new Date());
-        itemEntity.setCreatedBy("submitCollection");
+        itemEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         itemEntity.setLastUpdatedDate(new Date());
-        itemEntity.setLastUpdatedBy("submitCollection");
+        itemEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
+        itemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
 
         String useRestrictions = marcUtil.getDataFieldValue(itemRecord, "876", 'h');
         if (StringUtils.isNotBlank(useRestrictions) && (useRestrictions.equalsIgnoreCase("In Library Use") || useRestrictions.equalsIgnoreCase("Supervised Use"))) {

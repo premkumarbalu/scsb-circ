@@ -54,7 +54,7 @@ public class HoldingsEntity implements Serializable {
     @Column(name = "IS_DELETED")
     private boolean isDeleted;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "OWNING_INST_ID", insertable = false, updatable = false)
     private InstitutionEntity institutionEntity;
 

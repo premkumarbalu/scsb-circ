@@ -62,7 +62,7 @@ public class BibliographicEntity implements Serializable {
     @Column(name = "CATALOGING_STATUS")
     private String catalogingStatus;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "OWNING_INST_ID", insertable = false, updatable = false)
     private InstitutionEntity institutionEntity;
 
