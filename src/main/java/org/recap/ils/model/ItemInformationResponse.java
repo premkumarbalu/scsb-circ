@@ -7,6 +7,7 @@ import java.util.List;
  */
 public class ItemInformationResponse extends AbstractResponseItem{
 
+    private Integer requestId;
     private String expirationDate;
     private String titleIdentifier;
     private String dueDate;
@@ -35,6 +36,14 @@ public class ItemInformationResponse extends AbstractResponseItem{
     private boolean isDeleted;
     private String patronBarcode="";
     private String requestingInstitution="";
+
+    public Integer getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(Integer requestId) {
+        this.requestId = requestId;
+    }
 
     public String getExpirationDate() {
         return expirationDate;
@@ -259,4 +268,5 @@ public class ItemInformationResponse extends AbstractResponseItem{
     public void setRequestingInstitution(String requestingInstitution) {
         this.requestingInstitution = requestingInstitution;
     }
+
 }
