@@ -8,9 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by premkb on 21/12/16.
@@ -28,10 +26,12 @@ public class SharedCollectionRestController {
         ResponseEntity responseEntity;
         String response;
         List<Integer> processedBibIdList = new ArrayList<>();
+        Map<String,String> idMapToRemoveIndex = new HashMap<>();
         try {
-            response = submitCollectionService.process(inputRecords,processedBibIdList);
+            response = submitCollectionService.process(inputRecords,processedBibIdList,idMapToRemoveIndex);
             if (response.contains(ReCAPConstants.SUMBIT_COLLECTION_UPDATE_MESSAGE)) {
                 String indexResponse = submitCollectionService.indexData(processedBibIdList);
+                String reponse  = submitCollectionService.removeSolrIndex(idMapToRemoveIndex);
                 if(!indexResponse.equalsIgnoreCase(ReCAPConstants.SUCCESS)){
                     response = indexResponse;
                 }

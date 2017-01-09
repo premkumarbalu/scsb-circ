@@ -23,10 +23,7 @@ import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -595,7 +592,8 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
     public void processForPUL() throws JAXBException {
         BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL, ReCAPConstants.INCOMPLETE_STATUS);
         List<Integer> processedBibIdList = new ArrayList<>();
-        submitCollectionService.process(updatedMarcForPUL,processedBibIdList);
+        Map<String,String> idMapToRemoveIndex = new HashMap<>();
+        submitCollectionService.process(updatedMarcForPUL,processedBibIdList,idMapToRemoveIndex);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
         String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
         List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);
@@ -617,9 +615,10 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
 
     @Test
     public void processForPULUpdateIncompleteRecord() throws JAXBException {
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",dummyBibMarcContent,dummyHoldingMarcContent,ReCAPConstants.INCOMPLETE_STATUS);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"4567","222420","1110846",1,"32101062128309",dummyBibMarcContent,dummyHoldingMarcContent,ReCAPConstants.INCOMPLETE_STATUS);
         List<Integer> processedBibIdList = new ArrayList<>();
-        submitCollectionService.process(updatedMarcForPUL,processedBibIdList);
+        Map<String,String> idMapToRemoveIndex = new HashMap<>();
+        submitCollectionService.process(updatedMarcForPUL,processedBibIdList,idMapToRemoveIndex);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
         String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
         List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);
@@ -645,7 +644,8 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
     public void processForPULRejectedRecord() throws JAXBException {
         BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",2,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL,ReCAPConstants.INCOMPLETE_STATUS);
         List<Integer> processedBibIdList = new ArrayList<>();
-        submitCollectionService.process(updatedMarcForPUL,processedBibIdList);
+        Map<String,String> idMapToRemoveIndex = new HashMap<>();
+        submitCollectionService.process(updatedMarcForPUL,processedBibIdList,idMapToRemoveIndex);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
         String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
         List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);
@@ -670,7 +670,8 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         BibliographicEntity savedBibliographicEntity = getBibliographicEntity(3,".b100000125","123",".i100000034",1,"33433014514719",bibMarcContentForNYPL1,holdingContentForNYPL1,ReCAPConstants.INCOMPLETE_STATUS);
         String originalXML = new String(savedBibliographicEntity.getContent());
         List<Integer> processedBibIdList = new ArrayList<>();
-        submitCollectionService.process(updatedContentForNYPL1,processedBibIdList);
+        Map<String,String> idMapToRemoveIndex = new HashMap<>();
+        submitCollectionService.process(updatedContentForNYPL1,processedBibIdList,idMapToRemoveIndex);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId(".b100000125");
         String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
         List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);

@@ -155,6 +155,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         bibliographicEntity.setCreatedBy("submitCollection");
         bibliographicEntity.setLastUpdatedDate(new Date());
         bibliographicEntity.setLastUpdatedBy("submitCollection");
+        bibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
 
         String bibXmlStringContent = marcUtil.writeMarcXml(bibRecord);
         if (StringUtils.isNotBlank(bibXmlStringContent)) {
@@ -286,6 +287,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         itemEntity.setCreatedBy("submitCollection");
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setLastUpdatedBy("submitCollection");
+        itemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
 
         String useRestrictions = marcUtil.getDataFieldValue(itemRecord, "876", 'h');
         if (StringUtils.isNotBlank(useRestrictions) && (useRestrictions.equalsIgnoreCase("In Library Use") || useRestrictions.equalsIgnoreCase("Supervised Use"))) {

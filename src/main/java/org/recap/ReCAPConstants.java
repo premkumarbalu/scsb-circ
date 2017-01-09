@@ -106,5 +106,10 @@ public class ReCAPConstants {
     public static final String COMPLETE_STATUS = "Complete";
     public static final String INCOMPLETE_STATUS = "Incomplete";
     public static final String BIBRECORD_TAG= "<bibRecords>";
+    public static final String SUBMIT_COLLECTION = "submitCollection";
 
+    public static final String BIB_ID = "BibId";
+    public static final String HOLDING_ID = "HoldingId";
+    public static final String ITEM_ID = "ItemId";
+    public static final String BIBLIOGRAPHIC_ENTITY = "bibliographicEntity";
 }
