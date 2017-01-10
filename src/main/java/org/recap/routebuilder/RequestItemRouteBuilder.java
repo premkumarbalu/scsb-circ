@@ -67,15 +67,6 @@ public class RequestItemRouteBuilder {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    from(ReCAPConstants.PUL_HOLD_TOPIC)
-                            .routeId(ReCAPConstants.PUL_HOLD_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "pulHoldTopicOnMessage");
-                }
-            });
-
-            camelContext.addRoutes(new RouteBuilder() {
-                @Override
-                public void configure() throws Exception {
                     from(ReCAPConstants.PUL_RECALL_TOPIC)
                             .routeId(ReCAPConstants.PUL_RECALL_TOPIC_ROUTEID)
                             .bean(new RequestItemQueueConsumer(itemRequestService), "pulRecalTopicOnMessage");

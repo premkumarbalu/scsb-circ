@@ -5,7 +5,9 @@ import org.apache.camel.Body;
 import org.apache.camel.Exchange;
 import org.apache.camel.Header;
 import org.jboss.logging.Logger;
+import org.recap.ils.model.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
+import org.recap.model.ItemResponseInformation;
 import org.recap.request.ItemRequestService;
 import org.springframework.stereotype.Component;
 
@@ -56,8 +58,11 @@ public class RequestItemQueueConsumer {
         itemRequestService.requestItem(itemRequestInformation,exchange);
     }
 
-    public void pulRequestTopicOnMessage(@Body String body) {
+    public void pulRequestTopicOnMessage(@Body String body,Exchange exchange) throws IOException {
         logger.info("------------------------- PUL RequestTopic lisinting to messages");
+        ObjectMapper om = new ObjectMapper();
+        ItemInformationResponse itemInformationResponse = om.readValue(body, ItemInformationResponse.class);
+        itemRequestService.saveItemChangeLogEntity(itemInformationResponse.getRequestId(),"Guest","RequestItem-pulRequestTopic",body.toString());
         logger.info("Body -> " +body.toString());
     }
 

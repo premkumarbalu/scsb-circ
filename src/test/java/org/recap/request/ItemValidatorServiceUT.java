@@ -46,12 +46,11 @@ public class ItemValidatorServiceUT extends BaseTestCase{
     ItemValidatorService itemValidatorService;
     @Autowired
     private WebApplicationContext webApplicationContext;
+
     @Before
     public void setup() throws Exception {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
     }
-
-
 
     @Test
     public void testValidItem() throws Exception{
@@ -194,6 +193,4 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         bibliographicEntity1.setOwningInstitutionBibId(owningInstitutionBibId1);
         return bibliographicEntity1;
     }
-
-
 }

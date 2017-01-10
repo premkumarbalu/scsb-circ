@@ -24,11 +24,12 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private String itemIdentifier = "32101098746470";
-    private String patronIdentifier = "45678913";
+    String[] itemIds = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414","32101057972166","PULTST54329"};
+    private String itemIdentifier = "32101077423406";
+    private String patronIdentifier = "45678912";
     private String[] patronId = {"45678912","45678913","45678915"};
     private String pickupLocation = "rcpcirc";
-    private String bibId = "59041";
+    private String bibId = "9959052";
     private String institutionId = "htccul";
     private String expirationDate = MessageUtil.createFutureDate(1, 1);
 
@@ -40,7 +41,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void lookupItem() throws Exception {
-        String[] itemIdentifier = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414","32101057972166"};
+        String[] itemIdentifiers = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414","32101057972166"};
         ItemInformationResponse itemInformationResponse = (ItemInformationResponse)princetonESIPConnector.lookupItem(this.itemIdentifier,null);
 
         logger.info("\n\n");
@@ -51,7 +52,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         logger.info("Transaction Date       : " + itemInformationResponse.getTransactionDate());
         logger.info("Hold Queue Length (CF) : " + itemInformationResponse.getHoldQueueLength());
 
-        assertEquals(itemIdentifier[4], this.itemIdentifier);
+        assertEquals(this.itemIdentifier,itemInformationResponse.getItemBarcode());
     }
 
     @Test

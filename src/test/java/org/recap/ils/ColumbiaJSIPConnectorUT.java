@@ -28,6 +28,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
     @Autowired
     private ColumbiaJSIPConnector columbiaJSIPConnector;
     private String[] itemIdentifier = {"CU55724132", "CULTST12345","MR68799284","1000534323"," CU65897706","CULTST52345","CULTST11345","CULTST13345"};
+    private String[] patrons = {"RECAPTST01","RECAPTST02","RECAPTST02","RECAPPUL01"};
 
 
     private String patronIdentifier = "RECAPTST01";
