@@ -195,27 +195,24 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         SIP2CheckoutRequest checkoutRequest = new SIP2CheckoutRequest(patronIdentifier, itemIdentifier);
                         checkoutRequest.setCurrentLocation("");
                         checkoutResponse = (SIP2CheckoutResponse) connection.send(checkoutRequest);
-                        if (checkoutResponse.isOk()) {
-                            logger.info("checkout Request Successful");
-                            itemCheckoutResponse.setItemBarcode(checkoutResponse.getItemIdentifier());
-                            itemCheckoutResponse.setTitleIdentifier(checkoutResponse.getTitleIdentifier());
-                            itemCheckoutResponse.setDesensitize(checkoutResponse.isDesensitizeSupported());
-                            itemCheckoutResponse.setRenewal(checkoutResponse.isRenewalOk());
-                            itemCheckoutResponse.setMagneticMedia(checkoutResponse.isMagneticMedia());
-                            itemCheckoutResponse.setDueDate(formatFromSipDate(checkoutResponse.getDueDate()));
-                            itemCheckoutResponse.setTransactionDate(formatFromSipDate(checkoutResponse.getTransactionDate()));
-                            itemCheckoutResponse.setInstitutionID(checkoutResponse.getInstitutionId());
-                            itemCheckoutResponse.setItemOwningInstitution(checkoutResponse.getInstitutionId());
-                            itemCheckoutResponse.setPatronIdentifier(checkoutResponse.getPatronIdentifier());
 
-                            itemCheckoutResponse.setMediaType((checkoutResponse.getMediaType() != null) ? checkoutResponse.getMediaType().name() : "");
-                            itemCheckoutResponse.setBibId(checkoutResponse.getBibId());
-                        } else {
-                            logger.info("checkout Request Failed");
-                            logger.info("Response -> " + checkoutResponse.getData());
-                        }
+                        itemCheckoutResponse.setItemBarcode(checkoutResponse.getItemIdentifier());
+                        itemCheckoutResponse.setPatronIdentifier(checkoutResponse.getPatronIdentifier());
+                        itemCheckoutResponse.setTitleIdentifier(checkoutResponse.getTitleIdentifier());
+                        itemCheckoutResponse.setDesensitize(checkoutResponse.isDesensitizeSupported());
+                        itemCheckoutResponse.setRenewal(checkoutResponse.isRenewalOk());
+                        itemCheckoutResponse.setMagneticMedia(checkoutResponse.isMagneticMedia());
+                        itemCheckoutResponse.setDueDate(formatFromSipDate(checkoutResponse.getDueDate()));
+                        itemCheckoutResponse.setTransactionDate(formatFromSipDate(checkoutResponse.getTransactionDate()));
+                        itemCheckoutResponse.setInstitutionID(checkoutResponse.getInstitutionId());
+                        itemCheckoutResponse.setItemOwningInstitution(checkoutResponse.getInstitutionId());
+                        itemCheckoutResponse.setPatronIdentifier(checkoutResponse.getPatronIdentifier());
+                        itemCheckoutResponse.setMediaType((checkoutResponse.getMediaType() != null) ? checkoutResponse.getMediaType().name() : "");
+                        itemCheckoutResponse.setBibId(checkoutResponse.getBibId());
                         itemCheckoutResponse.setScreenMessage((checkoutResponse.getScreenMessage().size() > 0) ? checkoutResponse.getScreenMessage().get(0) : "");
                         itemCheckoutResponse.setSuccess(checkoutResponse.isOk());
+
+                        logger.info("checkout Request Successful");
                     }
                 } else {
                     logger.info("Login Failed");
