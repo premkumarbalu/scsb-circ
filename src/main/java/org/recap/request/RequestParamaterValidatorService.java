@@ -79,7 +79,7 @@ public class RequestParamaterValidatorService {
                         errorCount++;
                     }
                 }
-            }else if(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RECALL) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.HOLD) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)){
+            }else if(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RECALL) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)){
                 if(StringUtils.isEmpty(itemRequestInformation.getDeliveryLocation())){
                     errorMessageMap.put(errorCount,ReCAPConstants.DELIVERY_LOCATION_REQUIRED);
                     errorCount++;

@@ -24,7 +24,6 @@ public class ReCAPConstants {
     public static final String EMPTY_PATRON_BARCODE = "Patron barcode should not be null or empty.Please enter the valid patron barcode";
     public static final String INVALID_REQUEST_TYPE = "Please enter the valid request type";
     public static final String RETRIEVAL = "RETRIEVAL";
-    public static final String HOLD = "HOLD";
     public static final String RECALL = "RECALL";
     public static final String EDD_REQUEST = "EDD";
     public static final String BORROW_DIRECT = "BORROW DIRECT";
@@ -41,14 +40,12 @@ public class ReCAPConstants {
     public static final String VALID_CUSTOMER_CODE = "Customer code is valid";
     public static final String MULTIPLE_ITEMS_NOT_ALLOWED_FOR_EDD = "Multiple item request not allowed for EDD request type";
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
-    public static final String HOLD_REQUEST_NOT_FOR_AVAILABLE_ITEM = "Request type cannot be hold if the item status is available";
     public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Request type cannot be retrieval if the item status is unAvailable";
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
     // Retrieval,EDD, Hold, Recall, Borrow Direct
     public static final String REQUEST_TYPE_RETRIEVAL="RETRIEVAL";
     public static final String REQUEST_TYPE_EDD="EDD";
-    public static final String REQUEST_TYPE_HOLD="HOLD";
     public static final String REQUEST_TYPE_RECALL="RECALL";
     public static final String REQUEST_TYPE_BORROW_DIRECT="BORROW DIRECT";
 

@@ -187,8 +187,6 @@ public class ItemRequestService {
         String selectTopic= ReCAPConstants.PUL_REQUEST_TOPIC;
         if(owningInstituteId.equalsIgnoreCase(ReCAPConstants.PRINCETON) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)){
             selectTopic = ReCAPConstants.PUL_REQUEST_TOPIC;
-        }else if(owningInstituteId.equalsIgnoreCase(ReCAPConstants.PRINCETON) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_HOLD)){
-            selectTopic = ReCAPConstants.PUL_HOLD_TOPIC;
         }else if(owningInstituteId.equalsIgnoreCase(ReCAPConstants.PRINCETON) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)){
             selectTopic = ReCAPConstants.PUL_EDD_TOPIC;
         }else if(owningInstituteId.equalsIgnoreCase(ReCAPConstants.PRINCETON) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)){
