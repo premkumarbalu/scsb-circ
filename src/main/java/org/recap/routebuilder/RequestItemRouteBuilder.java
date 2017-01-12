@@ -34,8 +34,6 @@ public class RequestItemRouteBuilder {
                             .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemOnMessage")
                             .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_EDD))
                             .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemEDDOnMessage")
-                            .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_HOLD))
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemHoldOnMessage")
                             .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT))
                             .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemBorrowDirectOnMessage")
                             .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RECALL))

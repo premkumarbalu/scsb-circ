@@ -257,7 +257,10 @@ public class SubmitCollectionService {
         List<String> itemBarcodeList = new ArrayList<>();
         itemBarcodeList.add(itemBarcode);
         List<ItemEntity> itemEntityList = getItemDetailsRepository().findByBarcodeIn(itemBarcodeList);
-        BibliographicEntity fetchedBibliographicEntity = itemEntityList.get(0).getBibliographicEntities().get(0);
+        BibliographicEntity fetchedBibliographicEntity = null;
+        if(itemEntityList != null && itemEntityList.size() > 0 && itemEntityList.get(0).getBibliographicEntities() != null){
+            fetchedBibliographicEntity = itemEntityList.get(0).getBibliographicEntities().get(0);
+        }
         return fetchedBibliographicEntity;
     }
 
