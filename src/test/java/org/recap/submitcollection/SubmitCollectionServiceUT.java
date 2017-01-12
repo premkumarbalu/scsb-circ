@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -308,6 +309,153 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
             "<subfield code=\"h\"/>\n" +
             "<subfield code=\"j\">Not Charged</subfield>\n" +
             "<subfield code=\"p\">32101062128309</subfield>\n" +
+            "<subfield code=\"t\">1</subfield>\n" +
+            "<subfield code=\"x\">Open</subfield>\n" +
+            "<subfield code=\"z\">PA</subfield>\n" +
+            "</datafield>\n" +
+            "</record>\n" +
+            "</collection>";
+
+    private String updatedMarcForPULWtihNewItem = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">\n" +
+            "<record>\n" +
+            "<leader>01302cas a2200361 a 4500</leader>\n" +
+            "<controlfield tag=\"001\">202305</controlfield>\n" +
+            "<controlfield tag=\"005\">20160526232735.0</controlfield>\n" +
+            "<controlfield tag=\"008\">830323c19819999iluqx p gv 0 0eng d</controlfield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"010\">\n" +
+            "<subfield code=\"a\">82640039</subfield>\n" +
+            "<subfield code=\"z\">81640039</subfield>\n" +
+            "<subfield code=\"z\">sn 81001329</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\" \" tag=\"022\">\n" +
+            "<subfield code=\"a\">0276-9948</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"035\">\n" +
+            "<subfield code=\"a\">(OCoLC)7466281</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"035\">\n" +
+            "<subfield code=\"a\">(CStRLIN)NJPG83-S372</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"035\">\n" +
+            "<subfield code=\"9\">ABB7255TS</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"040\">\n" +
+            "<subfield code=\"a\">NSDP</subfield>\n" +
+            "<subfield code=\"d\">NjP</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"042\">\n" +
+            "<subfield code=\"a\">nsdp</subfield>\n" +
+            "<subfield code=\"a\">lc</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"043\">\n" +
+            "<subfield code=\"a\">n-us-il</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\"0\" tag=\"050\">\n" +
+            "<subfield code=\"a\">K25</subfield>\n" +
+            "<subfield code=\"b\">.N63</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\"0\" tag=\"222\">\n" +
+            "<subfield code=\"a\">University of Illinois law review</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\"0\" tag=\"245\">\n" +
+            "<subfield code=\"a\">University of Illinois law review.</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"3\" ind2=\"0\" tag=\"246\">\n" +
+            "<subfield code=\"a\">Law review</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"260\">\n" +
+            "<subfield code=\"a\">Champaign, IL :</subfield>\n" +
+            "<subfield code=\"b\">\n" +
+            "University of Illinois at Urbana-Champaign, College of Law,\n" +
+            "</subfield>\n" +
+            "<subfield code=\"c\">c1981-</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"300\">\n" +
+            "<subfield code=\"a\">v. ;</subfield>\n" +
+            "<subfield code=\"c\">27 cm.</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"310\">\n" +
+            "<subfield code=\"a\">5 times a year,</subfield>\n" +
+            "<subfield code=\"b\">2001-2013</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"321\">\n" +
+            "<subfield code=\"a\">Quarterly,</subfield>\n" +
+            "<subfield code=\"b\">1981-2000</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\" \" tag=\"362\">\n" +
+            "<subfield code=\"a\">Vol. 1981, no. 1-</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"588\">\n" +
+            "<subfield code=\"a\">Title from cover.</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"588\">\n" +
+            "<subfield code=\"a\">Latest issue consulted: Vol. 2013, no. 5.</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\"0\" tag=\"650\">\n" +
+            "<subfield code=\"a\">Law reviews</subfield>\n" +
+            "<subfield code=\"z\">Illinois.</subfield>\n" +
+            "<subfield code=\"0\">\n" +
+            "(uri)http://id.loc.gov/authorities/subjects/sh2009129243\n" +
+            "</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"2\" ind2=\" \" tag=\"710\">\n" +
+            "<subfield code=\"a\">University of Illinois at Urbana-Champaign.</subfield>\n" +
+            "<subfield code=\"b\">College of Law.</subfield>\n" +
+            "<subfield code=\"0\">(uri)http://id.loc.gov/authorities/names/n50049213</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\"0\" tag=\"780\">\n" +
+            "<subfield code=\"t\">University of Illinois law forum</subfield>\n" +
+            "<subfield code=\"x\">0041-963X</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"998\">\n" +
+            "<subfield code=\"a\">09/09/94</subfield>\n" +
+            "<subfield code=\"s\">9110</subfield>\n" +
+            "<subfield code=\"n\">NjP</subfield>\n" +
+            "<subfield code=\"w\">DCLC82640039S</subfield>\n" +
+            "<subfield code=\"d\">03/23/83</subfield>\n" +
+            "<subfield code=\"c\">DLJ</subfield>\n" +
+            "<subfield code=\"b\">SZF</subfield>\n" +
+            "<subfield code=\"i\">940909</subfield>\n" +
+            "<subfield code=\"l\">NJPG</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"911\">\n" +
+            "<subfield code=\"a\">19940916</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"912\">\n" +
+            "<subfield code=\"a\">19970731060735.0</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\"0\" tag=\"866\">\n" +
+            "<subfield code=\"0\">222420</subfield>\n" +
+            "<subfield code=\"a\">Vol. 1981, no. 1-v. 2013, no. 5</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\"0\" tag=\"866\">\n" +
+            "<subfield code=\"0\">222420</subfield>\n" +
+            "<subfield code=\"z\">LACKS: 2012, no. 1</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\"0\" tag=\"866\">\n" +
+            "<subfield code=\"0\">222420</subfield>\n" +
+            "<subfield code=\"x\">DESIGNATOR: year, no.</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\"0\" tag=\"866\">\n" +
+            "<subfield code=\"0\">222420</subfield>\n" +
+            "<subfield code=\"z\">Subscription cancelled with the last issue of 2013</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"959\">\n" +
+            "<subfield code=\"a\">2000-06-13 00:00:00 -0500</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\"1\" tag=\"852\">\n" +
+            "<subfield code=\"0\">222420</subfield>\n" +
+            "<subfield code=\"b\">rcppa</subfield>\n" +
+            "<subfield code=\"h\">K25 .xN5</subfield>\n" +
+            "<subfield code=\"t\">1</subfield>\n" +
+            "<subfield code=\"x\">tr fr f</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\"0\" tag=\"876\">\n" +
+            "<subfield code=\"0\">222420</subfield>\n" +
+            "<subfield code=\"a\">1110847</subfield>\n" +
+            "<subfield code=\"h\"/>\n" +
+            "<subfield code=\"j\">Not Charged</subfield>\n" +
+            "<subfield code=\"p\">32101barcode</subfield>\n" +
             "<subfield code=\"t\">1</subfield>\n" +
             "<subfield code=\"x\">Open</subfield>\n" +
             "<subfield code=\"z\">PA</subfield>\n" +
@@ -641,6 +789,21 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
     }
 
     @Test
+    public void processForPULExceptionRecordForExisitinBibNewItem() throws JAXBException {
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL, ReCAPConstants.INCOMPLETE_STATUS);
+        List<Integer> processedBibIdList = new ArrayList<>();
+        Map<String,String> idMapToRemoveIndex = new HashMap<>();
+        String response = submitCollectionService.process(updatedMarcForPULWtihNewItem,processedBibIdList,idMapToRemoveIndex);
+        assertEquals("No record(s) got updated, Exception report generated",response);
+        List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
+        String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
+        List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);
+        assertNotNull(bibRecordList);
+        assertNotEquals(new Integer(2),new Integer(fetchedBibliographicEntityList.get(0).getItemEntities().size()));
+        assertEquals(new Integer(1),new Integer(fetchedBibliographicEntityList.get(0).getItemEntities().size()));
+    }
+
+    @Test
     public void processForPULRejectedRecord() throws JAXBException {
         BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",2,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL,ReCAPConstants.INCOMPLETE_STATUS);
         List<Integer> processedBibIdList = new ArrayList<>();
@@ -678,7 +841,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         assertNotNull(bibRecordList);
         DataField field912 = (DataField)bibRecordList.get(0).getVariableField("546");
         assertEquals("In Arabic.", field912.getSubfield('a').getData());
-        HoldingsEntity holdingsEntity = fetchedBibliographicEntityList.get(0).getHoldingsEntities().get(1);
+        HoldingsEntity holdingsEntity = fetchedBibliographicEntityList.get(0).getHoldingsEntities().get(0);
         String updatedHoldingMarcXML = new String(holdingsEntity.getContent(),StandardCharsets.UTF_8);
         List<Record> holdingRecordList = readMarcXml(updatedHoldingMarcXML);
         logger.info("updatedHoldingMarcXML-->"+updatedHoldingMarcXML);

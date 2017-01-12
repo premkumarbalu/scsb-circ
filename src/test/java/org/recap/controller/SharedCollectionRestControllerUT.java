@@ -138,7 +138,7 @@ public class SharedCollectionRestControllerUT extends BaseTestCase {
                 .andExpect(status().isOk())
                 .andReturn();
         String result = mvcResult.getResponse().getContentAsString();
-        assertEquals(result, "Success");
+        assertEquals("No record(s) got updated, Exception report generated",result);
     }
 
     private HttpHeaders getHttpHeaders() {
