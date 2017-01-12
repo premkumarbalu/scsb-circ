@@ -350,6 +350,8 @@ public abstract class JSIPConnector implements IJSIPConnector {
                     }
                 } else {
                     logger.info("Login Failed");
+                    itemHoldResponse.setSuccess(false);
+                    itemHoldResponse.setScreenMessage("Login Failed");
                 }
             }
         } catch (InvalidSIP2ResponseException e) {
@@ -367,7 +369,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return itemHoldResponse;
     }
 
-    public SIP2CreateBibResponse createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier) {
+    public ItemCreateBibResponse createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2CreateBibResponse createBibResponse = null;
         ItemCreateBibResponse itemCreateBibResponse = new ItemCreateBibResponse();
@@ -417,10 +419,12 @@ public abstract class JSIPConnector implements IJSIPConnector {
             logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
         } catch (InvalidSIP2ResponseValueException e) {
             logger.error("Connection Invalid SIP2 Value = " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Connection Invalid SIP2 Value = " + e.getMessage());
         } finally {
             connection.close();
         }
-        return createBibResponse;
+        return itemCreateBibResponse;
 
     }
 
