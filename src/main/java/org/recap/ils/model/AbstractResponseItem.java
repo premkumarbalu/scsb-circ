@@ -9,6 +9,8 @@ public abstract class AbstractResponseItem {
     private String itemOwningInstitution=""; // PUL, CUL, NYPL
     private String screenMessage;
     private boolean success;
+    private String esipDataIn;
+    private String esipDataOut;
 
     public String getItemBarcode() {
         return itemBarcode;
@@ -40,6 +42,22 @@ public abstract class AbstractResponseItem {
 
     public void setScreenMessage(String screenMessage) {
         this.screenMessage = screenMessage;
+    }
+
+    public String getEsipDataIn() {
+        return esipDataIn;
+    }
+
+    public void setEsipDataIn(String esipDataIn) {
+        this.esipDataIn = esipDataIn;
+    }
+
+    public String getEsipDataOut() {
+        return esipDataOut;
+    }
+
+    public void setEsipDataOut(String esipDataOut) {
+        this.esipDataOut = esipDataOut;
     }
 
 }

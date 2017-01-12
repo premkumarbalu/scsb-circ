@@ -121,8 +121,8 @@ public class RequestItemController {
     }
 
     @RequestMapping(value = "/createBib", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
-        ItemCreateBibResponse itemCreateBibResponse = new ItemCreateBibResponse();
+    public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition)  throws Exception{
+        ItemCreateBibResponse itemCreateBibResponse = null;
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }

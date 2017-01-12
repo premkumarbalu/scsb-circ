@@ -150,10 +150,10 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         String patronIdentifier = "45678915";
         String titleIdentifier = "RECAP TEST TITLE - 003";
         String institutionId = "htccul";
-        SIP2CreateBibResponse createBibResponse = princetonESIPConnector.createBib(itemIdentifier, patronIdentifier, institutionId, titleIdentifier);
+        ItemCreateBibResponse itemCreateBibResponse = princetonESIPConnector.createBib(itemIdentifier, patronIdentifier, institutionId, titleIdentifier);
 
-        assertNotNull(createBibResponse);
-        assertTrue(createBibResponse.isOk());
+        assertNotNull(itemCreateBibResponse);
+        assertTrue(itemCreateBibResponse.isSuccess());
     }
 
     @Test

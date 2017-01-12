@@ -97,7 +97,9 @@ public abstract class JSIPConnector implements IJSIPConnector {
         try {
             SIP2ItemInformationRequest itemRequest = new SIP2ItemInformationRequest(itemIdentifier);
             logger.info(itemRequest.getData());
+            itemInformationResponse.setEsipDataIn(itemRequest.getData());
             sip2ItemInformationResponse = (SIP2ItemInformationResponse) connection.send(itemRequest);
+            itemInformationResponse.setEsipDataOut(sip2ItemInformationResponse.getData());
             itemInformationResponse.setItemBarcode(sip2ItemInformationResponse.getItemIdentifier());
             if (sip2ItemInformationResponse.getScreenMessage().size() > 0) {
                 itemInformationResponse.setScreenMessage(sip2ItemInformationResponse.getScreenMessage().get(0));
@@ -194,7 +196,10 @@ public abstract class JSIPConnector implements IJSIPConnector {
                     if (statusResponse.getSupportedMessages().isCheckout()) {
                         SIP2CheckoutRequest checkoutRequest = new SIP2CheckoutRequest(patronIdentifier, itemIdentifier);
                         checkoutRequest.setCurrentLocation("");
+
+                        itemCheckoutResponse.setEsipDataIn(checkoutRequest.getData());
                         checkoutResponse = (SIP2CheckoutResponse) connection.send(checkoutRequest);
+                        itemCheckoutResponse.setEsipDataOut(itemCheckoutResponse.getEsipDataOut());
 
                         itemCheckoutResponse.setItemBarcode(checkoutResponse.getItemIdentifier());
                         itemCheckoutResponse.setPatronIdentifier(checkoutResponse.getPatronIdentifier());
@@ -249,7 +254,11 @@ public abstract class JSIPConnector implements IJSIPConnector {
                     SIP2ACSStatusResponse statusResponse = (SIP2ACSStatusResponse) connection.send(status);
                     if (statusResponse.getSupportedMessages().isCheckin()) {
                         SIP2CheckinRequest checkinRequest = new SIP2CheckinRequest(itemIdentifier);
+
+                        itemCheckinResponse.setEsipDataIn(checkinRequest.getData());
                         checkinResponse = (SIP2CheckinResponse) connection.send(checkinRequest);
+                        itemCheckinResponse.setEsipDataOut(checkinResponse.getData());
+
                         if (checkinResponse.isOk()) {
                             logger.info("Check In Request Successful");
                             itemCheckinResponse.setItemBarcode(checkinResponse.getItemIdentifier());
@@ -330,9 +339,11 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         holdRequest.setExpirationDate(expirationDate);
                         holdRequest.setBibId(bibId);
                         holdRequest.setPickupLocation(pickupLocation);
-//                        holdRequest.setErrorDetectionEnabled(true);
+
                         logger.info("Request Hold -> " + holdRequest.getData());
+                        itemHoldResponse.setEsipDataIn(holdRequest.getData());
                         holdResponse = (SIP2HoldResponse) connection.send(holdRequest);
+                        itemHoldResponse.setEsipDataOut(holdResponse.getData());
 
                         itemHoldResponse.setItemBarcode(holdResponse.getItemIdentifier());
                         itemHoldResponse.setScreenMessage((holdResponse.getScreenMessage().size() > 0) ? holdResponse.getScreenMessage().get(0) : "");
@@ -350,6 +361,8 @@ public abstract class JSIPConnector implements IJSIPConnector {
                     }
                 } else {
                     logger.info("Login Failed");
+                    itemHoldResponse.setSuccess(false);
+                    itemHoldResponse.setScreenMessage("Login Failed");
                 }
             }
         } catch (InvalidSIP2ResponseException e) {
@@ -367,7 +380,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return itemHoldResponse;
     }
 
-    public SIP2CreateBibResponse createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier) {
+    public ItemCreateBibResponse createBib(String itemIdentifier, String patronIdentifier, String institutionId, String titleIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2CreateBibResponse createBibResponse = null;
         ItemCreateBibResponse itemCreateBibResponse = new ItemCreateBibResponse();
@@ -394,33 +407,41 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         SIP2CreateBibRequest createBibRequest = new SIP2CreateBibRequest(patronIdentifier, titleIdentifier, itemIdentifier);
 
                         logger.info("Request Create -> " + createBibRequest.getData());
+                        itemCreateBibResponse.setEsipDataIn(createBibRequest.getData());
                         createBibResponse = (SIP2CreateBibResponse) connection.send(createBibRequest);
+                        itemCreateBibResponse.setEsipDataOut(createBibResponse.getData());
 
-                        /* Check that the hold was placed succesfully */
-                        if (createBibResponse.isOk()) {
-                            logger.info("Create Request Successful");
-                        } else {
-                            logger.info("Create Failed");
-                            logger.info("Response Hold -> " + createBibResponse.getData());
-                        }
                         itemCreateBibResponse.setItemBarcode(createBibResponse.getItemIdentifier());
                         itemCreateBibResponse.setScreenMessage((createBibResponse.getScreenMessage().size() > 0) ? createBibResponse.getScreenMessage().get(0) : "");
                         itemCreateBibResponse.setSuccess(createBibResponse.isOk());
                         itemCreateBibResponse.setBibId(createBibResponse.getBibId());
                         itemCreateBibResponse.setItemId(createBibResponse.getItemIdentifier());
+                    }else{
+                        itemCreateBibResponse.setSuccess(false);
+                        itemCreateBibResponse.setScreenMessage("Patron Validation Failed: " + ((response.getScreenMessage().size() > 0) ? response.getScreenMessage().get(0) : ""));
                     }
                 } else {
                     logger.info("Login Failed");
+                    itemCreateBibResponse.setSuccess(false);
+                    itemCreateBibResponse.setScreenMessage("Login Failed");
                 }
             }
         } catch (InvalidSIP2ResponseException e) {
             logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
+            itemCreateBibResponse.setSuccess(false);
+            itemCreateBibResponse.setScreenMessage(e.getMessage());
         } catch (InvalidSIP2ResponseValueException e) {
             logger.error("Connection Invalid SIP2 Value = " + e.getMessage());
+            itemCreateBibResponse.setSuccess(false);
+            itemCreateBibResponse.setScreenMessage(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Connection Invalid SIP2 Value = " + e.getMessage());
+            itemCreateBibResponse.setSuccess(false);
+            itemCreateBibResponse.setScreenMessage(e.getMessage());
         } finally {
             connection.close();
         }
-        return createBibResponse;
+        return itemCreateBibResponse;
 
     }
 
@@ -432,8 +453,13 @@ public abstract class JSIPConnector implements IJSIPConnector {
         try {
             SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
             SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
+
             sip2PatronInformationRequest = new SIP2PatronInformationRequest(patronIdentifier);
+
+            patronInformationResponse.setEsipDataIn(sip2PatronInformationRequest.getData());
             sip2PatronInformationResponse = (SIP2PatronInformationResponse) connection.send(sip2PatronInformationRequest);
+            patronInformationResponse.setEsipDataOut(sip2PatronInformationResponse.getData());
+
             patronInformationResponse.setSuccess(true);
             patronInformationResponse.setScreenMessage((sip2PatronInformationResponse.getScreenMessage() != null)? sip2PatronInformationResponse.getScreenMessage().get(0):"");
             patronInformationResponse.setPatronName(sip2PatronInformationResponse.getPersonalName());
@@ -507,17 +533,12 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         recallRequest.setExpirationDate(expirationDate);
                         recallRequest.setBibId(bibId);
                         recallRequest.setPickupLocation(pickupLocation);
-                        recallRequest.setErrorDetectionEnabled(true);
-                        logger.info("Request Recall -> " + recallRequest.getData());
-                        sip2RecallResponse = (SIP2RecallResponse) connection.send(recallRequest);
 
-                        /* Check that the hold was placed succesfully */
-                        if (sip2RecallResponse.isOk()) {
-                            logger.info("Recall Request Successful");
-                        } else {
-                            logger.info("Recall Failed");
-                            logger.info("Response Recall -> " + sip2RecallResponse.getData());
-                        }
+                        logger.info("Request Recall -> " + recallRequest.getData());
+                        itemRecallResponse.setEsipDataIn(recallRequest.getData());
+                        sip2RecallResponse = (SIP2RecallResponse) connection.send(recallRequest);
+                        itemRecallResponse.setEsipDataOut(sip2RecallResponse.getData());
+
                         itemRecallResponse.setItemBarcode(sip2RecallResponse.getItemIdentifier());
                         itemRecallResponse.setScreenMessage((sip2RecallResponse.getScreenMessage().size() > 0) ? sip2RecallResponse.getScreenMessage().get(0) : "");
                         itemRecallResponse.setSuccess(sip2RecallResponse.isOk());
