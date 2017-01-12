@@ -82,7 +82,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void checkIn() throws Exception {
-        String itemIdentifier = this.itemIdentifier[5];
+        String itemIdentifier = this.itemIdentifier[4];
         String patronIdentifier = "RECAPPUL01";
         String institutionId = "";
         ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse)columbiaJSIPConnector.checkInItem(itemIdentifier, patronIdentifier);
@@ -126,8 +126,8 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = this.itemIdentifier[4];
         String patronIdentifier = "RECAPTST01";
         String institutionId = "recaptestreg";
-        String expirationDate =MessageUtil.createFutureDate(20,2);
-        String bibId="12040033";
+        String expirationDate = MessageUtil.createFutureDate(20,2);
+        String bibId= "12040033";
         String pickupLocation="CIRCrecap";
 
         ItemHoldResponse holdResponse = (ItemHoldResponse) columbiaJSIPConnector.cancelHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation, null);
@@ -161,12 +161,16 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String institutionId = "";
         String titleIdentifier ="Recap Testing 8888";
         String bibId ="";
-        SIP2CreateBibResponse createBibResponse;
+        ItemCreateBibResponse itemCreateBibResponse;
 
-        createBibResponse = columbiaJSIPConnector.createBib(itemIdentifier,patronIdentifier,institutionId ,titleIdentifier);
+        itemCreateBibResponse= columbiaJSIPConnector.createBib(itemIdentifier,patronIdentifier,institutionId ,titleIdentifier);
 
-        assertNotNull(createBibResponse);
-        assertTrue(createBibResponse.isOk());
+        logger.info(itemCreateBibResponse.getBibId());
+        logger.info(itemCreateBibResponse.getItemId());
+        logger.info(itemCreateBibResponse.getScreenMessage());
+
+        assertNotNull(itemCreateBibResponse);
+        assertTrue(itemCreateBibResponse.isSuccess());
     }
 
     @Test
