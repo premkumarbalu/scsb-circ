@@ -14,6 +14,7 @@ import org.recap.model.*;
 import org.recap.mqconsumer.RequestItemQueueConsumer;
 import org.recap.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
@@ -31,6 +32,18 @@ import java.util.List;
 public class ItemRequestService {
 
     private Logger logger = Logger.getLogger(RequestItemQueueConsumer.class);
+
+    @Value("${ils.princeton.cul.patron}")
+    private String princetonCULPatron;
+
+    @Value("${ils.princeton.nypl.patron}")
+    private String princetonNYPLPatron;
+
+    @Value("${ils.columbia.pul.patron}")
+    private String columbiaPULPatron;
+
+    @Value("${ils.columbia.nypl.patron}")
+    private String columbiaNYPLPatron;
 
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;
@@ -55,9 +68,6 @@ public class ItemRequestService {
 
     public ItemInformationResponse requestItem(ItemRequestInformation itemRequestInfo, Exchange exchange){
 
-        String patronResponse = "";
-        RestTemplate restTemplate = new RestTemplate();
-        ObjectMapper om = new ObjectMapper();
         String messagePublish="";
         boolean bsuccess=false;
         List<ItemEntity> itemEntities;
@@ -73,6 +83,14 @@ public class ItemRequestService {
                 itemEntity = itemEntities.get(0);
                 itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
+
+                String useRestrictions =  "No Restrictions";
+                if (itemEntity.getUseRestrictions() != null){
+                    useRestrictions =itemEntity.getUseRestrictions();
+                }
+
+                itemRequestInfo.setTitleIdentifier("["+useRestrictions +"] "+ itemRequestInfo.getTitleIdentifier().toUpperCase()+" [RECAP]");
+                logger.info(itemRequestInfo.getTitleIdentifier());
                 // Validate Patron
                 res = requestItemValidatorController.validateItemRequestInformations(itemRequestInfo);
                 if (res.getStatusCodeValue() == 200) {
@@ -86,6 +104,7 @@ public class ItemRequestService {
                             itemRequestInfo.setDeliveryLocation("rcpcirc");
                         }
                         itemResponseInformation = checkOwningInstitution(itemRequestInfo,itemResponseInformation,itemEntity,requestTypeEntity);
+                        messagePublish=itemResponseInformation.getScreenMessage();
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
                         // Check if Request Item  for any existint request
                         ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
@@ -116,6 +135,7 @@ public class ItemRequestService {
             itemResponseInformation.setTitleIdentifier(itemRequestInfo.getTitleIdentifier());
             itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
             itemResponseInformation.setBibID(itemRequestInfo.getBibId());
+            itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
 
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), exchange, itemResponseInformation);
@@ -259,6 +279,12 @@ public class ItemRequestService {
         saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","Request ItemAvailabilityStatus Change","1 - 2");
     }
 
+    private void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity){
+        itemEntity.setItemAvailabilityStatusId(1); // Not Available
+        itemDetailsRepository.save(itemEntity);
+        saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","Request ItemAvailabilityStatus Change","1 - 2");
+    }
+
     private void updateGFA(ItemRequestInformation itemRequestInfo,ItemInformationResponse itemResponseInformation,Exchange exchange ){
         ObjectMapper objectMapper= new ObjectMapper();
         String json ="";
@@ -281,36 +307,46 @@ public class ItemRequestService {
         boolean bsuccess=false;
         try {
             if (itemRequestInfo.isOwningInstitutionItem()) {
+                String requestingPatron = itemRequestInfo.getPatronBarcode();
+                itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(),itemRequestInfo.getItemOwningInstitution()));
                 ItemHoldResponse itemHoldResponse = (ItemHoldResponse)requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
-                if (itemHoldResponse.isSuccess()) { // If Hold command is successfully
+                if (itemHoldResponse.isSuccess()) { // IF Hold command is successfully
                     itemResponseInformation =checkInstAfterPlacingRequest(itemRequestInfo,itemResponseInformation,itemEntity,requestTypeEntity);
+                    messagePublish = itemResponseInformation.getScreenMessage();
                 } else { // If Hold command Failure
                     messagePublish = itemHoldResponse.getScreenMessage();
                     bsuccess = false;
                     saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","RequestItem - Hold Request Failed",itemHoldResponse.getPatronIdentifier()+" - "+itemHoldResponse.getScreenMessage());
                 }
+                itemRequestInfo.setPatronBarcode(requestingPatron);
             } else {// Not the Owning Institute
-                ItemCreateBibResponse createItemResponse = (ItemCreateBibResponse)requestItemController.createBibliogrphicItem(itemRequestInfo,itemRequestInfo.getItemOwningInstitution());
+                ItemCreateBibResponse createItemResponse = (ItemCreateBibResponse)requestItemController.createBibliogrphicItem(itemRequestInfo,itemRequestInfo.getRequestingInstitution());
                 if(createItemResponse.isSuccess()){
                     itemRequestInfo.setBibId(createItemResponse.getBibId());
-                    ItemHoldResponse itemHoldResponse = (ItemHoldResponse)requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
+                    itemRequestInfo.setDeliveryLocation("CIRCrecap");
+                    ItemHoldResponse itemHoldResponse = (ItemHoldResponse)requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                     if(itemHoldResponse.isSuccess()) {
                         itemResponseInformation = checkInstAfterPlacingRequest(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
                         bsuccess = true;
+                        messagePublish = itemResponseInformation.getScreenMessage();
                     }else{
                         messagePublish = itemHoldResponse.getScreenMessage();
                         bsuccess = false;
+                        rollbackUpdateItemAvailabilutyStatus(itemEntity);
                         saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","RequestItem - Hold Request Failed",itemHoldResponse.getPatronIdentifier()+" - "+itemHoldResponse.getScreenMessage());
                     }
                 }else{
                     messagePublish = createItemResponse.getScreenMessage();
                     bsuccess = false;
+                    rollbackUpdateItemAvailabilutyStatus(itemEntity);
                     saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","RequestItem - Hold Request Failed",createItemResponse.getBibId()+" - "+createItemResponse.getScreenMessage());
                 }
             }
         } catch (Exception e) {
+            logger.error("Exception : ",e);
             messagePublish = "Failed to process request.";
             bsuccess = false;
+            saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","RequestItem - Hold Request Failed",itemRequestInfo.getItemBarcodes()+" - "+e.getMessage());
         }
         itemResponseInformation.setScreenMessage(messagePublish);
         itemResponseInformation.setSuccess(bsuccess);
@@ -324,9 +360,12 @@ public class ItemRequestService {
             // Update Recap DB
             Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
             itemResponseInformation.setRequestId(requestId);
+            messagePublish="Successfully Processed Request Item";
             bsuccess = true;
         } else { // Item does not belong to requesting Institute
-            AbstractResponseItem checkoutItemResponse = requestItemController.checkoutItem(itemRequestInfo,itemRequestInfo.getRequestingInstitution());
+            String requestingPatron = itemRequestInfo.getPatronBarcode();
+            itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(),itemRequestInfo.getItemOwningInstitution()));
+            AbstractResponseItem checkoutItemResponse = requestItemController.checkoutItem(itemRequestInfo,itemRequestInfo.getItemOwningInstitution());
             if (checkoutItemResponse.isSuccess()) {
                 // Update Recap DB
                 Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
@@ -338,6 +377,7 @@ public class ItemRequestService {
                 bsuccess = false;
                 saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","RequestItem - Hold Request Failed",checkoutItemResponse.getItemOwningInstitution()+" - "+checkoutItemResponse.getScreenMessage());
             }
+            itemRequestInfo.setPatronBarcode(requestingPatron);
         }
         itemResponseInformation.setScreenMessage(messagePublish);
         itemResponseInformation.setSuccess(bsuccess);
@@ -356,7 +396,22 @@ public class ItemRequestService {
 
     private String getPatronIdBorrwingInsttution(String requestingInstitution, String OwningInstitution){
         String patronId="";
+        if(OwningInstitution.equalsIgnoreCase(ReCAPConstants.PRINCETON)){
+            if(requestingInstitution.equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
+                patronId = princetonCULPatron;
+            }else if(requestingInstitution.equalsIgnoreCase(ReCAPConstants.NYPL)) {
+                patronId = princetonNYPLPatron;
+            }
+        }else if(OwningInstitution.equalsIgnoreCase(ReCAPConstants.COLUMBIA)){
+            if(requestingInstitution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
+                patronId=columbiaPULPatron;
+            }else if(requestingInstitution.equalsIgnoreCase(ReCAPConstants.NYPL)) {
+                patronId=columbiaNYPLPatron;
+            }
+        }else if(OwningInstitution.equalsIgnoreCase(ReCAPConstants.NYPL)){
 
+        }
+        logger.info(patronId);
         return patronId;
     }
 }
