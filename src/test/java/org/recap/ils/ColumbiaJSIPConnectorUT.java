@@ -4,13 +4,12 @@ import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.messages.SIP2MessageResponse;
 import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
-import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
 import com.pkrete.jsip2.messages.responses.SIP2PatronStatusResponse;
 import com.pkrete.jsip2.parser.SIP2CreateBibResponseParser;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Test;
 import org.recap.BaseTestCase;
-import org.recap.ils.model.*;
+import org.recap.ils.model.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,12 +108,13 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
     public void cancelHold() throws Exception {
         String itemIdentifier = this.itemIdentifier[1];;
         String patronIdentifier = "RECAPTST01";
-        String institutionId = "";
+        String callInstitutionId = "";
+        String itemInstitutionId = "";
         String expirationDate =MessageUtil.createFutureDate(20,2);
         String bibId="12040033";
         String pickupLocation="CIRCrecap";
 
-        ItemHoldResponse holdResponse = (ItemHoldResponse) columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation, null, null, null, null);
+        ItemHoldResponse holdResponse = (ItemHoldResponse) columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier, callInstitutionId, itemInstitutionId, expirationDate,bibId,pickupLocation, null, null, null, null);
         lookupItem();
 
         assertNotNull(holdResponse);
@@ -141,13 +141,14 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
     public void bothHold() throws Exception {
         String itemIdentifier = "32101095533293";
         String patronIdentifier = "198572368";
-        String institutionId = "htccul";
+        String callInstitutionId = "htccul";
+        String itemInstitutionId = "";
         String expirationDate =MessageUtil.getSipDateTime(); // Date Format YYYYMMDDZZZZHHMMSS
         String bibId="100001";
         String pickupLocation="htcsc";
         ItemHoldResponse holdResponse;
 
-        holdResponse = (ItemHoldResponse) columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation, null, null, null, null);
+        holdResponse = (ItemHoldResponse) columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier, callInstitutionId, itemInstitutionId, expirationDate,bibId,pickupLocation, null, null, null, null);
         holdResponse = (ItemHoldResponse) columbiaJSIPConnector.cancelHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation, null);
 
         assertNotNull(holdResponse);

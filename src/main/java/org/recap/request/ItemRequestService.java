@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.builder.DefaultFluentProducerTemplate;
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.controller.RequestItemController;
 import org.recap.controller.RequestItemValidatorController;
 import org.recap.ils.model.*;
+import org.recap.ils.model.response.*;
 import org.recap.model.*;
 import org.recap.mqconsumer.RequestItemQueueConsumer;
 import org.recap.repository.*;
@@ -213,6 +215,14 @@ public class ItemRequestService {
             selectTopic = ReCAPConstants.PUL_RECALL_TOPIC;
         }else if(owningInstituteId.equalsIgnoreCase(ReCAPConstants.PRINCETON) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT)){
             selectTopic = ReCAPConstants.PUL_BORROW_DIRECT_TOPIC;
+        }else if(owningInstituteId.equalsIgnoreCase(ReCAPConstants.NYPL) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)){
+            selectTopic = ReCAPConstants.NYPL_REQUEST_TOPIC;
+        }else if(owningInstituteId.equalsIgnoreCase(ReCAPConstants.NYPL) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)){
+            selectTopic = ReCAPConstants.NYPL_EDD_TOPIC;
+        }else if(owningInstituteId.equalsIgnoreCase(ReCAPConstants.NYPL) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)){
+            selectTopic = ReCAPConstants.NYPL_RECALL_TOPIC;
+        }else if(owningInstituteId.equalsIgnoreCase(ReCAPConstants.NYPL) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT)){
+            selectTopic = ReCAPConstants.NYPL_BORROW_DIRECT_TOPIC;
         }
         ObjectMapper objectMapper= new ObjectMapper();
         String json ="";
@@ -254,7 +264,9 @@ public class ItemRequestService {
             requestItemEntity.setItemId(itemEntity.getItemId());
             requestItemEntity.setRequestingInstitutionId(itemEntity.getInstitutionEntity().getInstitutionId());
             requestItemEntity.setRequestTypeId(requestTypeEntity.getRequestTypeId());
-            requestItemEntity.setRequestExpirationDate(simpleDateFormat.parse(itemRequestInformation.getExpirationDate()));
+            if (StringUtils.isNotBlank(itemRequestInformation.getExpirationDate())) {
+                requestItemEntity.setRequestExpirationDate(simpleDateFormat.parse(itemRequestInformation.getExpirationDate()));
+            }
             requestItemEntity.setCreatedDate(new Date());
             requestItemEntity.setLastUpdatedDate(new Date());
             requestItemEntity.setPatronId(savedPatronEntity.getPatronId());

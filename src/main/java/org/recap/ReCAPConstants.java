@@ -56,9 +56,13 @@ public class ReCAPConstants {
 
     public static final String PUL_REQUEST_TOPIC = "scsbactivemq:topic:PUL.RequestT";
     public static final String PUL_EDD_TOPIC = "scsbactivemq:topic:PUL.EDDT";
-    public static final String PUL_HOLD_TOPIC = "scsbactivemq:topic:PUL.HoldT";
     public static final String PUL_RECALL_TOPIC = "scsbactivemq:topic:PUL.RecallT";
     public static final String PUL_BORROW_DIRECT_TOPIC = "scsbactivemq:topic:PUL.BorrowDirectT";
+
+    public static final String NYPL_REQUEST_TOPIC = "scsbactivemq:topic:NYPL.RequestT";
+    public static final String NYPL_EDD_TOPIC = "scsbactivemq:topic:NYPL.EDDT";
+    public static final String NYPL_RECALL_TOPIC = "scsbactivemq:topic:NYPL.RecallT";
+    public static final String NYPL_BORROW_DIRECT_TOPIC = "scsbactivemq:topic:NYPL.BorrowDirectT";
 
     // Queue Header
     public static final String REQUEST_TYPE_QUEUE_HEADER = "RequestType";
@@ -68,9 +72,13 @@ public class ReCAPConstants {
 
     public static final String PUL_REQUEST_TOPIC_ROUTEID = "PULRequestTopicRouteId";
     public static final String PUL_EDD_TOPIC_ROUTEID = "PULEDDTopicRouteId";
-    public static final String PUL_HOLD_TOPIC_ROUTEID = "PULHoldTopicRouteId";
     public static final String PUL_RECALL_TOPIC_ROUTEID = "PULRecallTopicRouteId";
     public static final String PUL_BORROW_DIRECT_TOPIC_ROUTEID = "PULBorrowDirectTopicRouteId";
+
+    public static final String NYPL_REQUEST_TOPIC_ROUTEID = "NYPLRequestTopicRouteId";
+    public static final String NYPL_EDD_TOPIC_ROUTEID = "NYPLEDDTopicRouteId";
+    public static final String NYPL_RECALL_TOPIC_ROUTEID = "NYPLRecallTopicRouteId";
+    public static final String NYPL_BORROW_DIRECT_TOPIC_ROUTEID = "NYPLBorrowDirectTopicRouteId";
 
     public static final String OWNING_INSTITUTION = "OwningInstitution";
     public static final String OWNING_INSTITUTION_BIB_ID = "OwningInstitutionBibId";
@@ -111,4 +119,15 @@ public class ReCAPConstants {
     public static final String HOLDING_ID = "HoldingId";
     public static final String ITEM_ID = "ItemId";
     public static final String BIBLIOGRAPHIC_ENTITY = "bibliographicEntity";
+
+    public static final String CHECKOUT_SUCCESS = "Successfully processed checkout item";
+    public static final String CHECKIN_SUCCESS = "Successfully processed checkin item";
+    public static final String HOLD_SUCCESS = "Successfully processed hold request";
+    public static final String CANCEL_HOLD_SUCCESS = "Successfully processed cancel hold request";
+
+    public static final String CHECKOUT_FAILED = "Failed to process checkout item";
+    public static final String CHECKIN_FAILED = "Failed to process checkin item";
+    public static final String HOLD_FAILED = "Failed to process hold request";
+    public static final String CANCEL_HOLD_FAILED = "Failed to process cancel hold request";
+    public static final String TRACKING_ID_REQUIRED = "Tracking Id is required";
 }

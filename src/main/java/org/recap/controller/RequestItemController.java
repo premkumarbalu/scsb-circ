@@ -1,7 +1,7 @@
 package org.recap.controller;
 
 import org.recap.ils.JSIPConnectorFactory;
-import org.recap.ils.model.*;
+import org.recap.ils.model.response.*;
 import org.recap.model.ItemRequestInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +85,7 @@ public class RequestItemController {
 
             itemHoldResponse = (ItemHoldResponse) jsipConectorFactory.getJSIPConnector(callInstitition).placeHold(itembarcode, itemRequestInformation.getPatronBarcode(),
                     itemRequestInformation.getRequestingInstitution(),
+                    itemRequestInformation.getItemOwningInstitution(),
                     itemRequestInformation.getExpirationDate(),
                     itemRequestInformation.getBibId(),
                     itemRequestInformation.getDeliveryLocation(),

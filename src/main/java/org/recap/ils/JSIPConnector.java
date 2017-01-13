@@ -10,7 +10,7 @@ import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
 import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
 import com.pkrete.jsip2.messages.responses.*;
 import com.pkrete.jsip2.variables.HoldMode;
-import org.recap.ils.model.*;
+import org.recap.ils.model.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +90,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
     public abstract String getOperatorLocation();
 
-    public AbstractResponseItem lookupItem(String itemIdentifier,String source) {
+    public AbstractResponseItem lookupItem(String itemIdentifier, String source) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2ItemInformationResponse sip2ItemInformationResponse = null;
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
@@ -301,8 +301,8 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return itemCheckinResponse;
     }
 
-    public Object placeHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId, String title, String author, String callNumber) {
-        return hold(HoldMode.ADD, itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
+    public Object placeHold(String itemIdentifier, String patronIdentifier, String callInstitutionId, String itemInstitutionId, String expirationDate, String bibId, String pickupLocation, String trackingId, String title, String author, String callNumber) {
+        return hold(HoldMode.ADD, itemIdentifier, patronIdentifier, callInstitutionId, expirationDate, bibId, pickupLocation);
     }
 
     public Object cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId){

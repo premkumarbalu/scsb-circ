@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 import org.recap.BaseTestCase;
-import org.recap.ils.model.ItemCheckoutResponse;
+import org.recap.ils.model.response.ItemCheckoutResponse;
 import org.recap.model.ItemRequestInformation;
 import org.recap.model.ItemResponseInformation;
 import org.slf4j.Logger;

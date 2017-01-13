@@ -5,7 +5,7 @@ import org.apache.camel.Body;
 import org.apache.camel.Exchange;
 import org.apache.camel.Header;
 import org.jboss.logging.Logger;
-import org.recap.ils.model.ItemInformationResponse;
+import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
 import org.recap.model.ItemResponseInformation;
 import org.recap.request.ItemRequestService;
@@ -71,17 +71,36 @@ public class RequestItemQueueConsumer {
         logger.info("Body -> " +body.toString());
     }
 
-    public void pulHoldTopicOnMessage(@Body String body) {
-        logger.info("Start Message Processing");
-        logger.info("Body -> " +body.toString());
-    }
-
     public void pulRecalTopicOnMessage(@Body String body) {
         logger.info("Start Message Processing");
         logger.info("Body -> " +body.toString());
     }
 
     public void pulBorrowDirectTopicOnMessage(@Header("RequestType") String requestType, @Body String body) {
+        logger.info("Start Message Processing");
+        logger.info("Body -> " +body.toString());
+        logger.info("Hold -> " +requestType);
+    }
+
+    public void nyplRequestTopicOnMessage(@Body String body,Exchange exchange) throws IOException {
+        logger.info("------------------------- NYPL RequestTopic lisinting to messages");
+        ObjectMapper om = new ObjectMapper();
+        ItemInformationResponse itemInformationResponse = om.readValue(body, ItemInformationResponse.class);
+        itemRequestService.saveItemChangeLogEntity(itemInformationResponse.getRequestId(),"Guest","RequestItem-nyplRequestTopic",body.toString());
+        logger.info("Body -> " +body.toString());
+    }
+
+    public void nyplEDDTopicOnMessage(@Body String body) {
+        logger.info("Start Message Processing");
+        logger.info("Body -> " +body.toString());
+    }
+
+    public void nyplRecalTopicOnMessage(@Body String body) {
+        logger.info("Start Message Processing");
+        logger.info("Body -> " +body.toString());
+    }
+
+    public void nyplBorrowDirectTopicOnMessage(@Header("RequestType") String requestType, @Body String body) {
         logger.info("Start Message Processing");
         logger.info("Body -> " +body.toString());
         logger.info("Hold -> " +requestType);
