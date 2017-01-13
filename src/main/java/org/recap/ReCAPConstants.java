@@ -41,7 +41,7 @@ public class ReCAPConstants {
     public static final String VALID_CUSTOMER_CODE = "Customer code is valid";
     public static final String MULTIPLE_ITEMS_NOT_ALLOWED_FOR_EDD = "Multiple item request not allowed for EDD request type";
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
-    public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "The item is unavailable";
+    public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Requested Item is not Available";
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
 
