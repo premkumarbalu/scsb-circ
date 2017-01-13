@@ -2,10 +2,10 @@ package org.recap.ils;
 
 import org.junit.Test;
 import org.recap.BaseTestCase;
-import org.recap.ils.model.ItemCheckinResponse;
-import org.recap.ils.model.ItemCheckoutResponse;
-import org.recap.ils.model.ItemHoldResponse;
-import org.recap.ils.model.ItemInformationResponse;
+import org.recap.ils.model.response.ItemCheckinResponse;
+import org.recap.ils.model.response.ItemCheckoutResponse;
+import org.recap.ils.model.response.ItemHoldResponse;
+import org.recap.ils.model.response.ItemInformationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.Assert.assertNotNull;
@@ -49,7 +49,8 @@ public class NyplApiServiceConnectorUT extends BaseTestCase {
     public void placeHold() throws Exception {
         String itemBarcode = "33433001888415";
         String patronBarcode = "23333095887111";
-        String institutionId = "NYPL";
+        String callInstitutionId = "NYPL";
+        String itemInstitutionId = "NYPL";
         String expirationDate = "";
         String bibId = "";
         String pickupLocation = "";
@@ -57,7 +58,7 @@ public class NyplApiServiceConnectorUT extends BaseTestCase {
         String title = "";
         String author = "";
         String callNumber = "";
-        ItemHoldResponse itemHoldResponse = (ItemHoldResponse)nyplApiServiceConnector.placeHold(itemBarcode, patronBarcode, institutionId, expirationDate, bibId, pickupLocation, trackingId, title, author, callNumber);
+        ItemHoldResponse itemHoldResponse = (ItemHoldResponse)nyplApiServiceConnector.placeHold(itemBarcode, patronBarcode, callInstitutionId, itemInstitutionId, expirationDate, bibId, pickupLocation, trackingId, title, author, callNumber);
         assertNotNull(itemHoldResponse);
     }
 

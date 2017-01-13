@@ -1,10 +1,19 @@
 package org.recap.ils.service;
 
-import org.recap.ils.model.*;
-import org.recap.ils.model.response.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.recap.ReCAPConstants;
+import org.recap.ils.model.nypl.*;
+import org.recap.ils.model.nypl.response.*;
+import org.recap.ils.model.response.ItemCheckinResponse;
+import org.recap.ils.model.response.ItemCheckoutResponse;
+import org.recap.ils.model.response.ItemHoldResponse;
+import org.recap.ils.model.response.ItemInformationResponse;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Created by rajeshbabuk on 20/12/16.
@@ -86,4 +95,5 @@ public class NyplApiResponseUtil {
         itemHoldResponse.setUpdatedDate((String) holdData.getUpdatedDate());
         return itemHoldResponse;
     }
+
 }

@@ -32,4 +32,6 @@ public interface ItemDetailsRepository extends PagingAndSortingRepository<ItemEn
 
     List<ItemEntity> findByBarcodeIn(List<String> barcodes);
 
+    List<ItemEntity> findByBarcode(String barcode);
+
 }

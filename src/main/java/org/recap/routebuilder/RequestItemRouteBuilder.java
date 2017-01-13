@@ -81,6 +81,43 @@ public class RequestItemRouteBuilder {
             });
             /* PUL Topics*/
 
+            /* NYPL Topics */
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.NYPL_REQUEST_TOPIC)
+                            .routeId(ReCAPConstants.NYPL_REQUEST_TOPIC_ROUTEID)
+                            .bean(new RequestItemQueueConsumer(itemRequestService), "nyplRequestTopicOnMessage");
+                }
+            });
+
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.NYPL_EDD_TOPIC)
+                            .routeId(ReCAPConstants.NYPL_EDD_TOPIC_ROUTEID)
+                            .bean(new RequestItemQueueConsumer(itemRequestService), "nyplEDDTopicOnMessage");
+                }
+            });
+
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.NYPL_RECALL_TOPIC)
+                            .routeId(ReCAPConstants.NYPL_RECALL_TOPIC_ROUTEID)
+                            .bean(new RequestItemQueueConsumer(itemRequestService), "nyplRecalTopicOnMessage");
+                }
+            });
+
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.NYPL_BORROW_DIRECT_TOPIC)
+                            .routeId(ReCAPConstants.NYPL_BORROW_DIRECT_TOPIC)
+                            .bean(new RequestItemQueueConsumer(itemRequestService), "nyplBorrowDirectTopicOnMessage");
+                }
+            });
+            /* NYPL Topics */
 
         } catch (Exception e) {
             logger.info(e.getMessage());

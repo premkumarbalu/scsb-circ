@@ -1,13 +1,11 @@
 package org.recap.ils;
 
 import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
-import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
 import com.pkrete.jsip2.messages.responses.SIP2ItemInformationResponse;
-import com.pkrete.jsip2.messages.responses.SIP2PatronStatusResponse;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Test;
 import org.recap.BaseTestCase;
-import org.recap.ils.model.*;
+import org.recap.ils.model.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +29,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
     private String pickupLocation = "rcpcirc";
     private String bibId = "9959052";
     private String institutionId = "htccul";
+    private String itemInstitutionId = "";
     private String expirationDate = MessageUtil.createFutureDate(1, 1);
 
     @Test
@@ -116,7 +115,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void placeHold() throws Exception {
-        ItemHoldResponse holdResponse = (ItemHoldResponse)  princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation,null,null,null,null);
+        ItemHoldResponse holdResponse = (ItemHoldResponse)  princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, itemInstitutionId,  expirationDate, bibId, pickupLocation,null,null,null,null);
 
         try {
             assertNotNull(holdResponse);
@@ -132,13 +131,14 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "32101095533293";
         String patronIdentifier = "198572368";
         String institutionId = "htccul";
+        String itemInstitutionId = "";
         String expirationDate = MessageUtil.getSipDateTime(); // Date Format YYYYMMDDZZZZHHMMSS
         String bibId = "100001";
         String pickupLocation = "htcsc";
         ItemHoldResponse holdResponse;
 
         holdResponse = (ItemHoldResponse) princetonESIPConnector.cancelHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation,null);
-        holdResponse = (ItemHoldResponse)  princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation,null,null,null,null);
+        holdResponse = (ItemHoldResponse)  princetonESIPConnector.placeHold(itemIdentifier, patronIdentifier, institutionId, itemInstitutionId, expirationDate, bibId, pickupLocation,null,null,null,null);
 
         assertNotNull(holdResponse);
         assertTrue(holdResponse.isSuccess());

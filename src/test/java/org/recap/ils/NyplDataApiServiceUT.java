@@ -3,11 +3,12 @@ package org.recap.ils;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.recap.BaseTestCase;
-import org.recap.ils.model.Description;
-import org.recap.ils.model.request.CancelHoldRequest;
-import org.recap.ils.model.request.CheckinRequest;
-import org.recap.ils.model.request.CheckoutRequest;
-import org.recap.ils.model.request.CreateHoldRequest;
+import org.recap.ils.model.nypl.Description;
+import org.recap.ils.model.nypl.response.*;
+import org.recap.ils.model.nypl.request.CancelHoldRequest;
+import org.recap.ils.model.nypl.request.CheckinRequest;
+import org.recap.ils.model.nypl.request.CheckoutRequest;
+import org.recap.ils.model.nypl.request.CreateHoldRequest;
 import org.recap.ils.model.response.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -92,7 +93,7 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
     @Test
     public void cancelRecapHoldRequest() throws Exception {
-        String apiUrl = nyplDataApiUrl + "/v0.1/recap/cancel-hold-requests";
+        String apiUrl = nyplDataApiUrl + "/recap/cancel-hold-requests";
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
         HttpHeaders headers = new HttpHeaders();
@@ -257,7 +258,7 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
     @Test
     public void getJobById() throws Exception {
-        String jobId = "51658611ff25b28b";
+        String jobId = "93558738b214f130";
         String apiUrl = nyplDataApiUrl + "/jobs/" + jobId;
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
