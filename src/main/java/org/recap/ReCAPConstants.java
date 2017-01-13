@@ -33,15 +33,17 @@ public class ReCAPConstants {
     public static final String VALID_PATRON = "Patron validated successfully.";
     public static final String AVAILABLE = "Available";
     public static final String NOT_AVAILABLE = "Not Available";
-    public static final String ITEMBARCODE_WITH_DIFFERENT_BIB = "Item should belongs to same bib.Given item barcodes are in different bibs";
-    public static final String INVALID_CUSTOMER_CODE = "Please enter the valid Customer Code";
+    public static final String ITEMBARCODE_WITH_DIFFERENT_BIB = "Item should belongs to same bib. Given item barcodes are in different bibs";
+    public static final String INVALID_CUSTOMER_CODE = "Please enter the valid delivery Code";
+    public static final String INVALID_DELIVERY_CODE = "Delivery code is not available for this item";
     public static final String INVALID_ITEM_BARCODE = "Item is not available";
     public static final String ITEM_BARCODE_IS_REQUIRED = "Item Barcode is required";
     public static final String VALID_CUSTOMER_CODE = "Customer code is valid";
     public static final String MULTIPLE_ITEMS_NOT_ALLOWED_FOR_EDD = "Multiple item request not allowed for EDD request type";
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
-    public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Request type cannot be retrieval if the item status is unAvailable";
+    public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Requested Item is not Available";
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
+
 
     // Retrieval,EDD, Hold, Recall, Borrow Direct
     public static final String REQUEST_TYPE_RETRIEVAL="RETRIEVAL";

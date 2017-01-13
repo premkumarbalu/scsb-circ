@@ -5,10 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.recap.ReCAPConstants;
 import org.recap.controller.ItemController;
-import org.recap.model.BibliographicEntity;
-import org.recap.model.ItemEntity;
-import org.recap.model.ItemRequestInformation;
-import org.recap.model.ItemStatusEntity;
+import org.recap.model.*;
+import org.recap.repository.CustomerCodeDetailsRepository;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.ItemStatusDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +45,10 @@ public class ItemValidatorService {
     @Autowired
     ItemController itemController;
 
+    @Autowired
+    CustomerCodeDetailsRepository customerCodeDetailsRepository;
+
+
     public ResponseEntity itemValidation(ItemRequestInformation itemRequestInformation) {
         ResponseEntity responseEntity = null;
         String availabilityStatus = "";
@@ -61,22 +64,29 @@ public class ItemValidatorService {
         itemEntityList = itemController.findByBarcodeIn(itemBarcodes);
         if (itemEntityList.size() != 0) {
             if (splitStringAndGetList(itemBarcodes).size() == itemEntityList.size()) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                ItemEntity itemEntity = objectMapper.convertValue(itemEntityList.get(0), ItemEntity.class);
+                ItemEntity itemEntity = itemEntityList.get(0);
                 // Item availability Status from SCSB Item table
                 availabilityStatus = getItemStatus(itemEntity.getItemAvailabilityStatusId());
                 if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.NOT_AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)) {
                     return new ResponseEntity(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                 }
-                bibliographicList = objectMapper.convertValue(itemEntity.getBibliographicEntities(), new TypeReference<List<BibliographicEntity>>() {
-                });
+                bibliographicList = itemEntity.getBibliographicEntities();
                 for (BibliographicEntity bibliographicEntityDetails : bibliographicList) {
                     bibliographicIds.add(bibliographicEntityDetails.getBibliographicId());
                 }
                 if (itemEntityList.size() == 1) {
-                    return new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
+                    int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation.getDeliveryLocation());
+                    ResponseEntity responseEntity1 =null;
+                    if (validateCustomerCode == 1) {
+                        responseEntity1= new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
+                    } else if (validateCustomerCode == 0) {
+                        responseEntity1 = new ResponseEntity(ReCAPConstants.INVALID_CUSTOMER_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                    } else if (validateCustomerCode == -1) {
+                        responseEntity1 = new ResponseEntity(ReCAPConstants.INVALID_DELIVERY_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                    }
+                    return responseEntity1;
                 } else {
-                    return multipleRequestItemValidation(itemEntityList, itemEntity.getCustomerCode(), itemEntity.getItemAvailabilityStatusId(), bibliographicIds);
+                    return multipleRequestItemValidation(itemEntityList, itemRequestInformation.getDeliveryLocation(), itemEntity.getItemAvailabilityStatusId(), bibliographicIds);
                 }
             } else {
                 return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
@@ -108,7 +118,7 @@ public class ItemValidatorService {
         return status;
     }
 
-    public ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, String customerCode, Integer itemAvailabilityStatusId, List<Integer> bibliographicIds) {
+    public ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, String deliveryLocation, Integer itemAvailabilityStatusId, List<Integer> bibliographicIds) {
         String status = "";
         List<BibliographicEntity> bibliographicList = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -116,7 +126,8 @@ public class ItemValidatorService {
         });
         for (ItemEntity itemEntity : itemEntities) {
             if (itemEntity.getItemAvailabilityStatusId() == itemAvailabilityStatusId) {
-                if (itemEntity.getCustomerCode().equalsIgnoreCase(customerCode)) {
+                int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(),deliveryLocation);
+                if (validateCustomerCode == 1) {
                     if (itemEntity.getBibliographicEntities().size() == bibliographicIds.size()) {
                         bibliographicList = objectMapper.convertValue(itemEntity.getBibliographicEntities(), new TypeReference<List<BibliographicEntity>>() {
                         });
@@ -132,13 +143,33 @@ public class ItemValidatorService {
                         return new ResponseEntity(ReCAPConstants.ITEMBARCODE_WITH_DIFFERENT_BIB, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                     }
                 } else {
-                    return new ResponseEntity(ReCAPConstants.INVALID_CUSTOMER_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                    if (validateCustomerCode == 0) {
+                        return new ResponseEntity(ReCAPConstants.INVALID_CUSTOMER_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                    }else if (validateCustomerCode == -1) {
+                        return new ResponseEntity(ReCAPConstants.INVALID_DELIVERY_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                    }
                 }
             } else {
                 return new ResponseEntity(ReCAPConstants.INVALID_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
             }
         }
-        return new ResponseEntity(status,getHttpHeaders(),HttpStatus.OK);
+        return new ResponseEntity(status, getHttpHeaders(), HttpStatus.OK);
+    }
+
+    public int checkDeliveryLocation(String customerCode, String deliveryLocation) {
+        int bSuccess = 0;
+        CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(customerCode);
+        if(!StringUtils.isEmpty(customerCodeEntity)) {
+            String deliveryRestrictions = customerCodeEntity.getDeliveryRestrictions();
+            if(deliveryRestrictions != null && deliveryRestrictions.trim().length()>0) {
+                if(deliveryRestrictions.contains(deliveryLocation)) {
+                    bSuccess = 1;
+                }
+            }
+        }else{
+            bSuccess = -1;
+        }
+        return bSuccess;
     }
 }
 

@@ -15,6 +15,7 @@ import org.recap.mqconsumer.RequestItemQueueConsumer;
 import org.recap.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
@@ -93,16 +94,14 @@ public class ItemRequestService {
                 logger.info(itemRequestInfo.getTitleIdentifier());
                 // Validate Patron
                 res = requestItemValidatorController.validateItemRequestInformations(itemRequestInfo);
-                if (res.getStatusCodeValue() == 200) {
+                if (res.getStatusCode() == HttpStatus.OK) {
                     logger.info("Request Validation Successful");
                     // Change Item Availablity
                     updateItemAvailabilutyStatus(itemEntity);
                     // Action based on Request Type
                     if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
                         requestTypeEntity= requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
-                        if(itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
-                            itemRequestInfo.setDeliveryLocation("rcpcirc");
-                        }
+
                         itemResponseInformation = checkOwningInstitution(itemRequestInfo,itemResponseInformation,itemEntity,requestTypeEntity);
                         messagePublish=itemResponseInformation.getScreenMessage();
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
@@ -130,6 +129,7 @@ public class ItemRequestService {
             logger.info("Finish Processing");
             itemResponseInformation.setScreenMessage(messagePublish);
             itemResponseInformation.setSuccess(bsuccess);
+            itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
             itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
             itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
             itemResponseInformation.setTitleIdentifier(itemRequestInfo.getTitleIdentifier());
@@ -282,7 +282,7 @@ public class ItemRequestService {
     private void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity){
         itemEntity.setItemAvailabilityStatusId(1); // Not Available
         itemDetailsRepository.save(itemEntity);
-        saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","Request ItemAvailabilityStatus Change","1 - 2");
+        saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","Request ItemAvailabilityStatus Change","2 - 1");
     }
 
     private void updateGFA(ItemRequestInformation itemRequestInfo,ItemInformationResponse itemResponseInformation,Exchange exchange ){
@@ -307,8 +307,7 @@ public class ItemRequestService {
         boolean bsuccess=false;
         try {
             if (itemRequestInfo.isOwningInstitutionItem()) {
-                String requestingPatron = itemRequestInfo.getPatronBarcode();
-                itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(),itemRequestInfo.getItemOwningInstitution()));
+                setpickupLoacation(itemRequestInfo,itemRequestInfo.getItemOwningInstitution());
                 ItemHoldResponse itemHoldResponse = (ItemHoldResponse)requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
                 if (itemHoldResponse.isSuccess()) { // IF Hold command is successfully
                     itemResponseInformation =checkInstAfterPlacingRequest(itemRequestInfo,itemResponseInformation,itemEntity,requestTypeEntity);
@@ -316,14 +315,14 @@ public class ItemRequestService {
                 } else { // If Hold command Failure
                     messagePublish = itemHoldResponse.getScreenMessage();
                     bsuccess = false;
+                    rollbackUpdateItemAvailabilutyStatus(itemEntity);
                     saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","RequestItem - Hold Request Failed",itemHoldResponse.getPatronIdentifier()+" - "+itemHoldResponse.getScreenMessage());
                 }
-                itemRequestInfo.setPatronBarcode(requestingPatron);
             } else {// Not the Owning Institute
                 ItemCreateBibResponse createItemResponse = (ItemCreateBibResponse)requestItemController.createBibliogrphicItem(itemRequestInfo,itemRequestInfo.getRequestingInstitution());
                 if(createItemResponse.isSuccess()){
                     itemRequestInfo.setBibId(createItemResponse.getBibId());
-                    itemRequestInfo.setDeliveryLocation("CIRCrecap");
+                    setpickupLoacation(itemRequestInfo,itemRequestInfo.getRequestingInstitution());
                     ItemHoldResponse itemHoldResponse = (ItemHoldResponse)requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                     if(itemHoldResponse.isSuccess()) {
                         itemResponseInformation = checkInstAfterPlacingRequest(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
@@ -365,18 +364,15 @@ public class ItemRequestService {
         } else { // Item does not belong to requesting Institute
             String requestingPatron = itemRequestInfo.getPatronBarcode();
             itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(),itemRequestInfo.getItemOwningInstitution()));
-            AbstractResponseItem checkoutItemResponse = requestItemController.checkoutItem(itemRequestInfo,itemRequestInfo.getItemOwningInstitution());
-            if (checkoutItemResponse.isSuccess()) {
-                // Update Recap DB
-                Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
-                itemResponseInformation.setRequestId(requestId);
-                messagePublish = checkoutItemResponse.getScreenMessage();
-                bsuccess = true;
-            } else {
-                messagePublish = "Checkout failed from ILS server";
-                bsuccess = false;
-                saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","RequestItem - Hold Request Failed",checkoutItemResponse.getItemOwningInstitution()+" - "+checkoutItemResponse.getScreenMessage());
+            if(!itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
+                AbstractResponseItem checkoutItemResponse = requestItemController.checkoutItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
             }
+            // Update Recap DB
+            Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
+            itemResponseInformation.setRequestId(requestId);
+            messagePublish = "Successfully Processed Request Item";
+            bsuccess = true;
+
             itemRequestInfo.setPatronBarcode(requestingPatron);
         }
         itemResponseInformation.setScreenMessage(messagePublish);
@@ -413,5 +409,13 @@ public class ItemRequestService {
         }
         logger.info(patronId);
         return patronId;
+    }
+
+    private void setpickupLoacation(ItemRequestInformation itemRequestInfo, String institution){
+        if(institution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
+            itemRequestInfo.setDeliveryLocation("rcpcirc");
+        }else if(institution.equalsIgnoreCase(ReCAPConstants.COLUMBIA)){
+            itemRequestInfo.setDeliveryLocation("CIRCrecap");
+        }
     }
 }

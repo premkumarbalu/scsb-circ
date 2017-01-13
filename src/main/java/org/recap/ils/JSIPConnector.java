@@ -217,7 +217,6 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         itemCheckoutResponse.setScreenMessage((checkoutResponse.getScreenMessage().size() > 0) ? checkoutResponse.getScreenMessage().get(0) : "");
                         itemCheckoutResponse.setSuccess(checkoutResponse.isOk());
 
-                        logger.info("checkout Request Successful");
                     }
                 } else {
                     logger.info("Login Failed");
@@ -358,6 +357,9 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         itemHoldResponse.setLCCN(holdResponse.getLccn());
                         itemHoldResponse.setISBN(holdResponse.getIsbn());
                         itemHoldResponse.setAvailable(holdResponse.isAvailable());
+                    }else{
+                        itemHoldResponse.setSuccess(false);
+                        itemHoldResponse.setScreenMessage("Patron Validation Failed");
                     }
                 } else {
                     logger.info("Login Failed");
