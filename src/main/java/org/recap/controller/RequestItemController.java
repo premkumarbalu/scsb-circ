@@ -82,7 +82,7 @@ public class RequestItemController {
                 callInstitition = itemRequestInformation.getItemOwningInstitution();
             }
             String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
-            logMessages(logger,itemRequestInformation);
+
             itemHoldResponse = (ItemHoldResponse) jsipConectorFactory.getJSIPConnector(callInstitition).placeHold(itembarcode, itemRequestInformation.getPatronBarcode(),
                     itemRequestInformation.getRequestingInstitution(),
                     itemRequestInformation.getExpirationDate(),

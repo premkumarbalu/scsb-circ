@@ -28,10 +28,10 @@ public class RequestParamaterValidatorService {
 
     @Value("${server.protocol}")
     String serverProtocol;
+
     @Value("${scsb.solr.client.url}")
     String scsbSolrClientUrl;
-    @Autowired
-    CustomerCodeDetailsRepository customerCodeDetailsRepository;
+
     @Autowired
     ItemController itemController;
 
@@ -83,13 +83,14 @@ public class RequestParamaterValidatorService {
                 if(StringUtils.isEmpty(itemRequestInformation.getDeliveryLocation())){
                     errorMessageMap.put(errorCount,ReCAPConstants.DELIVERY_LOCATION_REQUIRED);
                     errorCount++;
-                }else{
-                    String customerCodeStatus = customerCodeValidation(itemRequestInformation.getDeliveryLocation());
-                    if(customerCodeStatus.equalsIgnoreCase(ReCAPConstants.INVALID_CUSTOMER_CODE)){
-                        errorMessageMap.put(errorCount, ReCAPConstants.INVALID_CUSTOMER_CODE);
-                        errorCount++;
-                    }
                 }
+//                else{
+//                    String customerCodeStatus = customerCodeValidation(itemRequestInformation.getDeliveryLocation());
+//                    if(customerCodeStatus.equalsIgnoreCase(ReCAPConstants.INVALID_CUSTOMER_CODE)){
+//                        errorMessageMap.put(errorCount, ReCAPConstants.INVALID_CUSTOMER_CODE);
+//                        errorCount++;
+//                    }
+//                }
             }
         }
 
@@ -113,16 +114,17 @@ public class RequestParamaterValidatorService {
         return responseHeaders;
     }
 
-    private String customerCodeValidation(String deliveryLocation){
-        String customerCodeStatus = "";
-        CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(deliveryLocation);
-        if(!StringUtils.isEmpty(customerCodeEntity)){
-            customerCodeStatus =  ReCAPConstants.VALID_CUSTOMER_CODE;
-        }else{
-            customerCodeStatus = ReCAPConstants.INVALID_CUSTOMER_CODE;
-        }
-        return customerCodeStatus;
-    }
+//    private String customerCodeValidation(String deliveryLocation){
+//        String customerCodeStatus = "";
+//        CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(deliveryLocation);
+//        if(!StringUtils.isEmpty(customerCodeEntity)){
+//            customerCodeStatus =  ReCAPConstants.VALID_CUSTOMER_CODE;
+//
+//        }else{
+//            customerCodeStatus = ReCAPConstants.INVALID_CUSTOMER_CODE;
+//        }
+//        return customerCodeStatus;
+//    }
 
     private String buildErrorMessage(Map<Integer,String> erroMessageMap){
         StringBuilder errorMessageBuilder = new StringBuilder();
