@@ -67,7 +67,10 @@ public class ItemValidatorService {
                 ItemEntity itemEntity = itemEntityList.get(0);
                 // Item availability Status from SCSB Item table
                 availabilityStatus = getItemStatus(itemEntity.getItemAvailabilityStatusId());
-                if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.NOT_AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)) {
+                if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.NOT_AVAILABLE)
+                            && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)
+                            || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)
+                            || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
                     return new ResponseEntity(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                 }
                 bibliographicList = itemEntity.getBibliographicEntities();
@@ -158,16 +161,21 @@ public class ItemValidatorService {
 
     public int checkDeliveryLocation(String customerCode, String deliveryLocation) {
         int bSuccess = 0;
-        CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(customerCode);
-        if(!StringUtils.isEmpty(customerCodeEntity)) {
+        CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(deliveryLocation);
+        if(customerCodeEntity != null && customerCodeEntity.getCustomerCode().equalsIgnoreCase(deliveryLocation)) {
+            customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(customerCode);
             String deliveryRestrictions = customerCodeEntity.getDeliveryRestrictions();
             if(deliveryRestrictions != null && deliveryRestrictions.trim().length()>0) {
                 if(deliveryRestrictions.contains(deliveryLocation)) {
                     bSuccess = 1;
+                }else{
+                    bSuccess = -1;
                 }
+            }else{
+                bSuccess = -1;
             }
         }else{
-            bSuccess = -1;
+            bSuccess = 0;
         }
         return bSuccess;
     }

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/requestItem")
-public class RequestItemValidatorController{
+public class RequestItemValidatorController {
 
     @Autowired
     RequestParamaterValidatorService requestParamaterValidatorService;
@@ -30,15 +30,16 @@ public class RequestItemValidatorController{
     @Autowired
     ItemValidatorService itemValidatorService;
 
-    @RequestMapping(value = "/validateItemRequestInformations" , method = RequestMethod.POST ,consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity validateItemRequestInformations(@RequestBody ItemRequestInformation itemRequestInformation){
+    @RequestMapping(value = "/validateItemRequestInformations", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity validateItemRequestInformations(@RequestBody ItemRequestInformation itemRequestInformation) {
         ResponseEntity responseEntity = null;
         responseEntity = requestParamaterValidatorService.validateItemRequestParameters(itemRequestInformation);
-        if(responseEntity == null){
-            if(jsipConnectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).patronValidation(itemRequestInformation.getRequestingInstitution(),itemRequestInformation.getPatronBarcode())){
-                responseEntity = itemValidatorService.itemValidation(itemRequestInformation);
-            }else{
-                responseEntity = new ResponseEntity(ReCAPConstants.INVALID_PATRON,requestParamaterValidatorService.getHttpHeaders(), HttpStatus.BAD_REQUEST);
+        if (responseEntity == null) {
+            responseEntity = itemValidatorService.itemValidation(itemRequestInformation);
+            if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                if (!jsipConnectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).patronValidation(itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getPatronBarcode())) {
+                    responseEntity = new ResponseEntity(ReCAPConstants.INVALID_PATRON, requestParamaterValidatorService.getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                }
             }
         }
         return responseEntity;

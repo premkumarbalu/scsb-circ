@@ -106,12 +106,6 @@ public class ItemRequestService {
 
                         itemResponseInformation = checkOwningInstitution(itemRequestInfo,itemResponseInformation,itemEntity,requestTypeEntity);
                         messagePublish=itemResponseInformation.getScreenMessage();
-                    } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
-                        // Check if Request Item  for any existint request
-                        ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
-                        itemResponseInformation = checkOwningInstitution(itemRequestInfo,itemResponseInformation,itemEntity,requestTypeEntity);
-                        updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
-                        updateGFA(itemRequestInfo,itemResponseInformation,exchange);
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
                         updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
                         updateGFA(itemRequestInfo,itemResponseInformation,exchange);
@@ -125,7 +119,7 @@ public class ItemRequestService {
                     bsuccess = false;
                 }
             }else{
-                messagePublish = "Item Barcode does not exist";
+                messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
                 bsuccess = false;
             }
             logger.info("Finish Processing");
@@ -152,9 +146,6 @@ public class ItemRequestService {
     }
 
     public ItemInformationResponse recallItem(ItemRequestInformation itemRequestInfo, Exchange exchange){
-        String patronResponse = "";
-        RestTemplate restTemplate = new RestTemplate();
-        ObjectMapper om = new ObjectMapper();
         String messagePublish="";
         boolean bsuccess=false;
         List<ItemEntity> itemEntities;
@@ -171,7 +162,7 @@ public class ItemRequestService {
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
                 // Validate Patron
                 ResponseEntity res = requestItemValidatorController.validateItemRequestInformations(itemRequestInfo);
-                if (res.getStatusCodeValue() == 200) {
+                if (res.getStatusCode() == HttpStatus.BAD_REQUEST && res.getBody().toString().equalsIgnoreCase(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM)) {
                     logger.info("Request Validation Successful");
                     // Check if Request Item  for any existint request
                     ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
@@ -179,11 +170,11 @@ public class ItemRequestService {
                     updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
                     updateGFA(itemRequestInfo,itemResponseInformation,exchange);
                 }else{
-                    messagePublish = "Request Validation Error";
+                    messagePublish = res.getBody().toString();
                     bsuccess = false;
                 }
-            }else{
-                messagePublish = "Item Barcode does not exist";
+            } else {
+                messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
                 bsuccess = false;
             }
             logger.info("Finish Processing");
@@ -246,8 +237,7 @@ public class ItemRequestService {
         PatronEntity savedPatronEntity =null;
         RequestItemEntity savedItemRequest =null;
         try {
-            SimpleDateFormat simpleDateFormat=  new SimpleDateFormat("YYYYMMDD    HHMMSS");
-            SimpleDateFormat SDF=  new SimpleDateFormat("HHMMSS");
+            SimpleDateFormat simpleDateFormat=  new SimpleDateFormat("yyyyMMdd    HHmmss");
 
             // Patron Information
             patronEntity =  patronDetailsRepository.findByInstitutionIdentifier(itemRequestInformation.getPatronBarcode());
@@ -288,13 +278,13 @@ public class ItemRequestService {
     private void updateItemAvailabilutyStatus(ItemEntity itemEntity){
         itemEntity.setItemAvailabilityStatusId(2); // Not Available
         itemDetailsRepository.save(itemEntity);
-        saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","Request ItemAvailabilityStatus Change","1 - 2");
+        saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE,ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE);
     }
 
     private void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity){
         itemEntity.setItemAvailabilityStatusId(1); // Not Available
         itemDetailsRepository.save(itemEntity);
-        saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","Request ItemAvailabilityStatus Change","2 - 1");
+        saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE,ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK);
     }
 
     private void updateGFA(ItemRequestInformation itemRequestInfo,ItemInformationResponse itemResponseInformation,Exchange exchange ){
@@ -328,7 +318,7 @@ public class ItemRequestService {
                     messagePublish = itemHoldResponse.getScreenMessage();
                     bsuccess = false;
                     rollbackUpdateItemAvailabilutyStatus(itemEntity);
-                    saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","RequestItem - Hold Request Failed",itemHoldResponse.getPatronIdentifier()+" - "+itemHoldResponse.getScreenMessage());
+                    saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE,itemHoldResponse.getPatronIdentifier()+" - "+itemHoldResponse.getScreenMessage());
                 }
             } else {// Not the Owning Institute
                 ItemCreateBibResponse createItemResponse = (ItemCreateBibResponse)requestItemController.createBibliogrphicItem(itemRequestInfo,itemRequestInfo.getRequestingInstitution());
@@ -344,20 +334,20 @@ public class ItemRequestService {
                         messagePublish = itemHoldResponse.getScreenMessage();
                         bsuccess = false;
                         rollbackUpdateItemAvailabilutyStatus(itemEntity);
-                        saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","RequestItem - Hold Request Failed",itemHoldResponse.getPatronIdentifier()+" - "+itemHoldResponse.getScreenMessage());
+                        saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE,itemHoldResponse.getPatronIdentifier()+" - "+itemHoldResponse.getScreenMessage());
                     }
                 }else{
                     messagePublish = createItemResponse.getScreenMessage();
                     bsuccess = false;
                     rollbackUpdateItemAvailabilutyStatus(itemEntity);
-                    saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","RequestItem - Hold Request Failed",createItemResponse.getBibId()+" - "+createItemResponse.getScreenMessage());
+                    saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE,createItemResponse.getBibId()+" - "+createItemResponse.getScreenMessage());
                 }
             }
         } catch (Exception e) {
             logger.error("Exception : ",e);
             messagePublish = "Failed to process request.";
             bsuccess = false;
-            saveItemChangeLogEntity(itemEntity.getItemId(),"Guest","RequestItem - Hold Request Failed",itemRequestInfo.getItemBarcodes()+" - "+e.getMessage());
+            saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,"RequestItem - Exception",itemRequestInfo.getItemBarcodes()+" - "+e.getMessage());
         }
         itemResponseInformation.setScreenMessage(messagePublish);
         itemResponseInformation.setSuccess(bsuccess);

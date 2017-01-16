@@ -34,13 +34,6 @@ public class RequestItemQueueConsumer {
         itemRequestService.requestItem(itemRequestInformation,exchange);
     }
 
-    public void requestItemHoldOnMessage(@Body String body,Exchange exchange) throws IOException, InterruptedException {
-        ObjectMapper om = new ObjectMapper();
-        ItemRequestInformation itemRequestInformation = om.readValue(body, ItemRequestInformation.class);
-        logger.info("Item Barcode Recevied for Processing -> " +itemRequestInformation.getPatronBarcode());
-        itemRequestService.requestItem(itemRequestInformation,exchange);
-    }
-
     public void requestItemEDDOnMessage(@Body String body) {
         logger.info("Start Message Processing");
         logger.info("Body -> " +body.toString());
@@ -55,7 +48,7 @@ public class RequestItemQueueConsumer {
         ObjectMapper om = new ObjectMapper();
         ItemRequestInformation itemRequestInformation = om.readValue(body, ItemRequestInformation.class);
         logger.info("Item Barcode Recevied for Processing -> " +itemRequestInformation.getPatronBarcode());
-        itemRequestService.requestItem(itemRequestInformation,exchange);
+        itemRequestService.recallItem(itemRequestInformation,exchange);
     }
 
     public void pulRequestTopicOnMessage(@Body String body,Exchange exchange) throws IOException {
