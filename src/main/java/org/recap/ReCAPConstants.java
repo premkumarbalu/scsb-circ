@@ -130,4 +130,11 @@ public class ReCAPConstants {
     public static final String HOLD_FAILED = "Failed to process hold request";
     public static final String CANCEL_HOLD_FAILED = "Failed to process cancel hold request";
     public static final String TRACKING_ID_REQUIRED = "Tracking Id is required";
+
+    public static final String GUEST_USER = "Guest";
+    public static final String REQUEST_ITEM_HOLD_FAILURE = "RequestItem - Hold Request Failed";
+    public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "Request ItemAvailabilityStatus Change";
+    public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE = "1 - 2";
+    public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK = "2 - 1";
+
 }
