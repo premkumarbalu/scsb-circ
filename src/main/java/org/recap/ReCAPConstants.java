@@ -42,6 +42,7 @@ public class ReCAPConstants {
     public static final String MULTIPLE_ITEMS_NOT_ALLOWED_FOR_EDD = "Multiple item request not allowed for EDD request type";
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
     public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Requested Item is not Available";
+    public static final String RECALL_NOT_FOR_AVAILABLE_ITEM = "Requested Item to be recalled, is not possible for Available Item";
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
 

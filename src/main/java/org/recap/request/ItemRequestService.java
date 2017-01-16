@@ -166,9 +166,18 @@ public class ItemRequestService {
                     logger.info("Request Validation Successful");
                     // Check if Request Item  for any existint request
                     ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
-                    itemResponseInformation = checkOwningInstitution(itemRequestInfo,itemResponseInformation,itemEntity,requestTypeEntity);
-                    updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
-                    updateGFA(itemRequestInfo,itemResponseInformation,exchange);
+                    if(itemRecallResponse.isSuccess()) {
+                        itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
+                        updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
+                        updateGFA(itemRequestInfo, itemResponseInformation, exchange);
+                    }else{
+                        if(itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length()>0) {
+                            messagePublish = itemRecallResponse.getScreenMessage();
+                        }else{
+                            messagePublish = "Recall failed from ILS";
+                        }
+                        bsuccess = false;
+                    }
                 }else{
                     messagePublish = res.getBody().toString();
                     bsuccess = false;
@@ -180,9 +189,13 @@ public class ItemRequestService {
             logger.info("Finish Processing");
             itemResponseInformation.setScreenMessage(messagePublish);
             itemResponseInformation.setSuccess(bsuccess);
+            itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
             itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
+            itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
             itemResponseInformation.setTitleIdentifier(itemRequestInfo.getTitleIdentifier());
+            itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
             itemResponseInformation.setBibID(itemRequestInfo.getBibId());
+            itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
 
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), exchange, itemResponseInformation);
