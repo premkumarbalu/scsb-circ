@@ -34,7 +34,7 @@ public class NyplApiResponseUtil {
         itemInformationResponse.setUpdatedDate(itemData.getUpdatedDate());
         itemInformationResponse.setCreatedDate(itemData.getCreatedDate());
         itemInformationResponse.setDeletedDate((String) itemData.getDeletedDate());
-        itemInformationResponse.setDeleted((boolean) itemData.getDeleted());
+        itemInformationResponse.setDeleted(itemData.getDeleted() != null ? (Boolean) itemData.getDeleted() : false);
         if (null != itemData.getStatus()) {
             itemInformationResponse.setDueDate((String) ((LinkedHashMap) itemData.getStatus()).get("dueDate"));
             itemInformationResponse.setCirculationStatus((String) ((LinkedHashMap) itemData.getStatus()).get("display"));
@@ -94,6 +94,17 @@ public class NyplApiResponseUtil {
         itemHoldResponse.setCreatedDate(holdData.getCreatedDate());
         itemHoldResponse.setUpdatedDate((String) holdData.getUpdatedDate());
         return itemHoldResponse;
+    }
+
+    public String getJobStatusMessage(JobData jobData) throws Exception {
+        String jobStatus = null;
+        List<Notice> notices = jobData.getNotices();
+        if (CollectionUtils.isNotEmpty(notices)) {
+            Collections.reverse(notices);
+            Notice notice = notices.get(0);
+            jobStatus = notice.getText();
+        }
+        return jobStatus;
     }
 
 }

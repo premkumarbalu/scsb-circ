@@ -48,6 +48,12 @@ public class ItemRequestService {
     @Value("${ils.columbia.nypl.patron}")
     private String columbiaNYPLPatron;
 
+    @Value("${ils.nypl.princeton.patron}")
+    private String nyplPrincetonPatron;
+
+    @Value("${ils.nypl.columbia.patron}")
+    private String nyplColumbiaPatron;
+
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;
 
@@ -134,7 +140,7 @@ public class ItemRequestService {
             itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
 
             // Update Topics
-            sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), exchange, itemResponseInformation);
+            sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), exchange, itemResponseInformation);
         }catch(RestClientException ex){
             logger.error("RestClient : "+ ex.getMessage());
             ex.printStackTrace();
@@ -334,26 +340,29 @@ public class ItemRequestService {
                     saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE,itemHoldResponse.getPatronIdentifier()+" - "+itemHoldResponse.getScreenMessage());
                 }
             } else {// Not the Owning Institute
-                ItemCreateBibResponse createItemResponse = (ItemCreateBibResponse)requestItemController.createBibliogrphicItem(itemRequestInfo,itemRequestInfo.getRequestingInstitution());
-                if(createItemResponse.isSuccess()){
-                    itemRequestInfo.setBibId(createItemResponse.getBibId());
-                    setpickupLoacation(itemRequestInfo,itemRequestInfo.getRequestingInstitution());
-                    ItemHoldResponse itemHoldResponse = (ItemHoldResponse)requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
-                    if(itemHoldResponse.isSuccess()) {
+                ItemCreateBibResponse createBibResponse = new ItemCreateBibResponse();
+                if (!ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
+                    createBibResponse = (ItemCreateBibResponse) requestItemController.createBibliogrphicItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                }
+                if (createBibResponse.isSuccess() || ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
+                    itemRequestInfo.setBibId(createBibResponse.getBibId());
+                    setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                    ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                    if (itemHoldResponse.isSuccess()) {
                         itemResponseInformation = checkInstAfterPlacingRequest(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
                         bsuccess = true;
                         messagePublish = itemResponseInformation.getScreenMessage();
-                    }else{
+                    } else {
                         messagePublish = itemHoldResponse.getScreenMessage();
                         bsuccess = false;
                         rollbackUpdateItemAvailabilutyStatus(itemEntity);
-                        saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE,itemHoldResponse.getPatronIdentifier()+" - "+itemHoldResponse.getScreenMessage());
+                        saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, itemHoldResponse.getPatronIdentifier() + " - " + itemHoldResponse.getScreenMessage());
                     }
-                }else{
-                    messagePublish = createItemResponse.getScreenMessage();
+                } else {
+                    messagePublish = createBibResponse.getScreenMessage();
                     bsuccess = false;
                     rollbackUpdateItemAvailabilutyStatus(itemEntity);
-                    saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE,createItemResponse.getBibId()+" - "+createItemResponse.getScreenMessage());
+                    saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, createBibResponse.getBibId() + " - " + createBibResponse.getScreenMessage());
                 }
             }
         } catch (Exception e) {
@@ -420,7 +429,11 @@ public class ItemRequestService {
                 patronId=columbiaNYPLPatron;
             }
         }else if(OwningInstitution.equalsIgnoreCase(ReCAPConstants.NYPL)){
-
+            if(requestingInstitution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
+                patronId=nyplPrincetonPatron;
+            }else if(requestingInstitution.equalsIgnoreCase(ReCAPConstants.NYPL)) {
+                patronId=nyplColumbiaPatron;
+            }
         }
         logger.info(patronId);
         return patronId;
