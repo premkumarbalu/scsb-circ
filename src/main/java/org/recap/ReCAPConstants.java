@@ -137,5 +137,14 @@ public class ReCAPConstants {
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "Request ItemAvailabilityStatus Change";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE = "1 - 2";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK = "2 - 1";
+    public static final String REQUEST_ITEM_TITLE_SUFFIX = " [RECAP]";
+
+    public static final String API_KEY = "api_key";
+    public static final String RECAP = "recap";
+    public static final String UPDATE_ITEM_STATUS_SOLR = "/updateItem/updateItemAvailablityStatus";
+    public static final String UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID = "itemId";
+    public static final String CIRCULATION_STATUS_CHARGED = "CHARGED";
+
+
 
 }

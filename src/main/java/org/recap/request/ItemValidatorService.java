@@ -7,8 +7,10 @@ import org.recap.model.*;
 import org.recap.repository.CustomerCodeDetailsRepository;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.ItemStatusDetailsRepository;
+import org.recap.repository.RequestItemDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,10 @@ public class ItemValidatorService {
     @Autowired
     CustomerCodeDetailsRepository customerCodeDetailsRepository;
 
+//    @Autowired
+//    RequestItemDetailsRepository requestItemDetailsRepository;
+
+
 
     public ResponseEntity itemValidation(ItemRequestInformation itemRequestInformation) {
         ResponseEntity responseEntity = null;
@@ -69,13 +75,14 @@ public class ItemValidatorService {
                         || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)
                         || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
                     return new ResponseEntity(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-                } else if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.AVAILABLE)
-                        && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RECALL)) {
+                } else if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RECALL)) {
+//                    requestItemDetailsRepository.findByPatronBarcodeAndItemBarcodeandItemAvailablityStatus(itemEntity.getBarcode(),itemRequestInformation.getPatronBarcode(),2);
+
                     return new ResponseEntity(ReCAPConstants.RECALL_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                 } else {
                     ResponseEntity responseEntity1 = null;
                     if (itemEntityList.size() == 1) {
-                        int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation.getDeliveryLocation());
+                        int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation);
                         if (validateCustomerCode == 1) {
                             responseEntity1 = new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
                         } else if (validateCustomerCode == 0) {
@@ -131,14 +138,14 @@ public class ItemValidatorService {
                     || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)
                     || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
 
-            }else if(itemEntity.getItemAvailabilityStatusId() == 2 && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RECALL)){
-
-            }else if(itemEntity.getItemAvailabilityStatusId() == 1 && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RECALL)){
-                    return new ResponseEntity(ReCAPConstants.RECALL_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+            } else if (itemEntity.getItemAvailabilityStatusId() == 2 && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RECALL)) {
+                // Validate Patron
+            } else if (itemEntity.getItemAvailabilityStatusId() == 1 && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RECALL)) {
+                return new ResponseEntity(ReCAPConstants.RECALL_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
             } else {
                 return new ResponseEntity(ReCAPConstants.INVALID_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
             }
-            int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation.getDeliveryLocation());
+            int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation);
             if (validateCustomerCode == 1) {
                 if (itemEntity.getBibliographicEntities().size() == bibliographicIds.size()) {
                     bibliographicList = itemEntity.getBibliographicEntities();
@@ -165,20 +172,22 @@ public class ItemValidatorService {
         return new ResponseEntity(status, getHttpHeaders(), HttpStatus.OK);
     }
 
-    public int checkDeliveryLocation(String customerCode, String deliveryLocation) {
+    public int checkDeliveryLocation(String customerCode, ItemRequestInformation itemRequestInformation) {
         int bSuccess = 0;
-        CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(deliveryLocation);
-        if (customerCodeEntity != null && customerCodeEntity.getCustomerCode().equalsIgnoreCase(deliveryLocation)) {
-            customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(customerCode);
-            String deliveryRestrictions = customerCodeEntity.getDeliveryRestrictions();
-            if (deliveryRestrictions != null && deliveryRestrictions.trim().length() > 0) {
-                if (deliveryRestrictions.contains(deliveryLocation)) {
-                    bSuccess = 1;
+        CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(itemRequestInformation.getDeliveryLocation());
+        if (customerCodeEntity != null && customerCodeEntity.getCustomerCode().equalsIgnoreCase(itemRequestInformation.getDeliveryLocation())) {
+            if (itemRequestInformation.getItemOwningInstitution().equalsIgnoreCase(itemRequestInformation.getRequestingInstitution())) {
+                customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(customerCode);
+                String deliveryRestrictions = customerCodeEntity.getDeliveryRestrictions();
+                if (deliveryRestrictions != null && deliveryRestrictions.trim().length() > 0) {
+                    if (deliveryRestrictions.contains(itemRequestInformation.getDeliveryLocation())) {
+                        bSuccess = 1;
+                    } else {
+                        bSuccess = -1;
+                    }
                 } else {
                     bSuccess = -1;
                 }
-            } else {
-                bSuccess = -1;
             }
         } else {
             bSuccess = 0;

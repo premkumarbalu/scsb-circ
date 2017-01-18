@@ -125,6 +125,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
             logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
         } catch (InvalidSIP2ResponseValueException e) {
             logger.error("Invalid SIP2 Value = ", e);
+
         } catch (Exception e) {
             logger.error("Exception = ", e);
         } finally {
