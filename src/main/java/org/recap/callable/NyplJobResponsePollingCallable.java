@@ -26,19 +26,19 @@ public class NyplJobResponsePollingCallable implements Callable {
     }
 
     @Override
-    public Boolean call() throws Exception {
+    public JobResponse call() throws Exception {
         return poll();
     }
 
-    private Boolean poll() throws Exception {
+    private JobResponse poll() throws Exception {
         Boolean statusFlag;
         JobResponse jobResponse = nyplApiServiceConnector.queryForJob(jobId);
         JobData jobData = jobResponse.getData();
         statusFlag = jobData.getFinished();
         if (!statusFlag) {
             Thread.sleep(pollingTimeInterval);
-            statusFlag = poll();
+            jobResponse = poll();
         }
-        return statusFlag;
+        return jobResponse;
     }
 }

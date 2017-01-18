@@ -3,6 +3,9 @@ package org.recap.processor;
 import org.jboss.logging.Logger;
 import org.recap.callable.NyplJobResponsePollingCallable;
 import org.recap.ils.NyplApiServiceConnector;
+import org.recap.ils.model.nypl.JobData;
+import org.recap.ils.model.nypl.response.JobResponse;
+import org.recap.ils.service.NyplApiResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -26,34 +29,46 @@ public class NyplJobResponsePollingProcessor {
     @Autowired
     NyplApiServiceConnector nyplApiServiceConnector;
 
-    public Boolean pollNyplRequestItemJobResponse(String jobId) {
+    @Autowired
+    NyplApiResponseUtil nyplApiResponseUtil;
+
+    public JobResponse pollNyplRequestItemJobResponse(String jobId) {
+        JobResponse jobResponse = new JobResponse();
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<Boolean> future = executor.submit(new NyplJobResponsePollingCallable(jobId, pollingTimeInterval, nyplApiServiceConnector));
-        logger.info("Polling on job id " + jobId + " started");
         try {
-            Boolean statusFlag = future.get(pollingMaxTimeOut, TimeUnit.SECONDS);
+            Future<JobResponse> future = executor.submit(new NyplJobResponsePollingCallable(jobId, pollingTimeInterval, nyplApiServiceConnector));
+            logger.info("Polling on job id " + jobId + " started");
+            jobResponse = future.get(pollingMaxTimeOut, TimeUnit.SECONDS);
+            JobData jobData = jobResponse.getData();
+            if (null != jobData) {
+                jobResponse.setStatusMessage(nyplApiResponseUtil.getJobStatusMessage(jobData));
+            }
             executor.shutdown();
-            return statusFlag;
+            return jobResponse;
         } catch (InterruptedException e) {
             logger.error("Nypl job response interrupted for job id -> " + jobId);
             logger.error("Exception -> " + e.getMessage());
             executor.shutdown();
-            return false;
+            jobResponse.setStatusMessage("Nypl job response interrupted : " + e.getMessage());
+            return jobResponse;
         } catch (ExecutionException e) {
             logger.error("Nypl job response execution failed for job id -> " + jobId);
             logger.error("Exception -> " + e.getMessage());
             executor.shutdown();
-            return false;
+            jobResponse.setStatusMessage("Nypl job response execution failed : " + e.getMessage());
+            return jobResponse;
         } catch (TimeoutException e) {
             logger.error("Nypl job response polling timed out for job id -> " + jobId);
             logger.error("Exception -> " + e.getMessage());
             executor.shutdown();
-            return false;
+            jobResponse.setStatusMessage("Nypl job response polling timed out : " + e.getMessage());
+            return jobResponse;
         } catch (Exception e) {
             logger.error("Nypl job response polling failed for job id -> " + jobId);
             logger.error("Exception -> " + e.getMessage());
             executor.shutdown();
-            return false;
+            jobResponse.setStatusMessage("Nypl job response polling failed : " + e.getMessage());
+            return jobResponse;
         }
     }
 }

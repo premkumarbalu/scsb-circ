@@ -1,6 +1,5 @@
 package org.recap.ils;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
@@ -13,7 +12,6 @@ import org.recap.ils.model.nypl.response.*;
 import org.recap.ils.model.response.*;
 import org.recap.ils.service.NyplApiResponseUtil;
 import org.recap.ils.service.NyplOauthTokenApiService;
-import org.recap.model.ItemEntity;
 import org.recap.processor.NyplJobResponsePollingProcessor;
 import org.recap.repository.ItemDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +22,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by rajeshbabuk on 19/12/16.
@@ -105,13 +102,22 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
             if (null != checkoutData) {
                 String jobId = checkoutData.getJobId();
                 itemCheckoutResponse.setJobId(jobId);
-                Boolean success = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemCheckoutResponse.getJobId());
-                if (success) {
-                    itemCheckoutResponse.setScreenMessage(ReCAPConstants.CHECKOUT_SUCCESS);
-                    itemCheckoutResponse.setSuccess(success);
+                logger.info("Initiated checkout on NYPL");
+                logger.info("Nypl checkout job id -> " + jobId);
+                JobResponse jobResponse = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemCheckoutResponse.getJobId());
+                String statusMessage = jobResponse.getStatusMessage();
+                itemCheckoutResponse.setScreenMessage(statusMessage);
+                JobData jobData = jobResponse.getData();
+                if (null != jobData) {
+                    itemCheckoutResponse.setSuccess(jobData.getSuccess());
+                    logger.info("Checkout Finished -> " + jobData.getFinished());
+                    logger.info("Checkout Success -> " + jobData.getSuccess());
+                    logger.info(statusMessage);
                 } else {
-                    itemCheckoutResponse.setScreenMessage(ReCAPConstants.CHECKOUT_FAILED);
                     itemCheckoutResponse.setSuccess(false);
+                    logger.info("Checkout Finished -> " + false);
+                    logger.info("Checkout Success -> " + false);
+                    logger.info(statusMessage);
                 }
             }
         } catch (HttpClientErrorException httpException) {
@@ -144,13 +150,22 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
             if (null != checkinData) {
                 String jobId = checkinData.getJobId();
                 itemCheckinResponse.setJobId(jobId);
-                Boolean success = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemCheckinResponse.getJobId());
-                if (success) {
-                    itemCheckinResponse.setScreenMessage(ReCAPConstants.CHECKIN_SUCCESS);
-                    itemCheckinResponse.setSuccess(success);
+                logger.info("Initiated checkin on NYPL");
+                logger.info("Nypl checkin job id -> " + jobId);
+                JobResponse jobResponse = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemCheckinResponse.getJobId());
+                String statusMessage = jobResponse.getStatusMessage();
+                itemCheckinResponse.setScreenMessage(statusMessage);
+                JobData jobData = jobResponse.getData();
+                if (null != jobData) {
+                    itemCheckinResponse.setSuccess(jobData.getSuccess());
+                    logger.info("Checkin Finished -> " + jobData.getFinished());
+                    logger.info("Checkin Success -> " + jobData.getSuccess());
+                    logger.info(statusMessage);
                 } else {
-                    itemCheckinResponse.setScreenMessage(ReCAPConstants.CHECKIN_FAILED);
                     itemCheckinResponse.setSuccess(false);
+                    logger.info("Checkin Finished -> " + false);
+                    logger.info("Checkin Success -> " + false);
+                    logger.info(statusMessage);
                 }
             }
         } catch (HttpClientErrorException httpException) {
@@ -179,7 +194,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
             }
             CreateHoldRequest createHoldRequest = new CreateHoldRequest();
             createHoldRequest.setTrackingId(trackingId);
-            createHoldRequest.setOwningInstitutionId(callInstitutionId);
+            createHoldRequest.setOwningInstitutionId(itemInstitutionId);
             createHoldRequest.setItemBarcode(itemIdentifier);
             createHoldRequest.setPatronBarcode(patronIdentifier);
             Description description = new Description();
@@ -203,17 +218,20 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                     itemHoldResponse.setJobId(jobId);
                     logger.info("Initiated recap hold request on NYPL");
                     logger.info("Nypl Hold request job id -> " + jobId);
-                    Boolean success = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemHoldResponse.getJobId());
-                    if (success) {
-                        itemHoldResponse.setScreenMessage(ReCAPConstants.HOLD_SUCCESS);
-                        itemHoldResponse.setSuccess(success);
-                        logger.info("Success -> " + success);
-                        logger.info(ReCAPConstants.HOLD_SUCCESS);
+                    JobResponse jobResponse = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemHoldResponse.getJobId());
+                    String statusMessage = jobResponse.getStatusMessage();
+                    itemHoldResponse.setScreenMessage(statusMessage);
+                    JobData jobData = jobResponse.getData();
+                    if (null != jobData) {
+                        itemHoldResponse.setSuccess(jobData.getSuccess());
+                        logger.info("Hold Finished -> " + jobData.getFinished());
+                        logger.info("Hold Success -> " + jobData.getSuccess());
+                        logger.info(statusMessage);
                     } else {
-                        itemHoldResponse.setScreenMessage(ReCAPConstants.HOLD_FAILED);
                         itemHoldResponse.setSuccess(false);
-                        logger.info("Success -> " + false);
-                        logger.info(ReCAPConstants.HOLD_FAILED);
+                        logger.info("Hold Finished -> " + false);
+                        logger.info("Hold Success -> " + false);
+                        logger.info(statusMessage);
                     }
                 }
             }
@@ -250,13 +268,22 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
             if (null != cancelHoldData) {
                 String jobId = cancelHoldData.getJobId();
                 itemHoldResponse.setJobId(jobId);
-                Boolean success = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemHoldResponse.getJobId());
-                if (success) {
-                    itemHoldResponse.setScreenMessage(ReCAPConstants.CANCEL_HOLD_SUCCESS);
-                    itemHoldResponse.setSuccess(success);
+                logger.info("Initiated cancel hold request on NYPL");
+                logger.info("Nypl cancel hold request job id -> " + jobId);
+                JobResponse jobResponse = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemHoldResponse.getJobId());
+                String statusMessage = jobResponse.getStatusMessage();
+                itemHoldResponse.setScreenMessage(statusMessage);
+                JobData jobData = jobResponse.getData();
+                if (null != jobData) {
+                    itemHoldResponse.setSuccess(jobData.getSuccess());
+                    logger.info("Cancel hold Finished -> " + jobData.getFinished());
+                    logger.info("Cancel hold Success -> " + jobData.getSuccess());
+                    logger.info(statusMessage);
                 } else {
-                    itemHoldResponse.setScreenMessage(ReCAPConstants.CANCEL_HOLD_FAILED);
                     itemHoldResponse.setSuccess(false);
+                    logger.info("Cancel hold Finished -> " + false);
+                    logger.info("Cancel hold Success -> " + false);
+                    logger.info(statusMessage);
                 }
             }
         } catch (HttpClientErrorException httpException) {

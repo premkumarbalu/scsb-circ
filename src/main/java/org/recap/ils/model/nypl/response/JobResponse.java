@@ -7,6 +7,7 @@ package org.recap.ils.model.nypl.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.recap.ils.model.nypl.DebugInfo;
 import org.recap.ils.model.nypl.JobData;
 
@@ -29,6 +30,8 @@ public class JobResponse {
     private Integer statusCode;
     @JsonProperty("debugInfo")
     private List<DebugInfo> debugInfo = null;
+    @Ignore
+    private String statusMessage;
 
     /**
      *
@@ -110,4 +113,11 @@ public class JobResponse {
         this.debugInfo = debugInfo;
     }
 
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
+    }
 }
