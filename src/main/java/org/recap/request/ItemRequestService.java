@@ -219,9 +219,13 @@ public class ItemRequestService {
         if (itemEntities != null && itemEntities.size() > 0) {
             for (int i = 0; i < itemEntities.size(); i++) {
                 ItemEntity itemEntity = itemEntities.get(i);
-                rollbackUpdateItemAvailabilutyStatus(itemEntity);
-                updateSolrIndex(itemEntity);
-                bSuccess = true;
+                if(itemEntity.getItemAvailabilityStatusId().intValue() == 2) {
+                    rollbackUpdateItemAvailabilutyStatus(itemEntity);
+                    updateSolrIndex(itemEntity);
+                    bSuccess = true;
+                }else{
+                    bSuccess = false;
+                }
             }
         }
 
@@ -533,7 +537,7 @@ public class ItemRequestService {
             HttpEntity requestEntity = new HttpEntity<>(getHttpHeaders());
 
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(serverProtocol + scsbSolrClientUrl + ReCAPConstants.UPDATE_ITEM_STATUS_SOLR)
-                    .queryParam(ReCAPConstants.UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID, itemEntity.getItemId());
+                    .queryParam(ReCAPConstants.UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID, itemEntity.getBarcode());
 
             ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
             statusResponse = responseEntity.getBody();

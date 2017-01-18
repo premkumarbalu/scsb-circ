@@ -45,6 +45,10 @@ public class ReCAPConstants {
     public static final String RECALL_NOT_FOR_AVAILABLE_ITEM = "Requested Item to be recalled, is not possible for Available Item";
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
+    // Email
+    public static final String REQUEST_RECALL_EMAILBODY_FOR = "emailBodyFor";
+    public static final String REQUEST_RECALL_MAIL_QUEUE = "requestRecallMailSendQueue";
+    public static final String REQUEST_RECALL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
 
     // Retrieval,EDD, Hold, Recall, Borrow Direct
     public static final String REQUEST_TYPE_RETRIEVAL="RETRIEVAL";
@@ -54,6 +58,7 @@ public class ReCAPConstants {
 
     // MQ URI
     public static final String REQUEST_ITEM_QUEUE = "scsbactivemq:queue:RequestItemQ";
+    public static final String EMAIL_Q            = "scsbactivemq:queue:CircEmailQ";
 
     public static final String PUL_REQUEST_TOPIC = "scsbactivemq:topic:PUL.RequestT";
     public static final String PUL_EDD_TOPIC = "scsbactivemq:topic:PUL.EDDT";
@@ -70,6 +75,7 @@ public class ReCAPConstants {
 
     //RoutId
     public static final String REQUEST_ITEM_QUEUE_ROUTEID = "RequestItemRouteId";
+    public static final String EMAIL_ROUTE_ID = "RequestRecallEmailRouteId";
 
     public static final String PUL_REQUEST_TOPIC_ROUTEID = "PULRequestTopicRouteId";
     public static final String PUL_EDD_TOPIC_ROUTEID = "PULEDDTopicRouteId";
