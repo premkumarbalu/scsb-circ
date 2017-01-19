@@ -1,16 +1,24 @@
 package org.recap.controller;
 
+import com.pkrete.jsip2.variables.CirculationStatus;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.recap.ReCAPConstants;
 import org.recap.ils.JSIPConnectorFactory;
 import org.recap.ils.model.response.*;
+import org.recap.model.ItemRefileRequest;
+import org.recap.model.ItemRefileResponse;
 import org.recap.model.ItemRequestInformation;
+import org.recap.request.ItemRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Field;
 import java.text.ParseException;
@@ -27,6 +35,9 @@ public class RequestItemController {
 
     @Autowired
     JSIPConnectorFactory jsipConectorFactory;
+
+    @Autowired
+    ItemRequestService itemRequestService;
 
     @RequestMapping(value = "/checkoutItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem checkoutItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
@@ -113,36 +124,44 @@ public class RequestItemController {
         if (itemRequestInformation.getItemBarcodes().size() > 0) {
             itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
         }
-        itemHoldCancelResponse = (ItemHoldResponse)  jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).cancelHold(itembarcode, itemRequestInformation.getPatronBarcode(),
+        itemHoldCancelResponse = (ItemHoldResponse) jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).cancelHold(itembarcode, itemRequestInformation.getPatronBarcode(),
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                itemRequestInformation.getDeliveryLocation(),itemRequestInformation.getTrackingId());
+                itemRequestInformation.getDeliveryLocation(), itemRequestInformation.getTrackingId());
         return itemHoldCancelResponse;
     }
 
     @RequestMapping(value = "/createBib", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition)  throws Exception{
+    public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) throws Exception {
         ItemCreateBibResponse itemCreateBibResponse = null;
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
         String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
-        itemCreateBibResponse = (ItemCreateBibResponse) jsipConectorFactory.getJSIPConnector(callInstitition).createBib(itembarcode, itemRequestInformation.getPatronBarcode(), itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getTitleIdentifier());
-
+        ItemInformationResponse itemInformation = (ItemInformationResponse) itemInformation(itemRequestInformation, itemRequestInformation.getItemOwningInstitution());
+        if (itemInformation.getCirculationStatus().equalsIgnoreCase("ITEM_BARCODE_NOT_FOUND")) {
+            itemCreateBibResponse = (ItemCreateBibResponse) jsipConectorFactory.getJSIPConnector(callInstitition).createBib(itembarcode, itemRequestInformation.getPatronBarcode(), itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getTitleIdentifier());
+        }else{
+            itemCreateBibResponse = new ItemCreateBibResponse();
+            itemCreateBibResponse.setSuccess(true);
+            itemCreateBibResponse.setScreenMessage("Item Barcode already Exist");
+            String itemBarcode = (itemRequestInformation.getItemBarcodes().size()>0)? itemRequestInformation.getItemBarcodes().get(0):"";
+            itemCreateBibResponse.setItemBarcode(itemBarcode);
+        }
         return itemCreateBibResponse;
     }
 
     @RequestMapping(value = "/itemInformation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem itemInformation(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
-        ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
+        ItemInformationResponse itemInformationResponse = null;
 
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
         String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
 
-        itemInformationResponse = (ItemInformationResponse) jsipConectorFactory.getJSIPConnector(callInstitition).lookupItem(itembarcode,itemRequestInformation.getSource());
+        itemInformationResponse = (ItemInformationResponse) jsipConectorFactory.getJSIPConnector(callInstitition).lookupItem(itembarcode, itemRequestInformation.getSource());
         return itemInformationResponse;
     }
 
@@ -164,13 +183,22 @@ public class RequestItemController {
 
     @RequestMapping(value = "/patronInformation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem patronInformation(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
-        PatronInformationResponse patronInformationResponse=null;
-        String itembarcode ="";
+        PatronInformationResponse patronInformationResponse = null;
+        String itembarcode = "";
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
         patronInformationResponse = (PatronInformationResponse) jsipConectorFactory.getJSIPConnector(callInstitition).lookupPatron(itemRequestInformation.getPatronBarcode());
         return patronInformationResponse;
+    }
+
+    @RequestMapping(value = "/refile", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ItemRefileResponse refileItem(@ApiParam(value = "Parameters for requesting re-file", required = true, name = "refileInformation") @RequestBody ItemRefileRequest itemRefileRequest) {
+        boolean bSuccess = itemRequestService.reFileItem(itemRefileRequest);
+        ItemRefileResponse itemRefileResponse = new ItemRefileResponse();
+        itemRefileResponse.setSuccess(bSuccess);
+        itemRefileResponse.setScreenMessage((bSuccess) ? "Successfully Refiled" : "Failed to Refile");
+        return itemRefileResponse;
     }
 
     private String formatFromSipDate(String sipDate) {
@@ -187,16 +215,16 @@ public class RequestItemController {
         return reformattedStr;
     }
 
-    public void logMessages(Logger logger, Object clsObject){
+    public void logMessages(Logger logger, Object clsObject) {
         try {
             for (Field field : clsObject.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 String name = field.getName();
                 Object value = field.get(clsObject);
-                logger.info("Field name: "+ name+"Filed Value :"+value);
+                logger.info("Field name: " + name + "Filed Value :" + value);
             }
         } catch (IllegalAccessException e) {
-            logger.error("",e);
+            logger.error("", e);
         }
     }
 }

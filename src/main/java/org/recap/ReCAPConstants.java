@@ -42,8 +42,13 @@ public class ReCAPConstants {
     public static final String MULTIPLE_ITEMS_NOT_ALLOWED_FOR_EDD = "Multiple item request not allowed for EDD request type";
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
     public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Requested Item is not Available";
+    public static final String RECALL_NOT_FOR_AVAILABLE_ITEM = "Requested Item to be recalled, is not possible for Available Item";
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
+    // Email
+    public static final String REQUEST_RECALL_EMAILBODY_FOR = "emailBodyFor";
+    public static final String REQUEST_RECALL_MAIL_QUEUE = "requestRecallMailSendQueue";
+    public static final String REQUEST_RECALL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
 
     // Retrieval,EDD, Hold, Recall, Borrow Direct
     public static final String REQUEST_TYPE_RETRIEVAL="RETRIEVAL";
@@ -53,6 +58,7 @@ public class ReCAPConstants {
 
     // MQ URI
     public static final String REQUEST_ITEM_QUEUE = "scsbactivemq:queue:RequestItemQ";
+    public static final String EMAIL_Q            = "scsbactivemq:queue:CircEmailQ";
 
     public static final String PUL_REQUEST_TOPIC = "scsbactivemq:topic:PUL.RequestT";
     public static final String PUL_EDD_TOPIC = "scsbactivemq:topic:PUL.EDDT";
@@ -69,6 +75,7 @@ public class ReCAPConstants {
 
     //RoutId
     public static final String REQUEST_ITEM_QUEUE_ROUTEID = "RequestItemRouteId";
+    public static final String EMAIL_ROUTE_ID = "RequestRecallEmailRouteId";
 
     public static final String PUL_REQUEST_TOPIC_ROUTEID = "PULRequestTopicRouteId";
     public static final String PUL_EDD_TOPIC_ROUTEID = "PULEDDTopicRouteId";
@@ -136,5 +143,14 @@ public class ReCAPConstants {
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "Request ItemAvailabilityStatus Change";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE = "1 - 2";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK = "2 - 1";
+    public static final String REQUEST_ITEM_TITLE_SUFFIX = " [RECAP]";
+
+    public static final String API_KEY = "api_key";
+    public static final String RECAP = "recap";
+    public static final String UPDATE_ITEM_STATUS_SOLR = "/updateItem/updateItemAvailablityStatus";
+    public static final String UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID = "itemId";
+    public static final String CIRCULATION_STATUS_CHARGED = "CHARGED";
+
+
 
 }
