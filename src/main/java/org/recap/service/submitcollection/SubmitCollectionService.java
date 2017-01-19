@@ -266,7 +266,8 @@ public class SubmitCollectionService {
     private BibliographicEntity updateCompleteRecord(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity,List<SubmitCollectionReportInfo> submitCollectionRejectionInfos) {
         BibliographicEntity savedOrUnsavedBibliographicEntity = null;
         setSubmitCollectionRejectionInfo(fetchBibliographicEntity, submitCollectionRejectionInfos);
-        copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity);
+        Date currentDate = new Date();
+        copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity,currentDate);
         List<HoldingsEntity> fetchHoldingsEntities = fetchBibliographicEntity.getHoldingsEntities();
         List<HoldingsEntity> holdingsEntities = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
         for (Iterator iholdings = holdingsEntities.iterator(); iholdings.hasNext(); ) {
@@ -314,7 +315,8 @@ public class SubmitCollectionService {
 
     private BibliographicEntity updateIncompleteRecord(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity) {
         BibliographicEntity savedBibliographicEntity = null;
-        copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity);
+        Date currentDate = new Date();
+        copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity,currentDate);
         List<HoldingsEntity> fetchHoldingsEntities = fetchBibliographicEntity.getHoldingsEntities();
         List<HoldingsEntity> holdingsEntities = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
         for (Iterator iholdings = holdingsEntities.iterator(); iholdings.hasNext(); ) {
@@ -354,21 +356,19 @@ public class SubmitCollectionService {
         return savedBibliographicEntity;
     }
 
-    private BibliographicEntity copyBibliographicEntity(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity){
+    private BibliographicEntity copyBibliographicEntity(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity,Date currentDate){
         fetchBibliographicEntity.setContent(bibliographicEntity.getContent());
-        fetchBibliographicEntity.setCreatedBy(bibliographicEntity.getCreatedBy());
-        fetchBibliographicEntity.setCreatedDate(bibliographicEntity.getCreatedDate());
         fetchBibliographicEntity.setDeleted(bibliographicEntity.isDeleted());
         fetchBibliographicEntity.setLastUpdatedBy(bibliographicEntity.getLastUpdatedBy());
         fetchBibliographicEntity.setLastUpdatedDate(bibliographicEntity.getLastUpdatedDate());
+        fetchBibliographicEntity.setBibHoldinglastUpdatedDate(currentDate);
+        fetchBibliographicEntity.setBibItemlastUpdatedDate(currentDate);
         fetchBibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
         return fetchBibliographicEntity;
     }
 
     private HoldingsEntity copyHoldingsEntity(HoldingsEntity fetchHoldingsEntity, HoldingsEntity holdingsEntity){
         fetchHoldingsEntity.setContent(holdingsEntity.getContent());
-        fetchHoldingsEntity.setCreatedBy(holdingsEntity.getCreatedBy());
-        fetchHoldingsEntity.setCreatedDate(holdingsEntity.getCreatedDate());
         fetchHoldingsEntity.setDeleted(holdingsEntity.isDeleted());
         fetchHoldingsEntity.setLastUpdatedBy(holdingsEntity.getLastUpdatedBy());
         fetchHoldingsEntity.setLastUpdatedDate(holdingsEntity.getLastUpdatedDate());
@@ -377,8 +377,6 @@ public class SubmitCollectionService {
 
     private ItemEntity copyItemEntity(ItemEntity fetchItemEntity, ItemEntity itemEntity){
         fetchItemEntity.setBarcode(itemEntity.getBarcode());
-        fetchItemEntity.setCreatedBy(itemEntity.getCreatedBy());
-        fetchItemEntity.setCreatedDate(itemEntity.getCreatedDate());
         fetchItemEntity.setDeleted(itemEntity.isDeleted());
         fetchItemEntity.setLastUpdatedBy(itemEntity.getLastUpdatedBy());
         fetchItemEntity.setLastUpdatedDate(itemEntity.getLastUpdatedDate());

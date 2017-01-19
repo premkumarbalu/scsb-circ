@@ -70,7 +70,8 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         String institutionName = bibRecord.getBib().getOwningInstitutionId();
 
         Integer owningInstitutionId = (Integer) getInstitutionEntityMap().get(institutionName);
-        Map<String, Object> bibMap = processAndValidateBibliographicEntity(bibRecordObject, owningInstitutionId, institutionName, owningInstitutionBibId);
+        Date currentDate = new Date();
+        Map<String, Object> bibMap = processAndValidateBibliographicEntity(bibRecordObject, owningInstitutionId, institutionName, owningInstitutionBibId,currentDate);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) bibMap.get("bibliographicEntity");
         ReportEntity bibReportEntity = (ReportEntity) bibMap.get("bibReportEntity");
         if (bibReportEntity != null) {
@@ -84,7 +85,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
             for (HoldingsMarcRecord holdingsMarcRecord : holdingsMarcRecords) {
                 boolean processHoldings = false;
                 Record holdingsRecord = holdingsMarcRecord.getHoldingsRecord();
-                Map<String, Object> holdingsMap = processAndValidateHoldingsEntity(bibliographicEntity, institutionName, holdingsRecord, bibRecord,bibRecordObject);
+                Map<String, Object> holdingsMap = processAndValidateHoldingsEntity(bibliographicEntity, institutionName, holdingsRecord, bibRecord,bibRecordObject,currentDate);
                 HoldingsEntity holdingsEntity = (HoldingsEntity) holdingsMap.get("holdingsEntity");
                 ReportEntity holdingsReportEntity = (ReportEntity) holdingsMap.get("holdingsReportEntity");
                 if (holdingsReportEntity != null) {
@@ -100,7 +101,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
                 if (CollectionUtils.isNotEmpty(itemMarcRecordList)) {
                     for (ItemMarcRecord itemMarcRecord : itemMarcRecordList) {
                         Record itemRecord = itemMarcRecord.getItemRecord();
-                        Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, holdingsEntity, owningInstitutionId, holdingsCallNumber, holdingsCallNumberType, itemRecord, institutionName, bibRecord, bibRecordObject);
+                        Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, holdingsEntity, owningInstitutionId, holdingsCallNumber, holdingsCallNumberType, itemRecord, institutionName, bibRecord, bibRecordObject,currentDate);
                         ItemEntity itemEntity = (ItemEntity) itemMap.get("itemEntity");
                         ReportEntity itemReportEntity = (ReportEntity) itemMap.get("itemReportEntity");
                         if (itemReportEntity != null) {
@@ -130,7 +131,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return map;
     }
 
-    private Map<String, Object> processAndValidateBibliographicEntity(Record bibRecord, Integer owningInstitutionId, String institutionName,String owningInstitutionBibId) {
+    private Map<String, Object> processAndValidateBibliographicEntity(Record bibRecord, Integer owningInstitutionId, String institutionName,String owningInstitutionBibId,Date currentDate) {
         int failedBibCount = 0;
         int successBibCount = 0;
         Map<String, Object> map = new HashMap<>();
@@ -151,9 +152,9 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
             errorMessage.append("\n");
             errorMessage.append("Owning Institution Id cannot be null");
         }
-        bibliographicEntity.setCreatedDate(new Date());
+        bibliographicEntity.setCreatedDate(currentDate);
         bibliographicEntity.setCreatedBy("submitCollection");
-        bibliographicEntity.setLastUpdatedDate(new Date());
+        bibliographicEntity.setLastUpdatedDate(currentDate);
         bibliographicEntity.setLastUpdatedBy("submitCollection");
         bibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
 
@@ -200,7 +201,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return map;
     }
 
-    private Map<String, Object> processAndValidateHoldingsEntity(BibliographicEntity bibliographicEntity, String institutionName, Record holdingsRecord, BibRecord bibRecord , Record bibRecordObject) {
+    private Map<String, Object> processAndValidateHoldingsEntity(BibliographicEntity bibliographicEntity, String institutionName, Record holdingsRecord, BibRecord bibRecord , Record bibRecordObject,Date currentDate) {
         StringBuffer errorMessage = new StringBuffer();
         Map<String, Object> map = new HashMap<>();
         HoldingsEntity holdingsEntity = new HoldingsEntity();
@@ -211,9 +212,9 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         } else {
             errorMessage.append("Holdings Content cannot be empty");
         }
-        holdingsEntity.setCreatedDate(new Date());
+        holdingsEntity.setCreatedDate(currentDate);
         holdingsEntity.setCreatedBy("submitCollection");
-        holdingsEntity.setLastUpdatedDate(new Date());
+        holdingsEntity.setLastUpdatedDate(currentDate);
         holdingsEntity.setLastUpdatedBy("submitCollection");
         Integer owningInstitutionId = bibliographicEntity.getOwningInstitutionId();
         holdingsEntity.setOwningInstitutionId(owningInstitutionId);
@@ -246,7 +247,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return map;
     }
 
-    private Map<String, Object> processAndValidateItemEntity(BibliographicEntity bibliographicEntity, HoldingsEntity holdingsEntity, Integer owningInstitutionId, String holdingsCallNumber, Character holdingsCallNumberType, Record itemRecord, String institutionName, BibRecord bibRecord, Record bibRecordObject) {
+    private Map<String, Object> processAndValidateItemEntity(BibliographicEntity bibliographicEntity, HoldingsEntity holdingsEntity, Integer owningInstitutionId, String holdingsCallNumber, Character holdingsCallNumberType, Record itemRecord, String institutionName, BibRecord bibRecord, Record bibRecordObject,Date currentDate) {
         StringBuffer errorMessage = new StringBuffer();
         Map<String, Object> map = new HashMap<>();
         ItemEntity itemEntity = new ItemEntity();
@@ -283,9 +284,9 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         } else {
             itemEntity.setCollectionGroupId((Integer) getCollectionGroupMap().get("Open"));
         }
-        itemEntity.setCreatedDate(new Date());
+        itemEntity.setCreatedDate(currentDate);
         itemEntity.setCreatedBy("submitCollection");
-        itemEntity.setLastUpdatedDate(new Date());
+        itemEntity.setLastUpdatedDate(currentDate);
         itemEntity.setLastUpdatedBy("submitCollection");
         itemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
 
