@@ -40,7 +40,6 @@ public class jmsConsumer implements MessageListener{
             TextMessage textMessage =(TextMessage)message;
             System.out.println("Message is " + textMessage.getText());
         } catch (JMSException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

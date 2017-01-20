@@ -10,7 +10,6 @@ import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.controller.RequestItemController;
 import org.recap.controller.RequestItemValidatorController;
-import org.recap.ils.model.*;
 import org.recap.ils.model.response.*;
 import org.recap.model.*;
 import org.recap.mqconsumer.RequestItemQueueConsumer;
@@ -82,7 +81,10 @@ public class ItemRequestService {
     @Autowired
     ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
 
-    public ItemInformationResponse requestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
+    @Autowired
+    EmailService emailService;
+
+    public ItemInformationResponse requestItem(ItemRequestInformation itemRequestInfo,Exchange exchange) {
 
         String messagePublish = "";
         boolean bsuccess = false;
@@ -122,10 +124,10 @@ public class ItemRequestService {
 
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
                         updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
-                        updateGFA(itemRequestInfo, itemResponseInformation, exchange);
+                        updateGFA(itemRequestInfo, itemResponseInformation);
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT)) {
                         updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
-                        updateGFA(itemRequestInfo, itemResponseInformation, exchange);
+                        updateGFA(itemRequestInfo, itemResponseInformation);
                     }
                 } else {
                     logger.warn("Validate Request Errors : " + res.getBody().toString());
@@ -148,7 +150,7 @@ public class ItemRequestService {
             itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
 
             // Update Topics
-            sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), exchange, itemResponseInformation);
+            sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation,exchange);
         }catch(RestClientException ex){
             logger.error("RestClient : "+ ex.getMessage());
             ex.printStackTrace();
@@ -159,7 +161,7 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
-    public ItemInformationResponse recallItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
+    public ItemInformationResponse recallItem(ItemRequestInformation itemRequestInfo,Exchange exchange) {
         String messagePublish = "";
         boolean bsuccess = false;
         List<ItemEntity> itemEntities;
@@ -176,11 +178,14 @@ public class ItemRequestService {
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
                 // Validate Patron
                 ResponseEntity res = requestItemValidatorController.validateItemRequestInformations(itemRequestInfo);
-                if (res.getStatusCode() == HttpStatus.BAD_REQUEST && res.getBody().toString().equalsIgnoreCase(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM)) {
+                if (res.getStatusCode() == HttpStatus.OK) {
                     logger.info("Request Validation Successful");
                     // Check if Request Item  for any existint request
-                    checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity, exchange);
+                    itemResponseInformation =checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
+                    messagePublish = itemResponseInformation.getScreenMessage();
+                    bsuccess = true;
                 } else {
+
                     messagePublish = res.getBody().toString();
                     bsuccess = false;
                 }
@@ -200,7 +205,7 @@ public class ItemRequestService {
             itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
 
             // Update Topics
-            sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), exchange, itemResponseInformation);
+            sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation,exchange);
         } catch (RestClientException ex) {
             logger.error("RestClient : " + ex.getMessage());
             ex.printStackTrace();
@@ -232,7 +237,7 @@ public class ItemRequestService {
         return bSuccess;
     }
 
-    private void sendMessageToTopic(String owningInstituteId, String requestType, Exchange exchange, ItemInformationResponse itemResponseInfo) {
+    private void sendMessageToTopic(String owningInstituteId, String requestType, ItemInformationResponse itemResponseInfo,Exchange exchange) {
         String selectTopic = ReCAPConstants.PUL_REQUEST_TOPIC;
         if (owningInstituteId.equalsIgnoreCase(ReCAPConstants.PRINCETON) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
             selectTopic = ReCAPConstants.PUL_REQUEST_TOPIC;
@@ -323,7 +328,7 @@ public class ItemRequestService {
         saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK);
     }
 
-    private void updateGFA(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, Exchange exchange) {
+    private void updateGFA(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         ObjectMapper objectMapper = new ObjectMapper();
         String json = "";
         try {
@@ -333,14 +338,9 @@ public class ItemRequestService {
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage());
         }
-        FluentProducerTemplate fluentProducerTemplate = new DefaultFluentProducerTemplate(exchange.getContext());
-//        fluentProducerTemplate
-//                .to(ReCAPConstants.GFA_CIRCULATION_TOPIC)
-//                .withBody(json);
-//        fluentProducerTemplate.send();
     }
 
-    private ItemInformationResponse checkOwningInstitutionRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity, Exchange exchange) {
+    private ItemInformationResponse checkOwningInstitutionRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity) {
         String messagePublish = "";
         boolean bsuccess = false;
         // Check Item Information
@@ -349,8 +349,7 @@ public class ItemRequestService {
             setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
             ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
             if (itemHoldResponse.isSuccess()) { // IF Hold command is successfully
-                itemResponseInformation = checkInstAfterPlacingHoldforRecall(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity, exchange);
-                messagePublish = itemResponseInformation.getScreenMessage();
+                itemResponseInformation = checkInstAfterPlacingHoldforRecall(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
             } else { // If Hold command Failure
                 messagePublish = itemHoldResponse.getScreenMessage();
                 bsuccess = false;
@@ -450,7 +449,7 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
-    private ItemInformationResponse checkInstAfterPlacingHoldforRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity, Exchange exchange) {
+    private ItemInformationResponse checkInstAfterPlacingHoldforRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity) {
         String messagePublish = "";
         boolean bsuccess = false;
         if (itemRequestInfo.isOwningInstitutionItem()) {
@@ -461,7 +460,7 @@ public class ItemRequestService {
                 itemResponseInformation.setRequestId(requestId);
                 messagePublish = "Successfully Processed Request Item";
                 bsuccess = true;
-                updateGFA(itemRequestInfo, itemResponseInformation, exchange);
+                updateGFA(itemRequestInfo, itemResponseInformation);
             } else {
                 if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
                     messagePublish = itemRecallResponse.getScreenMessage();
@@ -472,6 +471,7 @@ public class ItemRequestService {
             }
         } else { // Item does not belong to requesting Institute
             //Send Mail
+            emailService.RecalEmail(itemRequestInfo.getRequestingInstitution(),itemRequestInfo.getItemBarcodes().get(0),itemRequestInfo.getTitleIdentifier(),itemRequestInfo.getPatronBarcode());
             // Update Recap DB
             Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
             itemResponseInformation.setRequestId(requestId);
@@ -553,4 +553,6 @@ public class ItemRequestService {
         headers.set(ReCAPConstants.API_KEY, ReCAPConstants.RECAP);
         return headers;
     }
+
+
 }

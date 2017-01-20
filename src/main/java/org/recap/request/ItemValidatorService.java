@@ -76,8 +76,6 @@ public class ItemValidatorService {
                         || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
                     return new ResponseEntity(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                 } else if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RECALL)) {
-//                    requestItemDetailsRepository.findByPatronBarcodeAndItemBarcodeandItemAvailablityStatus(itemEntity.getBarcode(),itemRequestInformation.getPatronBarcode(),2);
-
                     return new ResponseEntity(ReCAPConstants.RECALL_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                 } else {
                     ResponseEntity responseEntity1 = null;
@@ -105,6 +103,10 @@ public class ItemValidatorService {
         } else {
             return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
         }
+
+
+
+
     }
 
     private List<String> splitStringAndGetList(String inputString) {

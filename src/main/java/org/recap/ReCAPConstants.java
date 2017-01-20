@@ -43,6 +43,8 @@ public class ReCAPConstants {
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
     public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Requested Item is not Available";
     public static final String RECALL_NOT_FOR_AVAILABLE_ITEM = "Requested Item to be recalled, is not possible for Available Item";
+    public static final String RECALL_FOR_AVAILABLE_ITEM = "Requested Item for Not Available can be Recalled";
+
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
     // Email
@@ -65,6 +67,11 @@ public class ReCAPConstants {
     public static final String PUL_RECALL_TOPIC = "scsbactivemq:topic:PUL.RecallT";
     public static final String PUL_BORROW_DIRECT_TOPIC = "scsbactivemq:topic:PUL.BorrowDirectT";
 
+    public static final String CUL_REQUEST_TOPIC = "scsbactivemq:topic:CUL.RequestT";
+    public static final String CUL_EDD_TOPIC = "scsbactivemq:topic:CUL.EDDT";
+    public static final String CUL_RECALL_TOPIC = "scsbactivemq:topic:CUL.RecallT";
+    public static final String CUL_BORROW_DIRECT_TOPIC = "scsbactivemq:topic:CUL.BorrowDirectT";
+
     public static final String NYPL_REQUEST_TOPIC = "scsbactivemq:topic:NYPL.RequestT";
     public static final String NYPL_EDD_TOPIC = "scsbactivemq:topic:NYPL.EDDT";
     public static final String NYPL_RECALL_TOPIC = "scsbactivemq:topic:NYPL.RecallT";
@@ -82,10 +89,31 @@ public class ReCAPConstants {
     public static final String PUL_RECALL_TOPIC_ROUTEID = "PULRecallTopicRouteId";
     public static final String PUL_BORROW_DIRECT_TOPIC_ROUTEID = "PULBorrowDirectTopicRouteId";
 
+    public static final String CUL_REQUEST_TOPIC_ROUTEID = "CULRequestTopicRouteId";
+    public static final String CUL_EDD_TOPIC_ROUTEID = "CULEDDTopicRouteId";
+    public static final String CUL_RECALL_TOPIC_ROUTEID = "CULRecallTopicRouteId";
+    public static final String CUL_BORROW_DIRECT_TOPIC_ROUTEID = "CULBorrowDirectTopicRouteId";
+
     public static final String NYPL_REQUEST_TOPIC_ROUTEID = "NYPLRequestTopicRouteId";
     public static final String NYPL_EDD_TOPIC_ROUTEID = "NYPLEDDTopicRouteId";
     public static final String NYPL_RECALL_TOPIC_ROUTEID = "NYPLRecallTopicRouteId";
     public static final String NYPL_BORROW_DIRECT_TOPIC_ROUTEID = "NYPLBorrowDirectTopicRouteId";
+
+    public static final String REQUEST_ITEM_PUL_REQUEST_TOPIC = "RequestItem-pulRequestTopic";
+    public static final String REQUEST_ITEM_PUL_EDD_TOPIC = "RequestItem-pulEDDTopic";
+    public static final String REQUEST_ITEM_PUL_RECALL_TOPIC = "RequestItem-pulRecallTopic";
+    public static final String REQUEST_ITEM_PUL_BORROW_DIRECT_TOPIC = "RequestItem-pulBorrowDirectTopic";
+
+    public static final String REQUEST_ITEM_CUL_REQUEST_TOPIC = "RequestItem-pulRequestTopic";
+    public static final String REQUEST_ITEM_CUL_EDD_TOPIC = "RequestItem-pulEDDTopic";
+    public static final String REQUEST_ITEM_CUL_RECALL_TOPIC = "RequestItem-pulRecallTopic";
+    public static final String REQUEST_ITEM_CUL_BORROW_DIRECT_TOPIC = "RequestItem-pulBorrowDirectTopic";
+
+    public static final String REQUEST_ITEM_NYPL_REQUEST_TOPIC = "RequestItem-nyplRequestTopic";
+    public static final String REQUEST_ITEM_NYPL_EDD_TOPIC = "RequestItem-nyplEDDTopic";
+    public static final String REQUEST_ITEM_NYPL_RECALL_TOPIC = "RequestItem-nyplRecallTopic";
+    public static final String REQUEST_ITEM_NYPL_BORROW_DIRECT_TOPIC = "RequestItem-nyplBorrowDirectTopic";
+
 
     public static final String OWNING_INSTITUTION = "OwningInstitution";
     public static final String OWNING_INSTITUTION_BIB_ID = "OwningInstitutionBibId";
@@ -150,6 +178,9 @@ public class ReCAPConstants {
     public static final String UPDATE_ITEM_STATUS_SOLR = "/updateItem/updateItemAvailablityStatus";
     public static final String UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID = "itemId";
     public static final String CIRCULATION_STATUS_CHARGED = "CHARGED";
+
+    public static final int ESIPEXPIRATION_DATE_DAY = 1;
+    public static final int ESIPEXPIRATION_DATE_MONTH = 6;
 
 
 
