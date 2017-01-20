@@ -114,7 +114,7 @@ public class ItemRequestService {
                 if (res.getStatusCode() == HttpStatus.OK) {
                     logger.info("Request Validation Successful");
                     // Change Item Availablity
-                    updateItemAvailabilutyStatus(itemEntity);
+                    updateItemAvailabilutyStatus(itemEntities);
                     // Action based on Request Type
                     if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
                         requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
@@ -316,10 +316,15 @@ public class ItemRequestService {
         return savedItemRequest.getRequestId();
     }
 
-    private void updateItemAvailabilutyStatus(ItemEntity itemEntity) {
-        itemEntity.setItemAvailabilityStatusId(2); // Not Available
-        itemDetailsRepository.save(itemEntity);
-        saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE);
+    private void updateItemAvailabilutyStatus(List<ItemEntity> itemEntities) {
+        for( int i = 0;i<itemEntities.size (); i++){
+            ItemEntity itemEntity =  itemEntities.get(i);
+            itemEntity.setItemAvailabilityStatusId(2);
+            saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE);
+        }
+        // Not Available
+        itemDetailsRepository.save(itemEntities);
+
     }
 
     private void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity) {
