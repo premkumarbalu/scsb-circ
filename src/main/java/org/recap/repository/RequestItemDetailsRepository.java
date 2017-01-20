@@ -37,9 +37,6 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
     @Query(value = "select request from RequestItemEntity request where request.patronId = (select patronId from PatronEntity patron where patron.institutionIdentifier = :patronBarcode) and request.itemId = (select itemId from ItemEntity item where item.barcode = :itemBarcode)")
     Page<RequestItemEntity> findByPatronBarcodeAndItemBarcode(Pageable pageable, @Param("patronBarcode") String patronBarcode, @Param("itemBarcode") String itemBarcode);
 
-//    @Query(value = "select request from RequestItemEntity request where request.patronId = (select patronId from PatronEntity patron where patron.institutionIdentifier = :patronBarcode) and request.itemId = (select itemId from ItemEntity item where item.barcode = :itemBarcode and item.itemAvailabilityStatusId= :itemAvailabilityStatusId)")
-//    Page<RequestItemEntity> findByPatronBarcodeAndItemBarcodeandItemAvailablityStatus(@Param("patronBarcode") String patronBarcode, @Param("itemBarcode") String itemBarcode,@Param("itemAvailabilityStatusId") int itemAvailabilityStatusId);
-
     @Query(value = "select request from RequestItemEntity request where request.patronId = (select patronId from PatronEntity patron where patron.institutionIdentifier = :patronBarcode) and request.stopCode = :deliveryLocation")
     Page<RequestItemEntity> findByPatronBarcodeAndDeliveryLocation(Pageable pageable, @Param("patronBarcode") String patronBarcode, @Param("deliveryLocation") String deliveryLocation);
 
