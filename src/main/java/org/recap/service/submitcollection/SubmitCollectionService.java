@@ -361,8 +361,6 @@ public class SubmitCollectionService {
         fetchBibliographicEntity.setDeleted(bibliographicEntity.isDeleted());
         fetchBibliographicEntity.setLastUpdatedBy(bibliographicEntity.getLastUpdatedBy());
         fetchBibliographicEntity.setLastUpdatedDate(bibliographicEntity.getLastUpdatedDate());
-        fetchBibliographicEntity.setBibHoldinglastUpdatedDate(currentDate);
-        fetchBibliographicEntity.setBibItemlastUpdatedDate(currentDate);
         fetchBibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
         return fetchBibliographicEntity;
     }
