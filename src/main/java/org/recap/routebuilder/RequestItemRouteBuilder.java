@@ -75,11 +75,49 @@ public class RequestItemRouteBuilder {
                 @Override
                 public void configure() throws Exception {
                     from(ReCAPConstants.PUL_BORROW_DIRECT_TOPIC)
-                            .routeId(ReCAPConstants.PUL_BORROW_DIRECT_TOPIC)
+                            .routeId(ReCAPConstants.PUL_BORROW_DIRECT_TOPIC_ROUTEID)
                             .bean(new RequestItemQueueConsumer(itemRequestService), "pulBorrowDirectTopicOnMessage");
                 }
             });
             /* PUL Topics*/
+
+            /* CUL Topics*/
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.CUL_REQUEST_TOPIC)
+                            .routeId(ReCAPConstants.CUL_REQUEST_TOPIC_ROUTEID)
+                            .bean(new RequestItemQueueConsumer(itemRequestService), "culRequestTopicOnMessage");
+                }
+            });
+
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.CUL_EDD_TOPIC)
+                            .routeId(ReCAPConstants.CUL_EDD_TOPIC_ROUTEID)
+                            .bean(new RequestItemQueueConsumer(itemRequestService), "culEDDTopicOnMessage");
+                }
+            });
+
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.CUL_RECALL_TOPIC)
+                            .routeId(ReCAPConstants.CUL_RECALL_TOPIC_ROUTEID)
+                            .bean(new RequestItemQueueConsumer(itemRequestService), "culRecalTopicOnMessage");
+                }
+            });
+
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.CUL_BORROW_DIRECT_TOPIC)
+                            .routeId(ReCAPConstants.CUL_BORROW_DIRECT_TOPIC_ROUTEID)
+                            .bean(new RequestItemQueueConsumer(itemRequestService), "culBorrowDirectTopicOnMessage");
+                }
+            });
+            /* CUL Topics*/
 
             /* NYPL Topics */
             camelContext.addRoutes(new RouteBuilder() {
@@ -113,11 +151,12 @@ public class RequestItemRouteBuilder {
                 @Override
                 public void configure() throws Exception {
                     from(ReCAPConstants.NYPL_BORROW_DIRECT_TOPIC)
-                            .routeId(ReCAPConstants.NYPL_BORROW_DIRECT_TOPIC)
+                            .routeId(ReCAPConstants.NYPL_BORROW_DIRECT_TOPIC_ROUTEID)
                             .bean(new RequestItemQueueConsumer(itemRequestService), "nyplBorrowDirectTopicOnMessage");
                 }
             });
             /* NYPL Topics */
+
 
         } catch (Exception e) {
             logger.info(e.getMessage());

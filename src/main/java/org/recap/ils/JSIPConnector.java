@@ -9,7 +9,9 @@ import com.pkrete.jsip2.messages.requests.*;
 import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
 import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
 import com.pkrete.jsip2.messages.responses.*;
+import com.pkrete.jsip2.util.MessageUtil;
 import com.pkrete.jsip2.variables.HoldMode;
+import org.recap.ReCAPConstants;
 import org.recap.ils.model.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -306,7 +308,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return hold(HoldMode.ADD, itemIdentifier, patronIdentifier, callInstitutionId, expirationDate, bibId, pickupLocation);
     }
 
-    public Object cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId){
+    public Object cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId) {
         return hold(HoldMode.DELETE, itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
     }
 
@@ -336,7 +338,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                     if (response.isValidPatron() && response.isValidPatronPassword()) {
                         SIP2HoldRequest holdRequest = new SIP2HoldRequest(patronIdentifier, itemIdentifier);
                         holdRequest.setHoldMode(holdMode);
-                        holdRequest.setExpirationDate(expirationDate);
+                        holdRequest.setExpirationDate(MessageUtil.createFutureDate(ReCAPConstants.ESIPEXPIRATION_DATE_DAY, ReCAPConstants.ESIPEXPIRATION_DATE_MONTH));
                         holdRequest.setBibId(bibId);
                         holdRequest.setPickupLocation(pickupLocation);
 
@@ -358,7 +360,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         itemHoldResponse.setLCCN(holdResponse.getLccn());
                         itemHoldResponse.setISBN(holdResponse.getIsbn());
                         itemHoldResponse.setAvailable(holdResponse.isAvailable());
-                    }else{
+                    } else {
                         itemHoldResponse.setSuccess(false);
                         itemHoldResponse.setScreenMessage("Patron Validation Failed");
                     }
@@ -419,7 +421,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         itemCreateBibResponse.setSuccess(createBibResponse.isOk());
                         itemCreateBibResponse.setBibId(createBibResponse.getBibId());
                         itemCreateBibResponse.setItemId(createBibResponse.getItemIdentifier());
-                    }else{
+                    } else {
                         itemCreateBibResponse.setSuccess(false);
                         itemCreateBibResponse.setScreenMessage("Patron Validation Failed: " + ((response.getScreenMessage().size() > 0) ? response.getScreenMessage().get(0) : ""));
                     }
@@ -464,7 +466,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
             patronInformationResponse.setEsipDataOut(sip2PatronInformationResponse.getData());
 
             patronInformationResponse.setSuccess(true);
-            patronInformationResponse.setScreenMessage((sip2PatronInformationResponse.getScreenMessage() != null)? sip2PatronInformationResponse.getScreenMessage().get(0):"");
+            patronInformationResponse.setScreenMessage((sip2PatronInformationResponse.getScreenMessage() != null) ? sip2PatronInformationResponse.getScreenMessage().get(0) : "");
             patronInformationResponse.setPatronName(sip2PatronInformationResponse.getPersonalName());
             patronInformationResponse.setPatronIdentifier(sip2PatronInformationResponse.getPatronIdentifier());
             patronInformationResponse.setEmail(sip2PatronInformationResponse.getEmail());
@@ -477,7 +479,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
             patronInformationResponse.setChargedItemsLimit(sip2PatronInformationResponse.getChargedItemsLimit());
 
             patronInformationResponse.setFeeLimit(sip2PatronInformationResponse.getFeeLimit());
-            patronInformationResponse.setFeeType((sip2PatronInformationResponse.getFeeType() != null)? sip2PatronInformationResponse.getFeeType().name():"");
+            patronInformationResponse.setFeeType((sip2PatronInformationResponse.getFeeType() != null) ? sip2PatronInformationResponse.getFeeType().name() : "");
 
             patronInformationResponse.setHoldItemsCount(sip2PatronInformationResponse.getHoldItemsCount());
             patronInformationResponse.setHoldItemsLimit(sip2PatronInformationResponse.getHoldItemsLimit());
@@ -487,7 +489,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
             patronInformationResponse.setFeeAmount(sip2PatronInformationResponse.getFeeAmount());
             patronInformationResponse.setHomeAddress(sip2PatronInformationResponse.getHomeAddress());
             patronInformationResponse.setItems(sip2PatronInformationResponse.getItems());
-            patronInformationResponse.setItemType((sip2PatronInformationResponse.getItemType() != null)? sip2PatronInformationResponse.getItemType().name():"");
+            patronInformationResponse.setItemType((sip2PatronInformationResponse.getItemType() != null) ? sip2PatronInformationResponse.getItemType().name() : "");
 
             patronInformationResponse.setOverdueItemsCount(sip2PatronInformationResponse.getOverdueItemsCount());
             patronInformationResponse.setOverdueItemsLimit(sip2PatronInformationResponse.getOverdueItemsLimit());
@@ -499,7 +501,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
             patronInformationResponse.setStatus(sip2PatronInformationResponse.getStatus().toString());
 
         } catch (Exception ex) {
-            logger.error("",ex);
+            logger.error("", ex);
         } finally {
             connection.close();
         }
@@ -533,7 +535,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         SIP2RecallRequest recallRequest = new SIP2RecallRequest(patronIdentifier, itemIdentifier);
                         recallRequest.setHoldMode(HoldMode.ADD);
                         recallRequest.setInstitutionId(institutionId);
-                        recallRequest.setExpirationDate(expirationDate);
+                        recallRequest.setExpirationDate(MessageUtil.createFutureDate(ReCAPConstants.ESIPEXPIRATION_DATE_DAY, ReCAPConstants.ESIPEXPIRATION_DATE_MONTH));
                         recallRequest.setBibId(bibId);
                         recallRequest.setPickupLocation(pickupLocation);
 
@@ -572,12 +574,12 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return itemRecallResponse;
     }
 
-    private String formatFromSipDate(String sipDate){
+    private String formatFromSipDate(String sipDate) {
         SimpleDateFormat sipFormat = new SimpleDateFormat("yyyyMMdd    HHmmss");
         SimpleDateFormat requiredFormat = new SimpleDateFormat("dd-MMM-YYYY HH:mm:ss");
-        String reformattedStr ="";
+        String reformattedStr = "";
         try {
-            if(sipDate != null && sipDate.trim().length()>0) {
+            if (sipDate != null && sipDate.trim().length() > 0) {
                 reformattedStr = requiredFormat.format(sipFormat.parse(sipDate));
             }
         } catch (ParseException e) {

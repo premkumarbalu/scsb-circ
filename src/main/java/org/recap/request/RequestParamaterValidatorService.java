@@ -1,10 +1,9 @@
 package org.recap.request;
 
+import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.controller.ItemController;
-import org.recap.model.CustomerCodeEntity;
 import org.recap.model.ItemRequestInformation;
-import org.recap.repository.CustomerCodeDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +25,8 @@ import java.util.regex.Pattern;
 @Component
 public class RequestParamaterValidatorService {
 
+    private Logger logger = Logger.getLogger(RequestParamaterValidatorService.class);
+
     @Value("${server.protocol}")
     String serverProtocol;
 
@@ -45,7 +46,7 @@ public class RequestParamaterValidatorService {
             errorMessageMap.put(errorCount, ReCAPConstants.INVALID_REQUEST_INSTITUTION);
             errorCount++;
         }
-        if (StringUtils.isEmpty(itemRequestInformation.getEmailAddress()) || !validateEmailAddress(itemRequestInformation.getEmailAddress())) {
+        if (!validateEmailAddress(itemRequestInformation.getEmailAddress())) {
             errorMessageMap.put(errorCount, ReCAPConstants.INVALID_EMAIL_ADDRESS);
             errorCount++;
         }
@@ -107,10 +108,20 @@ public class RequestParamaterValidatorService {
     }
 
     private boolean validateEmailAddress(String toEmailAddress) {
-        String regex = ReCAPConstants.REGEX_FOR_EMAIL_ADDRESS;
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(toEmailAddress);
-        return matcher.matches();
+        boolean bSuccess =false;
+        try {
+            if(!StringUtils.isEmpty(toEmailAddress)) {
+                String regex = ReCAPConstants.REGEX_FOR_EMAIL_ADDRESS;
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(toEmailAddress);
+                bSuccess = matcher.matches();
+            }else{
+                bSuccess = true;
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return bSuccess ;
     }
 
     public HttpHeaders getHttpHeaders() {
@@ -118,18 +129,6 @@ public class RequestParamaterValidatorService {
         responseHeaders.add(ReCAPConstants.RESPONSE_DATE, new Date().toString());
         return responseHeaders;
     }
-
-//    private String customerCodeValidation(String deliveryLocation){
-//        String customerCodeStatus = "";
-//        CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(deliveryLocation);
-//        if(!StringUtils.isEmpty(customerCodeEntity)){
-//            customerCodeStatus =  ReCAPConstants.VALID_CUSTOMER_CODE;
-//
-//        }else{
-//            customerCodeStatus = ReCAPConstants.INVALID_CUSTOMER_CODE;
-//        }
-//        return customerCodeStatus;
-//    }
 
     private String buildErrorMessage(Map<Integer, String> erroMessageMap) {
         StringBuilder errorMessageBuilder = new StringBuilder();
