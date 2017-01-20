@@ -1,0 +1,7 @@
+
+This Item has been recalled-:
+
+Item Barcode 	: ${header.emailPayLoad.itemBarcode}
+Patron Barcode 	: ${header.emailPayLoad.patronBarcode}
+Institution	: ${header.emailPayLoad.institutionCode}
+Title 		: ${header.emailPayLoad.titleIdentifier}
