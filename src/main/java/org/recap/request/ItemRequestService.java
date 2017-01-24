@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.builder.DefaultFluentProducerTemplate;
-import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.controller.RequestItemController;
@@ -22,7 +21,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.enterprise.inject.New;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -340,7 +339,12 @@ public class ItemRequestService {
             requestItemEntity.setItemId(itemEntity.getItemId());
             requestItemEntity.setRequestingInstitutionId(itemEntity.getInstitutionEntity().getInstitutionId());
             requestItemEntity.setRequestTypeId(requestTypeEntity.getRequestTypeId());
-            requestItemEntity.setRequestExpirationDate(simpleDateFormat.parse(itemRequestInformation.getExpirationDate()));
+            if (ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInformation.getRequestingInstitution())) {
+                DateFormat dateFormatter = new SimpleDateFormat(ReCAPConstants.NYPL_HOLD_DATE_FORMAT);
+                requestItemEntity.setRequestExpirationDate(dateFormatter.parse(itemRequestInformation.getExpirationDate()));
+            } else {
+                requestItemEntity.setRequestExpirationDate(simpleDateFormat.parse(itemRequestInformation.getExpirationDate()));
+            }
             requestItemEntity.setCreatedDate(new Date());
             requestItemEntity.setLastUpdatedDate(new Date());
             requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
@@ -439,6 +443,7 @@ public class ItemRequestService {
                     ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                     if (itemHoldResponse.isSuccess()) {
                         itemResponseInformation.setExpirationDate(itemHoldResponse.getExpirationDate());
+                        itemRequestInfo.setExpirationDate(itemHoldResponse.getExpirationDate());
                         itemResponseInformation = checkInstAfterPlacingRequest(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
                         bsuccess = true;
                         messagePublish = itemResponseInformation.getScreenMessage();
@@ -599,9 +604,11 @@ public class ItemRequestService {
 
     private void setpickupLoacation(ItemRequestInformation itemRequestInfo, String institution) {
         if (institution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
-            itemRequestInfo.setDeliveryLocation("rcpcirc");
+            itemRequestInfo.setDeliveryLocation(ReCAPConstants.DEFAULT_PICK_UP_LOCATION_PUL);
         } else if (institution.equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
-            itemRequestInfo.setDeliveryLocation("CIRCrecap");
+            itemRequestInfo.setDeliveryLocation(ReCAPConstants.DEFAULT_PICK_UP_LOCATION_CUL);
+        } else if (institution.equalsIgnoreCase(ReCAPConstants.NYPL)) {
+            itemRequestInfo.setDeliveryLocation(ReCAPConstants.DEFAULT_PICK_UP_LOCATION_NYPL);
         }
     }
 

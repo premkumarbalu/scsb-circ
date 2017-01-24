@@ -179,7 +179,6 @@ public class ReCAPConstants {
     public static final String UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID = "itemBarcode";
     public static final String CIRCULATION_STATUS_CHARGED = "CHARGED";
 
-
     public static final int ESIPEXPIRATION_DATE_DAY = 1;
     public static final int ESIPEXPIRATION_DATE_MONTH = 6;
 
@@ -188,5 +187,15 @@ public class ReCAPConstants {
     public static final String REQUEST_STATUS_RECALL_RETRIEVAL_ORDER_PLACED = "RECALL_RETRIEVAL_ORDER_PLACED";
     public static final String REQUEST_STATUS_REFILED = "REFILED";
     public static final String REQUEST_STATUS_CANCELED = "CANCELED";
+
+    public static final String NYPL_SOURCE_NYPL = "nypl-sierra";
+    public static final String NYPL_SOURCE_PUL = "recap-PUL";
+    public static final String NYPL_SOURCE_CUL = "recap-CUL";
+
+    public static final String NYPL_HOLD_DATE_FORMAT = "yyyy-MM-dd";
+    public static final String NYPL_RECORD_TYPE = "i";
+    public static final String DEFAULT_PICK_UP_LOCATION_NYPL = "lb";
+    public static final String DEFAULT_PICK_UP_LOCATION_PUL = "rcpcirc";
+    public static final String DEFAULT_PICK_UP_LOCATION_CUL = "CIRCrecap";
 
 }

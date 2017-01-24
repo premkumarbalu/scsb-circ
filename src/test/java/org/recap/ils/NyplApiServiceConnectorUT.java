@@ -23,7 +23,7 @@ public class NyplApiServiceConnectorUT extends BaseTestCase {
     public void lookupItem() throws Exception {
         String itemId = "2322222222";
         String source = "nypl-sierra";
-        ItemInformationResponse itemInformationResponse = (ItemInformationResponse) nyplApiServiceConnector.lookupItem(itemId, source);
+        ItemInformationResponse itemInformationResponse = (ItemInformationResponse) nyplApiServiceConnector.lookupItem(itemId);
         assertNotNull(itemInformationResponse);
         assertNotNull(itemInformationResponse.getItemBarcode());
         assertNotNull(itemInformationResponse.getBibID());
