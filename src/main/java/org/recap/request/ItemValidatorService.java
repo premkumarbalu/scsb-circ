@@ -47,11 +47,6 @@ public class ItemValidatorService {
     @Autowired
     CustomerCodeDetailsRepository customerCodeDetailsRepository;
 
-//    @Autowired
-//    RequestItemDetailsRepository requestItemDetailsRepository;
-
-
-
     public ResponseEntity itemValidation(ItemRequestInformation itemRequestInformation) {
         ResponseEntity responseEntity = null;
         String availabilityStatus = "";
@@ -103,10 +98,6 @@ public class ItemValidatorService {
         } else {
             return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
         }
-
-
-
-
     }
 
     private List<String> splitStringAndGetList(String inputString) {
@@ -190,6 +181,8 @@ public class ItemValidatorService {
                 } else {
                     bSuccess = -1;
                 }
+            } else {
+                bSuccess = 1;
             }
         } else {
             bSuccess = 0;

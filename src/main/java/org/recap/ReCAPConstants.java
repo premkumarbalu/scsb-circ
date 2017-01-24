@@ -176,12 +176,17 @@ public class ReCAPConstants {
     public static final String API_KEY = "api_key";
     public static final String RECAP = "recap";
     public static final String UPDATE_ITEM_STATUS_SOLR = "/updateItem/updateItemAvailablityStatus";
-    public static final String UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID = "itemId";
+    public static final String UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID = "itemBarcode";
     public static final String CIRCULATION_STATUS_CHARGED = "CHARGED";
+
 
     public static final int ESIPEXPIRATION_DATE_DAY = 1;
     public static final int ESIPEXPIRATION_DATE_MONTH = 6;
 
-
+    public static final String REQUEST_STATUS_RETRIEVAL_ORDER_PLACED = "RETRIEVAL_ORDER_PLACED";
+    public static final String REQUEST_STATUS_RECALLED = "RECALLED";
+    public static final String REQUEST_STATUS_RECALL_RETRIEVAL_ORDER_PLACED = "RECALL_RETRIEVAL_ORDER_PLACED";
+    public static final String REQUEST_STATUS_REFILED = "REFILED";
+    public static final String REQUEST_STATUS_CANCELED = "CANCELED";
 
 }
