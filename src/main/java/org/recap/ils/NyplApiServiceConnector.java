@@ -1,5 +1,6 @@
 package org.recap.ils;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
@@ -13,7 +14,6 @@ import org.recap.ils.model.response.*;
 import org.recap.ils.service.NyplApiResponseUtil;
 import org.recap.ils.service.NyplOauthTokenApiService;
 import org.recap.processor.NyplJobResponsePollingProcessor;
-import org.recap.repository.ItemDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -22,6 +22,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by rajeshbabuk on 19/12/16.
@@ -41,9 +42,6 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
     NyplApiResponseUtil nyplApiResponseUtil;
 
     @Autowired
-    ItemDetailsRepository itemDetailsRepository;
-
-    @Autowired
     NyplJobResponsePollingProcessor nyplJobResponsePollingProcessor;
 
     public abstract String getHost();
@@ -55,9 +53,12 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
     public abstract String getOperatorLocation();
 
     @Override
-    public ItemInformationResponse lookupItem(String itemIdentifier, String source) {
+    public ItemInformationResponse lookupItem(String itemIdentifier) {
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
         try {
+            String institutionId = nyplApiResponseUtil.getItemOwningInstitutionByItemBarcode(itemIdentifier);
+            String source = nyplApiResponseUtil.getNyplSource(institutionId);
+            itemIdentifier = nyplApiResponseUtil.getNormalizedItemIdForNypl(itemIdentifier);
             String apiUrl = nyplDataApiUrl + "/items/" + source + "/" + itemIdentifier;
             String authorization = "Bearer " + nyplOauthTokenApiService.generateAccessTokenForNyplApi(getOperatorUserId(), getOperatorPassword());
 
@@ -186,11 +187,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         try {
             String recapHoldApiUrl = nyplDataApiUrl + "/recap/hold-requests";
             if (StringUtils.isBlank(trackingId)) {
-                // TODO : Initiate nypl hold request to get tracking Id.
-                logger.info("Tracking Id is required");
-                itemHoldResponse.setScreenMessage(ReCAPConstants.TRACKING_ID_REQUIRED);
-                itemHoldResponse.setSuccess(false);
-                return itemHoldResponse;
+                trackingId = initiateNyplHoldRequest(itemIdentifier, patronIdentifier, itemInstitutionId, pickupLocation);
             }
             CreateHoldRequest createHoldRequest = new CreateHoldRequest();
             createHoldRequest.setTrackingId(trackingId);
@@ -255,7 +252,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
 
             CancelHoldRequest cancelHoldRequest = new CancelHoldRequest();
             cancelHoldRequest.setTrackingId(trackingId);
-            cancelHoldRequest.setOwningInstitutionId(institutionId);
+            cancelHoldRequest.setOwningInstitutionId(nyplApiResponseUtil.getItemOwningInstitutionByItemBarcode(itemIdentifier));
             cancelHoldRequest.setItemBarcode(itemIdentifier);
             cancelHoldRequest.setPatronBarcode(patronIdentifier);
 
@@ -323,6 +320,50 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Authorization", authorization);
         return headers;
+    }
+
+    private String initiateNyplHoldRequest(String itemIdentifier, String patronIdentifier, String itemInstitutionId, String pickupLocation) throws Exception {
+        String trackingId = null;
+        String nyplHoldApiUrl = nyplDataApiUrl + "/hold-requests";
+        String nyplSource = nyplApiResponseUtil.getNyplSource(itemInstitutionId);
+        NyplHoldRequest nyplHoldRequest = new NyplHoldRequest();
+        nyplHoldRequest.setRecord(nyplApiResponseUtil.getNormalizedItemIdForNypl(itemIdentifier));
+        nyplHoldRequest.setPatron(getPatronIdByPatronBarcode(patronIdentifier));
+        nyplHoldRequest.setNyplSource(nyplSource);
+        nyplHoldRequest.setRecordType(ReCAPConstants.NYPL_RECORD_TYPE);
+        nyplHoldRequest.setPickupLocation(pickupLocation);
+        nyplHoldRequest.setNumberOfCopies(1);
+        nyplHoldRequest.setNeededBy(nyplApiResponseUtil.getExpirationDateForNypl());
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<NyplHoldRequest> requestEntity = new HttpEntity(nyplHoldRequest, getHttpHeaders());
+        ResponseEntity<NYPLHoldResponse> responseEntity = restTemplate.exchange(nyplHoldApiUrl, HttpMethod.POST, requestEntity, NYPLHoldResponse.class);
+        NYPLHoldResponse nyplHoldResponse = responseEntity.getBody();
+        NYPLHoldData nyplHoldData = nyplHoldResponse.getData();
+        if (null != nyplHoldData) {
+            trackingId = String.valueOf(nyplHoldData.getId());
+        }
+        return trackingId;
+    }
+
+    private String getPatronIdByPatronBarcode(String patronBarcode) throws Exception {
+        String patronId = null;
+        NyplPatronResponse nyplPatronResponse = queryForPatronResponse(patronBarcode);
+        List<NyplPatronData> nyplPatronDatas = nyplPatronResponse.getData();
+        if (CollectionUtils.isNotEmpty(nyplPatronDatas)) {
+            NyplPatronData nyplPatronData = nyplPatronDatas.get(0);
+            patronId = nyplPatronData.getId();
+        }
+        return patronId;
+    }
+
+    private NyplPatronResponse queryForPatronResponse(String patronIdentifier) throws Exception {
+        String apiUrl = nyplDataApiUrl + "/patrons?barcode=" + patronIdentifier;
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity requestEntity = new HttpEntity(getHttpHeaders());
+        ResponseEntity<NyplPatronResponse> jobResponseEntity = restTemplate.exchange(apiUrl, HttpMethod.GET, requestEntity, NyplPatronResponse.class);
+        NyplPatronResponse nyplPatronResponse = jobResponseEntity.getBody();
+        return nyplPatronResponse;
     }
 
     @Override

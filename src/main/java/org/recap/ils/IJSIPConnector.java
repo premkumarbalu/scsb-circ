@@ -12,7 +12,7 @@ public interface IJSIPConnector {
     public abstract String getOperatorPassword();
     public abstract String getOperatorLocation();
 
-    public AbstractResponseItem lookupItem(String itemIdentifier, String source);
+    public AbstractResponseItem lookupItem(String itemIdentifier);
     public Object checkOutItem(String itemIdentifier, String patronIdentifier);
     public Object checkInItem(String itemIdentifier, String patronIdentifier);
     public Object placeHold(String itemIdentifier, String patronIdentifier, String callInstitutionId, String itemInstitutionId, String expirationDate, String bibId, String pickupLocation, String trackingId, String title, String author, String callNumber);
