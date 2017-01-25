@@ -449,7 +449,6 @@ public class ItemRequestService {
                     createBibResponse = (ItemCreateBibResponse) requestItemController.createBibliogrphicItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                 }
                 if (createBibResponse.isSuccess() || ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
-//                    itemRequestInfo.setBibId(createBibResponse.getBibId());
                     deliveryCode = itemRequestInfo.getDeliveryLocation();
                     setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                     ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
