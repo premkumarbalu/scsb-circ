@@ -18,7 +18,6 @@ public class ItemRequestInformation {
     private String requestType=""; // Retrieval,EDD, Hold, Recall, Borrow Direct
     private String deliveryLocation="";
     private String requestNotes="";
-    private String source; // NYPL - nyplSource
     private String trackingId; // NYPL - trackingId
     private String title; // NYPL - title
     private String author; // NYPL - author
@@ -63,14 +62,6 @@ public class ItemRequestInformation {
 
     public void setRequestNotes(String requestNotes) {
         this.requestNotes = requestNotes;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
     }
 
     public String getTrackingId() {

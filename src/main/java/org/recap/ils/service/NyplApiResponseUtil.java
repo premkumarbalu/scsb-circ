@@ -2,6 +2,7 @@ package org.recap.ils.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.recap.ReCAPConstants;
 import org.recap.ils.model.nypl.*;
 import org.recap.ils.model.nypl.response.*;
@@ -9,9 +10,14 @@ import org.recap.ils.model.response.ItemCheckinResponse;
 import org.recap.ils.model.response.ItemCheckoutResponse;
 import org.recap.ils.model.response.ItemHoldResponse;
 import org.recap.ils.model.response.ItemInformationResponse;
+import org.recap.model.ItemEntity;
+import org.recap.repository.ItemDetailsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -21,6 +27,9 @@ import java.util.List;
 
 @Service
 public class NyplApiResponseUtil {
+
+    @Autowired
+    ItemDetailsRepository itemDetailsRepository;
 
     public ItemInformationResponse buildItemInformationResponse(ItemResponse itemResponse) {
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
@@ -72,7 +81,7 @@ public class NyplApiResponseUtil {
         return itemCheckinResponse;
     }
 
-    public ItemHoldResponse buildItemHoldResponse(CreateHoldResponse createHoldResponse) {
+    public ItemHoldResponse buildItemHoldResponse(CreateHoldResponse createHoldResponse) throws Exception {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         CreateHoldData holdData = createHoldResponse.getData();
         itemHoldResponse.setItemOwningInstitution(holdData.getOwningInstitutionId());
@@ -81,6 +90,7 @@ public class NyplApiResponseUtil {
         itemHoldResponse.setTrackingId(holdData.getTrackingId());
         itemHoldResponse.setCreatedDate(holdData.getCreatedDate());
         itemHoldResponse.setUpdatedDate((String) holdData.getUpdatedDate());
+        itemHoldResponse.setExpirationDate(getExpirationDateForNypl());
         return itemHoldResponse;
     }
 
@@ -105,6 +115,55 @@ public class NyplApiResponseUtil {
             jobStatus = notice.getText();
         }
         return jobStatus;
+    }
+
+    public String getNyplSource(String institutionId) {
+        String nyplSource = null;
+        if (StringUtils.isNotBlank(institutionId)) {
+            if (institutionId.equalsIgnoreCase(ReCAPConstants.NYPL)) {
+                nyplSource = ReCAPConstants.NYPL_SOURCE_NYPL;
+            } else if (institutionId.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
+                nyplSource = ReCAPConstants.NYPL_SOURCE_PUL;
+            } else if (institutionId.equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
+                nyplSource = ReCAPConstants.NYPL_SOURCE_CUL;
+            }
+        }
+        return nyplSource;
+    }
+
+    public String getNormalizedItemIdForNypl(String itemBarcode) throws Exception {
+        String itemId = null;
+        List<ItemEntity> itemEntities = itemDetailsRepository.findByBarcode(itemBarcode);
+        if (CollectionUtils.isNotEmpty(itemEntities)) {
+            ItemEntity itemEntity = itemEntities.get(0);
+            if (null != itemEntity.getInstitutionEntity()) {
+                String institutionCode = itemEntity.getInstitutionEntity().getInstitutionCode();
+                itemId = itemEntity.getOwningInstitutionItemId();
+                if (ReCAPConstants.NYPL.equalsIgnoreCase(institutionCode)) {
+                    itemId = itemId.replace(".i", ""); // Remove prefix .i
+                    itemId = StringUtils.chop(itemId); // Remove last check digit or char
+                }
+            }
+        }
+        return itemId;
+    }
+
+    public String getExpirationDateForNypl() throws Exception {
+        Date expirationDate = DateUtils.addYears(new Date(), 1);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ReCAPConstants.NYPL_HOLD_DATE_FORMAT);
+        return simpleDateFormat.format(expirationDate);
+    }
+
+    public String getItemOwningInstitutionByItemBarcode(String itemBarcode) throws Exception {
+        String institutionCode = null;
+        List<ItemEntity> itemEntities = itemDetailsRepository.findByBarcode(itemBarcode);
+        if (CollectionUtils.isNotEmpty(itemEntities)) {
+            ItemEntity itemEntity = itemEntities.get(0);
+            if (null != itemEntity.getInstitutionEntity()) {
+                institutionCode = itemEntity.getInstitutionEntity().getInstitutionCode();
+            }
+        }
+        return institutionCode;
     }
 
 }

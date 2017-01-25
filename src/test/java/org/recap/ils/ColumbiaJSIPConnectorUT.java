@@ -42,7 +42,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
     @Test
     public void lookupItem() throws Exception {
 
-        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)columbiaJSIPConnector.lookupItem(itemIdentifier[4],null);
+        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)columbiaJSIPConnector.lookupItem(itemIdentifier[4]);
         logger.info("");
         logger.info("Circulation Status     :" + itemInformationResponse.getCirculationStatus());
         logger.info("Security Marker        :" + itemInformationResponse.getSecurityMarker());

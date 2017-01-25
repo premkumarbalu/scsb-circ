@@ -92,7 +92,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
     public abstract String getOperatorLocation();
 
-    public AbstractResponseItem lookupItem(String itemIdentifier, String source) {
+    public AbstractResponseItem lookupItem(String itemIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2ItemInformationResponse sip2ItemInformationResponse = null;
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
