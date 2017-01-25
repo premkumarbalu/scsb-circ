@@ -167,7 +167,6 @@ public class ItemRequestService {
         boolean bsuccess = false;
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
-        RequestTypeEntity requestTypeEntity = null;
         ItemInformationResponse itemResponseInformation = new ItemInformationResponse();
         try {
             itemEntities = itemDetailsRepository.findByBarcodeIn(itemRequestInfo.getItemBarcodes());
@@ -182,8 +181,7 @@ public class ItemRequestService {
                 if (res.getStatusCode() == HttpStatus.OK) {
                     logger.info("Request Validation Successful");
                     // Check if Request Item  for any existint request
-                    requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
-                    itemResponseInformation = checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
+                    itemResponseInformation = checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity);
                     messagePublish = itemResponseInformation.getScreenMessage();
                     bsuccess = true;
                 } else {
@@ -451,7 +449,6 @@ public class ItemRequestService {
                     createBibResponse = (ItemCreateBibResponse) requestItemController.createBibliogrphicItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                 }
                 if (createBibResponse.isSuccess() || ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
-                    itemRequestInfo.setBibId(createBibResponse.getBibId());
                     deliveryCode = itemRequestInfo.getDeliveryLocation();
                     setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                     ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
@@ -516,14 +513,39 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
-    private ItemInformationResponse checkOwningInstitutionRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity) {
+    private ItemInformationResponse checkOwningInstitutionRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
         String messagePublish = "";
         String deliveryCode = "";
         boolean bsuccess = false;
-        // Check Item Information
-        ItemInformationResponse itemInformation = (ItemInformationResponse) requestItemController.itemInformation(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
+        RequestTypeEntity requestTypeEntity = null;
+
+        RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByItemBarcodeAndRequestStaCode(itemRequestInfo.getItemBarcodes().get(0), ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+        ItemInformationResponse itemInformation = (ItemInformationResponse) requestItemController.itemInformation(itemRequestInfo, requestItemEntity.getInstitutionEntity().getInstitutionCode());
         if (itemInformation.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_CHARGED)) {
-            if (!itemRequestInfo.isOwningInstitutionItem()) {
+            if (requestItemEntity.getInstitutionEntity().getInstitutionCode().equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
+                deliveryCode = itemRequestInfo.getDeliveryLocation();
+                setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
+                itemRequestInfo.setDeliveryLocation(deliveryCode);
+                if (itemRecallResponse.isSuccess()) {
+                    // Update Recap DB
+                    requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
+                    itemResponseInformation.setExpirationDate(itemRecallResponse.getExpirationDate());
+                    itemRequestInfo.setExpirationDate(itemRecallResponse.getExpirationDate());
+                    Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
+                    itemResponseInformation.setRequestId(requestId);
+                    messagePublish = "Successfully Processed Request Item";
+                    bsuccess = true;
+                    updateGFA(itemRequestInfo, itemResponseInformation);
+                } else {
+                    if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
+                        messagePublish = itemRecallResponse.getScreenMessage();
+                    } else {
+                        messagePublish = "Recall failed from ILS";
+                    }
+                    bsuccess = false;
+                }
+            } else {
                 deliveryCode = itemRequestInfo.getDeliveryLocation();
                 setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                 ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
@@ -531,19 +553,31 @@ public class ItemRequestService {
                     itemResponseInformation.setExpirationDate(itemHoldResponse.getExpirationDate());
                     itemRequestInfo.setExpirationDate(itemHoldResponse.getExpirationDate());
                     itemRequestInfo.setDeliveryLocation(deliveryCode);
-                    itemResponseInformation = checkInstAfterPlacingHoldforRecall(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
-                    messagePublish = itemResponseInformation.getScreenMessage();
-                    bsuccess = true;
+
+                    deliveryCode = itemRequestInfo.getDeliveryLocation();
+                    setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                    ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, requestItemEntity.getInstitutionEntity().getInstitutionCode());
+                    itemRequestInfo.setDeliveryLocation(deliveryCode);
+                    if (itemRecallResponse.isSuccess()) {
+                        // Update Recap DB
+                        requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
+                        Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
+                        itemResponseInformation.setRequestId(requestId);
+                        messagePublish = "Successfully Processed Request Item";
+                        bsuccess = true;
+                    } else {
+                        if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
+                            messagePublish = itemRecallResponse.getScreenMessage();
+                        } else {
+                            messagePublish = "Recall failed from ILS";
+                        }
+                        bsuccess = false;
+                    }
                 } else { // If Hold command Failure
                     messagePublish = itemHoldResponse.getScreenMessage();
                     bsuccess = false;
                     saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, itemHoldResponse.getPatronIdentifier() + " - " + itemHoldResponse.getScreenMessage());
                 }
-
-            } else {
-                itemResponseInformation = checkInstAfterPlacingHoldforRecall(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
-                messagePublish = itemResponseInformation.getScreenMessage();
-                bsuccess = true;
             }
         } else {
             messagePublish = "Recall Cannot be processed, the item is not checked out in ILS";
@@ -554,41 +588,18 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
-    private ItemInformationResponse checkInstAfterPlacingHoldforRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity) {
+    private ItemInformationResponse checkInstAfterPlacingHoldforRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
         String messagePublish = "";
         String deliveryCode = "";
         boolean bsuccess = false;
+        RequestTypeEntity requestTypeEntity = null;
         if (itemRequestInfo.isOwningInstitutionItem()) {
-            deliveryCode = itemRequestInfo.getDeliveryLocation();
-            setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
-            ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
-            itemRequestInfo.setDeliveryLocation(deliveryCode);
-            if (itemRecallResponse.isSuccess()) {
-                // Update Recap DB
-                itemResponseInformation.setExpirationDate(itemRecallResponse.getExpirationDate());
-                itemRequestInfo.setExpirationDate(itemRecallResponse.getExpirationDate());
-                Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
-                itemResponseInformation.setRequestId(requestId);
-                messagePublish = "Successfully Processed Request Item";
-                bsuccess = true;
-                updateGFA(itemRequestInfo, itemResponseInformation);
-            } else {
-                if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
-                    messagePublish = itemRecallResponse.getScreenMessage();
-                } else {
-                    messagePublish = "Recall failed from ILS";
-                }
-                bsuccess = false;
-            }
+
         } else { // Item does not belong to requesting Institute
 
             // Send Mail
             emailService.RecalEmail(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getItemBarcodes().get(0), itemRequestInfo.getTitleIdentifier(), itemRequestInfo.getPatronBarcode());
-            // Update Recap DB
-            Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
-            itemResponseInformation.setRequestId(requestId);
-            messagePublish = "Successfully Processed Request Item";
-            bsuccess = true;
+
         }
         if (bsuccess) {
             updateSolrIndex(itemEntity);
