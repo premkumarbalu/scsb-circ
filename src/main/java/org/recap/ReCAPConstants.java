@@ -179,6 +179,12 @@ public class ReCAPConstants {
     public static final String UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID = "itemBarcode";
     public static final String CIRCULATION_STATUS_CHARGED = "CHARGED";
 
+    public static final String SEARCH_RECORDS_SOLR = "/searchService/searchByParam";
+    public static final String SEARCH_RECORDS_SOLR_PARAM_FIELD_VALUE = "fieldValue";
+    public static final String SEARCH_RECORDS_SOLR_PARAM_FIELD_NAME = "fieldName";
+    public static final String SEARCH_RECORDS_SOLR_PARAM_FIELD_NAME_VALUE = "Barcode";
+
+
     public static final int ESIPEXPIRATION_DATE_DAY = 1;
     public static final int ESIPEXPIRATION_DATE_MONTH = 6;
 
