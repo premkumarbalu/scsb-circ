@@ -74,10 +74,10 @@ public class RequestParamaterValidatorServiceUT extends BaseTestCase{
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         List<String> itemBarcodeList = new ArrayList<>();
         itemBarcodeList.add("33433014514719");
-        itemBarcodeList.add("33433012968222");
         itemRequestInformation.setItemBarcodes(itemBarcodeList);
         itemRequestInformation.setPatronBarcode("45678915");
-        itemRequestInformation.setRequestType(ReCAPConstants.REQUEST_TYPE_RECALL);
+        itemRequestInformation.setChapterTitle("title");
+        itemRequestInformation.setRequestType(ReCAPConstants.EDD_REQUEST);
         itemRequestInformation.setDeliveryLocation("AC");
         itemRequestInformation.setRequestingInstitution("PUL");
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");

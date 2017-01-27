@@ -60,7 +60,8 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemBarcodes.add("101");
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         itemRequestInformation.setItemBarcodes(itemBarcodes);
-        itemRequestInformation.setRequestType(ReCAPConstants.RECALL);
+        itemRequestInformation.setDeliveryLocation("PB");
+        itemRequestInformation.setRequestType(ReCAPConstants.RETRIEVAL);
         ResponseEntity responseEntity = itemValidatorService.itemValidation(itemRequestInformation);
         assertNotNull(responseEntity);
         assertEquals(responseEntity.getBody(), ReCAPConstants.VALID_REQUEST);
@@ -75,8 +76,9 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemBarcodes.add("101");
         itemBarcodes.add("123");
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
-        itemRequestInformation.setRequestType(ReCAPConstants.RECALL);
+        itemRequestInformation.setRequestType(ReCAPConstants.RETRIEVAL);
         itemRequestInformation.setItemBarcodes(itemBarcodes);
+        itemRequestInformation.setDeliveryLocation("PB");
         ResponseEntity responseEntity = itemValidatorService.itemValidation(itemRequestInformation);
         assertNotNull(responseEntity);
         assertEquals(responseEntity.getBody(), ReCAPConstants.ITEMBARCODE_WITH_DIFFERENT_BIB);
@@ -93,7 +95,7 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemEntity1.setCreatedBy("etl");
         itemEntity1.setLastUpdatedDate(new Date());
         itemEntity1.setLastUpdatedBy("etl");
-        itemEntity1.setCustomerCode("1");
+        itemEntity1.setCustomerCode("PB");
         itemEntity1.setItemAvailabilityStatusId(1);
         itemEntity1.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
         itemEntity1.setOwningInstitutionId(1);
@@ -110,7 +112,7 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemEntity2.setLastUpdatedBy("etl");
         itemEntity2.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
         itemEntity2.setOwningInstitutionId(1);
-        itemEntity2.setCustomerCode("1");
+        itemEntity2.setCustomerCode("PB");
         itemEntity2.setBarcode("101");
         itemEntity2.setItemAvailabilityStatusId(1);
         itemEntity2.setCallNumber("x.12321");
@@ -154,7 +156,7 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemEntity.setCallNumber("x.12321");
         itemEntity.setCollectionGroupId(1);
         itemEntity.setCallNumberType("1");
-        itemEntity.setCustomerCode("1");
+        itemEntity.setCustomerCode("PB");
         itemEntity.setItemAvailabilityStatusId(1);
         itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
 

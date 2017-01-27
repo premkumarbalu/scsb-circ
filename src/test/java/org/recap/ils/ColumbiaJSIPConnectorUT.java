@@ -61,8 +61,8 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void lookupUser() throws Exception {
-        String patronIdentifier = "RECAPTST01";
-        String institutionId = "CUL";
+        String patronIdentifier = "RECAPPUL01";
+        String institutionId = "0RECAPPUL01";
         SIP2PatronStatusResponse patronInformationResponse = columbiaJSIPConnector.lookupUser(institutionId, patronIdentifier);
         assertNotNull(patronInformationResponse);
         assertTrue(patronInformationResponse.isValid());
@@ -92,9 +92,9 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void check_out_In() throws Exception {
-        String itemIdentifier = "";
-        String patronIdentifier = "";
-        String institutionId = "";
+        String itemIdentifier = "CULTST32345";
+        String patronIdentifier = "RECAPTST01";
+        String institutionId = "recaptestreg";
         ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse)columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
         assertNotNull(itemCheckoutResponse);
         assertTrue(itemCheckoutResponse.isSuccess());

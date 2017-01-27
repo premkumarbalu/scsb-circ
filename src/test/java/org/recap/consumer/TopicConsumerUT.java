@@ -3,6 +3,7 @@ package org.recap.consumer;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.TransportConnector;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.recap.BaseTestCase;
 
@@ -92,6 +93,7 @@ public class TopicConsumerUT extends BaseTestCase {
         }
     }
 
+    @Ignore
     @Test
     public void testMQConsumption() throws JMSException, NamingException {
         subscribeWithTopicLookup();
