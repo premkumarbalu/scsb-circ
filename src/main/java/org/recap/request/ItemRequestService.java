@@ -454,6 +454,7 @@ public class ItemRequestService {
                     ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                     if (itemHoldResponse.isSuccess()) {
                         itemResponseInformation.setExpirationDate(itemHoldResponse.getExpirationDate());
+                        itemRequestInfo.setExpirationDate(itemHoldResponse.getExpirationDate());
                         itemRequestInfo.setDeliveryLocation(deliveryCode);
                         itemResponseInformation = checkInstAfterPlacingRequest(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
                         bsuccess = true;
