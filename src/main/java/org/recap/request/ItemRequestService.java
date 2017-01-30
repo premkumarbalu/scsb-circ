@@ -248,6 +248,7 @@ public class ItemRequestService {
                 requestItemEntityNew.setRequestingInstitutionId(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionId());
                 requestItemEntityNew.setRequestTypeId(requestItemEntity.getRequestTypeId());
                 requestItemEntityNew.setRequestExpirationDate(requestItemEntity.getRequestExpirationDate());
+                requestItemEntityNew.setCreatedBy(ReCAPConstants.GUEST_USER);
                 requestItemEntityNew.setCreatedDate(new Date());
                 requestItemEntityNew.setLastUpdatedDate(new Date());
                 requestItemEntityNew.setPatronId(requestItemEntity.getPatronId());
@@ -354,7 +355,7 @@ public class ItemRequestService {
                     requestItemEntity.setRequestExpirationDate(simpleDateFormat.parse(itemRequestInformation.getExpirationDate()));
                 }
             }
-
+            requestItemEntity.setCreatedBy(ReCAPConstants.GUEST_USER);
             requestItemEntity.setCreatedDate(new Date());
             requestItemEntity.setLastUpdatedDate(new Date());
             requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
