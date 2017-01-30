@@ -106,7 +106,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
             if (sip2ItemInformationResponse.getScreenMessage().size() > 0) {
                 itemInformationResponse.setScreenMessage(sip2ItemInformationResponse.getScreenMessage().get(0));
             }
-            itemInformationResponse.setSuccess(sip2ItemInformationResponse.isOk());
+            itemInformationResponse.setSuccess(true);
             itemInformationResponse.setTitleIdentifier(sip2ItemInformationResponse.getTitleIdentifier());
 
             itemInformationResponse.setDueDate(formatFromSipDate(sip2ItemInformationResponse.getDueDate()));
@@ -127,7 +127,9 @@ public abstract class JSIPConnector implements IJSIPConnector {
             logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
         } catch (InvalidSIP2ResponseValueException e) {
             logger.error("Invalid SIP2 Value = ", e);
-
+            itemInformationResponse.setSuccess(false);
+            itemInformationResponse.setScreenMessage("Item barcode not found");
+            itemInformationResponse.setCirculationStatus("ITEM_BARCODE_NOT_FOUND");
         } catch (Exception e) {
             logger.error("Exception = ", e);
         } finally {

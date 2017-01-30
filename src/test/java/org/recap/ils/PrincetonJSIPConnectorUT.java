@@ -148,9 +148,9 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void createBib() throws Exception {
-        String itemIdentifier = "444444444444";
+        String itemIdentifier = " CU69277435";
         String patronIdentifier = "45678915";
-        String titleIdentifier = "RECAP TEST TITLE - 003";
+        String titleIdentifier = "";
         String institutionId = "htccul";
         ItemCreateBibResponse itemCreateBibResponse = princetonESIPConnector.createBib(itemIdentifier, patronIdentifier, institutionId, titleIdentifier);
 

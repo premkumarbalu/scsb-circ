@@ -90,6 +90,8 @@ public class ItemRequestService {
 
     @Autowired
     RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
+    @Autowired
+    GFAService gfaService;
 
     public ItemInformationResponse requestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
@@ -107,9 +109,12 @@ public class ItemRequestService {
             if (itemEntities != null && itemEntities.size() > 0) {
                 logger.info("Item Exists in SCSB Database");
                 itemEntity = itemEntities.get(0);
-                itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
+                if (itemRequestInfo.getBibId().trim().length() <= 0) {
+                    itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
+                }
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
                 itemRequestInfo.setTitleIdentifier(getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity));
+                itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
                 // Validate Patron
                 res = requestItemValidatorController.validateItemRequestInformations(itemRequestInfo);
                 if (res.getStatusCode() == HttpStatus.OK) {
@@ -125,10 +130,10 @@ public class ItemRequestService {
 
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
                         updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
-                        updateGFA(itemRequestInfo, itemResponseInformation);
+                        itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT)) {
                         updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
-                        updateGFA(itemRequestInfo, itemResponseInformation);
+                        itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
                     }
                 } else {
                     logger.warn("Validate Request Errors : " + res.getBody().toString());
@@ -410,16 +415,16 @@ public class ItemRequestService {
         return bSuccess;
     }
 
-    private void updateGFA(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = "";
+    private ItemInformationResponse updateGFA(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
+
         try {
-            json = objectMapper.writeValueAsString(itemResponseInformation);
-
-
-        } catch (JsonProcessingException e) {
+            gfaService.executeRetriveOrder(itemRequestInfo, itemResponseInformation);
+        } catch (Exception e) {
             logger.error(e.getMessage());
+            itemResponseInformation.setSuccess(false);
+            itemResponseInformation.setScreenMessage(e.getMessage());
         }
+        return itemResponseInformation;
     }
 
     private ItemInformationResponse checkOwningInstitution(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity) {
@@ -489,9 +494,12 @@ public class ItemRequestService {
         String messagePublish = "";
         boolean bsuccess = false;
         if (itemRequestInfo.isOwningInstitutionItem()) {
+            // GFA
+            itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
             // Update Recap DB
             Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
             itemResponseInformation.setRequestId(requestId);
+            itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
             messagePublish = "Successfully Processed Request Item";
             bsuccess = true;
         } else { // Item does not belong to requesting Institute
@@ -500,6 +508,8 @@ public class ItemRequestService {
             if (!itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
                 AbstractResponseItem checkoutItemResponse = requestItemController.checkoutItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
             }
+            // GFA
+            itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
             // Update Recap DB
             Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
             itemResponseInformation.setRequestId(requestId);
@@ -534,11 +544,13 @@ public class ItemRequestService {
                     requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
                     itemResponseInformation.setExpirationDate(itemRecallResponse.getExpirationDate());
                     itemRequestInfo.setExpirationDate(itemRecallResponse.getExpirationDate());
+
+                    itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
                     Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
                     itemResponseInformation.setRequestId(requestId);
                     messagePublish = "Successfully Processed Request Item";
                     bsuccess = true;
-                    updateGFA(itemRequestInfo, itemResponseInformation);
+
                 } else {
                     if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
                         messagePublish = itemRecallResponse.getScreenMessage();
@@ -561,8 +573,11 @@ public class ItemRequestService {
                     ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, requestItemEntity.getInstitutionEntity().getInstitutionCode());
                     itemRequestInfo.setDeliveryLocation(deliveryCode);
                     if (itemRecallResponse.isSuccess()) {
-                        // Update Recap DB
+
                         requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
+                        // GFA Update
+                        itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
+                        // Update Recap DB
                         Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
                         itemResponseInformation.setRequestId(requestId);
                         messagePublish = "Successfully Processed Request Item";
@@ -584,27 +599,6 @@ public class ItemRequestService {
         } else {
             messagePublish = "Recall Cannot be processed, the item is not checked out in ILS";
             bsuccess = false;
-        }
-        itemResponseInformation.setScreenMessage(messagePublish);
-        itemResponseInformation.setSuccess(bsuccess);
-        return itemResponseInformation;
-    }
-
-    private ItemInformationResponse checkInstAfterPlacingHoldforRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
-        String messagePublish = "";
-        String deliveryCode = "";
-        boolean bsuccess = false;
-        RequestTypeEntity requestTypeEntity = null;
-        if (itemRequestInfo.isOwningInstitutionItem()) {
-
-        } else { // Item does not belong to requesting Institute
-
-            // Send Mail
-            emailService.RecalEmail(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getItemBarcodes().get(0), itemRequestInfo.getTitleIdentifier(), itemRequestInfo.getPatronBarcode());
-
-        }
-        if (bsuccess) {
-            updateSolrIndex(itemEntity);
         }
         itemResponseInformation.setScreenMessage(messagePublish);
         itemResponseInformation.setSuccess(bsuccess);

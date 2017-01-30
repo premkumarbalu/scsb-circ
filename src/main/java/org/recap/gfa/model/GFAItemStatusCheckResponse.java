@@ -5,31 +5,13 @@ package org.recap.gfa.model;
  */
 public class GFAItemStatusCheckResponse
 {
-    private String itemBarcode;
-    private String itemStatus;
-    private String itemOwner;
+    public Dsitem dsitem;
 
-    public String getItemBarcode() {
-        return itemBarcode;
+    public Dsitem getDsitem() {
+        return dsitem;
     }
 
-    public void setItemBarcode(String itemBarcode) {
-        this.itemBarcode = itemBarcode;
-    }
-
-    public String getItemStatus() {
-        return itemStatus;
-    }
-
-    public void setItemStatus(String itemStatus) {
-        this.itemStatus = itemStatus;
-    }
-
-    public String getItemOwner() {
-        return itemOwner;
-    }
-
-    public void setItemOwner(String itemOwner) {
-        this.itemOwner = itemOwner;
+    public void setDsitem(Dsitem dsitem) {
+        this.dsitem = dsitem;
     }
 }

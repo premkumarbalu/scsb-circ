@@ -101,7 +101,7 @@ public class RequestItemController {
                     itemRequestInformation.getBibId(),
                     itemRequestInformation.getDeliveryLocation(),
                     itemRequestInformation.getTrackingId(),
-                    itemRequestInformation.getTitle(),
+                    itemRequestInformation.getTitleIdentifier(),
                     itemRequestInformation.getAuthor(),
                     itemRequestInformation.getCallNumber());
 
@@ -200,6 +200,7 @@ public class RequestItemController {
         itemRefileResponse.setScreenMessage((bSuccess) ? "Successfully Refiled" : "Failed to Refile");
         return itemRefileResponse;
     }
+
 
     private String formatFromSipDate(String sipDate) {
         SimpleDateFormat sipFormat = new SimpleDateFormat("yyyyMMdd    HHmmss");
