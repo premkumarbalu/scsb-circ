@@ -129,11 +129,25 @@ public class ItemRequestService {
                         messagePublish = itemResponseInformation.getScreenMessage();
 
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
-                        updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
                         itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
+                        if (itemResponseInformation.isSuccess()) {
+                            updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+                            bsuccess = true;
+                            messagePublish = "EDD request is successfull";
+                        } else {
+                            bsuccess = false;
+                            messagePublish = itemResponseInformation.getScreenMessage();
+                        }
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT)) {
-                        updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
                         itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
+                        if (itemResponseInformation.isSuccess()) {
+                            updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+                            bsuccess = true;
+                            messagePublish = "Borrow Direct request is successfull";
+                        } else {
+                            bsuccess = false;
+                            messagePublish = itemResponseInformation.getScreenMessage();
+                        }
                     }
                 } else {
                     logger.warn("Validate Request Errors : " + res.getBody().toString());
@@ -494,14 +508,25 @@ public class ItemRequestService {
         String messagePublish = "";
         boolean bsuccess = false;
         if (itemRequestInfo.isOwningInstitutionItem()) {
-            // GFA
-            itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
             // Update Recap DB
-            Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
-            itemResponseInformation.setRequestId(requestId);
-            itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
-            messagePublish = "Successfully Processed Request Item";
-            bsuccess = true;
+            ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+            if (itemHoldResponse.isSuccess()) {
+                // GFA
+                itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
+                if (itemResponseInformation.isSuccess()) {
+                    Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+                    itemResponseInformation.setRequestId(requestId);
+                    messagePublish = "Successfully Processed Request Item";
+                    bsuccess = true;
+                } else {
+                    messagePublish = itemResponseInformation.getScreenMessage();
+                    bsuccess = true;
+                }
+
+            } else {
+                messagePublish = itemHoldResponse.getScreenMessage();
+                bsuccess = false;
+            }
         } else { // Item does not belong to requesting Institute
             String requestingPatron = itemRequestInfo.getPatronBarcode();
             itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getItemOwningInstitution()));
@@ -510,11 +535,16 @@ public class ItemRequestService {
             }
             // GFA
             itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
-            // Update Recap DB
-            Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
-            itemResponseInformation.setRequestId(requestId);
-            messagePublish = "Successfully Processed Request Item";
-            bsuccess = true;
+            if (itemResponseInformation.isSuccess()) {
+                // Update Recap DB
+                Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+                itemResponseInformation.setRequestId(requestId);
+                messagePublish = "Successfully Processed Request Item";
+                bsuccess = true;
+            } else {
+                messagePublish = itemResponseInformation.getScreenMessage();
+                bsuccess = false;
+            }
             itemRequestInfo.setPatronBarcode(requestingPatron);
         }
         if (bsuccess) {
@@ -546,11 +576,15 @@ public class ItemRequestService {
                     itemRequestInfo.setExpirationDate(itemRecallResponse.getExpirationDate());
 
                     itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
-                    Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
-                    itemResponseInformation.setRequestId(requestId);
-                    messagePublish = "Successfully Processed Request Item";
-                    bsuccess = true;
-
+                    if (itemResponseInformation.isSuccess()) {
+                        Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
+                        itemResponseInformation.setRequestId(requestId);
+                        messagePublish = "Successfully Processed Request Item";
+                        bsuccess = true;
+                    } else {
+                        messagePublish = itemResponseInformation.getScreenMessage();
+                        bsuccess = false;
+                    }
                 } else {
                     if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
                         messagePublish = itemRecallResponse.getScreenMessage();
@@ -577,11 +611,16 @@ public class ItemRequestService {
                         requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
                         // GFA Update
                         itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
-                        // Update Recap DB
-                        Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
-                        itemResponseInformation.setRequestId(requestId);
-                        messagePublish = "Successfully Processed Request Item";
-                        bsuccess = true;
+                        if (itemResponseInformation.isSuccess()) {
+                            // Update Recap DB
+                            Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
+                            itemResponseInformation.setRequestId(requestId);
+                            messagePublish = "Successfully Processed Request Item";
+                            bsuccess = true;
+                        } else {
+                            messagePublish = itemResponseInformation.getScreenMessage();
+                            bsuccess = false;
+                        }
                     } else {
                         if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
                             messagePublish = itemRecallResponse.getScreenMessage();
