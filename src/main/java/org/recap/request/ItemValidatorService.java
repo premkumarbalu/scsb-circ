@@ -75,13 +75,17 @@ public class ItemValidatorService {
                 } else {
                     ResponseEntity responseEntity1 = null;
                     if (itemEntityList.size() == 1) {
-                        int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation);
-                        if (validateCustomerCode == 1) {
+                        if (!(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
+                            int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation);
+                            if (validateCustomerCode == 1) {
+                                responseEntity1 = new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
+                            } else if (validateCustomerCode == 0) {
+                                responseEntity1 = new ResponseEntity(ReCAPConstants.INVALID_CUSTOMER_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                            } else if (validateCustomerCode == -1) {
+                                responseEntity1 = new ResponseEntity(ReCAPConstants.INVALID_DELIVERY_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                            }
+                        } else {
                             responseEntity1 = new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
-                        } else if (validateCustomerCode == 0) {
-                            responseEntity1 = new ResponseEntity(ReCAPConstants.INVALID_CUSTOMER_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-                        } else if (validateCustomerCode == -1) {
-                            responseEntity1 = new ResponseEntity(ReCAPConstants.INVALID_DELIVERY_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                         }
                     } else if (itemEntityList.size() > 1) {
                         bibliographicList = itemEntity.getBibliographicEntities();
@@ -138,29 +142,30 @@ public class ItemValidatorService {
             } else {
                 return new ResponseEntity(ReCAPConstants.INVALID_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
             }
-            int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation);
-            if (validateCustomerCode == 1) {
-                if (itemEntity.getBibliographicEntities().size() == bibliographicIds.size()) {
-                    bibliographicList = itemEntity.getBibliographicEntities();
-                    for (BibliographicEntity bibliographicEntity : bibliographicList) {
-                        Integer bibliographicId = bibliographicEntity.getBibliographicId();
-                        if (!bibliographicIds.contains(bibliographicId)) {
-                            return new ResponseEntity(ReCAPConstants.ITEMBARCODE_WITH_DIFFERENT_BIB, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-                        } else {
-                            status = ReCAPConstants.VALID_REQUEST;
+            if (!(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
+                int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation);
+                if (validateCustomerCode == 1) {
+                    if (itemEntity.getBibliographicEntities().size() == bibliographicIds.size()) {
+                        bibliographicList = itemEntity.getBibliographicEntities();
+                        for (BibliographicEntity bibliographicEntity : bibliographicList) {
+                            Integer bibliographicId = bibliographicEntity.getBibliographicId();
+                            if (!bibliographicIds.contains(bibliographicId)) {
+                                return new ResponseEntity(ReCAPConstants.ITEMBARCODE_WITH_DIFFERENT_BIB, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                            } else {
+                                status = ReCAPConstants.VALID_REQUEST;
+                            }
                         }
+                    } else {
+                        return new ResponseEntity(ReCAPConstants.ITEMBARCODE_WITH_DIFFERENT_BIB, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                     }
                 } else {
-                    return new ResponseEntity(ReCAPConstants.ITEMBARCODE_WITH_DIFFERENT_BIB, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-                }
-            } else {
-                if (validateCustomerCode == 0) {
-                    return new ResponseEntity(ReCAPConstants.INVALID_CUSTOMER_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-                } else if (validateCustomerCode == -1) {
-                    return new ResponseEntity(ReCAPConstants.INVALID_DELIVERY_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                    if (validateCustomerCode == 0) {
+                        return new ResponseEntity(ReCAPConstants.INVALID_CUSTOMER_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                    } else if (validateCustomerCode == -1) {
+                        return new ResponseEntity(ReCAPConstants.INVALID_DELIVERY_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                    }
                 }
             }
-
         }
         return new ResponseEntity(status, getHttpHeaders(), HttpStatus.OK);
     }
