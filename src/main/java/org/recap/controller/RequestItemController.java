@@ -139,7 +139,7 @@ public class RequestItemController {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
         String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
-        ItemInformationResponse itemInformation = (ItemInformationResponse) itemInformation(itemRequestInformation, itemRequestInformation.getItemOwningInstitution());
+        ItemInformationResponse itemInformation = (ItemInformationResponse) itemInformation(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
         if (itemInformation.getCirculationStatus().equalsIgnoreCase("ITEM_BARCODE_NOT_FOUND")) {
             itemCreateBibResponse = (ItemCreateBibResponse) jsipConectorFactory.getJSIPConnector(callInstitition).createBib(itembarcode, itemRequestInformation.getPatronBarcode(), itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getTitleIdentifier());
         }else{
@@ -161,7 +161,7 @@ public class RequestItemController {
         }
         String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
 
-        itemInformationResponse = (ItemInformationResponse) jsipConectorFactory.getJSIPConnector(callInstitition).lookupItem(itembarcode, itemRequestInformation.getSource());
+        itemInformationResponse = (ItemInformationResponse) jsipConectorFactory.getJSIPConnector(callInstitition).lookupItem(itembarcode);
         return itemInformationResponse;
     }
 

@@ -3,6 +3,7 @@ package org.recap.ils;
 import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
 import com.pkrete.jsip2.messages.responses.SIP2ItemInformationResponse;
 import com.pkrete.jsip2.util.MessageUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.recap.BaseTestCase;
 import org.recap.ils.model.response.*;
@@ -41,7 +42,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
     @Test
     public void lookupItem() throws Exception {
         String[] itemIdentifiers = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414","32101057972166"};
-        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)princetonESIPConnector.lookupItem(this.itemIdentifier,null);
+        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)princetonESIPConnector.lookupItem(this.itemIdentifier);
 
         logger.info("\n\n");
         logger.info("Item barcode           : " + itemInformationResponse.getItemBarcode());
@@ -54,6 +55,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
         assertEquals(this.itemIdentifier,itemInformationResponse.getItemBarcode());
     }
 
+    @Ignore
     @Test
     public void lookupItemStatus() throws Exception {
         String[] itemIdentifier = {"32101077423406", "32101061738587", "77777", "77777777777779", "PULTST54338"};

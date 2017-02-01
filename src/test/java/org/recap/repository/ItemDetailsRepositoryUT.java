@@ -34,7 +34,7 @@ public class ItemDetailsRepositoryUT extends BaseTestCase{
 
     @Test
     public void testItemDetails() throws Exception{
-        //BibliographicEntity savedBibliographicEntity = saveBibSingleHoldingsMultipleItem();
+        BibliographicEntity savedBibliographicEntity = saveBibSingleHoldingsMultipleItem();
         List<ItemEntity> itemEntityList = itemController.findByBarcodeIn("009,010");
         assertNotNull(itemEntityList);
         assertEquals(itemEntityList.size() , 2);

@@ -16,12 +16,14 @@ import org.recap.mqconsumer.RequestItemQueueConsumer;
 import org.recap.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -34,6 +36,8 @@ import java.util.List;
 public class ItemRequestService {
 
     private Logger logger = Logger.getLogger(RequestItemQueueConsumer.class);
+
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
     @Value("${ils.princeton.cul.patron}")
     private String princetonCULPatron;
@@ -84,7 +88,10 @@ public class ItemRequestService {
     @Autowired
     EmailService emailService;
 
-    public ItemInformationResponse requestItem(ItemRequestInformation itemRequestInfo,Exchange exchange) {
+    @Autowired
+    RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
+
+    public ItemInformationResponse requestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
         String messagePublish = "";
         boolean bsuccess = false;
@@ -93,6 +100,7 @@ public class ItemRequestService {
         RequestTypeEntity requestTypeEntity = new RequestTypeEntity();
         ItemInformationResponse itemResponseInformation = new ItemInformationResponse();
         ResponseEntity res = null;
+
         try {
             itemEntities = itemDetailsRepository.findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
@@ -101,14 +109,7 @@ public class ItemRequestService {
                 itemEntity = itemEntities.get(0);
                 itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
-
-                String useRestrictions = "No Restrictions";
-                if (itemEntity.getUseRestrictions() != null) {
-                    useRestrictions = itemEntity.getUseRestrictions();
-                }
-
-                itemRequestInfo.setTitleIdentifier("[" + useRestrictions + "] " + itemRequestInfo.getTitleIdentifier().toUpperCase() + ReCAPConstants.REQUEST_ITEM_TITLE_SUFFIX);
-                logger.info(itemRequestInfo.getTitleIdentifier());
+                itemRequestInfo.setTitleIdentifier(getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity));
                 // Validate Patron
                 res = requestItemValidatorController.validateItemRequestInformations(itemRequestInfo);
                 if (res.getStatusCode() == HttpStatus.OK) {
@@ -123,10 +124,10 @@ public class ItemRequestService {
                         messagePublish = itemResponseInformation.getScreenMessage();
 
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
-                        updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
+                        updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
                         updateGFA(itemRequestInfo, itemResponseInformation);
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT)) {
-                        updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
+                        updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
                         updateGFA(itemRequestInfo, itemResponseInformation);
                     }
                 } else {
@@ -150,9 +151,9 @@ public class ItemRequestService {
             itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
 
             // Update Topics
-            sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation,exchange);
-        }catch(RestClientException ex){
-            logger.error("RestClient : "+ ex.getMessage());
+            sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
+        } catch (RestClientException ex) {
+            logger.error("RestClient : " + ex.getMessage());
             ex.printStackTrace();
         } catch (Exception ex) {
             logger.error("Exception : " + ex.getMessage());
@@ -161,12 +162,11 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
-    public ItemInformationResponse recallItem(ItemRequestInformation itemRequestInfo,Exchange exchange) {
+    public ItemInformationResponse recallItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
         String messagePublish = "";
         boolean bsuccess = false;
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
-        RequestTypeEntity requestTypeEntity = new RequestTypeEntity();
         ItemInformationResponse itemResponseInformation = new ItemInformationResponse();
         try {
             itemEntities = itemDetailsRepository.findByBarcodeIn(itemRequestInfo.getItemBarcodes());
@@ -174,14 +174,14 @@ public class ItemRequestService {
             if (itemEntities != null && itemEntities.size() > 0) {
                 logger.info("Item Exists in SCSB Database");
                 itemEntity = itemEntities.get(0);
-                itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getBibliographicId().toString());
+                itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
                 // Validate Patron
                 ResponseEntity res = requestItemValidatorController.validateItemRequestInformations(itemRequestInfo);
                 if (res.getStatusCode() == HttpStatus.OK) {
                     logger.info("Request Validation Successful");
                     // Check if Request Item  for any existint request
-                    itemResponseInformation =checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
+                    itemResponseInformation = checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity);
                     messagePublish = itemResponseInformation.getScreenMessage();
                     bsuccess = true;
                 } else {
@@ -205,7 +205,7 @@ public class ItemRequestService {
             itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
 
             // Update Topics
-            sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation,exchange);
+            sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
             logger.error("RestClient : " + ex.getMessage());
             ex.printStackTrace();
@@ -217,27 +217,79 @@ public class ItemRequestService {
     }
 
     public boolean reFileItem(ItemRefileRequest itemRefileRequest) {
+
+        // Change Response for this Method
         boolean bSuccess = false;
         List<ItemEntity> itemEntities = null;
+        String ItemBarcode = itemRefileRequest.getItemBarcodes().get(0);
+        RequestItemEntity requestItemEntity = null;
 
-        itemEntities = itemDetailsRepository.findByBarcodeIn(itemRefileRequest.getItemBarcodes());
-        if (itemEntities != null && itemEntities.size() > 0) {
-            for (int i = 0; i < itemEntities.size(); i++) {
-                ItemEntity itemEntity = itemEntities.get(i);
-                if(itemEntity.getItemAvailabilityStatusId().intValue() == 2) {
-                    rollbackUpdateItemAvailabilutyStatus(itemEntity);
-                    updateSolrIndex(itemEntity);
-                    bSuccess = true;
-                }else{
-                    bSuccess = false;
-                }
+        RequestItemEntity requestItemEntityRecalled = requestItemDetailsRepository.findByItemBarcodeAndRequestStaCode(ItemBarcode, ReCAPConstants.REQUEST_STATUS_RECALLED);
+        if (requestItemEntityRecalled == null) { // Recal Request Does not Exist
+            requestItemEntity = requestItemDetailsRepository.findByItemBarcodeAndRequestStaCode(ItemBarcode, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+            if (requestItemEntity != null) {  // Check Retrival Order
+                bSuccess = updateItemStatus_SolrIndexing(itemEntities, itemRefileRequest);
+            }
+        } else { // Recall Request Exist
+            requestItemEntity = requestItemDetailsRepository.findByItemBarcodeAndRequestStaCode(ItemBarcode, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+            if (requestItemEntity.getRequestingInstitutionId().intValue() == requestItemEntity.getItemEntity().getOwningInstitutionId().intValue()) { // Borrowing Inst same as Owning
+                RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_REFILED);
+                requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+                requestItemEntityRecalled.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+                requestItemDetailsRepository.save(requestItemEntity);
+                requestItemDetailsRepository.save(requestItemEntityRecalled);
+                rollbackUpdateItemAvailabilutyStatus(requestItemEntity.getItemEntity());
+                updateSolrIndex(requestItemEntity.getItemEntity());
+                bSuccess = true;
+            } else { // Borrowing Inst not same as Owning
+                // New Request for Retival
+                RequestItemEntity requestItemEntityNew = new RequestItemEntity();
+                requestItemEntityNew.setItemId(requestItemEntity.getItemId());
+                requestItemEntityNew.setRequestingInstitutionId(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionId());
+                requestItemEntityNew.setRequestTypeId(requestItemEntity.getRequestTypeId());
+                requestItemEntityNew.setRequestExpirationDate(requestItemEntity.getRequestExpirationDate());
+                requestItemEntityNew.setCreatedBy(ReCAPConstants.GUEST_USER);
+                requestItemEntityNew.setCreatedDate(new Date());
+                requestItemEntityNew.setLastUpdatedDate(new Date());
+                requestItemEntityNew.setPatronId(requestItemEntity.getPatronId());
+                requestItemEntityNew.setStopCode(requestItemEntity.getStopCode());
+                requestItemEntityNew.setRequestStatusId(requestItemEntity.getRequestStatusId());
+
+                // Change Retrieval Status
+                requestItemEntity.getRequestStatusEntity().setRequestStatusCode(ReCAPConstants.REQUEST_STATUS_REFILED);
+                requestItemDetailsRepository.save(requestItemEntity);
+                // Change Existing Recall to RECALL_RETRIEVAL_ORDER_PLACED
+                requestItemEntityRecalled.getRequestStatusEntity().setRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RECALL_RETRIEVAL_ORDER_PLACED);
+                requestItemDetailsRepository.save(requestItemEntityRecalled);
+                // Create New Retival Order
+
+                requestItemDetailsRepository.save(requestItemEntityRecalled);
+
+                requestItemDetailsRepository.save(requestItemEntityNew);
+
+                bSuccess = true;
             }
         }
+        if (requestItemEntity != null) {
+            ItemRequestInformation itemRequestInfo = new ItemRequestInformation();
+            itemRequestInfo.setItemBarcodes(itemRefileRequest.getItemBarcodes());
 
+            itemRequestInfo.setItemOwningInstitution(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
+            itemRequestInfo.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
+
+            if (itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
+                itemRequestInfo.setPatronBarcode(requestItemEntity.getPatronEntity().getInstitutionIdentifier());
+                requestItemController.checkinItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+            }
+            if (!itemRequestInfo.isOwningInstitutionItem() && (itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.NYPL) || itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON))) {
+                itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getItemOwningInstitution()));
+                requestItemController.checkinItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
+            }
+        }
         return bSuccess;
     }
 
-    private void sendMessageToTopic(String owningInstituteId, String requestType, ItemInformationResponse itemResponseInfo,Exchange exchange) {
+    private void sendMessageToTopic(String owningInstituteId, String requestType, ItemInformationResponse itemResponseInfo, Exchange exchange) {
         String selectTopic = ReCAPConstants.PUL_REQUEST_TOPIC;
         if (owningInstituteId.equalsIgnoreCase(ReCAPConstants.PRINCETON) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
             selectTopic = ReCAPConstants.PUL_REQUEST_TOPIC;
@@ -270,7 +322,7 @@ public class ItemRequestService {
         fluentProducerTemplate.send();
     }
 
-    private Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity) {
+    private Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity, String requestStatusCode) {
 
         RequestItemEntity requestItemEntity = new RequestItemEntity();
         PatronEntity patronEntity = null;
@@ -278,10 +330,10 @@ public class ItemRequestService {
         PatronEntity savedPatronEntity = null;
         RequestItemEntity savedItemRequest = null;
         try {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd    HHmmss");
 
             // Patron Information
             patronEntity = patronDetailsRepository.findByInstitutionIdentifier(itemRequestInformation.getPatronBarcode());
+            RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(requestStatusCode);
             if (patronEntity == null) {
                 patronEntity = new PatronEntity();
                 patronEntity.setInstitutionIdentifier(itemRequestInformation.getPatronBarcode());
@@ -295,30 +347,37 @@ public class ItemRequestService {
             requestItemEntity.setItemId(itemEntity.getItemId());
             requestItemEntity.setRequestingInstitutionId(itemEntity.getInstitutionEntity().getInstitutionId());
             requestItemEntity.setRequestTypeId(requestTypeEntity.getRequestTypeId());
-            if (StringUtils.isNotBlank(itemRequestInformation.getExpirationDate())) {
-                requestItemEntity.setRequestExpirationDate(simpleDateFormat.parse(itemRequestInformation.getExpirationDate()));
+            if (ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInformation.getRequestingInstitution())) {
+                DateFormat dateFormatter = new SimpleDateFormat(ReCAPConstants.NYPL_HOLD_DATE_FORMAT);
+                requestItemEntity.setRequestExpirationDate(dateFormatter.parse(itemRequestInformation.getExpirationDate()));
+            } else {
+                if (itemRequestInformation.getExpirationDate() != null && itemRequestInformation.getExpirationDate().trim().length() > 0) {
+                    requestItemEntity.setRequestExpirationDate(simpleDateFormat.parse(itemRequestInformation.getExpirationDate()));
+                }
             }
+            requestItemEntity.setCreatedBy(ReCAPConstants.GUEST_USER);
             requestItemEntity.setCreatedDate(new Date());
             requestItemEntity.setLastUpdatedDate(new Date());
             requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
-            requestItemEntity.setStopCode("PA");
+            requestItemEntity.setStopCode(itemRequestInformation.getDeliveryLocation());
+            requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
 
             savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
             saveItemChangeLogEntity(savedItemRequest.getRequestId(), "Guest", "Request Item Insert", savedItemRequest.getItemId() + " - " + savedItemRequest.getPatronId());
 
             logger.info("SCSB DB Update Successful");
         } catch (ParseException e) {
-            logger.error(e);
+            logger.error("ParseException : ", e);
         } catch (Exception e) {
-            logger.error(e);
+            logger.error("Exception", e);
             e.printStackTrace();
         }
         return savedItemRequest.getRequestId();
     }
 
     private void updateItemAvailabilutyStatus(List<ItemEntity> itemEntities) {
-        for( int i = 0;i<itemEntities.size (); i++){
-            ItemEntity itemEntity =  itemEntities.get(i);
+        for (int i = 0; i < itemEntities.size(); i++) {
+            ItemEntity itemEntity = itemEntities.get(i);
             itemEntity.setItemAvailabilityStatusId(2);
             saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE);
         }
@@ -333,6 +392,24 @@ public class ItemRequestService {
         saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK);
     }
 
+    private boolean updateItemStatus_SolrIndexing(List<ItemEntity> itemEntities, ItemRefileRequest itemRefileRequest) {
+        boolean bSuccess = false;
+        itemEntities = itemDetailsRepository.findByBarcodeIn(itemRefileRequest.getItemBarcodes());
+        if (itemEntities != null && itemEntities.size() > 0) {
+            for (int i = 0; i < itemEntities.size(); i++) {
+                ItemEntity itemEntity = itemEntities.get(i);
+                if (itemEntity.getItemAvailabilityStatusId().intValue() == 2) {
+                    rollbackUpdateItemAvailabilutyStatus(itemEntity);
+                    updateSolrIndex(itemEntity);
+                    bSuccess = true;
+                } else {
+                    bSuccess = false;
+                }
+            }
+        }
+        return bSuccess;
+    }
+
     private void updateGFA(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         ObjectMapper objectMapper = new ObjectMapper();
         String json = "";
@@ -345,39 +422,19 @@ public class ItemRequestService {
         }
     }
 
-    private ItemInformationResponse checkOwningInstitutionRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity) {
-        String messagePublish = "";
-        boolean bsuccess = false;
-        // Check Item Information
-        ItemInformationResponse itemInformation = (ItemInformationResponse) requestItemController.itemInformation(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
-        if (itemInformation.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_CHARGED)) {
-            setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
-            ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
-            if (itemHoldResponse.isSuccess()) { // IF Hold command is successfully
-                itemResponseInformation = checkInstAfterPlacingHoldforRecall(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
-            } else { // If Hold command Failure
-                messagePublish = itemHoldResponse.getScreenMessage();
-                bsuccess = false;
-                rollbackUpdateItemAvailabilutyStatus(itemEntity);
-                saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, itemHoldResponse.getPatronIdentifier() + " - " + itemHoldResponse.getScreenMessage());
-            }
-        } else {
-            messagePublish = "Recall Cannot be processed, the item is not checked out in ILS";
-            bsuccess = false;
-        }
-        itemResponseInformation.setScreenMessage(messagePublish);
-        itemResponseInformation.setSuccess(bsuccess);
-        return itemResponseInformation;
-    }
-
     private ItemInformationResponse checkOwningInstitution(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity) {
         String messagePublish = "";
         boolean bsuccess = false;
+        String deliveryCode = "";
         try {
             if (itemRequestInfo.isOwningInstitutionItem()) {
+                deliveryCode = itemRequestInfo.getDeliveryLocation();
                 setpickupLoacation(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
                 ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
                 if (itemHoldResponse.isSuccess()) { // IF Hold command is successfully
+                    itemResponseInformation.setExpirationDate(itemHoldResponse.getExpirationDate());
+                    itemRequestInfo.setExpirationDate(itemHoldResponse.getExpirationDate());
+                    itemRequestInfo.setDeliveryLocation(deliveryCode);
                     itemResponseInformation = checkInstAfterPlacingRequest(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
                     messagePublish = itemResponseInformation.getScreenMessage();
                 } else { // If Hold command Failure
@@ -386,16 +443,20 @@ public class ItemRequestService {
                     rollbackUpdateItemAvailabilutyStatus(itemEntity);
                     saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, itemHoldResponse.getPatronIdentifier() + " - " + itemHoldResponse.getScreenMessage());
                 }
+
             } else {// Not the Owning Institute
                 ItemCreateBibResponse createBibResponse = new ItemCreateBibResponse();
                 if (!ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
                     createBibResponse = (ItemCreateBibResponse) requestItemController.createBibliogrphicItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                 }
                 if (createBibResponse.isSuccess() || ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
-                    itemRequestInfo.setBibId(createBibResponse.getBibId());
+                    deliveryCode = itemRequestInfo.getDeliveryLocation();
                     setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                     ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                     if (itemHoldResponse.isSuccess()) {
+                        itemResponseInformation.setExpirationDate(itemHoldResponse.getExpirationDate());
+                        itemRequestInfo.setExpirationDate(itemHoldResponse.getExpirationDate());
+                        itemRequestInfo.setDeliveryLocation(deliveryCode);
                         itemResponseInformation = checkInstAfterPlacingRequest(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
                         bsuccess = true;
                         messagePublish = itemResponseInformation.getScreenMessage();
@@ -405,6 +466,7 @@ public class ItemRequestService {
                         rollbackUpdateItemAvailabilutyStatus(itemEntity);
                         saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, itemHoldResponse.getPatronIdentifier() + " - " + itemHoldResponse.getScreenMessage());
                     }
+
                 } else {
                     messagePublish = createBibResponse.getScreenMessage();
                     bsuccess = false;
@@ -428,7 +490,7 @@ public class ItemRequestService {
         boolean bsuccess = false;
         if (itemRequestInfo.isOwningInstitutionItem()) {
             // Update Recap DB
-            Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
+            Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
             itemResponseInformation.setRequestId(requestId);
             messagePublish = "Successfully Processed Request Item";
             bsuccess = true;
@@ -439,11 +501,10 @@ public class ItemRequestService {
                 AbstractResponseItem checkoutItemResponse = requestItemController.checkoutItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
             }
             // Update Recap DB
-            Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
+            Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
             itemResponseInformation.setRequestId(requestId);
             messagePublish = "Successfully Processed Request Item";
             bsuccess = true;
-
             itemRequestInfo.setPatronBarcode(requestingPatron);
         }
         if (bsuccess) {
@@ -454,34 +515,93 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
-    private ItemInformationResponse checkInstAfterPlacingHoldforRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity) {
+    private ItemInformationResponse checkOwningInstitutionRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
         String messagePublish = "";
+        String deliveryCode = "";
         boolean bsuccess = false;
-        if (itemRequestInfo.isOwningInstitutionItem()) {
-            ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
-            if (itemRecallResponse.isSuccess()) {
-                // Update Recap DB
-                Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
-                itemResponseInformation.setRequestId(requestId);
-                messagePublish = "Successfully Processed Request Item";
-                bsuccess = true;
-                updateGFA(itemRequestInfo, itemResponseInformation);
-            } else {
-                if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
-                    messagePublish = itemRecallResponse.getScreenMessage();
+        RequestTypeEntity requestTypeEntity = null;
+
+        RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByItemBarcodeAndRequestStaCode(itemRequestInfo.getItemBarcodes().get(0), ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+        ItemInformationResponse itemInformation = (ItemInformationResponse) requestItemController.itemInformation(itemRequestInfo, requestItemEntity.getInstitutionEntity().getInstitutionCode());
+        if (itemInformation.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_CHARGED)) {
+            if (requestItemEntity.getInstitutionEntity().getInstitutionCode().equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
+                deliveryCode = itemRequestInfo.getDeliveryLocation();
+                setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
+                itemRequestInfo.setDeliveryLocation(deliveryCode);
+                if (itemRecallResponse.isSuccess()) {
+                    // Update Recap DB
+                    requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
+                    itemResponseInformation.setExpirationDate(itemRecallResponse.getExpirationDate());
+                    itemRequestInfo.setExpirationDate(itemRecallResponse.getExpirationDate());
+                    Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
+                    itemResponseInformation.setRequestId(requestId);
+                    messagePublish = "Successfully Processed Request Item";
+                    bsuccess = true;
+                    updateGFA(itemRequestInfo, itemResponseInformation);
                 } else {
-                    messagePublish = "Recall failed from ILS";
+                    if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
+                        messagePublish = itemRecallResponse.getScreenMessage();
+                    } else {
+                        messagePublish = "Recall failed from ILS";
+                    }
+                    bsuccess = false;
                 }
-                bsuccess = false;
+            } else {
+                deliveryCode = itemRequestInfo.getDeliveryLocation();
+                setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                if (itemHoldResponse.isSuccess()) { // IF Hold command is successfully
+                    itemResponseInformation.setExpirationDate(itemHoldResponse.getExpirationDate());
+                    itemRequestInfo.setExpirationDate(itemHoldResponse.getExpirationDate());
+                    itemRequestInfo.setDeliveryLocation(deliveryCode);
+
+                    deliveryCode = itemRequestInfo.getDeliveryLocation();
+                    setpickupLoacation(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                    ItemRecallResponse itemRecallResponse = (ItemRecallResponse) requestItemController.recallItem(itemRequestInfo, requestItemEntity.getInstitutionEntity().getInstitutionCode());
+                    itemRequestInfo.setDeliveryLocation(deliveryCode);
+                    if (itemRecallResponse.isSuccess()) {
+                        // Update Recap DB
+                        requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
+                        Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
+                        itemResponseInformation.setRequestId(requestId);
+                        messagePublish = "Successfully Processed Request Item";
+                        bsuccess = true;
+                    } else {
+                        if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
+                            messagePublish = itemRecallResponse.getScreenMessage();
+                        } else {
+                            messagePublish = "Recall failed from ILS";
+                        }
+                        bsuccess = false;
+                    }
+                } else { // If Hold command Failure
+                    messagePublish = itemHoldResponse.getScreenMessage();
+                    bsuccess = false;
+                    saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, itemHoldResponse.getPatronIdentifier() + " - " + itemHoldResponse.getScreenMessage());
+                }
             }
+        } else {
+            messagePublish = "Recall Cannot be processed, the item is not checked out in ILS";
+            bsuccess = false;
+        }
+        itemResponseInformation.setScreenMessage(messagePublish);
+        itemResponseInformation.setSuccess(bsuccess);
+        return itemResponseInformation;
+    }
+
+    private ItemInformationResponse checkInstAfterPlacingHoldforRecall(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
+        String messagePublish = "";
+        String deliveryCode = "";
+        boolean bsuccess = false;
+        RequestTypeEntity requestTypeEntity = null;
+        if (itemRequestInfo.isOwningInstitutionItem()) {
+
         } else { // Item does not belong to requesting Institute
-            //Send Mail
-            emailService.RecalEmail(itemRequestInfo.getRequestingInstitution(),itemRequestInfo.getItemBarcodes().get(0),itemRequestInfo.getTitleIdentifier(),itemRequestInfo.getPatronBarcode());
-            // Update Recap DB
-            Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity);
-            itemResponseInformation.setRequestId(requestId);
-            messagePublish = "Successfully Processed Request Item";
-            bsuccess = true;
+
+            // Send Mail
+            emailService.RecalEmail(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getItemBarcodes().get(0), itemRequestInfo.getTitleIdentifier(), itemRequestInfo.getPatronBarcode());
+
         }
         if (bsuccess) {
             updateSolrIndex(itemEntity);
@@ -515,11 +635,11 @@ public class ItemRequestService {
             } else if (requestingInstitution.equalsIgnoreCase(ReCAPConstants.NYPL)) {
                 patronId = columbiaNYPLPatron;
             }
-        }else if(OwningInstitution.equalsIgnoreCase(ReCAPConstants.NYPL)){
-            if(requestingInstitution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
-                patronId=nyplPrincetonPatron;
-            }else if(requestingInstitution.equalsIgnoreCase(ReCAPConstants.NYPL)) {
-                patronId=nyplColumbiaPatron;
+        } else if (OwningInstitution.equalsIgnoreCase(ReCAPConstants.NYPL)) {
+            if (requestingInstitution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
+                patronId = nyplPrincetonPatron;
+            } else if (requestingInstitution.equalsIgnoreCase(ReCAPConstants.NYPL)) {
+                patronId = nyplColumbiaPatron;
             }
         }
         logger.info(patronId);
@@ -528,28 +648,63 @@ public class ItemRequestService {
 
     private void setpickupLoacation(ItemRequestInformation itemRequestInfo, String institution) {
         if (institution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
-            itemRequestInfo.setDeliveryLocation("rcpcirc");
+            itemRequestInfo.setDeliveryLocation(ReCAPConstants.DEFAULT_PICK_UP_LOCATION_PUL);
         } else if (institution.equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
-            itemRequestInfo.setDeliveryLocation("CIRCrecap");
+            itemRequestInfo.setDeliveryLocation(ReCAPConstants.DEFAULT_PICK_UP_LOCATION_CUL);
+        } else if (institution.equalsIgnoreCase(ReCAPConstants.NYPL)) {
+            itemRequestInfo.setDeliveryLocation(ReCAPConstants.DEFAULT_PICK_UP_LOCATION_NYPL);
         }
     }
 
     private void updateSolrIndex(ItemEntity itemEntity) {
-
-        String statusResponse = null;
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity<>(getHttpHeaders());
-
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(serverProtocol + scsbSolrClientUrl + ReCAPConstants.UPDATE_ITEM_STATUS_SOLR)
-                    .queryParam(ReCAPConstants.UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID, itemEntity.getBarcode());
-
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(serverProtocol + scsbSolrClientUrl + ReCAPConstants.UPDATE_ITEM_STATUS_SOLR).queryParam(ReCAPConstants.UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID, itemEntity.getBarcode());
             ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
-            statusResponse = responseEntity.getBody();
-            logger.info(statusResponse);
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error("Exception : ", e);
         }
+    }
+
+    private List<SearchResultRow> searchRecords(ItemEntity itemEntity) {
+        List<SearchResultRow> statusResponse = null;
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpEntity requestEntity = new HttpEntity<>(getHttpHeaders());
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(serverProtocol + scsbSolrClientUrl + ReCAPConstants.SEARCH_RECORDS_SOLR)
+                    .queryParam(ReCAPConstants.SEARCH_RECORDS_SOLR_PARAM_FIELD_NAME, ReCAPConstants.SEARCH_RECORDS_SOLR_PARAM_FIELD_NAME_VALUE)
+                    .queryParam(ReCAPConstants.SEARCH_RECORDS_SOLR_PARAM_FIELD_VALUE, itemEntity.getBarcode());
+            ResponseEntity<List<SearchResultRow>> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, new ParameterizedTypeReference<List<SearchResultRow>>() {
+            });
+            statusResponse = responseEntity.getBody();
+        } catch (Exception e) {
+            logger.error("Exception : ", e);
+        }
+        return statusResponse;
+    }
+
+    private String getTitle(String title, ItemEntity itemEntity) {
+        String titleIdentifier = "";
+        String useRestrictions = "No Restrictions";
+        try {
+            if (itemEntity.getUseRestrictions() != null) {
+                useRestrictions = itemEntity.getUseRestrictions();
+            }
+            if (!(title != null && title.trim().length() > 0)) {
+                List<SearchResultRow> searchRecordsResponse = searchRecords(itemEntity);
+                title = searchRecordsResponse.get(0).getTitle();
+            }
+
+            if (title.trim().length() > 126) {
+                title.toUpperCase().substring(126);
+            }
+            titleIdentifier = "[" + useRestrictions + "] " + title.toUpperCase() + ReCAPConstants.REQUEST_ITEM_TITLE_SUFFIX;
+            logger.info(titleIdentifier);
+        } catch (Exception e) {
+            logger.error("Exception : ", e);
+        }
+        return titleIdentifier;
     }
 
     private HttpHeaders getHttpHeaders() {

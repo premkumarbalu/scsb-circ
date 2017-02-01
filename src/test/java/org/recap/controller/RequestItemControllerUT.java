@@ -38,7 +38,7 @@ public class RequestItemControllerUT extends BaseTestCase {
     @Test
     public void testCheckoutItemRequest() {
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
-        itemRequestInformation.setItemBarcodes(Arrays.asList("32101095533293"));
+        itemRequestInformation.setItemBarcodes(Arrays.asList("423423423423"));
         itemRequestInformation.setPatronBarcode("198572368");
         itemRequestInformation.setRequestingInstitution("PUL");
 

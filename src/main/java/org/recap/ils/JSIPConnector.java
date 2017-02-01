@@ -92,7 +92,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
     public abstract String getOperatorLocation();
 
-    public AbstractResponseItem lookupItem(String itemIdentifier, String source) {
+    public AbstractResponseItem lookupItem(String itemIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2ItemInformationResponse sip2ItemInformationResponse = null;
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
@@ -576,7 +576,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
     private String formatFromSipDate(String sipDate) {
         SimpleDateFormat sipFormat = new SimpleDateFormat("yyyyMMdd    HHmmss");
-        SimpleDateFormat requiredFormat = new SimpleDateFormat("dd-MMM-YYYY HH:mm:ss");
+        SimpleDateFormat requiredFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         String reformattedStr = "";
         try {
             if (sipDate != null && sipDate.trim().length() > 0) {

@@ -1,4 +1,4 @@
-package org.recap.ils;
+package org.recap.ils.service;
 
 import org.junit.Test;
 import org.recap.BaseTestCase;
