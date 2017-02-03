@@ -47,47 +47,61 @@ public class CancelItemController {
 
         try {
             RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(requestId);
-            ItemEntity itemEntity = requestItemEntity.getItemEntity();
+            if (requestItemEntity != null) {
+                if (requestItemEntity.getRequestStatusEntity().getRequestStatusCode().equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED) || requestItemEntity.getRequestStatusEntity().getRequestStatusCode().equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_RECALL_RETRIEVAL_ORDER_PLACED)) {
+                    ItemEntity itemEntity = requestItemEntity.getItemEntity();
 
-            ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
-            itemRequestInformation.setItemBarcodes(Arrays.asList(itemEntity.getBarcode()));
-            itemRequestInformation.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
-            itemRequestInformation.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
+                    ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
+                    itemRequestInformation.setItemBarcodes(Arrays.asList(itemEntity.getBarcode()));
+                    itemRequestInformation.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
+                    itemRequestInformation.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
 
-            itemRequestInformation.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
-            itemRequestInformation.setRequestingInstitution(requestItemEntity.getPatronEntity().getInstitutionIdentifier());
-            itemRequestInformation.setDeliveryLocation(requestItemEntity.getStopCode());
+                    itemRequestInformation.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
+                    itemRequestInformation.setPatronBarcode(requestItemEntity.getPatronEntity().getInstitutionIdentifier());
+                    itemRequestInformation.setDeliveryLocation(requestItemEntity.getStopCode());
 
-            ItemInformationResponse itemInformationResponse = (ItemInformationResponse) requestItemController.itemInformation(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
-            int iholdQueue = 0;
-            if (itemInformationResponse.getHoldQueueLength().trim().length() > 0) {
-                iholdQueue = Integer.parseInt(itemInformationResponse.getHoldQueueLength());
-            }
-            if (iholdQueue > 0 && (itemInformationResponse.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_OTHER) || itemInformationResponse.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_IN_TRANSIT))) {
-                itemCanceHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
-                if (itemCanceHoldResponse.isSuccess()) {
-                    if (!itemRequestInformation.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
-                        itemCheckinResponse = (ItemCheckinResponse) requestItemController.checkinItem(itemRequestInformation, itemRequestInformation.getItemOwningInstitution());
+                    ItemInformationResponse itemInformationResponse = (ItemInformationResponse) requestItemController.itemInformation(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
+                    int iholdQueue = 0;
+                    if (itemInformationResponse.getHoldQueueLength().trim().length() > 0) {
+                        iholdQueue = Integer.parseInt(itemInformationResponse.getHoldQueueLength());
                     }
-                    RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
-                    requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                    if(requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
-                        requestItemEntity.getItemEntity().setItemAvailabilityStatusId(1);
+                    if (iholdQueue > 0 && (itemInformationResponse.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_OTHER) || itemInformationResponse.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_IN_TRANSIT))) {
+                        itemCanceHoldResponse = (ItemHoldResponse) requestItemController.cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
+                        if (itemCanceHoldResponse.isSuccess()) {
+                            if (!itemRequestInformation.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
+                                requestItemController.checkinItem(itemRequestInformation, itemRequestInformation.getItemOwningInstitution());
+                            }
+                            RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
+                            requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+                            if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
+                                requestItemEntity.getItemEntity().setItemAvailabilityStatusId(1);
+                            }
+                            requestItemStatusDetailsRepository.save(requestStatusEntity);
+                            bSuccess = true;
+                            screenMessage = "Request cancellation succcessfully processed";
+                        } else {
+                            bSuccess = false;
+                            screenMessage = "Cancel hold request failed from ILS";
+                        }
+                    } else {
+                        bSuccess = false;
+                        screenMessage = "This Request cannot be canceled, this item is not on hold in ILS";
                     }
-                    bSuccess = true;
-                    screenMessage = "Request cancellation succcessfully processed";
                 } else {
                     bSuccess = false;
-                    screenMessage = "Cancel hold request failed from ILS";
+                    screenMessage = "RequestId is not active status to be canceled";
                 }
             } else {
                 bSuccess = false;
-                screenMessage = "Hold queue length in ILS is zero or empty";
+                screenMessage = "RequestId does not exist";
             }
+        } catch (Exception e) {
+            bSuccess = false;
+            screenMessage = e.getMessage();
+            logger.error("Exception: ", e);
+        } finally {
             cancelRequestResponse.setSuccess(bSuccess);
             cancelRequestResponse.setScreenMessage(screenMessage);
-        } catch (Exception e) {
-            logger.error("Exception: ", e);
         }
         return cancelRequestResponse;
     }

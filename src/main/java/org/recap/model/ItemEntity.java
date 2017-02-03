@@ -89,10 +89,6 @@ public class ItemEntity implements Serializable {
     @ManyToMany(mappedBy = "itemEntities",fetch = FetchType.EAGER)
     private List<BibliographicEntity> bibliographicEntities;
 
-    public ItemEntity() {
-    }
-
-
     public Integer getItemId() {
         return itemId;
     }
