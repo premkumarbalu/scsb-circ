@@ -63,7 +63,9 @@ public class PatronDetailsRepositoryUT extends BaseTestCase {
         requestItemEntity.setRequestingInstitutionId(1);
         requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
         requestItemEntity.setStopCode("test");
+        requestItemEntity.setCreatedBy("test");
         requestItemEntity.setCreatedDate(new Date());
+        requestItemEntity.setLastUpdatedDate(new Date());
         requestItemEntity.setRequestExpirationDate(new Date());
         requestItemEntity.setRequestExpirationDate(new Date());
         requestItemEntity.setRequestStatusId(4);
