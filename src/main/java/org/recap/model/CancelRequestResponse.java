@@ -3,19 +3,9 @@ package org.recap.model;
 /**
  * Created by sudhishk on 15/12/16.
  */
-public class ItemRefileResponse {
-
-    private Integer requestId;
+public class CancelRequestResponse {
     private String screenMessage;
     private boolean success;
-
-    public Integer getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(Integer requestId) {
-        this.requestId = requestId;
-    }
 
     public String getScreenMessage() {
         return screenMessage;

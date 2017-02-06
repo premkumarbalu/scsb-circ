@@ -15,6 +15,7 @@ public class jmsConsumer implements MessageListener{
 
     private static String dev_BrokerURL = "tcp://192.168.55.210:61616";
     private static String tst_BrokerURL = "tcp://tst-recap.htcinc.com:61616";
+    private static String uat_BrokerURL = "tcp://uat-recap.htcinc.com:61616";
 
 
     public static void main(String[] args) throws Exception{

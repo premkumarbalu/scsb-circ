@@ -14,7 +14,6 @@ public class ItemResponseInformation {
     private String requestingInstitution;
     private String bibliographicId;
     private String expirationDate;
-    private String itemId;
     private String screenMessage;
     private boolean success;
     private String emailAddress;
@@ -79,14 +78,6 @@ public class ItemResponseInformation {
 
     public void setExpirationDate(String expirationDate) {
         this.expirationDate = expirationDate;
-    }
-
-    public String getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
     }
 
     public String getScreenMessage() {

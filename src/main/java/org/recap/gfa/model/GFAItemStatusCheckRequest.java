@@ -1,17 +1,19 @@
 package org.recap.gfa.model;
 
+import java.util.List;
+
 /**
- * Created by sudhishk on 8/12/16.
+ * Created by sudhishk on 27/1/17.
  */
 public class GFAItemStatusCheckRequest {
 
-    private String itemBarcode;
+    public List<GFAItemStatus> itemStatus;
 
-    public String getItemBarcode() {
-        return itemBarcode;
+    public List<GFAItemStatus> getItemStatus() {
+        return itemStatus;
     }
 
-    public void setItemBarcode(String itemBarcode) {
-        this.itemBarcode = itemBarcode;
+    public void setItemStatus(List<GFAItemStatus> itemStatus) {
+        this.itemStatus = itemStatus;
     }
 }

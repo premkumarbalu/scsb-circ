@@ -41,18 +41,21 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void lookupItem() throws Exception {
-        String[] itemIdentifiers = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414","32101057972166"};
-        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)princetonESIPConnector.lookupItem(this.itemIdentifier);
+        String[] itemIdentifiers = {"PULTST54321", "PULTST54322", "PULTST54323", "PULTST54324", "PULTST54325","PULTST54326","PULTST54334","PULTST54335","PULTST54337","PULTST54338","PULTST54339","PULTST54340"};
+        for( int i = 0;i<itemIdentifiers.length ;i++){
+            String identifier = itemIdentifiers[i];
+            ItemInformationResponse itemInformationResponse = (ItemInformationResponse)princetonESIPConnector.lookupItem(identifier);
 
-        logger.info("\n\n");
-        logger.info("Item barcode           : " + itemInformationResponse.getItemBarcode());
-        logger.info("Circulation Status     : " + itemInformationResponse.getCirculationStatus());
-        logger.info("SecurityMarker         : " + itemInformationResponse.getSecurityMarker());
-        logger.info("Fee Type               : " + itemInformationResponse.getFeeType());
-        logger.info("Transaction Date       : " + itemInformationResponse.getTransactionDate());
-        logger.info("Hold Queue Length (CF) : " + itemInformationResponse.getHoldQueueLength());
+            logger.info("\n\n");
+            logger.info("Item barcode           : " + itemInformationResponse.getItemBarcode());
+            logger.info("Circulation Status     : " + itemInformationResponse.getCirculationStatus());
+            logger.info("SecurityMarker         : " + itemInformationResponse.getSecurityMarker());
+            logger.info("Fee Type               : " + itemInformationResponse.getFeeType());
+            logger.info("Transaction Date       : " + itemInformationResponse.getTransactionDate());
+            logger.info("Hold Queue Length (CF) : " + itemInformationResponse.getHoldQueueLength());
+        }
 
-        assertEquals(this.itemIdentifier,itemInformationResponse.getItemBarcode());
+//        assertEquals(this.itemIdentifier,itemInformationResponse.getItemBarcode());
     }
 
     @Ignore
@@ -148,9 +151,9 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void createBib() throws Exception {
-        String itemIdentifier = "444444444444";
+        String itemIdentifier = " CU69277435";
         String patronIdentifier = "45678915";
-        String titleIdentifier = "RECAP TEST TITLE - 003";
+        String titleIdentifier = "";
         String institutionId = "htccul";
         ItemCreateBibResponse itemCreateBibResponse = princetonESIPConnector.createBib(itemIdentifier, patronIdentifier, institutionId, titleIdentifier);
 

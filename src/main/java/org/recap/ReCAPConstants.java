@@ -53,14 +53,14 @@ public class ReCAPConstants {
     public static final String REQUEST_RECALL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
 
     // Retrieval,EDD, Hold, Recall, Borrow Direct
-    public static final String REQUEST_TYPE_RETRIEVAL="RETRIEVAL";
-    public static final String REQUEST_TYPE_EDD="EDD";
-    public static final String REQUEST_TYPE_RECALL="RECALL";
-    public static final String REQUEST_TYPE_BORROW_DIRECT="BORROW DIRECT";
+    public static final String REQUEST_TYPE_RETRIEVAL = "RETRIEVAL";
+    public static final String REQUEST_TYPE_EDD = "EDD";
+    public static final String REQUEST_TYPE_RECALL = "RECALL";
+    public static final String REQUEST_TYPE_BORROW_DIRECT = "BORROW DIRECT";
 
     // MQ URI
     public static final String REQUEST_ITEM_QUEUE = "scsbactivemq:queue:RequestItemQ";
-    public static final String EMAIL_Q            = "scsbactivemq:queue:CircEmailQ";
+    public static final String EMAIL_Q = "scsbactivemq:queue:CircEmailQ";
 
     public static final String PUL_REQUEST_TOPIC = "scsbactivemq:topic:PUL.RequestT";
     public static final String PUL_EDD_TOPIC = "scsbactivemq:topic:PUL.EDDT";
@@ -133,8 +133,8 @@ public class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_REPORT = "Submit_Collection_Report";
     public static final String SUBMIT_COLLECTION_REJECTION_REPORT = "Submit_Collection_Rejection_Report";
     public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT = "Submit_Collection_Exception_Report";
-    public static final String SUBMIT_COLLECTION_ITEM_BARCODE= "ItemBarcode";
-    public static final String SUBMIT_COLLECTION_CUSTOMER_CODE= "CustomerCode";
+    public static final String SUBMIT_COLLECTION_ITEM_BARCODE = "ItemBarcode";
+    public static final String SUBMIT_COLLECTION_CUSTOMER_CODE = "CustomerCode";
     public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT_MESSAGE = "Exception report generated";
     public static final String SUBMIT_COLLECTION_REJECTION_REPORT_MESSAGE = "Rejection report generated";
     public static final String SUMBIT_COLLECTION_UPDATE_MESSAGE = "One or more record got updated";
@@ -147,7 +147,7 @@ public class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE = "Maximum allowed input record is ";
     public static final String COMPLETE_STATUS = "Complete";
     public static final String INCOMPLETE_STATUS = "Incomplete";
-    public static final String BIBRECORD_TAG= "<bibRecords>";
+    public static final String BIBRECORD_TAG = "<bibRecords>";
     public static final String SUBMIT_COLLECTION = "submitCollection";
 
     public static final String BIB_ID = "BibId";
@@ -168,7 +168,7 @@ public class ReCAPConstants {
 
     public static final String GUEST_USER = "Guest";
     public static final String REQUEST_ITEM_HOLD_FAILURE = "RequestItem - Hold Request Failed";
-    public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "Request ItemAvailabilityStatus Change";
+    public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "RequestItem AvailabilityStatus Change";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE = "1 - 2";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK = "2 - 1";
     public static final String REQUEST_ITEM_TITLE_SUFFIX = " [RECAP]";
@@ -178,6 +178,8 @@ public class ReCAPConstants {
     public static final String UPDATE_ITEM_STATUS_SOLR = "/updateItem/updateItemAvailablityStatus";
     public static final String UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID = "itemBarcode";
     public static final String CIRCULATION_STATUS_CHARGED = "CHARGED";
+    public static final String CIRCULATION_STATUS_OTHER = "OTHER";
+    public static final String CIRCULATION_STATUS_IN_TRANSIT = "IN_TRANSIT";
 
     public static final String SEARCH_RECORDS_SOLR = "/searchService/searchByParam";
     public static final String SEARCH_RECORDS_SOLR_PARAM_FIELD_VALUE = "fieldValue";
@@ -204,4 +206,11 @@ public class ReCAPConstants {
     public static final String DEFAULT_PICK_UP_LOCATION_PUL = "rcpcirc";
     public static final String DEFAULT_PICK_UP_LOCATION_CUL = "CIRCrecap";
 
+    public static final String REQUEST_EXCEPTION_REST = "RestClient : ";
+    public static final String REQUEST_EXCEPTION = "Exception : ";
+    public static final String REQUEST_PARSE_EXCEPTION = "ParseException : ";
+    
+    public static final String GFA_SERVICE_PARAM = "filter";
+    public static final String GFA_STATUS_INCOMING_ON_WORK_ORDER = "INC On WO:";
+    public static final String REQUEST_DELIVERY_METHOD = "PHY";
 }

@@ -11,26 +11,26 @@ public class ItemRequestInformation {
 
     private List<String> itemBarcodes;
     private String titleIdentifier;
-    private String itemOwningInstitution=""; // PUL, CUL, NYPL
-    private String patronBarcode="";
-    private String emailAddress="";
-    private String requestingInstitution=""; // PUL, CUL, NYPL
-    private String requestType=""; // Retrieval,EDD, Hold, Recall, Borrow Direct
-    private String deliveryLocation="";
-    private String requestNotes="";
+    private String itemOwningInstitution = ""; // PUL, CUL, NYPL
+    private String patronBarcode = "";
+    private String emailAddress = "";
+    private String requestingInstitution = ""; // PUL, CUL, NYPL
+    private String requestType = ""; // Retrieval,EDD, Hold, Recall, Borrow Direct
+    private String deliveryLocation = "";
+    private String customerCode = "";
+    private String requestNotes = "";
     private String trackingId; // NYPL - trackingId
-    private String title; // NYPL - title
     private String author; // NYPL - author
     private String callNumber; // NYPL - callNumber
 
     /**
      * EDD Request
      */
-    private Integer startPage=0;
-    private Integer endPage=0;
-    private String chapterTitle="";
+    private Integer startPage = 0;
+    private Integer endPage = 0;
+    private String chapterTitle = "";
     private String expirationDate;
-    private String bibId;
+    private String bibId = "";
 
     public String getBibId() {
         return bibId;
@@ -70,14 +70,6 @@ public class ItemRequestInformation {
 
     public void setTrackingId(String trackingId) {
         this.trackingId = trackingId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getAuthor() {
@@ -176,13 +168,21 @@ public class ItemRequestInformation {
         return this.itemOwningInstitution;
     }
 
+    public String getCustomerCode() {
+        return customerCode;
+    }
+
+    public void setCustomerCode(String customerCode) {
+        this.customerCode = customerCode;
+    }
+
     @JsonIgnore
-    public boolean isOwningInstitutionItem(){
-        boolean bSuccess=false;
-        if (itemOwningInstitution.equalsIgnoreCase(requestingInstitution)){
-            bSuccess=true;
-        }else {
-            bSuccess=false;
+    public boolean isOwningInstitutionItem() {
+        boolean bSuccess = false;
+        if (itemOwningInstitution.equalsIgnoreCase(requestingInstitution)) {
+            bSuccess = true;
+        } else {
+            bSuccess = false;
         }
         return bSuccess;
     }

@@ -101,7 +101,7 @@ public class RequestItemController {
                     itemRequestInformation.getBibId(),
                     itemRequestInformation.getDeliveryLocation(),
                     itemRequestInformation.getTrackingId(),
-                    itemRequestInformation.getTitle(),
+                    itemRequestInformation.getTitleIdentifier(),
                     itemRequestInformation.getAuthor(),
                     itemRequestInformation.getCallNumber());
 
@@ -139,16 +139,11 @@ public class RequestItemController {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
         String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
-        ItemInformationResponse itemInformation = (ItemInformationResponse) itemInformation(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
-        if (itemInformation.getCirculationStatus().equalsIgnoreCase("ITEM_BARCODE_NOT_FOUND")) {
+
+
+
             itemCreateBibResponse = (ItemCreateBibResponse) jsipConectorFactory.getJSIPConnector(callInstitition).createBib(itembarcode, itemRequestInformation.getPatronBarcode(), itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getTitleIdentifier());
-        }else{
-            itemCreateBibResponse = new ItemCreateBibResponse();
-            itemCreateBibResponse.setSuccess(true);
-            itemCreateBibResponse.setScreenMessage("Item Barcode already Exist");
-            String itemBarcode = (itemRequestInformation.getItemBarcodes().size()>0)? itemRequestInformation.getItemBarcodes().get(0):"";
-            itemCreateBibResponse.setItemBarcode(itemBarcode);
-        }
+
         return itemCreateBibResponse;
     }
 
@@ -199,20 +194,6 @@ public class RequestItemController {
         itemRefileResponse.setSuccess(bSuccess);
         itemRefileResponse.setScreenMessage((bSuccess) ? "Successfully Refiled" : "Failed to Refile");
         return itemRefileResponse;
-    }
-
-    private String formatFromSipDate(String sipDate) {
-        SimpleDateFormat sipFormat = new SimpleDateFormat("yyyyMMdd    HHmmss");
-        SimpleDateFormat requiredFormat = new SimpleDateFormat("dd-MMM-YYYY HH:mm:ss");
-        String reformattedStr = "";
-        try {
-            if (sipDate != null && sipDate.trim().length() > 0) {
-                reformattedStr = requiredFormat.format(sipFormat.parse(sipDate));
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return reformattedStr;
     }
 
     public void logMessages(Logger logger, Object clsObject) {
