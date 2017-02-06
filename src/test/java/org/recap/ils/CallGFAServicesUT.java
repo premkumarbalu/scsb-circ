@@ -8,15 +8,12 @@ import org.mockito.MockitoAnnotations;
 import org.recap.BaseTestCase;
 import org.recap.ReCAPConstants;
 import org.recap.gfa.model.*;
-import org.recap.model.SearchResultRow;
 import org.recap.request.GFAService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -37,10 +34,10 @@ public class CallGFAServicesUT extends BaseTestCase {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Value("${gfa.item.status}")
-    private String GFA_ITEM_STATUS;
+    private String gfaItemStatus;
 
     @Value("${gfa.item.retrieval.order}")
-    private String GFA_ITEM_RETRIVAL;
+    private String gfaItemRetrival;
 
     @Autowired
     private GFAService gfaService;
@@ -99,7 +96,7 @@ public class CallGFAServicesUT extends BaseTestCase {
 
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity<>(getHttpHeaders());
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GFA_ITEM_STATUS)
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(gfaItemStatus)
                     .queryParam(ReCAPConstants.GFA_SERVICE_PARAM, json);
             ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity,String.class);
             logger.info(responseEntity.getStatusCode().toString());

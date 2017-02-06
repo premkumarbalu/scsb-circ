@@ -25,9 +25,9 @@ public class GFAService {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     @Value("${gfa.item.status}")
-    private String GFA_ITEM_STATUS;
+    private String gfaItemStatus;
     @Value("${gfa.item.retrieval.order}")
-    private String GFA_ITEM_RETRIVAL;
+    private String gfaItemRetrival;
 
     public GFAItemStatusCheckResponse itemStatusCheck(GFAItemStatusCheckRequest gfaItemStatusCheckRequest) {
 
@@ -40,7 +40,7 @@ public class GFAService {
 
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity<>(new HttpHeaders());
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GFA_ITEM_STATUS).queryParam(ReCAPConstants.GFA_SERVICE_PARAM, filterParamValue);
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(gfaItemStatus).queryParam(ReCAPConstants.GFA_SERVICE_PARAM, filterParamValue);
             ResponseEntity<GFAItemStatusCheckResponse> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, GFAItemStatusCheckResponse.class);
             gfaItemStatusCheckResponse = responseEntity.getBody();
 
@@ -61,7 +61,7 @@ public class GFAService {
 
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity<>(new HttpHeaders());
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GFA_ITEM_RETRIVAL)
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(gfaItemRetrival)
                     .queryParam(ReCAPConstants.GFA_SERVICE_PARAM, filterParamValue);
             ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
             logger.info(responseEntity.getStatusCode().toString());
