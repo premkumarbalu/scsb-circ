@@ -13,6 +13,7 @@ import org.recap.request.GFAService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.test.web.servlet.MvcResult;
@@ -35,8 +36,14 @@ public class CallGFAServicesUT extends BaseTestCase {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Value("${gfa.item.status}")
+    private String GFA_ITEM_STATUS;
+
+    @Value("${gfa.item.retrieval.order}")
+    private String GFA_ITEM_RETRIVAL;
+
     @Autowired
-    GFAService gfaService;
+    private GFAService gfaService;
 
     @Before
     public void setUp() {
@@ -47,9 +54,6 @@ public class CallGFAServicesUT extends BaseTestCase {
     @Test
     public void testItemStatus() {
         GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
-        String restUrl = "http://recapgfa.princeton.edu:9092/lasapi/rest/lasapiSvc/itemStatus";
-        String paramName = "filter";
-
         try {
             GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
             GFAItemStatus gfaItemStatus002 = new GFAItemStatus();
@@ -67,7 +71,6 @@ public class CallGFAServicesUT extends BaseTestCase {
             gfaItemStatusCheckRequest.setItemStatus(gfaItemStatuses);
 
             GFAItemStatusCheckResponse statusResponse =gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
-//            assert(responseEntity.getStatusCode().OK,HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Exception ",e);
         }
@@ -76,12 +79,8 @@ public class CallGFAServicesUT extends BaseTestCase {
     @Test
     public void testretrieveItem() {
         GFARetrieveItemRequest gfaRetrieveItemRequest = new GFARetrieveItemRequest();
-        String restUrl = "http://recapgfa.princeton.edu:9092/lasapi/rest/lasapiSvc/retrieveItem";
-        String paramName = "filter";
         try {
             Ttitem ttitem001 = new Ttitem();
-            Ttitem ttitem002 = new Ttitem();
-            Ttitem ttitem003 = new Ttitem();
 
             ttitem001.setCustomerCode("PA");
             ttitem001.setItemBarcode("PULTST54322");
@@ -100,8 +99,8 @@ public class CallGFAServicesUT extends BaseTestCase {
 
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity<>(getHttpHeaders());
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(restUrl)
-                    .queryParam(paramName, json);
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GFA_ITEM_STATUS)
+                    .queryParam(ReCAPConstants.GFA_SERVICE_PARAM, json);
             ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity,String.class);
             logger.info(responseEntity.getStatusCode().toString());
         } catch (Exception e) {

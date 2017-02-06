@@ -209,4 +209,8 @@ public class ReCAPConstants {
     public static final String REQUEST_EXCEPTION_REST = "RestClient : ";
     public static final String REQUEST_EXCEPTION = "Exception : ";
     public static final String REQUEST_PARSE_EXCEPTION = "ParseException : ";
+    
+    public static final String GFA_SERVICE_PARAM = "filter";
+    public static final String GFA_STATUS_INCOMING_ON_WORK_ORDER = "INC On WO:";
+    public static final String REQUEST_DELIVERY_METHOD = "PHY";
 }

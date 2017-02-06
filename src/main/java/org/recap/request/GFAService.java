@@ -8,6 +8,7 @@ import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -23,12 +24,10 @@ import java.util.List;
 public class GFAService {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private static final String GFA_ITEM_STATUS = "http://recapgfa.princeton.edu:9092/lasapi/rest/lasapiSvc/itemStatus";
-    private static final String GFA_ITEM_RETRIVAL = "http://recapgfa.princeton.edu:9092/lasapi/rest/lasapiSvc/retrieveItem";
-    private static final String GFA_SERVICE_PARAM = "filter";
-    private static final String GFA_STATUS_INCOMING_ON_WORK_ORDER = "INC On WO:";
-    private static final String DELIVERY_METHOD= "PHY";
+    @Value("${gfa.item.status}")
+    private String GFA_ITEM_STATUS;
+    @Value("${gfa.item.retrieval.order}")
+    private String GFA_ITEM_RETRIVAL;
 
     public GFAItemStatusCheckResponse itemStatusCheck(GFAItemStatusCheckRequest gfaItemStatusCheckRequest) {
 
@@ -41,7 +40,7 @@ public class GFAService {
 
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity<>(new HttpHeaders());
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GFA_ITEM_STATUS).queryParam(GFA_SERVICE_PARAM, filterParamValue);
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GFA_ITEM_STATUS).queryParam(ReCAPConstants.GFA_SERVICE_PARAM, filterParamValue);
             ResponseEntity<GFAItemStatusCheckResponse> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, GFAItemStatusCheckResponse.class);
             gfaItemStatusCheckResponse = responseEntity.getBody();
 
@@ -63,7 +62,7 @@ public class GFAService {
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity<>(new HttpHeaders());
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GFA_ITEM_RETRIVAL)
-                    .queryParam(GFA_SERVICE_PARAM, filterParamValue);
+                    .queryParam(ReCAPConstants.GFA_SERVICE_PARAM, filterParamValue);
             ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
             logger.info(responseEntity.getStatusCode().toString());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
@@ -91,12 +90,12 @@ public class GFAService {
                     && gfaItemStatusCheckResponse.getDsitem() != null
                     && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
                 itemStatus = gfaItemStatusCheckResponse.getDsitem().getTtitem().get(0).getItemStatus();
-                if(itemStatus.startsWith(GFA_STATUS_INCOMING_ON_WORK_ORDER)){
+                if(itemStatus.startsWith(ReCAPConstants.GFA_STATUS_INCOMING_ON_WORK_ORDER)){
                     Ttitem ttitem001 = new Ttitem();
                     ttitem001.setCustomerCode(itemRequestInfo.getCustomerCode());
                     ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
                     ttitem001.setDestination(itemRequestInfo.getDeliveryLocation());
-                    ttitem001.setDeliveryMethod(DELIVERY_METHOD);
+                    ttitem001.setDeliveryMethod(ReCAPConstants.REQUEST_DELIVERY_METHOD);
                     List<Ttitem> ttitems = new ArrayList<>();
                     ttitems.add(ttitem001);
                     RetrieveItem retrieveItem = new RetrieveItem();
