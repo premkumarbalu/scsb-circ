@@ -104,9 +104,11 @@ public class RequestItemDetailsRepositoryUT extends BaseTestCase {
         requestItemEntity.setRequestTypeId(savedRequestTypeEntity.getRequestTypeId());
         requestItemEntity.setRequestingInstitutionId(1);
         requestItemEntity.setRequestStatusId(4);
+        requestItemEntity.setCreatedBy("test");
         requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
         requestItemEntity.setStopCode("test");
         requestItemEntity.setCreatedDate(new Date());
+        requestItemEntity.setLastUpdatedDate(new Date());
         requestItemEntity.setRequestExpirationDate(new Date());
         requestItemEntity.setRequestExpirationDate(new Date());
         RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
