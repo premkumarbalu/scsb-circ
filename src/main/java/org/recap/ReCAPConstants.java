@@ -1,5 +1,8 @@
 package org.recap;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by premkb on 19/8/16.
  */
@@ -169,6 +172,7 @@ public class ReCAPConstants {
     public static final String GUEST_USER = "Guest";
     public static final String REQUEST_ITEM_HOLD_FAILURE = "RequestItem - Hold Request Failed";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "RequestItem AvailabilityStatus Change";
+    public static final String REQUEST_ITEM_GFA_FAILURE = "RequestItem - GFA Request Failed";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE = "1 - 2";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK = "2 - 1";
     public static final String REQUEST_ITEM_TITLE_SUFFIX = " [RECAP]";
@@ -209,8 +213,18 @@ public class ReCAPConstants {
     public static final String REQUEST_EXCEPTION_REST = "RestClient : ";
     public static final String REQUEST_EXCEPTION = "Exception : ";
     public static final String REQUEST_PARSE_EXCEPTION = "ParseException : ";
-    
+
     public static final String GFA_SERVICE_PARAM = "filter";
-    public static final String GFA_STATUS_INCOMING_ON_WORK_ORDER = "INC On WO:";
+    public static final String GFA_STATUS_INCOMING_ON_WORK_ORDER = "INC ON WO:";
+    public static final String GFA_STATUS_OUT_ON_EDD_WORK_ORDER = "OUT ON EDD WO:";
+    public static final String GFA_STATUS_REACC_ON_WORK_ORDER = "REACC ON WO:";
+    public static final String GFA_STATUS_REFILE_ON_WORK_ORDER = "REFILE ON WO:";
+    public static final String GFA_STATUS_SCH_ON_WORK_ORDER = "SCH ON EDD WO:";
+    public static final String GFA_STATUS_VER_ON_WORK_ORDER = "VER On EDD WO:";
+    public static final String GFA_STATUS_IN = "IN";
+
+    public static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER,GFA_STATUS_SCH_ON_WORK_ORDER, GFA_STATUS_VER_ON_WORK_ORDER, GFA_STATUS_IN);
+
     public static final String REQUEST_DELIVERY_METHOD = "PHY";
+    public static final String SUCCESSFULLY_PROCESSED_REQUEST_ITEM = "Successfully Processed Request Item";
 }

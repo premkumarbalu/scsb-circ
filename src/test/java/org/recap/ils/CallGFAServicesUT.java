@@ -67,9 +67,9 @@ public class CallGFAServicesUT extends BaseTestCase {
             gfaItemStatuses.add(gfaItemStatus003);
             gfaItemStatusCheckRequest.setItemStatus(gfaItemStatuses);
 
-            GFAItemStatusCheckResponse statusResponse =gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
+            GFAItemStatusCheckResponse statusResponse = gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
         } catch (Exception e) {
-            logger.error("Exception ",e);
+            logger.error("Exception ", e);
         }
     }
 
@@ -89,8 +89,8 @@ public class CallGFAServicesUT extends BaseTestCase {
             RetrieveItem retrieveItem = new RetrieveItem();
             retrieveItem.setTtitem(ttitems);
             gfaRetrieveItemRequest.setRetrieveItem(retrieveItem);
-            ObjectMapper objectMapper= new ObjectMapper();
-            String json ="";
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = "";
             json = objectMapper.writeValueAsString(gfaRetrieveItemRequest);
             logger.info(json);
 
@@ -98,7 +98,7 @@ public class CallGFAServicesUT extends BaseTestCase {
             HttpEntity requestEntity = new HttpEntity<>(getHttpHeaders());
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(gfaItemStatus)
                     .queryParam(ReCAPConstants.GFA_SERVICE_PARAM, json);
-            ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity,String.class);
+            ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
             logger.info(responseEntity.getStatusCode().toString());
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -112,7 +112,7 @@ public class CallGFAServicesUT extends BaseTestCase {
         String paramName = "";
         try {
 
-            int status = excuteMockURL(gfaRetrieveItemRequest, HttpMethod.GET,restUrl, paramName);
+            int status = excuteMockURL(gfaRetrieveItemRequest, HttpMethod.GET, restUrl, paramName);
             assertTrue(status == 200);
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -126,7 +126,7 @@ public class CallGFAServicesUT extends BaseTestCase {
         String paramName = "";
         try {
 
-            int status = excuteMockURL(gfaRetrieveItemRequest,HttpMethod.GET, restUrl, paramName);
+            int status = excuteMockURL(gfaRetrieveItemRequest, HttpMethod.GET, restUrl, paramName);
             assertTrue(status == 200);
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -149,11 +149,38 @@ public class CallGFAServicesUT extends BaseTestCase {
 
             response = restTemplate.exchange(url, httpMethod, entity, String.class).getBody();
             logger.info(response);
-            status=1;
-        }catch(RestClientException ex){
-            logger.error("RestClient : "+ ex.getMessage());
+            status = 1;
+        } catch (RestClientException ex) {
+            logger.error("RestClient : " + ex.getMessage());
         }
-    return status;
+        return status;
+    }
+
+    @Test
+    public void testGfaStatus() {
+        String gfaStaus;
+        gfaStaus = "Out on Ret WO: 424980 09/26/16 To G1";
+        gfaStaus = "INC On WO: 430151 01/13/17";
+        gfaStaus = "IN";
+        gfaStaus = "Out On EDD WO: 12345 01/13/17 To PA";
+        gfaStaus = "REACC on WO: 12345";
+        gfaStaus = "REFILE on WO: 12345";
+        gfaStaus = "Ver On EDD WO: 12345";
+        gfaStaus = "Sch On EDD WO: 12345";
+        String gfaOnlyStaus = "";
+
+        if (gfaStaus.contains(":")) {
+            gfaOnlyStaus = gfaStaus.substring(0, gfaStaus.indexOf(":")+1).toUpperCase();
+        } else {
+            gfaOnlyStaus = gfaStaus.toUpperCase();
+        }
+        logger.info(gfaOnlyStaus);
+        if (ReCAPConstants.GFA_STATUS_AVAILABLE_LIST.contains(gfaOnlyStaus)) {
+            logger.info("Staus Match");
+        }else{
+            logger.info("Does Not Match");
+        }
+
     }
 
     private HttpHeaders getHttpHeaders() {

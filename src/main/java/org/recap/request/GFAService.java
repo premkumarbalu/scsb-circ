@@ -79,6 +79,8 @@ public class GFAService {
         GFARetrieveItemRequest gfaRetrieveItemRequest = new GFARetrieveItemRequest();
         GFAItemStatusCheckResponse gfaItemStatusCheckResponse = null;
         String itemStatus = "";
+        String gfaOnlyStaus = "";
+
         try {
             GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
             gfaItemStatus001.setItemBarCode(itemRequestInfo.getItemBarcodes().get(0));
@@ -89,8 +91,16 @@ public class GFAService {
             if (gfaItemStatusCheckResponse != null
                     && gfaItemStatusCheckResponse.getDsitem() != null
                     && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
+
                 itemStatus = gfaItemStatusCheckResponse.getDsitem().getTtitem().get(0).getItemStatus();
-                if(itemStatus.startsWith(ReCAPConstants.GFA_STATUS_INCOMING_ON_WORK_ORDER)){
+                if (itemStatus.contains(":")) {
+                    gfaOnlyStaus = itemStatus.substring(0, itemStatus.indexOf(":")+1).toUpperCase();
+                } else {
+                    gfaOnlyStaus = itemStatus.toUpperCase();
+                }
+                logger.info(gfaOnlyStaus);
+
+                if (ReCAPConstants.GFA_STATUS_AVAILABLE_LIST.contains(gfaOnlyStaus)) {
                     Ttitem ttitem001 = new Ttitem();
                     ttitem001.setCustomerCode(itemRequestInfo.getCustomerCode());
                     ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));

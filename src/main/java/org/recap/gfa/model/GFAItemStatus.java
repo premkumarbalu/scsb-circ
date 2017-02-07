@@ -1,7 +1,5 @@
 package org.recap.gfa.model;
 
-import java.util.List;
-
 /**
  * Created by sudhishk on 8/12/16.
  */
