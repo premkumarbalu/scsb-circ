@@ -1,10 +1,6 @@
 package org.recap.controller;
 
-import com.pkrete.jsip2.variables.CirculationStatus;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.recap.ReCAPConstants;
 import org.recap.ils.JSIPConnectorFactory;
 import org.recap.ils.model.response.*;
@@ -15,14 +11,13 @@ import org.recap.request.ItemRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.reflect.Field;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 /**
  * Created by sudhishk on 16/11/16.
@@ -47,8 +42,8 @@ public class RequestItemController {
             if (callInstitition == null) {
                 callInstitition = itemRequestInformation.getItemOwningInstitution();
             }
-            if (itemRequestInformation.getItemBarcodes().size() > 0) {
-                itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
+            if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
+                itembarcode = itemRequestInformation.getItemBarcodes().get(0);
                 itemCheckoutResponse = (ItemCheckoutResponse) jsipConectorFactory.getJSIPConnector(callInstitition).checkOutItem(itembarcode, itemRequestInformation.getPatronBarcode());
             } else {
                 itemCheckoutResponse.setSuccess(false);
@@ -57,6 +52,7 @@ public class RequestItemController {
         } catch (Exception e) {
             itemCheckoutResponse.setSuccess(false);
             itemCheckoutResponse.setScreenMessage(e.getMessage());
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
 
         return itemCheckoutResponse;
@@ -70,17 +66,19 @@ public class RequestItemController {
             if (callInstitition == null) {
                 callInstitition = itemRequestInformation.getItemOwningInstitution();
             }
-            if (itemRequestInformation.getItemBarcodes().size() > 0) {
-                itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
-                itemCheckinResponse = (ItemCheckinResponse) jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).checkInItem(itembarcode, itemRequestInformation.getPatronBarcode());
+            if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
+                itembarcode = itemRequestInformation.getItemBarcodes().get(0);
+                itemCheckinResponse = (ItemCheckinResponse) jsipConectorFactory.getJSIPConnector(callInstitition).checkInItem(itembarcode, itemRequestInformation.getPatronBarcode());
             } else {
                 itemCheckinResponse = new ItemCheckinResponse();
                 itemCheckinResponse.setSuccess(false);
                 itemCheckinResponse.setScreenMessage("Item Id not found");
             }
         } catch (Exception e) {
+            itemCheckinResponse = new ItemCheckinResponse();
             itemCheckinResponse.setSuccess(false);
             itemCheckinResponse.setScreenMessage(e.getMessage());
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemCheckinResponse;
     }
@@ -92,7 +90,7 @@ public class RequestItemController {
             if (callInstitition == null) {
                 callInstitition = itemRequestInformation.getItemOwningInstitution();
             }
-            String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
+            String itembarcode = itemRequestInformation.getItemBarcodes().get(0);
 
             itemHoldResponse = (ItemHoldResponse) jsipConectorFactory.getJSIPConnector(callInstitition).placeHold(itembarcode, itemRequestInformation.getPatronBarcode(),
                     itemRequestInformation.getRequestingInstitution(),
@@ -115,16 +113,16 @@ public class RequestItemController {
 
     @RequestMapping(value = "/cancelHoldItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem cancelHoldItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
-        ItemHoldResponse itemHoldCancelResponse = new ItemHoldResponse();
+        ItemHoldResponse itemHoldCancelResponse;
         String itembarcode = "";
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
 
-        if (itemRequestInformation.getItemBarcodes().size() > 0) {
-            itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
+        if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
+            itembarcode = itemRequestInformation.getItemBarcodes().get(0);
         }
-        itemHoldCancelResponse = (ItemHoldResponse) jsipConectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).cancelHold(itembarcode, itemRequestInformation.getPatronBarcode(),
+        itemHoldCancelResponse = (ItemHoldResponse) jsipConectorFactory.getJSIPConnector(callInstitition).cancelHold(itembarcode, itemRequestInformation.getPatronBarcode(),
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
@@ -134,27 +132,24 @@ public class RequestItemController {
 
     @RequestMapping(value = "/createBib", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) throws Exception {
-        ItemCreateBibResponse itemCreateBibResponse = null;
+        ItemCreateBibResponse itemCreateBibResponse;
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
-        String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
-
-
-
-            itemCreateBibResponse = (ItemCreateBibResponse) jsipConectorFactory.getJSIPConnector(callInstitition).createBib(itembarcode, itemRequestInformation.getPatronBarcode(), itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getTitleIdentifier());
+        String itembarcode = itemRequestInformation.getItemBarcodes().get(0);
+        itemCreateBibResponse = (ItemCreateBibResponse) jsipConectorFactory.getJSIPConnector(callInstitition).createBib(itembarcode, itemRequestInformation.getPatronBarcode(), itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getTitleIdentifier());
 
         return itemCreateBibResponse;
     }
 
     @RequestMapping(value = "/itemInformation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem itemInformation(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
-        ItemInformationResponse itemInformationResponse = null;
+        ItemInformationResponse itemInformationResponse;
 
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
-        String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
+        String itembarcode = itemRequestInformation.getItemBarcodes().get(0);
 
         itemInformationResponse = (ItemInformationResponse) jsipConectorFactory.getJSIPConnector(callInstitition).lookupItem(itembarcode);
         return itemInformationResponse;
@@ -162,11 +157,11 @@ public class RequestItemController {
 
     @RequestMapping(value = "/recallItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem recallItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
-        ItemRecallResponse itemRecallResponse = new ItemRecallResponse();
+        ItemRecallResponse itemRecallResponse;
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
-        String itembarcode = (String) itemRequestInformation.getItemBarcodes().get(0);
+        String itembarcode = itemRequestInformation.getItemBarcodes().get(0);
         itemRecallResponse = (ItemRecallResponse) jsipConectorFactory.getJSIPConnector(callInstitition).recallItem(itembarcode, itemRequestInformation.getPatronBarcode(),
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
@@ -178,8 +173,7 @@ public class RequestItemController {
 
     @RequestMapping(value = "/patronInformation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem patronInformation(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
-        PatronInformationResponse patronInformationResponse = null;
-        String itembarcode = "";
+        PatronInformationResponse patronInformationResponse;
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
@@ -192,7 +186,12 @@ public class RequestItemController {
         boolean bSuccess = itemRequestService.reFileItem(itemRefileRequest);
         ItemRefileResponse itemRefileResponse = new ItemRefileResponse();
         itemRefileResponse.setSuccess(bSuccess);
-        itemRefileResponse.setScreenMessage((bSuccess) ? "Successfully Refiled" : "Failed to Refile");
+        if (bSuccess) {
+            itemRefileResponse.setScreenMessage("Successfully Refiled");
+        } else {
+            itemRefileResponse.setScreenMessage("Failed to Refile");
+        }
+
         return itemRefileResponse;
     }
 
@@ -202,7 +201,7 @@ public class RequestItemController {
                 field.setAccessible(true);
                 String name = field.getName();
                 Object value = field.get(clsObject);
-                logger.info("Field name: " + name + "Filed Value :" + value);
+                logger.info(String.format("Field name: %sFiled Value :%s", name, value));
             }
         } catch (IllegalAccessException e) {
             logger.error("", e);
