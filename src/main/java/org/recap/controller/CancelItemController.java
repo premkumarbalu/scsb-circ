@@ -8,6 +8,7 @@ import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.*;
 import org.recap.repository.RequestItemDetailsRepository;
 import org.recap.repository.RequestItemStatusDetailsRepository;
+import org.recap.request.ItemRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,10 @@ public class CancelItemController {
     private RequestItemDetailsRepository requestItemDetailsRepository;
 
     @Autowired
-    RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
+    private RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
+
+    @Autowired
+    private ItemRequestService itemRequestService;
 
     @RequestMapping(value = "/cancel", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public CancelRequestResponse cancelRequest(@ApiParam(value = "Parameters for cancelling", required = true, name = "requestId") @RequestParam Integer requestId) {
@@ -76,7 +80,8 @@ public class CancelItemController {
                             if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
                                 requestItemEntity.getItemEntity().setItemAvailabilityStatusId(1);
                             }
-                            requestItemStatusDetailsRepository.save(requestStatusEntity);
+                            RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
+                            itemRequestService.saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS, ReCAPConstants.REQUEST_STATUS_CANCELED + savedRequestItemEntity.getItemId());
                             bSuccess = true;
                             screenMessage = "Request cancellation succcessfully processed";
                         } else {

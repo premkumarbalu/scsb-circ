@@ -158,24 +158,16 @@ public class ReCAPConstants {
     public static final String ITEM_ID = "ItemId";
     public static final String BIBLIOGRAPHIC_ENTITY = "bibliographicEntity";
 
-    public static final String CHECKOUT_SUCCESS = "Successfully processed checkout item";
-    public static final String CHECKIN_SUCCESS = "Successfully processed checkin item";
-    public static final String HOLD_SUCCESS = "Successfully processed hold request";
-    public static final String CANCEL_HOLD_SUCCESS = "Successfully processed cancel hold request";
-
-    public static final String CHECKOUT_FAILED = "Failed to process checkout item";
-    public static final String CHECKIN_FAILED = "Failed to process checkin item";
-    public static final String HOLD_FAILED = "Failed to process hold request";
-    public static final String CANCEL_HOLD_FAILED = "Failed to process cancel hold request";
-    public static final String TRACKING_ID_REQUIRED = "Tracking Id is required";
-
     public static final String GUEST_USER = "Guest";
     public static final String REQUEST_ITEM_HOLD_FAILURE = "RequestItem - Hold Request Failed";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "RequestItem AvailabilityStatus Change";
     public static final String REQUEST_ITEM_GFA_FAILURE = "RequestItem - GFA Request Failed";
+    public static final String REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS = "RequestItemCancel AvailabilityStatus Change";
+
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE = "1 - 2";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK = "2 - 1";
     public static final String REQUEST_ITEM_TITLE_SUFFIX = " [RECAP]";
+    public static final String REQUEST_USE_RESTRICTIONS = "No Restrictions";
 
     public static final String API_KEY = "api_key";
     public static final String RECAP = "recap";
@@ -190,7 +182,6 @@ public class ReCAPConstants {
     public static final String SEARCH_RECORDS_SOLR_PARAM_FIELD_NAME = "fieldName";
     public static final String SEARCH_RECORDS_SOLR_PARAM_FIELD_NAME_VALUE = "Barcode";
 
-
     public static final int ESIPEXPIRATION_DATE_DAY = 1;
     public static final int ESIPEXPIRATION_DATE_MONTH = 6;
 
@@ -203,9 +194,9 @@ public class ReCAPConstants {
     public static final String NYPL_SOURCE_NYPL = "nypl-sierra";
     public static final String NYPL_SOURCE_PUL = "recap-PUL";
     public static final String NYPL_SOURCE_CUL = "recap-CUL";
-
     public static final String NYPL_HOLD_DATE_FORMAT = "yyyy-MM-dd";
     public static final String NYPL_RECORD_TYPE = "i";
+
     public static final String DEFAULT_PICK_UP_LOCATION_NYPL = "lb";
     public static final String DEFAULT_PICK_UP_LOCATION_PUL = "rcpcirc";
     public static final String DEFAULT_PICK_UP_LOCATION_CUL = "CIRCrecap";

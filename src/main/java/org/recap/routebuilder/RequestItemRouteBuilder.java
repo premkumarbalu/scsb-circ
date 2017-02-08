@@ -5,6 +5,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.mqconsumer.RequestItemQueueConsumer;
+import org.recap.request.ItemEDDRequestService;
 import org.recap.request.ItemRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,10 +16,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class RequestItemRouteBuilder {
 
-    private Logger logger = Logger.getLogger(RequestItemQueueConsumer.class);
+    private Logger logger = Logger.getLogger(RequestItemRouteBuilder.class);
 
     @Autowired
-    ItemRequestService itemRequestService;
+    private ItemRequestService itemRequestService;
+
+    @Autowired
+    private ItemEDDRequestService itemEDDRequestService;
 
     @Autowired
     public void RequestItemRouteBuilder(CamelContext camelContext, ItemRequestService itemRequestService) {
@@ -33,9 +37,9 @@ public class RequestItemRouteBuilder {
                             .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RETRIEVAL))
                             .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemOnMessage")
                             .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_EDD))
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemEDDOnMessage")
+                            .bean(new RequestItemQueueConsumer(itemEDDRequestService ), "requestItemEDDOnMessage")
                             .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT))
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemBorrowDirectOnMessage")
+                            .bean(new RequestItemQueueConsumer(itemRequestService, itemEDDRequestService), "requestItemBorrowDirectOnMessage")
                             .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RECALL))
                             .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemRecallOnMessage");
 
@@ -49,7 +53,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.PUL_REQUEST_TOPIC)
                             .routeId(ReCAPConstants.PUL_REQUEST_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "pulRequestTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService, itemEDDRequestService), "pulRequestTopicOnMessage");
                 }
             });
 
@@ -58,7 +62,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.PUL_EDD_TOPIC)
                             .routeId(ReCAPConstants.PUL_EDD_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "pulEDDTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService,itemEDDRequestService ), "pulEDDTopicOnMessage");
                 }
             });
 
@@ -67,7 +71,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.PUL_RECALL_TOPIC)
                             .routeId(ReCAPConstants.PUL_RECALL_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "pulRecalTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService, itemEDDRequestService), "pulRecalTopicOnMessage");
                 }
             });
 
@@ -76,7 +80,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.PUL_BORROW_DIRECT_TOPIC)
                             .routeId(ReCAPConstants.PUL_BORROW_DIRECT_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "pulBorrowDirectTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService,itemEDDRequestService ), "pulBorrowDirectTopicOnMessage");
                 }
             });
             /* PUL Topics*/
@@ -87,7 +91,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.CUL_REQUEST_TOPIC)
                             .routeId(ReCAPConstants.CUL_REQUEST_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "culRequestTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService,itemEDDRequestService ), "culRequestTopicOnMessage");
                 }
             });
 
@@ -96,7 +100,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.CUL_EDD_TOPIC)
                             .routeId(ReCAPConstants.CUL_EDD_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "culEDDTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService, itemEDDRequestService), "culEDDTopicOnMessage");
                 }
             });
 
@@ -105,7 +109,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.CUL_RECALL_TOPIC)
                             .routeId(ReCAPConstants.CUL_RECALL_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "culRecalTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService,itemEDDRequestService ), "culRecalTopicOnMessage");
                 }
             });
 
@@ -114,7 +118,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.CUL_BORROW_DIRECT_TOPIC)
                             .routeId(ReCAPConstants.CUL_BORROW_DIRECT_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "culBorrowDirectTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService,itemEDDRequestService ), "culBorrowDirectTopicOnMessage");
                 }
             });
             /* CUL Topics*/
@@ -125,7 +129,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.NYPL_REQUEST_TOPIC)
                             .routeId(ReCAPConstants.NYPL_REQUEST_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "nyplRequestTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService,itemEDDRequestService ), "nyplRequestTopicOnMessage");
                 }
             });
 
@@ -134,7 +138,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.NYPL_EDD_TOPIC)
                             .routeId(ReCAPConstants.NYPL_EDD_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "nyplEDDTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService,itemEDDRequestService ), "nyplEDDTopicOnMessage");
                 }
             });
 
@@ -143,7 +147,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.NYPL_RECALL_TOPIC)
                             .routeId(ReCAPConstants.NYPL_RECALL_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "nyplRecalTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService, itemEDDRequestService), "nyplRecalTopicOnMessage");
                 }
             });
 
@@ -152,7 +156,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.NYPL_BORROW_DIRECT_TOPIC)
                             .routeId(ReCAPConstants.NYPL_BORROW_DIRECT_TOPIC_ROUTEID)
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "nyplBorrowDirectTopicOnMessage");
+                            .bean(new RequestItemQueueConsumer(itemRequestService,itemEDDRequestService ), "nyplBorrowDirectTopicOnMessage");
                 }
             });
             /* NYPL Topics */
