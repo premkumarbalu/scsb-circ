@@ -132,6 +132,7 @@ public class ItemRequestService {
                     // Action based on Request Type
                     if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
                         itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
+                        bsuccess = itemResponseInformation.isSuccess();
                         messagePublish = itemResponseInformation.getScreenMessage();
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT)) {
                         itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
@@ -346,10 +347,10 @@ public class ItemRequestService {
     }
 
     public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity, String requestStatusCode) {
-        return itemRequestDBService.updateRecapRequestItem(itemRequestInformation,itemEntity,requestTypeEntity,requestStatusCode);
+        return itemRequestDBService.updateRecapRequestItem(itemRequestInformation, itemEntity, requestTypeEntity, requestStatusCode);
     }
 
-    public ItemInformationResponse updateRecapRequestItem(ItemInformationResponse itemInformationResponse){
+    public ItemInformationResponse updateRecapRequestItem(ItemInformationResponse itemInformationResponse) {
         return itemRequestDBService.updateRecapRequestItem(itemInformationResponse);
     }
 
@@ -609,7 +610,7 @@ public class ItemRequestService {
     }
 
     public void saveItemChangeLogEntity(Integer recordId, String userName, String operationType, String notes) {
-       itemRequestDBService.saveItemChangeLogEntity(recordId,userName,operationType,notes);
+        itemRequestDBService.saveItemChangeLogEntity(recordId, userName, operationType, notes);
     }
 
     private String getPatronIdBorrwingInsttution(String requestingInstitution, String owningInstitution) {
@@ -709,11 +710,11 @@ public class ItemRequestService {
     }
 
     private void getTempBibId(ItemRequestInformation itemRequestInfo, ItemEntity itemEntity) {
-        itemRequestDBService.getTempBibId(itemRequestInfo,itemEntity);
+        itemRequestDBService.getTempBibId(itemRequestInfo, itemEntity);
     }
 
     private void createTempBibId(ItemRequestInformation itemRequestInfo, ItemEntity itemEntity) {
-        itemRequestDBService.createTempBibId(itemRequestInfo,itemEntity);
+        itemRequestDBService.createTempBibId(itemRequestInfo, itemEntity);
     }
 
     private void rollbackAfterGFA(ItemEntity itemEntity, ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
