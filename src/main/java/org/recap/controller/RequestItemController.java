@@ -97,7 +97,7 @@ public class RequestItemController {
                     itemRequestInformation.getItemOwningInstitution(),
                     itemRequestInformation.getExpirationDate(),
                     itemRequestInformation.getBibId(),
-                    itemRequestInformation.getDeliveryLocation(),
+                    getpickupLoacation(callInstitition),
                     itemRequestInformation.getTrackingId(),
                     itemRequestInformation.getTitleIdentifier(),
                     itemRequestInformation.getAuthor(),
@@ -126,7 +126,7 @@ public class RequestItemController {
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                itemRequestInformation.getDeliveryLocation(), itemRequestInformation.getTrackingId());
+                getpickupLoacation(callInstitition), itemRequestInformation.getTrackingId());
         return itemHoldCancelResponse;
     }
 
@@ -166,7 +166,7 @@ public class RequestItemController {
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                itemRequestInformation.getDeliveryLocation());
+                getpickupLoacation(callInstitition));
 
         return itemRecallResponse;
     }
@@ -193,6 +193,18 @@ public class RequestItemController {
         }
 
         return itemRefileResponse;
+    }
+
+    private String getpickupLoacation(String institution) {
+        String pickUpLocation = "";
+        if (institution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
+            pickUpLocation = ReCAPConstants.DEFAULT_PICK_UP_LOCATION_PUL;
+        } else if (institution.equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
+            pickUpLocation = ReCAPConstants.DEFAULT_PICK_UP_LOCATION_CUL;
+        } else if (institution.equalsIgnoreCase(ReCAPConstants.NYPL)) {
+            pickUpLocation = ReCAPConstants.DEFAULT_PICK_UP_LOCATION_NYPL;
+        }
+        return pickUpLocation;
     }
 
     public void logMessages(Logger logger, Object clsObject) {

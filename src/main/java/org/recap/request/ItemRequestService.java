@@ -25,10 +25,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -39,8 +35,6 @@ import java.util.List;
 public class ItemRequestService {
 
     private Logger logger = Logger.getLogger(ItemRequestService.class);
-
-    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
     @Value("${ils.princeton.cul.patron}")
     private String princetonCULPatron;
@@ -103,6 +97,9 @@ public class ItemRequestService {
     @Autowired
     private InstitutionDetailsRepository institutionDetailsRepository;
 
+    @Autowired
+    private ItemRequestDBService itemRequestDBService;
+
     public ItemInformationResponse requestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
         String messagePublish = "";
@@ -135,6 +132,7 @@ public class ItemRequestService {
                     // Action based on Request Type
                     if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
                         itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
+                        bsuccess = itemResponseInformation.isSuccess();
                         messagePublish = itemResponseInformation.getScreenMessage();
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT)) {
                         itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
@@ -153,6 +151,7 @@ public class ItemRequestService {
                     messagePublish = res.getBody().toString();
                     bsuccess = false;
                 }
+                itemResponseInformation.setItemId(itemEntity.getItemId());
             } else {
                 messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
                 bsuccess = false;
@@ -167,6 +166,10 @@ public class ItemRequestService {
             itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
             itemResponseInformation.setBibID(itemRequestInfo.getBibId());
             itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
+            itemResponseInformation.setRequestType(itemRequestInfo.getRequestType());
+            itemResponseInformation.setEmailAddress(itemRequestInfo.getEmailAddress());
+            itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
+            itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes());
 
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
@@ -344,86 +347,19 @@ public class ItemRequestService {
     }
 
     public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity, String requestStatusCode) {
+        return itemRequestDBService.updateRecapRequestItem(itemRequestInformation, itemEntity, requestTypeEntity, requestStatusCode);
+    }
 
-        RequestItemEntity requestItemEntity = new RequestItemEntity();
-        PatronEntity patronEntity;
-        PatronEntity savedPatronEntity;
-        RequestItemEntity savedItemRequest;
-        Integer requestId = 0;
-        try {
-
-            // Patron Information
-            patronEntity = patronDetailsRepository.findByInstitutionIdentifier(itemRequestInformation.getPatronBarcode());
-            RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(requestStatusCode);
-            if (patronEntity == null) {
-                patronEntity = new PatronEntity();
-                patronEntity.setInstitutionIdentifier(itemRequestInformation.getPatronBarcode());
-                patronEntity.setInstitutionId(itemEntity.getInstitutionEntity().getInstitutionId());
-                patronEntity.setEmailId(itemRequestInformation.getEmailAddress());
-                savedPatronEntity = patronDetailsRepository.save(patronEntity);
-            } else {
-                if (itemRequestInformation.getEmailAddress() != null && itemRequestInformation.getEmailAddress().trim().length() > 0) {
-                    patronEntity.setEmailId(itemRequestInformation.getEmailAddress());
-                }
-                savedPatronEntity = patronDetailsRepository.save(patronEntity);
-            }
-
-            //Request Item
-            requestItemEntity.setItemId(itemEntity.getItemId());
-            requestItemEntity.setRequestingInstitutionId(itemEntity.getInstitutionEntity().getInstitutionId());
-            requestItemEntity.setRequestTypeId(requestTypeEntity.getRequestTypeId());
-            if (ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInformation.getRequestingInstitution())) {
-                DateFormat dateFormatter = new SimpleDateFormat(ReCAPConstants.NYPL_HOLD_DATE_FORMAT);
-                requestItemEntity.setRequestExpirationDate(dateFormatter.parse(itemRequestInformation.getExpirationDate()));
-            } else {
-                if (itemRequestInformation.getExpirationDate() != null && itemRequestInformation.getExpirationDate().trim().length() > 0) {
-                    requestItemEntity.setRequestExpirationDate(simpleDateFormat.parse(itemRequestInformation.getExpirationDate()));
-                }
-            }
-            requestItemEntity.setCreatedBy(ReCAPConstants.GUEST_USER);
-            requestItemEntity.setCreatedDate(new Date());
-            requestItemEntity.setLastUpdatedDate(new Date());
-            requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
-            requestItemEntity.setStopCode(itemRequestInformation.getDeliveryLocation());
-            requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-            requestItemEntity.setNotes(itemRequestInformation.getRequestNotes());
-
-
-            savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
-            if (savedItemRequest != null) {
-                requestId = savedItemRequest.getRequestId();
-
-
-                saveItemChangeLogEntity(savedItemRequest.getRequestId(), "Guest", "Request Item Insert", savedItemRequest.getItemId() + " - " + savedItemRequest.getPatronId());
-            }
-            logger.info("SCSB DB Update Successful");
-        } catch (ParseException e) {
-            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
-        } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
-        }
-        return requestId;
+    public ItemInformationResponse updateRecapRequestItem(ItemInformationResponse itemInformationResponse) {
+        return itemRequestDBService.updateRecapRequestItem(itemInformationResponse);
     }
 
     private void updateItemAvailabilutyStatus(List<ItemEntity> itemEntities) {
-        for (ItemEntity itemEntity : itemEntities) {
-            itemEntity.setItemAvailabilityStatusId(2); // Not Available
-            itemEntity.setLastUpdatedBy(ReCAPConstants.GUEST_USER);
-            itemEntity.setLastUpdatedDate(new Date());
-
-            saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE);
-        }
-        // Not Available
-        itemDetailsRepository.save(itemEntities);
-
+        itemRequestDBService.updateItemAvailabilutyStatus(itemEntities);
     }
 
     private void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity) {
-        itemEntity.setItemAvailabilityStatusId(1); // Available
-        itemEntity.setLastUpdatedBy(ReCAPConstants.GUEST_USER);
-        itemEntity.setLastUpdatedDate(new Date());
-        itemDetailsRepository.save(itemEntity);
-        saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK);
+        itemRequestDBService.rollbackUpdateItemAvailabilutyStatus(itemEntity);
     }
 
     private boolean updateItemStatusSolrIndexing(ItemRefileRequest itemRefileRequest) {
@@ -674,13 +610,7 @@ public class ItemRequestService {
     }
 
     public void saveItemChangeLogEntity(Integer recordId, String userName, String operationType, String notes) {
-        ItemChangeLogEntity itemChangeLogEntity = new ItemChangeLogEntity();
-        itemChangeLogEntity.setUpdatedBy(userName);
-        itemChangeLogEntity.setUpdatedDate(new Date());
-        itemChangeLogEntity.setOperationType(operationType);
-        itemChangeLogEntity.setRecordId(recordId);
-        itemChangeLogEntity.setNotes(notes);
-        itemChangeLogDetailsRepository.save(itemChangeLogEntity);
+        itemRequestDBService.saveItemChangeLogEntity(recordId, userName, operationType, notes);
     }
 
     private String getPatronIdBorrwingInsttution(String requestingInstitution, String owningInstitution) {
@@ -780,22 +710,11 @@ public class ItemRequestService {
     }
 
     private void getTempBibId(ItemRequestInformation itemRequestInfo, ItemEntity itemEntity) {
-        InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode(itemRequestInfo.getRequestingInstitution());
-        RequestInstitutionBibEntity requestInstitutionBibEntity = requestInstitutionBibDetailsRepository.findByItemIdAndOwningInstitutionId(itemEntity.getItemId(), institutionEntity.getInstitutionId());
-        if (requestInstitutionBibEntity != null) {
-            itemRequestInfo.setBibId(requestInstitutionBibEntity.getOwningInstitutionBibId());
-        } else {
-            itemRequestInfo.setBibId("");
-        }
+        itemRequestDBService.getTempBibId(itemRequestInfo, itemEntity);
     }
 
     private void createTempBibId(ItemRequestInformation itemRequestInfo, ItemEntity itemEntity) {
-        InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode(itemRequestInfo.getRequestingInstitution());
-        RequestInstitutionBibEntity requestInstitutionBibEntityIns = new RequestInstitutionBibEntity();
-        requestInstitutionBibEntityIns.setItemId(itemEntity.getItemId());
-        requestInstitutionBibEntityIns.setOwningInstitutionId(institutionEntity.getInstitutionId());
-        requestInstitutionBibEntityIns.setOwningInstitutionBibId(itemRequestInfo.getBibId());
-        requestInstitutionBibDetailsRepository.save(requestInstitutionBibEntityIns);
+        itemRequestDBService.createTempBibId(itemRequestInfo, itemEntity);
     }
 
     private void rollbackAfterGFA(ItemEntity itemEntity, ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {

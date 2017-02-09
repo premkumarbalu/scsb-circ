@@ -175,7 +175,7 @@ public class CallGFAServicesUT extends BaseTestCase {
             gfaOnlyStaus = gfaStaus.toUpperCase();
         }
         logger.info(gfaOnlyStaus);
-        if (ReCAPConstants.GFA_STATUS_AVAILABLE_LIST.contains(gfaOnlyStaus)) {
+        if (ReCAPConstants.getGFAStatusAvailableList().contains(gfaOnlyStaus)) {
             logger.info("Staus Match");
         }else{
             logger.info("Does Not Match");
