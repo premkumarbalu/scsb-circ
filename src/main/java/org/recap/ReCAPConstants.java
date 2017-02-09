@@ -163,6 +163,8 @@ public class ReCAPConstants {
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "RequestItem AvailabilityStatus Change";
     public static final String REQUEST_ITEM_GFA_FAILURE = "RequestItem - GFA Request Failed";
     public static final String REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS = "RequestItemCancel AvailabilityStatus Change";
+    public static final String REQUEST_ITEM_INSERT = "Request Item Insert";
+
 
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE = "1 - 2";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK = "2 - 1";
@@ -190,6 +192,8 @@ public class ReCAPConstants {
     public static final String REQUEST_STATUS_RECALL_RETRIEVAL_ORDER_PLACED = "RECALL_RETRIEVAL_ORDER_PLACED";
     public static final String REQUEST_STATUS_REFILED = "REFILED";
     public static final String REQUEST_STATUS_CANCELED = "CANCELED";
+    public static final String REQUEST_STATUS_EXCEPTION = "EXCEPTION";
+
 
     public static final String NYPL_SOURCE_NYPL = "nypl-sierra";
     public static final String NYPL_SOURCE_PUL = "recap-PUL";
@@ -214,8 +218,14 @@ public class ReCAPConstants {
     public static final String GFA_STATUS_VER_ON_WORK_ORDER = "VER On EDD WO:";
     public static final String GFA_STATUS_IN = "IN";
 
-    public static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER,GFA_STATUS_SCH_ON_WORK_ORDER, GFA_STATUS_VER_ON_WORK_ORDER, GFA_STATUS_IN);
+    protected static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER,GFA_STATUS_SCH_ON_WORK_ORDER, GFA_STATUS_VER_ON_WORK_ORDER, GFA_STATUS_IN);
 
     public static final String REQUEST_DELIVERY_METHOD = "PHY";
     public static final String SUCCESSFULLY_PROCESSED_REQUEST_ITEM = "Successfully Processed Request Item";
+
+    private ReCAPConstants() {}
+
+    public static final List getGFAStatusAvailableList(){
+        return GFA_STATUS_AVAILABLE_LIST;
+    }
 }

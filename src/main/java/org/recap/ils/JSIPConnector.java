@@ -339,10 +339,6 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
                 /* Check the response*/
                 if (loginResponse.isOk()) {
-                    /* Send SCStatusRequest */
-                    SIP2SCStatusRequest status = new SIP2SCStatusRequest();
-                    SIP2ACSStatusResponse statusResponse = (SIP2ACSStatusResponse) connection.send(status);
-
                     /* The patron must be validated before placing a hold */
                     SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(institutionId, patronIdentifier, getOperatorPassword());
                     SIP2PatronInformationResponse response = (SIP2PatronInformationResponse) connection.send(request);
@@ -390,11 +386,9 @@ public abstract class JSIPConnector implements IJSIPConnector {
         } catch (InvalidSIP2ResponseValueException e) {
             logger.error("Connection Invalid SIP2 Value = " + e.getMessage());
             holdResponse.setScreenMessage(java.util.Arrays.asList("Invaild Response Values from ILS"));
-
         } finally {
             connection.close();
         }
-
         return itemHoldResponse;
     }
 
@@ -596,7 +590,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 reformattedStr = requiredFormat.format(sipFormat.parse(sipDate));
             }
         } catch (ParseException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return reformattedStr;
     }

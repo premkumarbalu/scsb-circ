@@ -30,7 +30,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
     private String[] patrons = {"RECAPTST01","RECAPTST02","RECAPTST02","RECAPPUL01"};
 
 
-    private String patronIdentifier = "RECAPTST01";
+    private String patronIdentifier = "RECAPTST02";
     private String institutionId = "";
 
     @Test
@@ -43,7 +43,7 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
     public void lookupItem() throws Exception {
 
         ItemInformationResponse itemInformationResponse = (ItemInformationResponse)columbiaJSIPConnector.lookupItem(itemIdentifier[4]);
-        logger.info("");
+        logger.info("\n");
         logger.info("Circulation Status     :" + itemInformationResponse.getCirculationStatus());
         logger.info("Security Marker        :" + itemInformationResponse.getSecurityMarker());
         logger.info("Fee Type               :" + itemInformationResponse.getFeeType());
@@ -61,18 +61,16 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void lookupUser() throws Exception {
-        String patronIdentifier = "RECAPPUL01";
-        String institutionId = "0RECAPPUL01";
-        SIP2PatronStatusResponse patronInformationResponse = columbiaJSIPConnector.lookupUser(institutionId, patronIdentifier);
+        String patronIdentifier = "RECAPTST03";
+        PatronInformationResponse patronInformationResponse =  (PatronInformationResponse) columbiaJSIPConnector.lookupPatron(patronIdentifier);
+        logger.info("Patron Info      :" + patronInformationResponse.getScreenMessage());
         assertNotNull(patronInformationResponse);
-        assertTrue(patronInformationResponse.isValid());
     }
 
     @Test
     public void checkout() throws Exception {
         String itemIdentifier = this.itemIdentifier[4];
-        String patronIdentifier = "RECAPPUL01";
-        String institutionId = "";
+        String patronIdentifier = "RECAPPUL03";
         ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse)columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
         lookupItem();
         assertNotNull(itemCheckoutResponse);

@@ -100,7 +100,7 @@ public class GFAService {
                 }
                 logger.info(gfaOnlyStaus);
 
-                if (ReCAPConstants.GFA_STATUS_AVAILABLE_LIST.contains(gfaOnlyStaus)) {
+                if (ReCAPConstants.getGFAStatusAvailableList().contains(gfaOnlyStaus)) {
                     Ttitem ttitem001 = new Ttitem();
                     ttitem001.setCustomerCode(itemRequestInfo.getCustomerCode());
                     ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
