@@ -166,6 +166,7 @@ public class ReCAPConstants {
     public static final String REQUEST_ITEM_INSERT = "Request Item Insert";
 
 
+
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE = "1 - 2";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK = "2 - 1";
     public static final String REQUEST_ITEM_TITLE_SUFFIX = " [RECAP]";
@@ -193,6 +194,7 @@ public class ReCAPConstants {
     public static final String REQUEST_STATUS_REFILED = "REFILED";
     public static final String REQUEST_STATUS_CANCELED = "CANCELED";
     public static final String REQUEST_STATUS_EXCEPTION = "EXCEPTION";
+
 
 
     public static final String NYPL_SOURCE_NYPL = "nypl-sierra";

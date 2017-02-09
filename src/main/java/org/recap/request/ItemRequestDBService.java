@@ -74,11 +74,6 @@ public class ItemRequestDBService {
                 savedPatronEntity = patronDetailsRepository.save(patronEntity);
             }
 
-            //Notes
-            NotesEntity notesEntity = new NotesEntity();
-            notesEntity.setNotes(itemRequestInformation.getRequestNotes());
-            notesEntity.setItemId(itemEntity.getItemId());
-
             //Request Item
             requestItemEntity.setItemId(itemEntity.getItemId());
             requestItemEntity.setRequestingInstitutionId(itemEntity.getInstitutionEntity().getInstitutionId());
@@ -97,7 +92,7 @@ public class ItemRequestDBService {
             requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
             requestItemEntity.setStopCode(itemRequestInformation.getDeliveryLocation());
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-            requestItemEntity.setNotesEntities(Arrays.asList(notesEntity));
+            requestItemEntity.setNotes(itemRequestInformation.getRequestNotes());
 
 
             savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
@@ -143,11 +138,6 @@ public class ItemRequestDBService {
                 savedPatronEntity = patronDetailsRepository.save(patronEntity);
             }
 
-            //Notes
-            NotesEntity notesEntity = new NotesEntity();
-            notesEntity.setNotes(itemInformationResponse.getRequestNotes());
-            notesEntity.setItemId(itemInformationResponse.getItemId());
-
             //Request Item
             requestItemEntity.setItemId(itemInformationResponse.getItemId());
             requestItemEntity.setRequestingInstitutionId(institutionEntity.getInstitutionId());
@@ -166,7 +156,7 @@ public class ItemRequestDBService {
             requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
             requestItemEntity.setStopCode(itemInformationResponse.getDeliveryLocation());
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-            requestItemEntity.setNotesEntities(Arrays.asList(notesEntity));
+            requestItemEntity.setNotes(itemInformationResponse.getRequestNotes());
 
             savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
             if (savedItemRequest != null) {

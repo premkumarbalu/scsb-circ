@@ -129,11 +129,12 @@ public class RequestItemQueueConsumer {
         ItemInformationResponse itemInformationResponse = null;
         try {
             itemInformationResponse = om.readValue(body, ItemInformationResponse.class);
-            itemRequestService.saveItemChangeLogEntity(itemInformationResponse.getRequestId(), ReCAPConstants.GUEST_USER, operationType, body);
+            itemRequestService.saveItemChangeLogEntity(0, ReCAPConstants.GUEST_USER, operationType, body);
             if(!itemInformationResponse.isSuccess()) {
+                itemInformationResponse.setRequestNotes(itemInformationResponse.getScreenMessage());
                 itemRequestService.updateRecapRequestItem(itemInformationResponse);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
     }

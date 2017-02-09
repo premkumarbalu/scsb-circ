@@ -36,8 +36,13 @@ public class ItemInformationResponse extends AbstractResponseItem {
     private String updatedDate;
     private String deletedDate;
     private boolean isDeleted;
-    private String patronBarcode="";
-    private String requestingInstitution="";
+    private String patronBarcode = "";
+    private String requestingInstitution = "";
+    private String emailAddress = "";
+    private String requestType = ""; // Retrieval,EDD, Hold, Recall, Borrow Direct
+    private String deliveryLocation = "";
+    private String requestNotes = "";
+    private Integer itemId;
 
     public Integer getRequestId() {
         return requestId;
@@ -271,4 +276,43 @@ public class ItemInformationResponse extends AbstractResponseItem {
         this.requestingInstitution = requestingInstitution;
     }
 
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
+    public String getRequestType() {
+        return requestType;
+    }
+
+    public void setRequestType(String requestType) {
+        this.requestType = requestType;
+    }
+
+    public String getDeliveryLocation() {
+        return deliveryLocation;
+    }
+
+    public void setDeliveryLocation(String deliveryLocation) {
+        this.deliveryLocation = deliveryLocation;
+    }
+
+    public String getRequestNotes() {
+        return requestNotes;
+    }
+
+    public void setRequestNotes(String requestNotes) {
+        this.requestNotes = requestNotes;
+    }
+
+    public Integer getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Integer itemId) {
+        this.itemId = itemId;
+    }
 }
