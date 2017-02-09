@@ -17,7 +17,7 @@ public class ItemInformationResponse extends AbstractResponseItem {
     private String securityMarker;
     private String feeType;
     private String transactionDate;
-    private String holdQueueLength;
+    private String holdQueueLength = "0";
     private String holdPickupDate;
     private String recallDate;
     private String Owner;
