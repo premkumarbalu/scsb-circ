@@ -368,11 +368,6 @@ public class ItemRequestService {
                 savedPatronEntity = patronDetailsRepository.save(patronEntity);
             }
 
-            //Notes
-            NotesEntity notesEntity = new NotesEntity();
-            notesEntity.setNotes(itemRequestInformation.getRequestNotes());
-            notesEntity.setItemId(itemEntity.getItemId());
-
             //Request Item
             requestItemEntity.setItemId(itemEntity.getItemId());
             requestItemEntity.setRequestingInstitutionId(itemEntity.getInstitutionEntity().getInstitutionId());
@@ -391,7 +386,7 @@ public class ItemRequestService {
             requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
             requestItemEntity.setStopCode(itemRequestInformation.getDeliveryLocation());
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-            requestItemEntity.setNotesEntities(Arrays.asList(notesEntity));
+            requestItemEntity.setNotes(itemRequestInformation.getRequestNotes());
 
 
             savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
@@ -472,6 +467,7 @@ public class ItemRequestService {
                 ItemHoldResponse itemHoldResponse = (ItemHoldResponse) requestItemController.holdItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
                 if (itemHoldResponse.isSuccess()) { // IF Hold command is successfully
                     itemResponseInformation.setExpirationDate(itemHoldResponse.getExpirationDate());
+                    itemRequestInfo.setExpirationDate(itemHoldResponse.getExpirationDate());
                     itemRequestInfo.setDeliveryLocation(deliveryCode);
                     itemResponseInformation = checkInstAfterPlacingRequest(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
                     messagePublish = itemResponseInformation.getScreenMessage();

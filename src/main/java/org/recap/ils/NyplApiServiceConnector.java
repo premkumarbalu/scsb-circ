@@ -93,6 +93,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
             CheckoutRequest checkoutRequest = new CheckoutRequest();
             checkoutRequest.setPatronBarcode(patronIdentifier);
             checkoutRequest.setItemBarcode(itemIdentifier);
+            checkoutRequest.setDesiredDateDue(nyplApiResponseUtil.getExpirationDateForNypl());
 
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity<CheckoutRequest> requestEntity = new HttpEntity(checkoutRequest, getHttpHeaders());
