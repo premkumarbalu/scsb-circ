@@ -31,6 +31,7 @@ public class ItemRequestInformation {
     private String chapterTitle = "";
     private String expirationDate;
     private String bibId = "";
+    private String username;
 
     public String getBibId() {
         return bibId;
@@ -174,6 +175,14 @@ public class ItemRequestInformation {
 
     public void setCustomerCode(String customerCode) {
         this.customerCode = customerCode;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     @JsonIgnore
