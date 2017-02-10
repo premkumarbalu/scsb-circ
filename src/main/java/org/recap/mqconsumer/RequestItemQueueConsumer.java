@@ -129,7 +129,7 @@ public class RequestItemQueueConsumer {
         ItemInformationResponse itemInformationResponse = null;
         try {
             itemInformationResponse = om.readValue(body, ItemInformationResponse.class);
-            itemRequestService.saveItemChangeLogEntity(0, ReCAPConstants.GUEST_USER, operationType, body);
+            itemRequestService.saveItemChangeLogEntity(0, itemRequestService.getUser(itemInformationResponse.getUsername()), operationType, body);
             if(!itemInformationResponse.isSuccess()) {
                 itemInformationResponse.setRequestNotes(itemInformationResponse.getScreenMessage());
                 itemRequestService.updateRecapRequestItem(itemInformationResponse);

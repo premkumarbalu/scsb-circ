@@ -106,6 +106,7 @@ public class GFAService {
                     ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
                     ttitem001.setDestination(itemRequestInfo.getDeliveryLocation());
                     ttitem001.setDeliveryMethod(ReCAPConstants.REQUEST_DELIVERY_METHOD);
+
                     List<Ttitem> ttitems = new ArrayList<>();
                     ttitems.add(ttitem001);
                     RetrieveItem retrieveItem = new RetrieveItem();

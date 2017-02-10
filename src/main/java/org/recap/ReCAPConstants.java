@@ -27,7 +27,6 @@ public class ReCAPConstants {
     public static final String EMPTY_PATRON_BARCODE = "Patron barcode should not be null or empty.Please enter the valid patron barcode";
     public static final String INVALID_REQUEST_TYPE = "Please enter the valid request type";
     public static final String RETRIEVAL = "RETRIEVAL";
-    public static final String RECALL = "RECALL";
     public static final String EDD_REQUEST = "EDD";
     public static final String BORROW_DIRECT = "BORROW DIRECT";
     public static final String PHYSICAL_REQUEST = "Physical";
@@ -189,8 +188,8 @@ public class ReCAPConstants {
     public static final int ESIPEXPIRATION_DATE_MONTH = 6;
 
     public static final String REQUEST_STATUS_RETRIEVAL_ORDER_PLACED = "RETRIEVAL_ORDER_PLACED";
-    public static final String REQUEST_STATUS_RECALLED = "RECALLED";
-    public static final String REQUEST_STATUS_RECALL_RETRIEVAL_ORDER_PLACED = "RECALL_RETRIEVAL_ORDER_PLACED";
+    public static final String REQUEST_STATUS_RECALLED = "RECALL_ORDER_PLACED";
+    public static final String REQUEST_STATUS_EDD = "EDD_ORDER_PLACED";
     public static final String REQUEST_STATUS_REFILED = "REFILED";
     public static final String REQUEST_STATUS_CANCELED = "CANCELED";
     public static final String REQUEST_STATUS_EXCEPTION = "EXCEPTION";

@@ -67,7 +67,7 @@ public class ItemEDDRequestService {
                     requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
                     itemResponseInformation = itemRequestService.updateGFA(itemRequestInfo, itemResponseInformation);
                     if (itemResponseInformation.isSuccess()) {
-                        itemRequestService.updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+                        itemRequestService.updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_EDD);
                         bsuccess = true;
                         messagePublish = "EDD request is successfull";
                     } else {
@@ -79,6 +79,7 @@ public class ItemEDDRequestService {
                     messagePublish = res.getBody().toString();
                     bsuccess = false;
                 }
+                itemResponseInformation.setItemId(itemEntity.getItemId());
             } else {
                 messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
                 bsuccess = false;
@@ -93,6 +94,10 @@ public class ItemEDDRequestService {
             itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
             itemResponseInformation.setBibID(itemRequestInfo.getBibId());
             itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
+            itemResponseInformation.setRequestType(itemRequestInfo.getRequestType());
+            itemResponseInformation.setEmailAddress(itemRequestInfo.getEmailAddress());
+            itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
+            itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes());
             // Update Topics
             itemRequestService.sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {

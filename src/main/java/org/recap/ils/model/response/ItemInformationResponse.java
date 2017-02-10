@@ -43,6 +43,7 @@ public class ItemInformationResponse extends AbstractResponseItem {
     private String deliveryLocation = "";
     private String requestNotes = "";
     private Integer itemId;
+    private String username;
 
     public Integer getRequestId() {
         return requestId;
@@ -314,5 +315,13 @@ public class ItemInformationResponse extends AbstractResponseItem {
 
     public void setItemId(Integer itemId) {
         this.itemId = itemId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
