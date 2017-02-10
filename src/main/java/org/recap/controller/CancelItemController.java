@@ -52,7 +52,7 @@ public class CancelItemController {
         try {
             RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(requestId);
             if (requestItemEntity != null) {
-                if (requestItemEntity.getRequestStatusEntity().getRequestStatusCode().equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED) || requestItemEntity.getRequestStatusEntity().getRequestStatusCode().equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_RECALL_RETRIEVAL_ORDER_PLACED)) {
+                if (requestItemEntity.getRequestStatusEntity().getRequestStatusCode().equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED) || requestItemEntity.getRequestStatusEntity().getRequestStatusCode().equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_RECALLED)) {
                     ItemEntity itemEntity = requestItemEntity.getItemEntity();
 
                     ItemRequestInformation itemRequestInformation = new ItemRequestInformation();

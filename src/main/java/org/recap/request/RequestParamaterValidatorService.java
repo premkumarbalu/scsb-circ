@@ -54,7 +54,7 @@ public class RequestParamaterValidatorService {
                 && (!itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)
                 || !itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)
                 || !itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT)
-                || !itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RECALL))
+                || !itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL))
                 ){
             errorMessageMap.put(errorCount, ReCAPConstants.INVALID_REQUEST_TYPE);
             errorCount++;
@@ -85,7 +85,7 @@ public class RequestParamaterValidatorService {
                         errorCount++;
                     }
                 }
-            } else if (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RECALL) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)) {
+            } else if (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)) {
                 if (StringUtils.isEmpty(itemRequestInformation.getDeliveryLocation())) {
                     errorMessageMap.put(errorCount, ReCAPConstants.DELIVERY_LOCATION_REQUIRED);
                     errorCount++;
