@@ -11,7 +11,6 @@ import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
 import com.pkrete.jsip2.messages.responses.*;
 import com.pkrete.jsip2.util.MessageUtil;
 import com.pkrete.jsip2.variables.HoldMode;
-import com.pkrete.jsip2.variables.StatusCode;
 import org.recap.ReCAPConstants;
 import org.recap.ils.model.response.*;
 import org.slf4j.Logger;
