@@ -133,12 +133,25 @@ public class RequestItemController {
     @RequestMapping(value = "/createBib", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) throws Exception {
         ItemCreateBibResponse itemCreateBibResponse;
+        String itemBarcode;
         if (callInstitition == null) {
             callInstitition = itemRequestInformation.getItemOwningInstitution();
         }
-        String itembarcode = itemRequestInformation.getItemBarcodes().get(0);
-        itemCreateBibResponse = (ItemCreateBibResponse) jsipConectorFactory.getJSIPConnector(callInstitition).createBib(itembarcode, itemRequestInformation.getPatronBarcode(), itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getTitleIdentifier());
-
+        if(!itemRequestInformation.getItemBarcodes().isEmpty()) {
+            itemBarcode = itemRequestInformation.getItemBarcodes().get(0);
+            ItemInformationResponse itemInformation = (ItemInformationResponse) itemInformation(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
+            if (itemInformation.getScreenMessage().toUpperCase().contains(ReCAPConstants.REQUEST_ITEM_BARCODE_NOT_FOUND)) {
+                itemCreateBibResponse = (ItemCreateBibResponse) jsipConectorFactory.getJSIPConnector(callInstitition).createBib(itemBarcode, itemRequestInformation.getPatronBarcode(), itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getTitleIdentifier());
+            }else{
+                itemCreateBibResponse = new ItemCreateBibResponse();
+                itemCreateBibResponse.setSuccess(true);
+                itemCreateBibResponse.setScreenMessage("Item Barcode already Exist");
+                itemCreateBibResponse.setItemBarcode(itemBarcode);
+                itemCreateBibResponse.setBibId(itemInformation.getBibID());
+            }
+        }else{
+            itemCreateBibResponse = new ItemCreateBibResponse();
+        }
         return itemCreateBibResponse;
     }
 

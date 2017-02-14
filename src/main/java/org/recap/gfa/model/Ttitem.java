@@ -10,7 +10,6 @@ public class Ttitem {
     private String destination;
     private String deliveryMethod;
 
-
     private String requestor;
     private String requestorFirstName;
     private String requestorLastName;
