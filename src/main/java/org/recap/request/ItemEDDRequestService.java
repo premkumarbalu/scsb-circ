@@ -54,7 +54,7 @@ public class ItemEDDRequestService {
             if (itemEntities != null && !itemEntities.isEmpty()) {
                 logger.info("Item Exists in SCSB Database");
                 itemEntity = itemEntities.get(0);
-                if (itemRequestInfo.getBibId().trim().length() <= 0) {
+                if (itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId().trim().length() <= 0) {
                     itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 }
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());

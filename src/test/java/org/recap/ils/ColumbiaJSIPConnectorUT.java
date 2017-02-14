@@ -3,8 +3,6 @@ package org.recap.ils;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.messages.SIP2MessageResponse;
-import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
-import com.pkrete.jsip2.messages.responses.SIP2PatronStatusResponse;
 import com.pkrete.jsip2.parser.SIP2CreateBibResponseParser;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Test;
@@ -26,8 +24,9 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Autowired
     private ColumbiaJSIPConnector columbiaJSIPConnector;
-    private String[] itemIdentifier = {"CU55724132", "CULTST12345","MR68799284","1000534323"," CU65897706","CULTST52345","CULTST11345","CULTST13345"};
-    private String[] patrons = {"RECAPTST01","RECAPTST02","RECAPTST02","RECAPPUL01"};
+    String[] itemIdentifierPUL = {"PULTST54321", "PULTST54322", "PULTST54323", "PULTST54324", "PULTST54325", "PULTST54326", "PULTST54334", "PULTST54335", "PULTST54337", "PULTST54338", "PULTST54339", "PULTST54340"};
+    private String[] itemIdentifierCUL = {"CU55724132", "CULTST12345", "MR68799284", "1000534323", " CU65897706", "CULTST52345", "CULTST11345", "CULTST13345"};
+    private String[] patrons = {"RECAPTST01", "RECAPTST02", "RECAPTST02", "RECAPPUL01"};
 
 
     private String patronIdentifier = "RECAPTST02";
@@ -35,43 +34,47 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void login() throws Exception {
-        boolean sip2LoginRequest = columbiaJSIPConnector.jSIPLogin(null,patronIdentifier);
+        boolean sip2LoginRequest = columbiaJSIPConnector.jSIPLogin(null, patronIdentifier);
         assertTrue(sip2LoginRequest);
     }
 
     @Test
     public void lookupItem() throws Exception {
-
-        ItemInformationResponse itemInformationResponse = (ItemInformationResponse)columbiaJSIPConnector.lookupItem(itemIdentifier[4]);
-        logger.info("\n");
-        logger.info("Circulation Status     :" + itemInformationResponse.getCirculationStatus());
-        logger.info("Security Marker        :" + itemInformationResponse.getSecurityMarker());
-        logger.info("Fee Type               :" + itemInformationResponse.getFeeType());
-        logger.info("Transaction Date       :" + itemInformationResponse.getTransactionDate());
-        logger.info("Hold Queue Length (CF) :" + itemInformationResponse.getHoldQueueLength());
-        logger.info("Title                  :" + itemInformationResponse.getTitleIdentifier());
-        logger.info("BibId                  :" + itemInformationResponse.getBibID());
-        logger.info("DueDate                :" + itemInformationResponse.getDueDate());
-        logger.info("Expiration Date        :" + itemInformationResponse.getExpirationDate());
-        logger.info("Recall Date            :" + itemInformationResponse.getRecallDate());
-        logger.info("Current Location       :" + itemInformationResponse.getCurrentLocation());
-        logger.info("Hold Pickup Date       :" + itemInformationResponse.getHoldPickupDate());
-
+        runLookup(itemIdentifierPUL);
     }
 
+    private void runLookup(String[] itemIdentifiers){
+
+        for (int i = 0; i < itemIdentifiers.length; i++) {
+            ItemInformationResponse itemInformationResponse = (ItemInformationResponse) columbiaJSIPConnector.lookupItem(itemIdentifiers[i]);
+            logger.info("\n");
+            logger.info("Circulation Status     :" + itemInformationResponse.getCirculationStatus());
+            logger.info("Security Marker        :" + itemInformationResponse.getSecurityMarker());
+            logger.info("Fee Type               :" + itemInformationResponse.getFeeType());
+            logger.info("Transaction Date       :" + itemInformationResponse.getTransactionDate());
+            logger.info("Hold Queue Length (CF) :" + itemInformationResponse.getHoldQueueLength());
+            logger.info("Title                  :" + itemInformationResponse.getTitleIdentifier());
+            logger.info("BibId                  :" + itemInformationResponse.getBibID());
+            logger.info("DueDate                :" + itemInformationResponse.getDueDate());
+            logger.info("Expiration Date        :" + itemInformationResponse.getExpirationDate());
+            logger.info("Recall Date            :" + itemInformationResponse.getRecallDate());
+            logger.info("Current Location       :" + itemInformationResponse.getCurrentLocation());
+            logger.info("Hold Pickup Date       :" + itemInformationResponse.getHoldPickupDate());
+        }
+    }
     @Test
     public void lookupUser() throws Exception {
         String patronIdentifier = "RECAPTST03";
-        PatronInformationResponse patronInformationResponse =  (PatronInformationResponse) columbiaJSIPConnector.lookupPatron(patronIdentifier);
+        PatronInformationResponse patronInformationResponse = (PatronInformationResponse) columbiaJSIPConnector.lookupPatron(patronIdentifier);
         logger.info("Patron Info      :" + patronInformationResponse.getScreenMessage());
         assertNotNull(patronInformationResponse);
     }
 
     @Test
     public void checkout() throws Exception {
-        String itemIdentifier = this.itemIdentifier[4];
+        String itemIdentifier = this.itemIdentifierCUL[4];
         String patronIdentifier = "RECAPPUL03";
-        ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse)columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
+        ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse) columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
         lookupItem();
         assertNotNull(itemCheckoutResponse);
         assertTrue(itemCheckoutResponse.isSuccess());
@@ -79,10 +82,10 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void checkIn() throws Exception {
-        String itemIdentifier = this.itemIdentifier[4];
+        String itemIdentifier = this.itemIdentifierCUL[4];
         String patronIdentifier = "RECAPPUL01";
         String institutionId = "";
-        ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse)columbiaJSIPConnector.checkInItem(itemIdentifier, patronIdentifier);
+        ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse) columbiaJSIPConnector.checkInItem(itemIdentifier, patronIdentifier);
         lookupItem();
         assertNotNull(itemCheckinResponse);
         assertTrue(itemCheckinResponse.isSuccess());
@@ -93,10 +96,10 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "CULTST32345";
         String patronIdentifier = "RECAPTST01";
         String institutionId = "recaptestreg";
-        ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse)columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
+        ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse) columbiaJSIPConnector.checkOutItem(itemIdentifier, patronIdentifier);
         assertNotNull(itemCheckoutResponse);
         assertTrue(itemCheckoutResponse.isSuccess());
-        ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse)columbiaJSIPConnector.checkInItem(itemIdentifier, patronIdentifier);
+        ItemCheckinResponse itemCheckinResponse = (ItemCheckinResponse) columbiaJSIPConnector.checkInItem(itemIdentifier, patronIdentifier);
         lookupItem();
         assertNotNull(itemCheckinResponse);
         assertTrue(itemCheckinResponse.isSuccess());
@@ -104,15 +107,16 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void cancelHold() throws Exception {
-        String itemIdentifier = this.itemIdentifier[1];;
+        String itemIdentifier = this.itemIdentifierCUL[1];
+        ;
         String patronIdentifier = "RECAPTST01";
         String callInstitutionId = "";
         String itemInstitutionId = "";
-        String expirationDate =MessageUtil.createFutureDate(20,2);
-        String bibId="12040033";
-        String pickupLocation="CIRCrecap";
+        String expirationDate = MessageUtil.createFutureDate(20, 2);
+        String bibId = "12040033";
+        String pickupLocation = "CIRCrecap";
 
-        ItemHoldResponse holdResponse = (ItemHoldResponse) columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier, callInstitutionId, itemInstitutionId, expirationDate,bibId,pickupLocation, null, null, null, null);
+        ItemHoldResponse holdResponse = (ItemHoldResponse) columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier, callInstitutionId, itemInstitutionId, expirationDate, bibId, pickupLocation, null, null, null, null);
         lookupItem();
 
         assertNotNull(holdResponse);
@@ -121,14 +125,14 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void placeHold() throws Exception {
-        String itemIdentifier = this.itemIdentifier[4];
+        String itemIdentifier = this.itemIdentifierCUL[4];
         String patronIdentifier = "RECAPTST01";
         String institutionId = "recaptestreg";
-        String expirationDate = MessageUtil.createFutureDate(20,2);
-        String bibId= "12040033";
-        String pickupLocation="CIRCrecap";
+        String expirationDate = MessageUtil.createFutureDate(20, 2);
+        String bibId = "12040033";
+        String pickupLocation = "CIRCrecap";
 
-        ItemHoldResponse holdResponse = (ItemHoldResponse) columbiaJSIPConnector.cancelHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation, null);
+        ItemHoldResponse holdResponse = (ItemHoldResponse) columbiaJSIPConnector.cancelHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation, null);
         lookupItem();
 
         assertNotNull(holdResponse);
@@ -141,13 +145,13 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String patronIdentifier = "198572368";
         String callInstitutionId = "htccul";
         String itemInstitutionId = "";
-        String expirationDate =MessageUtil.getSipDateTime(); // Date Format YYYYMMDDZZZZHHMMSS
-        String bibId="100001";
-        String pickupLocation="htcsc";
+        String expirationDate = MessageUtil.getSipDateTime(); // Date Format YYYYMMDDZZZZHHMMSS
+        String bibId = "100001";
+        String pickupLocation = "htcsc";
         ItemHoldResponse holdResponse;
 
-        holdResponse = (ItemHoldResponse) columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier, callInstitutionId, itemInstitutionId, expirationDate,bibId,pickupLocation, null, null, null, null);
-        holdResponse = (ItemHoldResponse) columbiaJSIPConnector.cancelHold(itemIdentifier, patronIdentifier,institutionId ,expirationDate,bibId,pickupLocation, null);
+        holdResponse = (ItemHoldResponse) columbiaJSIPConnector.placeHold(itemIdentifier, patronIdentifier, callInstitutionId, itemInstitutionId, expirationDate, bibId, pickupLocation, null, null, null, null);
+        holdResponse = (ItemHoldResponse) columbiaJSIPConnector.cancelHold(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation, null);
 
         assertNotNull(holdResponse);
         assertTrue(holdResponse.isSuccess());
@@ -158,11 +162,11 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
         String itemIdentifier = "888888";
         String patronIdentifier = "RECAPTST01";
         String institutionId = "";
-        String titleIdentifier ="Recap Testing 8888";
-        String bibId ="";
+        String titleIdentifier = "Recap Testing 8888";
+        String bibId = "";
         ItemCreateBibResponse itemCreateBibResponse;
 
-        itemCreateBibResponse= columbiaJSIPConnector.createBib(itemIdentifier,patronIdentifier,institutionId ,titleIdentifier);
+        itemCreateBibResponse = columbiaJSIPConnector.createBib(itemIdentifier, patronIdentifier, institutionId, titleIdentifier);
 
         logger.info(itemCreateBibResponse.getBibId());
         logger.info(itemCreateBibResponse.getItemId());
@@ -174,26 +178,26 @@ public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void testRecall() throws Exception {
-        String itemIdentifier = this.itemIdentifier[4];
+        String itemIdentifier = this.itemIdentifierCUL[4];
         String patronIdentifier = "RECAPTST03";
         String institutionId = "recaptestgrd";
-        String expirationDate = MessageUtil.createFutureDate(20,2);
-        String pickupLocation="CIRCrecap";
-        String bibId="12040033";
+        String expirationDate = MessageUtil.createFutureDate(20, 2);
+        String pickupLocation = "CIRCrecap";
+        String bibId = "12040033";
 
-        ItemRecallResponse itemRecallResponse= columbiaJSIPConnector.recallItem(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
+        ItemRecallResponse itemRecallResponse = columbiaJSIPConnector.recallItem(itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
         assertNotNull(itemRecallResponse);
         assertTrue(itemRecallResponse.isSuccess());
     }
 
 
     @Test
-    public void testCreatebibParser(){
-        String createBibEsipResponse="821MJ8967832|MA12040035|AF|";
+    public void testCreatebibParser() {
+        String createBibEsipResponse = "821MJ8967832|MA12040035|AF|";
         SIP2CreateBibResponseParser sip2CreateBibResponseParser = new SIP2CreateBibResponseParser();
         try {
-            SIP2MessageResponse sIP2MessageResponse =sip2CreateBibResponseParser.parse(createBibEsipResponse);
-            if(sIP2MessageResponse.getScreenMessage().size()>0) {
+            SIP2MessageResponse sIP2MessageResponse = sip2CreateBibResponseParser.parse(createBibEsipResponse);
+            if (sIP2MessageResponse.getScreenMessage().size() > 0) {
                 logger.info("" + sIP2MessageResponse.getScreenMessage().get(0));
             }
             logger.info(sIP2MessageResponse.getItemIdentifier());

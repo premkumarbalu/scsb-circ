@@ -2,7 +2,6 @@ package org.recap.controller;
 
 import io.swagger.annotations.ApiParam;
 import org.recap.ReCAPConstants;
-import org.recap.ils.model.response.ItemCheckinResponse;
 import org.recap.ils.model.response.ItemHoldResponse;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.*;
@@ -27,6 +26,8 @@ import java.util.Arrays;
 @RequestMapping("/cancelRequest")
 public class CancelItemController {
 
+    public static final String REQUEST_CANCELLATION_NOT_ACTIVE = "RequestId is not active status to be canceled";
+    public static final String REQUEST_CANCELLATION_DOES_NOT_EXIST = "RequestId does not exist";
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
@@ -44,15 +45,14 @@ public class CancelItemController {
     @RequestMapping(value = "/cancel", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public CancelRequestResponse cancelRequest(@ApiParam(value = "Parameters for cancelling", required = true, name = "requestId") @RequestParam Integer requestId) {
         CancelRequestResponse cancelRequestResponse = new CancelRequestResponse();
-        ItemHoldResponse itemCanceHoldResponse = null;
-        ItemCheckinResponse itemCheckinResponse = null;
+        ItemHoldResponse itemCanceHoldResponse;
         boolean bSuccess = false;
         String screenMessage = "";
-
         try {
             RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(requestId);
             if (requestItemEntity != null) {
-                if (requestItemEntity.getRequestStatusEntity().getRequestStatusCode().equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED) || requestItemEntity.getRequestStatusEntity().getRequestStatusCode().equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_RECALLED)) {
+                String requestStatus = requestItemEntity.getRequestStatusEntity().getRequestStatusCode();
+                if (requestStatus.equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED) || requestStatus.equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_RECALLED)) {
                     ItemEntity itemEntity = requestItemEntity.getItemEntity();
 
                     ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
@@ -70,6 +70,8 @@ public class CancelItemController {
                         iholdQueue = Integer.parseInt(itemInformationResponse.getHoldQueueLength());
                     }
                     if (iholdQueue > 0 && (itemInformationResponse.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_OTHER) || itemInformationResponse.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_IN_TRANSIT))) {
+                        ItemInformationResponse itemInformation = (ItemInformationResponse) requestItemController.itemInformation(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
+                        itemRequestInformation.setBibId(itemInformation.getBibID());
                         itemCanceHoldResponse = (ItemHoldResponse) requestItemController.cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
                         if (itemCanceHoldResponse.isSuccess()) {
                             if (!itemRequestInformation.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
@@ -82,28 +84,36 @@ public class CancelItemController {
                             }
                             RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
                             itemRequestService.saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS, ReCAPConstants.REQUEST_STATUS_CANCELED + savedRequestItemEntity.getItemId());
+                            itemRequestService.updateSolrIndex(savedRequestItemEntity.getItemEntity());
                             bSuccess = true;
-                            screenMessage = "Request cancellation succcessfully processed";
+                            screenMessage = ReCAPConstants.REQUEST_CANCELLATION_SUCCCESS;
                         } else {
                             bSuccess = false;
-                            screenMessage = "Cancel hold request failed from ILS";
+                            screenMessage = itemCanceHoldResponse.getScreenMessage();
                         }
                     } else {
                         bSuccess = false;
-                        screenMessage = "This Request cannot be canceled, this item is not on hold in ILS";
+                        screenMessage = ReCAPConstants.REQUEST_CANCELLATION_NOT_ON_HOLD_IN_ILS;
                     }
+                } else if (requestStatus.equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_EDD)){
+                    RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
+                    requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+                    RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
+                    itemRequestService.saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS, ReCAPConstants.REQUEST_STATUS_CANCELED + savedRequestItemEntity.getItemId());
+                    bSuccess = true;
+                    screenMessage = ReCAPConstants.REQUEST_CANCELLATION_EDD_SUCCCESS;
                 } else {
                     bSuccess = false;
-                    screenMessage = "RequestId is not active status to be canceled";
+                    screenMessage = REQUEST_CANCELLATION_NOT_ACTIVE;
                 }
             } else {
                 bSuccess = false;
-                screenMessage = "RequestId does not exist";
+                screenMessage = REQUEST_CANCELLATION_DOES_NOT_EXIST;
             }
         } catch (Exception e) {
             bSuccess = false;
             screenMessage = e.getMessage();
-            logger.error("Exception: ", e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         } finally {
             cancelRequestResponse.setSuccess(bSuccess);
             cancelRequestResponse.setScreenMessage(screenMessage);
