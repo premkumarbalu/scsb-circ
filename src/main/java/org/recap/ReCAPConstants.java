@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created by premkb on 19/8/16.
  */
-public class ReCAPConstants {
+public final class ReCAPConstants {
 
     public static final String FAILURE = "Failure";
     public static final String SUCCESS = "Success";
@@ -237,7 +237,8 @@ public class ReCAPConstants {
     public static final String SUCCESSFULLY_PROCESSED_REQUEST_ITEM = "Successfully Processed Request Item";
     public static final String REQUEST_ITEM_BARCODE_NOT_FOUND = "ITEM BARCODE NOT FOUND.";
     public static final String REQUEST_CANCELLATION_SUCCCESS = "Request cancellation succcessfully processed";
-    public static final String REQUEST_CANCELLATION_EDD_SUCCCESS = "EDD request cancellation succcessfully processed";
+    public static final String RECALL_CANCELLATION_SUCCCESS = "Recall request cancellation succcessfully processed";
+    public static final String REQUEST_CANCELLATION_EDD_SUCCCESS = "EDD requests cancellation succcessfully processed";
     public static final String REQUEST_CANCELLATION_NOT_ON_HOLD_IN_ILS = "This Request cannot be canceled, this item is not on hold in ILS";
 
     public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Successful created retrival order in GFA";

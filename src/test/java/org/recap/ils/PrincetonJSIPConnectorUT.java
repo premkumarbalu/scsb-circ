@@ -1,6 +1,5 @@
 package org.recap.ils;
 
-import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
 import com.pkrete.jsip2.messages.responses.SIP2ItemInformationResponse;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Ignore;

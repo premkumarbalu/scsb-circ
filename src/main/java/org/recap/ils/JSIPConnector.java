@@ -3,11 +3,7 @@ package org.recap.ils;
 import com.pkrete.jsip2.connection.SIP2SocketConnection;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
-import com.pkrete.jsip2.messages.request.SIP2CreateBibRequest;
-import com.pkrete.jsip2.messages.request.SIP2RecallRequest;
 import com.pkrete.jsip2.messages.requests.*;
-import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
-import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
 import com.pkrete.jsip2.messages.responses.*;
 import com.pkrete.jsip2.util.MessageUtil;
 import com.pkrete.jsip2.variables.HoldMode;
@@ -82,6 +78,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
         return loginPatronStatus;
     }
+
 
     public abstract String getHost();
 
@@ -175,7 +172,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 logger.info("Item Status Request Failed");
             }
         } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
+            logger.error("Connection Invalid SIP2 Response = ", e);
         } catch (InvalidSIP2ResponseValueException e) {
             logger.error("Invalid SIP2 Value = " + e.getMessage());
         } catch (Exception e) {

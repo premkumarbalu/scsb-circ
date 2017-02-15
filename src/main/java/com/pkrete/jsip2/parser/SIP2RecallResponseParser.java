@@ -3,7 +3,7 @@ package com.pkrete.jsip2.parser;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.messages.SIP2MessageResponse;
-import com.pkrete.jsip2.messages.response.SIP2RecallResponse;
+import com.pkrete.jsip2.messages.responses.SIP2RecallResponse;
 
 /**
  * Created by sudhishk on 9/11/16.
@@ -15,18 +15,18 @@ public class SIP2RecallResponseParser extends  SIP2ResponseParser{
         SIP2RecallResponse response= new SIP2RecallResponse(data);
         try {
             response.setOk(this.intToBool(data.charAt(2)));
-//            response.setAvailable(this.charToBool(data.charAt(3)));
+//            responses.setAvailable(this.charToBool(data.charAt(3)));
             response.setTransactionDate(data.substring(4, 22));
             response.setExpirationDate(this.parseVariableWithoutDelimiter("BW", data.substring(22), false));
-//            response.setQueuePosition(this.parseVariableWithoutDelimiter("BR", data.substring(22), false));
+//            responses.setQueuePosition(this.parseVariableWithoutDelimiter("BR", data.substring(22), false));
             response.setPickupLocation(this.parseVariableWithoutDelimiter("BS", data.substring(22), false));
             response.setInstitutionId(this.parseVariableWithoutDelimiter("AO", data.substring(22)));
             response.setPatronIdentifier(this.parseVariable("AA", data.substring(22)));
             response.setItemIdentifier(this.parseVariable("AB", data.substring(22), false));
             response.setTitleIdentifier(this.parseVariable("AJ", data.substring(22), false));
             response.setBibId(this.parseVariable("MA", data.substring(22), false));
-//            response.setIsbn(this.parseVariable("MB", data.substring(22), false));
-//            response.setLccn(this.parseVariable("MC", data.substring(22), false));
+//            responses.setIsbn(this.parseVariable("MB", data.substring(22), false));
+//            responses.setLccn(this.parseVariable("MC", data.substring(22), false));
             response.setScreenMessage(this.parseVariableMulti("AF", data.substring(22)));
             response.setPrintLine(this.parseVariableMulti("AG", data.substring(22)));
             if(!this.parseSequence(data).isEmpty()) {

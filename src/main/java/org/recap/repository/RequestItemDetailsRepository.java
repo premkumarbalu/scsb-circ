@@ -26,7 +26,7 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
 
     Page<RequestItemEntity> findByStopCode(Pageable pageable, @Param("stopCode") String stopCode);
 
-    @Query(value = "select request from RequestItemEntity request where request.itemId = (select itemId from ItemEntity item where item.barcode = :itemBarcode)")
+    @Query(value = "select request from RequestItemEntity request where request.itemId = (select item.itemId from ItemEntity item where item.barcode = :itemBarcode)")
     Page<RequestItemEntity> findByItemBarcode(Pageable pageable, @Param("itemBarcode") String itemBarcode);
 
     @Query(value = "select request from RequestItemEntity request where request.patronId = (select patronId from PatronEntity patron where patron.institutionIdentifier = :patronBarcode)")

@@ -158,17 +158,19 @@ public class ItemRequestService {
             logger.info("Finish Processing");
             itemResponseInformation.setScreenMessage(messagePublish);
             itemResponseInformation.setSuccess(bsuccess);
-            itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
             itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
-            itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
-            itemResponseInformation.setTitleIdentifier(itemRequestInfo.getTitleIdentifier());
-            itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
             itemResponseInformation.setBibID(itemRequestInfo.getBibId());
-            itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
+
+            itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
+            itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
+            itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
             itemResponseInformation.setRequestType(itemRequestInfo.getRequestType());
             itemResponseInformation.setEmailAddress(itemRequestInfo.getEmailAddress());
             itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
             itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes());
+
+            itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
+            itemResponseInformation.setTitleIdentifier(itemRequestInfo.getTitleIdentifier());
 
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
@@ -658,14 +660,6 @@ public class ItemRequestService {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return titleIdentifier;
-    }
-
-    private void getTempBibId(ItemRequestInformation itemRequestInfo, ItemEntity itemEntity) {
-        itemRequestDBService.getTempBibId(itemRequestInfo, itemEntity);
-    }
-
-    private void createTempBibId(ItemRequestInformation itemRequestInfo, ItemEntity itemEntity) {
-        itemRequestDBService.createTempBibId(itemRequestInfo, itemEntity);
     }
 
     private void rollbackAfterGFA(ItemEntity itemEntity, ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
