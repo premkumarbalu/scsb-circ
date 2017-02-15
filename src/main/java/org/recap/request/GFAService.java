@@ -47,6 +47,8 @@ public class GFAService {
             logger.info(responseEntity.getStatusCode().toString());
         } catch (JsonProcessingException e) {
             logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
+        } catch (Exception e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return gfaItemStatusCheckResponse;
     }
@@ -69,13 +71,15 @@ public class GFAService {
                 bSuccess = true;
             }
         } catch (JsonProcessingException e) {
-            logger.info(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
+        } catch (Exception e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return bSuccess;
     }
 
 
-    public ItemInformationResponse executeRetriveOrder(ItemRequestInformation itemRequestInfo,ItemInformationResponse itemResponseInformation) {
+    public ItemInformationResponse executeRetriveOrder(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
         GFARetrieveItemRequest gfaRetrieveItemRequest = new GFARetrieveItemRequest();
         GFAItemStatusCheckResponse gfaItemStatusCheckResponse = null;
@@ -95,7 +99,7 @@ public class GFAService {
 
                 itemStatus = gfaItemStatusCheckResponse.getDsitem().getTtitem().get(0).getItemStatus();
                 if (itemStatus.contains(":")) {
-                    gfaOnlyStaus = itemStatus.substring(0, itemStatus.indexOf(':')+1).toUpperCase();
+                    gfaOnlyStaus = itemStatus.substring(0, itemStatus.indexOf(':') + 1).toUpperCase();
                 } else {
                     gfaOnlyStaus = itemStatus.toUpperCase();
                 }
@@ -114,20 +118,20 @@ public class GFAService {
                     retrieveItem.setTtitem(ttitems);
 
                     boolean bSuccsess = itemRetrival(gfaRetrieveItemRequest);
-                    if(bSuccsess){
+                    if (bSuccsess) {
                         itemResponseInformation.setSuccess(true);
-                        itemResponseInformation.setScreenMessage("Successful created retrival order in GFA");
-                    }else{
+                        itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
+                    } else {
                         itemResponseInformation.setSuccess(false);
-                        itemResponseInformation.setScreenMessage("GFA returned error while creating retrival order");
+                        itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_ERROR);
                     }
-                }else{
+                } else {
                     itemResponseInformation.setSuccess(false);
-                    itemResponseInformation.setScreenMessage("Item in GFA is not available");
+                    itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ITEM_NOT_AVAILABLE);
                 }
             } else {
                 itemResponseInformation.setSuccess(false);
-                itemResponseInformation.setScreenMessage("Item does not exist in GFA, or GFA system is down");
+                itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_ITEM_STATUS_CHECK_FAILED);
             }
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);

@@ -1,12 +1,13 @@
 package org.recap.ils.model.nypl.response;
 
 
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.recap.ils.model.nypl.DebugInfo;
 import org.recap.ils.model.nypl.NYPLHoldData;
+
+import java.util.List;
 
 /**
  * Created by rajeshbabuk on 6/1/17.

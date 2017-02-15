@@ -7,7 +7,7 @@ import java.util.List;
  */
 public class RetrieveItem {
 
-    public List<Ttitem> ttitem;
+    private List<Ttitem> ttitem;
 
     public List<Ttitem> getTtitem() {
         return ttitem;

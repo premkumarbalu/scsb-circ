@@ -9,6 +9,7 @@ import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.messages.responses.SIP2ItemInformationResponse;
 import com.pkrete.jsip2.variables.*;
+import org.recap.ReCAPConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +18,10 @@ public class SIP2ItemInformationResponseParser extends SIP2ResponseParser {
     private Logger logger = LoggerFactory.getLogger(SIP2ItemInformationResponseParser.class);
 
     public SIP2ItemInformationResponseParser() {
+        //Do nothing
     }
 
+    @Override
     public SIP2ItemInformationResponse parse(String data) throws InvalidSIP2ResponseValueException, InvalidSIP2ResponseException {
         SIP2ItemInformationResponse response = new SIP2ItemInformationResponse(data);
 
@@ -59,6 +62,7 @@ public class SIP2ItemInformationResponseParser extends SIP2ResponseParser {
             response.setCheckSum(this.parseChecksum(data));
             return response;
         } catch (InvalidSIP2ResponseValueException var4) {
+            logger.error(ReCAPConstants.LOG_ERROR,var4);
             throw new InvalidSIP2ResponseValueException(var4.getMessage() + " Response message string: \"" + data + "\"");
         }
     }

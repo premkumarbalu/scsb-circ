@@ -1,6 +1,7 @@
 package org.recap.controller;
 
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.ils.JSIPConnectorFactory;
 import org.recap.ils.model.response.*;
@@ -37,14 +38,14 @@ public class RequestItemController {
     @RequestMapping(value = "/checkoutItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem checkoutItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemCheckoutResponse itemCheckoutResponse = new ItemCheckoutResponse();
-        String itembarcode = "";
+        String itemBarcode;
         try {
             if (callInstitition == null) {
                 callInstitition = itemRequestInformation.getItemOwningInstitution();
             }
             if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
-                itembarcode = itemRequestInformation.getItemBarcodes().get(0);
-                itemCheckoutResponse = (ItemCheckoutResponse) jsipConectorFactory.getJSIPConnector(callInstitition).checkOutItem(itembarcode, itemRequestInformation.getPatronBarcode());
+                itemBarcode = itemRequestInformation.getItemBarcodes().get(0);
+                itemCheckoutResponse = (ItemCheckoutResponse) jsipConectorFactory.getJSIPConnector(callInstitition).checkOutItem(itemBarcode, itemRequestInformation.getPatronBarcode());
             } else {
                 itemCheckoutResponse.setSuccess(false);
                 itemCheckoutResponse.setScreenMessage("Item Id not found");
@@ -60,15 +61,15 @@ public class RequestItemController {
 
     @RequestMapping(value = "/checkinItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem checkinItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
-        ItemCheckinResponse itemCheckinResponse = null;
-        String itembarcode = "";
+        ItemCheckinResponse itemCheckinResponse;
+        String itemBarcode;
         try {
             if (callInstitition == null) {
                 callInstitition = itemRequestInformation.getItemOwningInstitution();
             }
             if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
-                itembarcode = itemRequestInformation.getItemBarcodes().get(0);
-                itemCheckinResponse = (ItemCheckinResponse) jsipConectorFactory.getJSIPConnector(callInstitition).checkInItem(itembarcode, itemRequestInformation.getPatronBarcode());
+                itemBarcode = itemRequestInformation.getItemBarcodes().get(0);
+                itemCheckinResponse = (ItemCheckinResponse) jsipConectorFactory.getJSIPConnector(callInstitition).checkInItem(itemBarcode, itemRequestInformation.getPatronBarcode());
             } else {
                 itemCheckinResponse = new ItemCheckinResponse();
                 itemCheckinResponse.setSuccess(false);
@@ -131,7 +132,7 @@ public class RequestItemController {
     }
 
     @RequestMapping(value = "/createBib", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) throws Exception {
+    public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemCreateBibResponse itemCreateBibResponse;
         String itemBarcode;
         if (callInstitition == null) {
@@ -226,7 +227,9 @@ public class RequestItemController {
                 field.setAccessible(true);
                 String name = field.getName();
                 Object value = field.get(clsObject);
-                logger.info("Field name: %sFiled Value :%s", name, value);
+                if(!StringUtils.isBlank(name) && value !=null) {
+                    logger.info(String.format("Field name: %sFiled Value :%s", name, value));
+                }
             }
         } catch (IllegalAccessException e) {
             logger.error("", e);

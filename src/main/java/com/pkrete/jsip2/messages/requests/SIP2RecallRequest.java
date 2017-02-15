@@ -1,6 +1,5 @@
-package com.pkrete.jsip2.messages.request;
+package com.pkrete.jsip2.messages.requests;
 
-import com.pkrete.jsip2.messages.requests.SIP2CirculationTransactionRequest;
 import com.pkrete.jsip2.util.MessageUtil;
 import com.pkrete.jsip2.util.StringUtil;
 import com.pkrete.jsip2.variables.HoldMode;

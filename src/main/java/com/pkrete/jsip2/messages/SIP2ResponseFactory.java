@@ -68,8 +68,8 @@ public class SIP2ResponseFactory {
     /**
      * Creates a new SIP2MessageResponse object based on the given data. 
      * The data contains the command identifier which defines the actual
-     * type of the response message.
-     * @param data message response data
+     * type of the responses message.
+     * @param data message responses data
      * @return SIP2MessageResponse object parsed from the data
      * @throws InvalidSIP2ResponseException
      * @throws InvalidSIP2ResponseValueException 
@@ -137,6 +137,6 @@ public class SIP2ResponseFactory {
             parser = new SIP2RecallResponseParser();
             return parser.parse(data);
         }
-        throw new InvalidSIP2ResponseException("Unsupported response type! Command identifier: " + code);
+        throw new InvalidSIP2ResponseException("Unsupported responses type! Command identifier: " + code);
     }
 }
