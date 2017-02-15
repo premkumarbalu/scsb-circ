@@ -226,7 +226,7 @@ public class RequestItemController {
                 field.setAccessible(true);
                 String name = field.getName();
                 Object value = field.get(clsObject);
-                logger.info(String.format("Field name: %sFiled Value :%s", name, value));
+                logger.info("Field name: %sFiled Value :%s", name, value);
             }
         } catch (IllegalAccessException e) {
             logger.error("", e);

@@ -52,6 +52,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
     private Map collectionGroupMap;
     private Map institutionEntityMap;
 
+    @Override
     public Map convert(Object scsbRecord) {
         Map<String, Object> map = new HashMap<>();
         boolean processBib = false;
@@ -72,7 +73,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         Integer owningInstitutionId = (Integer) getInstitutionEntityMap().get(institutionName);
         Date currentDate = new Date();
         Map<String, Object> bibMap = processAndValidateBibliographicEntity(bibRecordObject, owningInstitutionId, institutionName, owningInstitutionBibId,currentDate);
-        BibliographicEntity bibliographicEntity = (BibliographicEntity) bibMap.get("bibliographicEntity");
+        BibliographicEntity bibliographicEntity = (BibliographicEntity) bibMap.get(ReCAPConstants.BIBLIOGRAPHIC_ENTITY);
         ReportEntity bibReportEntity = (ReportEntity) bibMap.get("bibReportEntity");
         if (bibReportEntity != null) {
             reportEntities.add(bibReportEntity);
@@ -125,7 +126,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
             map.put("reportEntities", reportEntities);
         }
         if (processBib) {
-            map.put("bibliographicEntity", bibliographicEntity);
+            map.put(ReCAPConstants.BIBLIOGRAPHIC_ENTITY, bibliographicEntity);
         }
 
         return map;
@@ -137,7 +138,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         Map<String, Object> map = new HashMap<>();
 
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        StringBuffer errorMessage = new StringBuffer();
+        StringBuilder errorMessage = new StringBuilder();
         if(StringUtils.isEmpty(owningInstitutionBibId)){
             owningInstitutionBibId = marcUtil.getControlFieldValue(bibRecord, "001");
         }
@@ -153,9 +154,9 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
             errorMessage.append("Owning Institution Id cannot be null");
         }
         bibliographicEntity.setCreatedDate(currentDate);
-        bibliographicEntity.setCreatedBy("submitCollection");
+        bibliographicEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         bibliographicEntity.setLastUpdatedDate(currentDate);
-        bibliographicEntity.setLastUpdatedBy("submitCollection");
+        bibliographicEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         bibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
 
         String bibXmlStringContent = marcUtil.writeMarcXml(bibRecord);
@@ -190,19 +191,19 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         }
         if (!CollectionUtils.isEmpty(reportDataEntities)) {
             ReportEntity reportEntity = new ReportEntity();
-            reportEntity.setFileName("SubmitCollection_Failure_Report");
+            reportEntity.setFileName(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT);
             reportEntity.setInstitutionName(institutionName);
             reportEntity.setType(org.recap.ReCAPConstants.FAILURE);
             reportEntity.setCreatedDate(new Date());
             reportEntity.addAll(reportDataEntities);
             map.put("bibReportEntity", reportEntity);
         }
-        map.put("bibliographicEntity", bibliographicEntity);
+        map.put(ReCAPConstants.BIBLIOGRAPHIC_ENTITY, bibliographicEntity);
         return map;
     }
 
     private Map<String, Object> processAndValidateHoldingsEntity(BibliographicEntity bibliographicEntity, String institutionName, Record holdingsRecord, BibRecord bibRecord , Record bibRecordObject,Date currentDate) {
-        StringBuffer errorMessage = new StringBuffer();
+        StringBuilder errorMessage = new StringBuilder();
         Map<String, Object> map = new HashMap<>();
         HoldingsEntity holdingsEntity = new HoldingsEntity();
 
@@ -213,9 +214,9 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
             errorMessage.append("Holdings Content cannot be empty");
         }
         holdingsEntity.setCreatedDate(currentDate);
-        holdingsEntity.setCreatedBy("submitCollection");
+        holdingsEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         holdingsEntity.setLastUpdatedDate(currentDate);
-        holdingsEntity.setLastUpdatedBy("submitCollection");
+        holdingsEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         Integer owningInstitutionId = bibliographicEntity.getOwningInstitutionId();
         holdingsEntity.setOwningInstitutionId(owningInstitutionId);
         String owningInstitutionHoldingsId = marcUtil.getDataFieldValue(holdingsRecord, "852", '0');
@@ -236,7 +237,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
 
         if (!org.springframework.util.CollectionUtils.isEmpty(reportDataEntities)) {
             ReportEntity reportEntity = new ReportEntity();
-            reportEntity.setFileName("SubmitCollection_Failure_Report");
+            reportEntity.setFileName(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT);
             reportEntity.setInstitutionName(institutionName);
             reportEntity.setType(org.recap.ReCAPConstants.FAILURE);
             reportEntity.setCreatedDate(new Date());
@@ -285,13 +286,13 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
             itemEntity.setCollectionGroupId((Integer) getCollectionGroupMap().get("Open"));
         }
         itemEntity.setCreatedDate(currentDate);
-        itemEntity.setCreatedBy("submitCollection");
+        itemEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         itemEntity.setLastUpdatedDate(currentDate);
-        itemEntity.setLastUpdatedBy("submitCollection");
+        itemEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         itemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
 
         String useRestrictions = marcUtil.getDataFieldValue(itemRecord, "876", 'h');
-        if (StringUtils.isNotBlank(useRestrictions) && (useRestrictions.equalsIgnoreCase("In Library Use") || useRestrictions.equalsIgnoreCase("Supervised Use"))) {
+        if (StringUtils.isNotBlank(useRestrictions) && ("In Library Use".equalsIgnoreCase(useRestrictions) || "Supervised Use".equalsIgnoreCase(useRestrictions))) {
             itemEntity.setUseRestrictions(useRestrictions);
         }
 
@@ -314,7 +315,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         }
         if (!org.springframework.util.CollectionUtils.isEmpty(reportDataEntities)) {
             ReportEntity reportEntity = new ReportEntity();
-            reportEntity.setFileName("SubmitCollection_Failure_Report");
+            reportEntity.setFileName(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT);
             reportEntity.setInstitutionName(institutionName);
             reportEntity.setType(org.recap.ReCAPConstants.FAILURE);
             reportEntity.setCreatedDate(new Date());
@@ -335,7 +336,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
                     itemStatusMap.put(itemStatusEntity.getStatusCode(), itemStatusEntity.getItemStatusId());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(ReCAPConstants.LOG_ERROR,e);
             }
         }
         return itemStatusMap;
@@ -351,7 +352,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
                     collectionGroupMap.put(collectionGroupEntity.getCollectionGroupCode(), collectionGroupEntity.getCollectionGroupId());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(ReCAPConstants.LOG_ERROR,e);
             }
         }
         return collectionGroupMap;
@@ -367,7 +368,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
                     institutionEntityMap.put(institutionEntity.getInstitutionCode(), institutionEntity.getInstitutionId());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(ReCAPConstants.LOG_ERROR,e);
             }
         }
         return institutionEntityMap;

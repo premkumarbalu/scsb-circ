@@ -32,7 +32,7 @@ public class RequestItemValidatorController {
 
     @RequestMapping(value = "/validateItemRequestInformations", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity validateItemRequestInformations(@RequestBody ItemRequestInformation itemRequestInformation) {
-        ResponseEntity responseEntity = null;
+        ResponseEntity responseEntity;
         responseEntity = requestParamaterValidatorService.validateItemRequestParameters(itemRequestInformation);
         if (responseEntity == null) {
             responseEntity = itemValidatorService.itemValidation(itemRequestInformation);

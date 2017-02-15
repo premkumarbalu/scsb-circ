@@ -44,12 +44,16 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
     @Autowired
     NyplJobResponsePollingProcessor nyplJobResponsePollingProcessor;
 
+    @Override
     public abstract String getHost();
 
+    @Override
     public abstract String getOperatorUserId();
 
+    @Override
     public abstract String getOperatorPassword();
 
+    @Override
     public abstract String getOperatorLocation();
 
     @Override
@@ -73,11 +77,11 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
             ItemResponse itemResponse = responseEntity.getBody();
             itemInformationResponse = nyplApiResponseUtil.buildItemInformationResponse(itemResponse);
         } catch (HttpClientErrorException httpException) {
-            httpException.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,httpException);
             itemInformationResponse.setSuccess(false);
             itemInformationResponse.setScreenMessage(httpException.getStatusText());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             itemInformationResponse.setSuccess(false);
             itemInformationResponse.setScreenMessage(e.getMessage());
         }
@@ -123,11 +127,11 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                 }
             }
         } catch (HttpClientErrorException httpException) {
-            httpException.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,httpException);
             itemCheckoutResponse.setSuccess(false);
             itemCheckoutResponse.setScreenMessage(httpException.getStatusText());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             itemCheckoutResponse.setSuccess(false);
             itemCheckoutResponse.setScreenMessage(e.getMessage());
         }
@@ -171,11 +175,11 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                 }
             }
         } catch (HttpClientErrorException httpException) {
-            httpException.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,httpException);
             itemCheckinResponse.setSuccess(false);
             itemCheckinResponse.setScreenMessage(httpException.getStatusText());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             itemCheckinResponse.setSuccess(false);
             itemCheckinResponse.setScreenMessage(e.getMessage());
         }
@@ -234,11 +238,11 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                 }
             }
         } catch (HttpClientErrorException httpException) {
-            httpException.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,httpException);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage(httpException.getStatusText());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage(e.getMessage());
         }
@@ -285,11 +289,11 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                 }
             }
         } catch (HttpClientErrorException httpException) {
-            httpException.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,httpException);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage(httpException.getStatusText());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage(e.getMessage());
         }
@@ -301,8 +305,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity requestEntity = new HttpEntity(getHttpHeaders());
         ResponseEntity<JobResponse> jobResponseEntity = restTemplate.exchange(apiUrl, HttpMethod.GET, requestEntity, JobResponse.class);
-        JobResponse jobResponse = jobResponseEntity.getBody();
-        return jobResponse;
+        return jobResponseEntity.getBody();
     }
 
     private NYPLHoldResponse queryForNyplHoldResponseByTrackingId(String trackingId) throws Exception {
@@ -310,8 +313,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity requestEntity = new HttpEntity(getHttpHeaders());
         ResponseEntity<NYPLHoldResponse> jobResponseEntity = restTemplate.exchange(apiUrl, HttpMethod.GET, requestEntity, NYPLHoldResponse.class);
-        NYPLHoldResponse nyplHoldResponse = jobResponseEntity.getBody();
-        return nyplHoldResponse;
+        return jobResponseEntity.getBody();
     }
 
     private HttpHeaders getHttpHeaders() throws Exception {
@@ -363,8 +365,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity requestEntity = new HttpEntity(getHttpHeaders());
         ResponseEntity<NyplPatronResponse> jobResponseEntity = restTemplate.exchange(apiUrl, HttpMethod.GET, requestEntity, NyplPatronResponse.class);
-        NyplPatronResponse nyplPatronResponse = jobResponseEntity.getBody();
-        return nyplPatronResponse;
+        return jobResponseEntity.getBody();
     }
 
     @Override

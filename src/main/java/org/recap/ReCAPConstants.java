@@ -228,6 +228,12 @@ public class ReCAPConstants {
     public static final String REQUEST_CANCELLATION_EDD_SUCCCESS = "EDD request cancellation succcessfully processed";
     public static final String REQUEST_CANCELLATION_NOT_ON_HOLD_IN_ILS = "This Request cannot be canceled, this item is not on hold in ILS";
 
+    //String constants
+    public static final String SUBMIT_COLLECTION_FAILURE_REPORT ="SubmitCollection_Failure_Report";
+
+    //Logger
+    public static final String LOG_ERROR="error-->";
+
     private ReCAPConstants() {}
 
     public static final List getGFAStatusAvailableList(){

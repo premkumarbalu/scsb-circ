@@ -58,7 +58,7 @@ public class ItemValidatorService {
             return new ResponseEntity(ReCAPConstants.ITEM_BARCODE_IS_REQUIRED, getHttpHeaders(), HttpStatus.BAD_REQUEST);
         }
         itemEntityList = itemController.findByBarcodeIn(itemBarcodes);
-        if (itemEntityList != null && itemEntityList.size() != 0) {
+        if (itemEntityList != null && !itemEntityList.isEmpty()) {
             if (splitStringAndGetList(itemBarcodes).size() == itemEntityList.size()) { // check if the no. of barcode from input and database is same.
                 ItemEntity itemEntity = itemEntityList.get(0);
                 // Item availability Status from SCSB Item table
@@ -104,8 +104,7 @@ public class ItemValidatorService {
 
     private List<String> splitStringAndGetList(String inputString) {
         String[] splittedString = inputString.split(",");
-        List<String> stringList = Arrays.asList(splittedString);
-        return stringList;
+        return Arrays.asList(splittedString);
     }
 
     private HttpHeaders getHttpHeaders() {
@@ -126,7 +125,7 @@ public class ItemValidatorService {
 
     public ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, Integer itemAvailabilityStatusId, List<Integer> bibliographicIds, ItemRequestInformation itemRequestInformation) {
         String status = "";
-        List<BibliographicEntity> bibliographicList = null;
+        List<BibliographicEntity> bibliographicList;
 
         for (ItemEntity itemEntity : itemEntityList) {
             if (itemEntity.getItemAvailabilityStatusId() == 1 && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)

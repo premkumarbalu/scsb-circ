@@ -37,8 +37,6 @@ import java.util.List;
 @XmlRootElement(name = "collection")
 public class CollectionType implements Serializable {
 
-    private static final Logger LOG = Logger.getLogger(CollectionType.class);
-
     @XmlElement(nillable = true)
     protected List<RecordType> record;
     @XmlAttribute(name = "id")
@@ -68,7 +66,7 @@ public class CollectionType implements Serializable {
      */
     public List<RecordType> getRecord() {
         if (record == null) {
-            record = new ArrayList<RecordType>();
+            record = new ArrayList<>();
         }
         return this.record;
     }

@@ -163,7 +163,7 @@ public class RequestItemRouteBuilder {
 
 
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            logger.info(ReCAPConstants.LOG_ERROR,e);
         }
 
     }

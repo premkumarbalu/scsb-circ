@@ -2,6 +2,8 @@ package org.recap.controller;
 
 import org.recap.ReCAPConstants;
 import org.recap.service.submitcollection.SubmitCollectionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/sharedCollection")
 public class SharedCollectionRestController {
+
+    Logger logger = LoggerFactory.getLogger(SharedCollectionRestController.class);
 
     @Autowired
     private SubmitCollectionService submitCollectionService;
@@ -40,7 +44,7 @@ public class SharedCollectionRestController {
             }
             responseEntity = new ResponseEntity(response,getHttpHeaders(), HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             response = ReCAPConstants.FAILURE;
             responseEntity = new ResponseEntity(response,getHttpHeaders(), HttpStatus.OK);
         }

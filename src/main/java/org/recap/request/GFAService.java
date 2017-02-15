@@ -95,7 +95,7 @@ public class GFAService {
 
                 itemStatus = gfaItemStatusCheckResponse.getDsitem().getTtitem().get(0).getItemStatus();
                 if (itemStatus.contains(":")) {
-                    gfaOnlyStaus = itemStatus.substring(0, itemStatus.indexOf(":")+1).toUpperCase();
+                    gfaOnlyStaus = itemStatus.substring(0, itemStatus.indexOf(':')+1).toUpperCase();
                 } else {
                     gfaOnlyStaus = itemStatus.toUpperCase();
                 }

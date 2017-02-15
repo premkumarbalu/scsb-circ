@@ -88,52 +88,52 @@ public class SIP2ResponseFactory {
         // Get the command identifier
         String code = data.substring(0, 2);
         logger.info(data);
-        if (code.equals("94")) {
+        if ("94".equals(code)) {
             parser = new SIP2LoginResponseParser();
             return parser.parse(data);
-        } else if (code.equals("98")) {
+        } else if ("98".equals(code)) {
             parser = new SIP2ACSStatusResponseParser();
             return parser.parse(data);
-        } else if (code.equals("24")) {
+        } else if ("24".equals(code)) {
             parser = new SIP2PatronStatusResponseParser();
             return parser.parse(data);
-        } else if (code.equals("64")) {
+        } else if ("64".equals(code)) {
             parser = new SIP2PatronInformationResponseParser();
             return parser.parse(data);
-        } else if (code.equals("10")) {
+        } else if ("10".equals(code)) {
             parser = new SIP2CheckinResponseParser();
             return parser.parse(data);
-        } else if (code.equals("12")) {
+        } else if ("12".equals(code)) {
             parser = new SIP2CheckoutResponseParser();
             return parser.parse(data);
-        } else if (code.equals("36")) {
+        } else if ("36".equals(code)) {
             parser = new SIP2EndSessionResponseParser();
             return parser.parse(data);
-        } else if (code.equals("38")) {
+        } else if ("38".equals(code)) {
             parser = new SIP2FeePaidResponseParser();
             return parser.parse(data);
-        } else if (code.equals("18")) {
+        } else if ("18".equals(code)) {
             parser = new SIP2ItemInformationResponseParser();
             return parser.parse(data);
-        } else if (code.equals("20")) {
+        } else if ("20".equals(code)) {
             parser = new SIP2ItemStatusUpdateResponseParser();
             return parser.parse(data);
-        } else if (code.equals("26")) {
+        } else if ("26".equals(code)) {
             parser = new SIP2PatronEnableResponseParser();
             return parser.parse(data);
-        } else if (code.equals("16")) {
+        } else if ("16".equals(code)) {
             parser = new SIP2HoldResponseParser();
             return parser.parse(data);
-        } else if (code.equals("30")) {
+        } else if ("30".equals(code)) {
             parser = new SIP2RenewResponseParser();
             return parser.parse(data);
-        } else if (code.equals("66")) {
+        } else if ("66".equals(code)) {
             parser = new SIP2RenewAllResponseParser();
             return parser.parse(data);
-        } else if (code.equals("82")) {
+        } else if ("82".equals(code)) {
             parser = new SIP2CreateBibResponseParser();
             return parser.parse(data);
-        } else if (code.equals("88")) {
+        } else if ("88".equals(code)) {
             parser = new SIP2RecallResponseParser();
             return parser.parse(data);
         }

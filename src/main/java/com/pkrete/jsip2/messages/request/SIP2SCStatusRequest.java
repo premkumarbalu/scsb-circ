@@ -48,6 +48,7 @@ public class SIP2SCStatusRequest extends SIP2MessageRequest {
         this.maxPrintWidth = maxPrintWidth;
     }
 
+    @Override
     public String getData() {
         StringBuilder builder = new StringBuilder();
         builder.append(this.code);
