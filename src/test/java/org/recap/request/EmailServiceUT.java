@@ -18,8 +18,8 @@ public class EmailServiceUT extends BaseTestCase{
 
     @Test
     public void testRecalEmail(){
-        emailService.RecalEmail(ReCAPConstants.NYPL,"NYPLTST67891","A history of the Burmah Oil Company","NoPatron");
-        emailService.RecalEmail(ReCAPConstants.COLUMBIA,"CULTST42345","Changing contours of Asian agriculture","RECAPTST01");
-        emailService.RecalEmail(ReCAPConstants.PRINCETON,"PULTST54323","1863 laws of war","45678912");
+        emailService.recallEmail(ReCAPConstants.NYPL,"NYPLTST67891","A history of the Burmah Oil Company","NoPatron");
+        emailService.recallEmail(ReCAPConstants.COLUMBIA,"CULTST42345","Changing contours of Asian agriculture","RECAPTST01");
+        emailService.recallEmail(ReCAPConstants.PRINCETON,"PULTST54323","1863 laws of war","45678912");
     }
 }

@@ -25,7 +25,7 @@ public class EmailService {
     @Autowired
     private ProducerTemplate producer;
 
-    public void RecalEmail(String institution, String itemBarcode, String titleIdentifier, String patronBarcode) {
+    public void recallEmail(String institution, String itemBarcode, String titleIdentifier, String patronBarcode) {
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setTo(emailIdTo(institution));
         emailPayLoad.setInstitutionCode(institution);

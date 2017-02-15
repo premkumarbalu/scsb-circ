@@ -69,7 +69,7 @@ public class ItemEDDRequestService {
                     if (itemResponseInformation.isSuccess()) {
                         itemRequestService.updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_EDD);
                         bsuccess = true;
-                        messagePublish = "EDD request is successfull";
+                        messagePublish = "EDD requests is successfull";
                     } else {
                         bsuccess = false;
                         messagePublish = itemResponseInformation.getScreenMessage();

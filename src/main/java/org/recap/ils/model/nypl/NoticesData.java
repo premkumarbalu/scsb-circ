@@ -3,8 +3,6 @@ package org.recap.ils.model.nypl;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.recap.ils.model.nypl.Attributes;
-import org.recap.ils.model.nypl.CheckOutItemResponse;
 
 /**
  * Created by rajeshbabuk on 9/12/16.

@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created by premkb on 19/8/16.
  */
-public class ReCAPConstants {
+public final class ReCAPConstants {
 
     public static final String FAILURE = "Failure";
     public static final String SUCCESS = "Success";
@@ -216,21 +216,43 @@ public class ReCAPConstants {
     public static final String GFA_STATUS_REACC_ON_WORK_ORDER = "REACC ON WO:";
     public static final String GFA_STATUS_REFILE_ON_WORK_ORDER = "REFILE ON WO:";
     public static final String GFA_STATUS_SCH_ON_WORK_ORDER = "SCH ON EDD WO:";
-    public static final String GFA_STATUS_VER_ON_WORK_ORDER = "VER On EDD WO:";
+    public static final String GFA_STATUS_VER_ON_EDD_WORK_ORDER = "VER ON EDD WO:";
     public static final String GFA_STATUS_IN = "IN";
 
-    protected static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER,GFA_STATUS_SCH_ON_WORK_ORDER, GFA_STATUS_VER_ON_WORK_ORDER, GFA_STATUS_IN);
+    public static final String GFA_STATUS_NOT_ON_FILE = "NOT ON FILE";
+    public static final String GFA_STATUS_OUT_ON_RETRIVAL_WORK_ORDER = "OUT ON RET WO:";
+    public static final String GFA_STATUS_PW_INDIRECT_WORK_ORDER = "PWI ON WO:";
+    public static final String GFA_STATUS_PW_DIRECT_WORK_ORDER = "PWD ON WO:";
+    public static final String GFA_STATUS_SCH_ON_RET_WORK_ORDER = "SCH ON RET WO:";
+    public static final String GFA_STATUS_VER_ON_PW_INDIRECT_WORK_ORDER = "VER ON PWI WO:";
+    public static final String GFA_STATUS_VER_ON_PW_DIRECT_WORK_ORDER = "VER ON PWD WO:";
+    public static final String GFA_STATUS_VER_ON_RET_WORK_ORDER = "VER ON RET WO:";
+    public static final String GFA_STATUS_VER_ON_WORK_ORDER = "VER ON WO:";
+
+    protected static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER,GFA_STATUS_SCH_ON_WORK_ORDER, GFA_STATUS_VER_ON_EDD_WORK_ORDER, GFA_STATUS_IN);
+    protected static final List<String> GFA_STATUS_NOT_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_NOT_ON_FILE,GFA_STATUS_OUT_ON_RETRIVAL_WORK_ORDER,GFA_STATUS_PW_INDIRECT_WORK_ORDER,GFA_STATUS_PW_DIRECT_WORK_ORDER,
+            GFA_STATUS_SCH_ON_RET_WORK_ORDER,GFA_STATUS_VER_ON_PW_INDIRECT_WORK_ORDER,GFA_STATUS_VER_ON_PW_DIRECT_WORK_ORDER,GFA_STATUS_VER_ON_RET_WORK_ORDER,GFA_STATUS_VER_ON_WORK_ORDER);
 
     public static final String REQUEST_DELIVERY_METHOD = "PHY";
     public static final String SUCCESSFULLY_PROCESSED_REQUEST_ITEM = "Successfully Processed Request Item";
     public static final String REQUEST_ITEM_BARCODE_NOT_FOUND = "ITEM BARCODE NOT FOUND.";
     public static final String REQUEST_CANCELLATION_SUCCCESS = "Request cancellation succcessfully processed";
-    public static final String REQUEST_CANCELLATION_EDD_SUCCCESS = "EDD request cancellation succcessfully processed";
+    public static final String RECALL_CANCELLATION_SUCCCESS = "Recall request cancellation succcessfully processed";
+    public static final String REQUEST_CANCELLATION_EDD_SUCCCESS = "EDD requests cancellation succcessfully processed";
     public static final String REQUEST_CANCELLATION_NOT_ON_HOLD_IN_ILS = "This Request cannot be canceled, this item is not on hold in ILS";
+
+    public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Successful created retrival order in GFA";
+    public static final String GFA_RETRIVAL_ORDER_ERROR = "GFA returned error while creating retrival order";
+    public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "Item not available in GFA";
+    public static final String GFA_ITEM_STATUS_CHECK_FAILED = "Item status check faield to return valid response";
 
     private ReCAPConstants() {}
 
     public static final List getGFAStatusAvailableList(){
         return GFA_STATUS_AVAILABLE_LIST;
+    }
+
+    public static final List getGFAStatusNotAvailableList(){
+        return GFA_STATUS_NOT_AVAILABLE_LIST;
     }
 }

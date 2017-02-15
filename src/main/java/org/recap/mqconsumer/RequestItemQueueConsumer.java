@@ -9,7 +9,6 @@ import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
 import org.recap.request.ItemEDDRequestService;
 import org.recap.request.ItemRequestService;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
