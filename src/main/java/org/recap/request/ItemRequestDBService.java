@@ -79,15 +79,7 @@ public class ItemRequestDBService {
             requestItemEntity.setItemId(itemEntity.getItemId());
             requestItemEntity.setRequestingInstitutionId(institutionEntity.getInstitutionId());
             requestItemEntity.setRequestTypeId(requestTypeEntity.getRequestTypeId());
-            if (ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInformation.getRequestingInstitution())) {
-                DateFormat dateFormatter = new SimpleDateFormat(ReCAPConstants.NYPL_HOLD_DATE_FORMAT);
-                requestItemEntity.setRequestExpirationDate(dateFormatter.parse(itemRequestInformation.getExpirationDate()));
-            } else {
-                if (itemRequestInformation.getExpirationDate() != null && itemRequestInformation.getExpirationDate().trim().length() > 0) {
-                    requestItemEntity.setRequestExpirationDate(simpleDateFormat.parse(itemRequestInformation.getExpirationDate()));
-                }
-            }
-
+            requestItemEntity.setRequestExpirationDate(getExpirationDate(itemRequestInformation.getExpirationDate(), itemRequestInformation.getRequestingInstitution()));
             requestItemEntity.setCreatedBy(getUser(itemRequestInformation.getUsername()));
             requestItemEntity.setCreatedDate(new Date());
             requestItemEntity.setLastUpdatedDate(new Date());
@@ -144,14 +136,7 @@ public class ItemRequestDBService {
             requestItemEntity.setItemId(itemInformationResponse.getItemId());
             requestItemEntity.setRequestingInstitutionId(institutionEntity.getInstitutionId());
             requestItemEntity.setRequestTypeId(requestTypeEntity.getRequestTypeId());
-            if (ReCAPConstants.NYPL.equalsIgnoreCase(itemInformationResponse.getRequestingInstitution())) {
-                DateFormat dateFormatter = new SimpleDateFormat(ReCAPConstants.NYPL_HOLD_DATE_FORMAT);
-                requestItemEntity.setRequestExpirationDate(dateFormatter.parse(itemInformationResponse.getExpirationDate()));
-            } else {
-                if (itemInformationResponse.getExpirationDate() != null && itemInformationResponse.getExpirationDate().trim().length() > 0) {
-                    requestItemEntity.setRequestExpirationDate(simpleDateFormat.parse(itemInformationResponse.getExpirationDate()));
-                }
-            }
+            requestItemEntity.setRequestExpirationDate(getExpirationDate(itemInformationResponse.getExpirationDate(), itemInformationResponse.getRequestingInstitution()));
             requestItemEntity.setCreatedBy(getUser(itemInformationResponse.getUsername()));
             requestItemEntity.setCreatedDate(new Date());
             requestItemEntity.setLastUpdatedDate(new Date());
@@ -231,6 +216,18 @@ public class ItemRequestDBService {
         } else {
             return userId;
         }
+    }
+
+    private Date getExpirationDate(String expirationDate, String requestingInstitutionId) throws ParseException {
+        if (StringUtils.isNotBlank(expirationDate)) {
+            if (ReCAPConstants.NYPL.equalsIgnoreCase(requestingInstitutionId)) {
+                DateFormat dateFormatter = new SimpleDateFormat(ReCAPConstants.NYPL_HOLD_DATE_FORMAT);
+                return dateFormatter.parse(expirationDate);
+            } else {
+                return simpleDateFormat.parse(expirationDate);
+            }
+        }
+        return null;
     }
 
 }
