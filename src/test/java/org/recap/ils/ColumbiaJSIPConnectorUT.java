@@ -3,8 +3,6 @@ package org.recap.ils;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.messages.SIP2MessageResponse;
-import com.pkrete.jsip2.messages.response.SIP2CreateBibResponse;
-import com.pkrete.jsip2.messages.responses.SIP2PatronStatusResponse;
 import com.pkrete.jsip2.parser.SIP2CreateBibResponseParser;
 import com.pkrete.jsip2.util.MessageUtil;
 import org.junit.Test;
@@ -14,7 +12,6 @@ import org.recap.BaseTestCase;
 import org.recap.ils.model.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
 
