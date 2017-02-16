@@ -323,4 +323,28 @@ public class NyplDataApiServiceUT extends BaseTestCase {
         ItemsResponse itemsResponse = responseEntity.getBody();
         assertNotNull(itemsResponse);
     }
+
+    @Test
+    public void getPatronResponseByBarcode() throws Exception {
+        String patronBarcode = "23333097542730";
+        String apiUrl = nyplDataApiUrl + "/patrons?barcode=" + patronBarcode;
+        String authorization = "Bearer " + generateAccessTokenForNyplApi();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        headers.set("Authorization", authorization);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity requestEntity = new HttpEntity(headers);
+        ResponseEntity<NyplPatronResponse> responseEntity = restTemplate.exchange(apiUrl, HttpMethod.GET, requestEntity, NyplPatronResponse.class);
+        assertNotNull(responseEntity);
+        NyplPatronResponse nyplPatronResponse = responseEntity.getBody();
+        assertNotNull(nyplPatronResponse);
+        assertNotNull(nyplPatronResponse.getData());
+        assertNotNull(nyplPatronResponse.getData().get(0));
+        assertNotNull(nyplPatronResponse.getData().get(0).getBarCodes());
+        assertNotNull(nyplPatronResponse.getData().get(0).getBarCodes().get(0));
+        assertEquals(patronBarcode, nyplPatronResponse.getData().get(0).getBarCodes().get(0));
+    }
 }
