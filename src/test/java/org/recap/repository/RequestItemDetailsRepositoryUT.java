@@ -1,10 +1,10 @@
 package org.recap.repository;
 
-import org.jboss.logging.Logger;
 import org.junit.Test;
 import org.recap.BaseTestCase;
 import org.recap.ReCAPConstants;
 import org.recap.model.*;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.domain.Page;
@@ -16,7 +16,6 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertNotNull;
@@ -26,7 +25,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class RequestItemDetailsRepositoryUT extends BaseTestCase {
 
-    private Logger logger = Logger.getLogger(RequestItemDetailsRepositoryUT.class);
+    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -39,9 +38,6 @@ public class RequestItemDetailsRepositoryUT extends BaseTestCase {
 
     @Autowired
     InstitutionDetailsRepository institutionDetailsRepository;
-
-    @Autowired
-    PatronDetailsRepository patronDetailsRepository;
 
     @Test
     public void testRecallPatronValidation() {
@@ -62,7 +58,7 @@ public class RequestItemDetailsRepositoryUT extends BaseTestCase {
         try {
             RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByItemBarcodeAndRequestStaCode("PULTST54333", ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
             if (requestItemEntity != null) {
-                logger.info(requestItemEntity.getRequestId());
+                logger.info(""+requestItemEntity.getRequestId());
                 logger.info(requestItemEntity.getRequestTypeEntity().getRequestTypeDesc());
                 //logger.info(requestItemEntity.getRequestStatusId());
                 logger.info(requestItemEntity.getRequestStatusEntity().getRequestStatusCode());
@@ -84,13 +80,6 @@ public class RequestItemDetailsRepositoryUT extends BaseTestCase {
         InstitutionEntity entity = institutionDetailsRepository.save(institutionEntity);
         assertNotNull(entity);
 
-        PatronEntity patronEntity = new PatronEntity();
-        patronEntity.setInstitutionIdentifier(entity.getInstitutionCode());
-        patronEntity.setInstitutionId(entity.getInstitutionId());
-        patronEntity.setEmailId("hamalatha.s@htcindia.com");
-        PatronEntity savedPatronEntity = patronDetailsRepository.save(patronEntity);
-        assertNotNull(savedPatronEntity);
-
         BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem();
 
         RequestTypeEntity requestTypeEntity = new RequestTypeEntity();
@@ -105,7 +94,7 @@ public class RequestItemDetailsRepositoryUT extends BaseTestCase {
         requestItemEntity.setRequestingInstitutionId(1);
         requestItemEntity.setRequestStatusId(4);
         requestItemEntity.setCreatedBy("test");
-        requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
+        requestItemEntity.setPatronId("45678912");
         requestItemEntity.setStopCode("test");
         requestItemEntity.setCreatedDate(new Date());
         requestItemEntity.setLastUpdatedDate(new Date());

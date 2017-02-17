@@ -5,7 +5,7 @@ package org.recap.gfa.model;
  */
 public class GFAItemStatusCheckResponse
 {
-    public Dsitem dsitem;
+    private Dsitem dsitem;
 
     public Dsitem getDsitem() {
         return dsitem;

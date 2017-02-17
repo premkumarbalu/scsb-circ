@@ -52,16 +52,6 @@ public class SIP2CreateBibResponse  extends SIP2CirculationTransactionResponse {
             builder.append(this.bibId);
         }
 
-//        if(this.isbn != null) {
-//            builder.append("|MB");
-//            builder.append(this.isbn);
-//        }
-//
-//        if(this.lccn != null) {
-//            builder.append("|MC");
-//            builder.append(this.lccn);
-//        }
-
         Iterator i$ = this.screenMessage.iterator();
 
         String msg;

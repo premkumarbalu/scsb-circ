@@ -4,29 +4,30 @@ import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.messages.SIP2MessageResponse;
 import com.pkrete.jsip2.messages.responses.SIP2RecallResponse;
+import org.recap.ReCAPConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by sudhishk on 9/11/16.
  */
 public class SIP2RecallResponseParser extends  SIP2ResponseParser{
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Override
     public SIP2MessageResponse parse(String data) throws InvalidSIP2ResponseValueException, InvalidSIP2ResponseException {
         SIP2RecallResponse response= new SIP2RecallResponse(data);
         try {
             response.setOk(this.intToBool(data.charAt(2)));
-//            responses.setAvailable(this.charToBool(data.charAt(3)));
             response.setTransactionDate(data.substring(4, 22));
             response.setExpirationDate(this.parseVariableWithoutDelimiter("BW", data.substring(22), false));
-//            responses.setQueuePosition(this.parseVariableWithoutDelimiter("BR", data.substring(22), false));
             response.setPickupLocation(this.parseVariableWithoutDelimiter("BS", data.substring(22), false));
             response.setInstitutionId(this.parseVariableWithoutDelimiter("AO", data.substring(22)));
             response.setPatronIdentifier(this.parseVariable("AA", data.substring(22)));
             response.setItemIdentifier(this.parseVariable("AB", data.substring(22), false));
             response.setTitleIdentifier(this.parseVariable("AJ", data.substring(22), false));
             response.setBibId(this.parseVariable("MA", data.substring(22), false));
-//            responses.setIsbn(this.parseVariable("MB", data.substring(22), false));
-//            responses.setLccn(this.parseVariable("MC", data.substring(22), false));
             response.setScreenMessage(this.parseVariableMulti("AF", data.substring(22)));
             response.setPrintLine(this.parseVariableMulti("AG", data.substring(22)));
             if(!this.parseSequence(data).isEmpty()) {
@@ -35,7 +36,7 @@ public class SIP2RecallResponseParser extends  SIP2ResponseParser{
 
             response.setCheckSum(this.parseChecksum(data));
         } catch (InvalidSIP2ResponseValueException e) {
-            throw new InvalidSIP2ResponseValueException(e.getMessage() + " Response message string: \"" + data + "\"");
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }
         return response;
     }

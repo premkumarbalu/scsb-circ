@@ -1,6 +1,6 @@
 package org.recap.request;
 
-import org.jboss.logging.Logger;
+
 import org.recap.ReCAPConstants;
 import org.recap.controller.ItemController;
 import org.recap.model.ItemRequestInformation;
@@ -19,13 +19,16 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Created by hemalathas on 3/11/16.
  */
 @Component
 public class RequestParamaterValidatorService {
 
-    private Logger logger = Logger.getLogger(RequestParamaterValidatorService.class);
+    private Logger logger = LoggerFactory.getLogger(RequestParamaterValidatorService.class);
 
     @Value("${server.protocol}")
     String serverProtocol;
@@ -40,7 +43,10 @@ public class RequestParamaterValidatorService {
         ResponseEntity responseEntity = null;
         Map<Integer, String> errorMessageMap = new HashMap<>();
         Integer errorCount = 1;
-
+        if (CollectionUtils.isEmpty(itemRequestInformation.getItemBarcodes())) {
+            errorMessageMap.put(errorCount, ReCAPConstants.ITEM_BARCODE_IS_REQUIRED);
+            errorCount++;
+        }
         if (StringUtils.isEmpty(itemRequestInformation.getRequestingInstitution()) || !itemRequestInformation.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON) && !itemRequestInformation.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)
                 && !itemRequestInformation.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.NYPL)) {
             errorMessageMap.put(errorCount, ReCAPConstants.INVALID_REQUEST_INSTITUTION);
@@ -50,15 +56,11 @@ public class RequestParamaterValidatorService {
             errorMessageMap.put(errorCount, ReCAPConstants.INVALID_EMAIL_ADDRESS);
             errorCount++;
         }
-        if (itemRequestInformation.getRequestType() == null || itemRequestInformation.getRequestType().trim().length() <= 0
-                && (!itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)
-                || !itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)
-                || !itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT)
-                || !itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL))
-                ){
+
+        if ((itemRequestInformation.getRequestType() == null || itemRequestInformation.getRequestType().trim().length() <= 0) || (!ReCAPConstants.getRequestTypeList().contains(itemRequestInformation.getRequestType()))) {
             errorMessageMap.put(errorCount, ReCAPConstants.INVALID_REQUEST_TYPE);
             errorCount++;
-        }else{
+        } else {
             if (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.EDD_REQUEST)) {
                 if (!CollectionUtils.isEmpty(itemRequestInformation.getItemBarcodes())) {
                     if (itemController.splitStringAndGetList(itemRequestInformation.getItemBarcodes().toString()).size() > 1) {
@@ -90,13 +92,6 @@ public class RequestParamaterValidatorService {
                     errorMessageMap.put(errorCount, ReCAPConstants.DELIVERY_LOCATION_REQUIRED);
                     errorCount++;
                 }
-//                else{
-//                    String customerCodeStatus = customerCodeValidation(itemRequestInformation.getDeliveryLocation());
-//                    if(customerCodeStatus.equalsIgnoreCase(ReCAPConstants.INVALID_CUSTOMER_CODE)){
-//                        errorMessageMap.put(errorCount, ReCAPConstants.INVALID_CUSTOMER_CODE);
-//                        errorCount++;
-//                    }
-//                }
             }
         }
 
@@ -108,20 +103,20 @@ public class RequestParamaterValidatorService {
     }
 
     private boolean validateEmailAddress(String toEmailAddress) {
-        boolean bSuccess =false;
+        boolean bSuccess = false;
         try {
-            if(!StringUtils.isEmpty(toEmailAddress)) {
+            if (!StringUtils.isEmpty(toEmailAddress)) {
                 String regex = ReCAPConstants.REGEX_FOR_EMAIL_ADDRESS;
                 Pattern pattern = Pattern.compile(regex);
                 Matcher matcher = pattern.matcher(toEmailAddress);
                 bSuccess = matcher.matches();
-            }else{
+            } else {
                 bSuccess = true;
             }
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
-        return bSuccess ;
+        return bSuccess;
     }
 
     public HttpHeaders getHttpHeaders() {
