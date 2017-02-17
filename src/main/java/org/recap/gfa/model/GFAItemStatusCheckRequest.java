@@ -7,7 +7,7 @@ import java.util.List;
  */
 public class GFAItemStatusCheckRequest {
 
-    public List<GFAItemStatus> itemStatus;
+    private List<GFAItemStatus> itemStatus;
 
     public List<GFAItemStatus> getItemStatus() {
         return itemStatus;

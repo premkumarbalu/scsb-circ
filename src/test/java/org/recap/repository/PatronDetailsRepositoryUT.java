@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.Random;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Created by sudhishk on 9/12/16.
@@ -29,9 +28,6 @@ public class PatronDetailsRepositoryUT extends BaseTestCase {
     RequestTypeDetailsRepository requestTypeDetailsRepository;
 
     @Autowired
-    PatronDetailsRepository patronDetailsRepository;
-
-    @Autowired
     RequestItemDetailsRepository requestItemDetailsRepository;
 
     @Test
@@ -41,13 +37,6 @@ public class PatronDetailsRepositoryUT extends BaseTestCase {
         institutionEntity.setInstitutionName("University of Chicago");
         InstitutionEntity entity = institutionDetailsRepository.save(institutionEntity);
         assertNotNull(entity);
-
-        PatronEntity patronEntity = new PatronEntity();
-        patronEntity.setInstitutionIdentifier(entity.getInstitutionCode());
-        patronEntity.setInstitutionId(entity.getInstitutionId());
-        patronEntity.setEmailId("hamalatha.s@htcindia.com");
-        PatronEntity savedPatronEntity = patronDetailsRepository.save(patronEntity);
-        assertNotNull(savedPatronEntity);
 
         BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem();
 
@@ -61,7 +50,7 @@ public class PatronDetailsRepositoryUT extends BaseTestCase {
         requestItemEntity.setItemId(bibliographicEntity.getItemEntities().get(0).getItemId());
         requestItemEntity.setRequestTypeId(savedRequestTypeEntity.getRequestTypeId());
         requestItemEntity.setRequestingInstitutionId(1);
-        requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
+        requestItemEntity.setPatronId("45678912");
         requestItemEntity.setStopCode("test");
         requestItemEntity.setCreatedBy("test");
         requestItemEntity.setCreatedDate(new Date());

@@ -163,7 +163,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_ITEM_GFA_FAILURE = "RequestItem - GFA Request Failed";
     public static final String REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS = "RequestItemCancel AvailabilityStatus Change";
     public static final String REQUEST_ITEM_INSERT = "Request Item Insert";
-
+    public static final String RETRIVAL_ORDER_NOT_REQUIRED_FOR_RECALL = "Retrival order not required for recall";
 
 
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE = "1 - 2";
@@ -229,17 +229,24 @@ public final class ReCAPConstants {
     public static final String GFA_STATUS_VER_ON_RET_WORK_ORDER = "VER ON RET WO:";
     public static final String GFA_STATUS_VER_ON_WORK_ORDER = "VER ON WO:";
 
+
     protected static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER,GFA_STATUS_SCH_ON_WORK_ORDER, GFA_STATUS_VER_ON_EDD_WORK_ORDER, GFA_STATUS_IN);
     protected static final List<String> GFA_STATUS_NOT_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_NOT_ON_FILE,GFA_STATUS_OUT_ON_RETRIVAL_WORK_ORDER,GFA_STATUS_PW_INDIRECT_WORK_ORDER,GFA_STATUS_PW_DIRECT_WORK_ORDER,
             GFA_STATUS_SCH_ON_RET_WORK_ORDER,GFA_STATUS_VER_ON_PW_INDIRECT_WORK_ORDER,GFA_STATUS_VER_ON_PW_DIRECT_WORK_ORDER,GFA_STATUS_VER_ON_RET_WORK_ORDER,GFA_STATUS_VER_ON_WORK_ORDER);
 
-    public static final String REQUEST_DELIVERY_METHOD = "PHY";
+    protected static final List<String> REQUEST_TYPE_LIST = Arrays.asList(ReCAPConstants.RETRIEVAL,ReCAPConstants.REQUEST_TYPE_EDD,ReCAPConstants.BORROW_DIRECT,ReCAPConstants.REQUEST_TYPE_RECALL);
+
+    public static final String REQUEST_DELIVERY_METHOD_PHY = "PHY";
+    public static final String REQUEST_DELIVERY_METHOD_EDD = "EDD";
+
     public static final String SUCCESSFULLY_PROCESSED_REQUEST_ITEM = "Successfully Processed Request Item";
     public static final String REQUEST_ITEM_BARCODE_NOT_FOUND = "ITEM BARCODE NOT FOUND.";
     public static final String REQUEST_CANCELLATION_SUCCCESS = "Request cancellation succcessfully processed";
     public static final String RECALL_CANCELLATION_SUCCCESS = "Recall request cancellation succcessfully processed";
     public static final String REQUEST_CANCELLATION_EDD_SUCCCESS = "EDD requests cancellation succcessfully processed";
     public static final String REQUEST_CANCELLATION_NOT_ON_HOLD_IN_ILS = "This Request cannot be canceled, this item is not on hold in ILS";
+    public static final String REQUEST_CANCELLATION_NOT_ACTIVE = "RequestId is not active status to be canceled";
+    public static final String REQUEST_CANCELLATION_DOES_NOT_EXIST = "RequestId does not exist";
 
     public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Successful created retrival order in GFA";
     public static final String GFA_RETRIVAL_ORDER_ERROR = "GFA returned error while creating retrival order";
@@ -255,4 +262,9 @@ public final class ReCAPConstants {
     public static final List getGFAStatusNotAvailableList(){
         return GFA_STATUS_NOT_AVAILABLE_LIST;
     }
+
+    public static final List getRequestTypeList(){
+        return REQUEST_TYPE_LIST;
+    }
+
 }

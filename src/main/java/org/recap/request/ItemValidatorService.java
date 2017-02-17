@@ -45,8 +45,7 @@ public class ItemValidatorService {
     @Autowired
     CustomerCodeDetailsRepository customerCodeDetailsRepository;
 
-    public ResponseEntity itemValidation(ItemRequestInformation itemRequestInformation) {
-        ResponseEntity responseEntity = null;
+    public ResponseEntity itemValidation002(ItemRequestInformation itemRequestInformation) {
         String availabilityStatus = "";
         List<Integer> bibliographicIds = new ArrayList<>();
         List<BibliographicEntity> bibliographicList = new ArrayList<>();
@@ -58,8 +57,8 @@ public class ItemValidatorService {
             return new ResponseEntity(ReCAPConstants.ITEM_BARCODE_IS_REQUIRED, getHttpHeaders(), HttpStatus.BAD_REQUEST);
         }
         itemEntityList = itemController.findByBarcodeIn(itemBarcodes);
-        if (itemEntityList != null && itemEntityList.size() != 0) {
-            if (splitStringAndGetList(itemBarcodes).size() == itemEntityList.size()) { // check if the no. of barcode from input and database is same.
+        if (itemEntityList != null && itemEntityList.size() != 0) { // barcode does not exist in database
+            if (splitStringAndGetList(itemBarcodes).size() == itemEntityList.size()) { // Check if the no. of barcode from input and database is same.
                 ItemEntity itemEntity = itemEntityList.get(0);
                 // Item availability Status from SCSB Item table
                 availabilityStatus = getItemStatus(itemEntity.getItemAvailabilityStatusId());
@@ -102,6 +101,64 @@ public class ItemValidatorService {
         }
     }
 
+    public ResponseEntity itemValidation(ItemRequestInformation itemRequestInformation) {
+        List<ItemEntity> itemEntityList = getItemEntities(itemRequestInformation.getItemBarcodes());
+
+        if (itemRequestInformation.getItemBarcodes().size() == 1) {
+            if (itemEntityList != null && itemEntityList.size() != 0) {
+                if (itemEntityList.size() > 0) {
+                    for (ItemEntity itemEntity1 : itemEntityList) {
+                        String availabilityStatus = getItemStatus(itemEntity1.getItemAvailabilityStatusId());
+                        if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.NOT_AVAILABLE) && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)
+                                || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)
+                                || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
+                            return new ResponseEntity(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                        } else if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
+                            return new ResponseEntity(ReCAPConstants.RECALL_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                        }
+                    }
+                }
+                ItemEntity itemEntity = itemEntityList.get(0);
+                ResponseEntity responseEntity1 = null;
+                if (!(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
+                    int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation);
+                    if (validateCustomerCode == 1) {
+                        responseEntity1 = new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
+                    } else if (validateCustomerCode == 0) {
+                        responseEntity1 = new ResponseEntity(ReCAPConstants.INVALID_CUSTOMER_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                    } else if (validateCustomerCode == -1) {
+                        responseEntity1 = new ResponseEntity(ReCAPConstants.INVALID_DELIVERY_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                    }
+                } else {
+                    responseEntity1 = new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
+                }
+                return responseEntity1;
+            } else {
+                return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+            }
+        } else if (itemRequestInformation.getItemBarcodes().size() > 1) {
+            List<Integer> bibliographicIds = new ArrayList<>();
+            ItemEntity itemEntity1 = null;
+            for (ItemEntity itemEntity : itemEntityList) {
+                List<BibliographicEntity> bibliographicList = itemEntity.getBibliographicEntities();
+                for (BibliographicEntity bibliographicEntityDetails : bibliographicList) {
+                    bibliographicIds.add(bibliographicEntityDetails.getBibliographicId());
+                }
+                itemEntity1 = itemEntity;
+            }
+            return multipleRequestItemValidation(itemEntityList, itemEntity1.getItemAvailabilityStatusId(), bibliographicIds, itemRequestInformation);
+        }
+        return new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
+    }
+
+    private List<ItemEntity> getItemEntities(List<String> itemBarcodes) {
+        List<ItemEntity> itemEntityList = null;
+        if (CollectionUtils.isNotEmpty(itemBarcodes)) {
+            itemEntityList = itemController.findByBarcodeIn(itemBarcodes.toString());
+        }
+        return itemEntityList;
+    }
+
     private List<String> splitStringAndGetList(String inputString) {
         String[] splittedString = inputString.split(",");
         List<String> stringList = Arrays.asList(splittedString);
@@ -129,16 +186,12 @@ public class ItemValidatorService {
         List<BibliographicEntity> bibliographicList = null;
 
         for (ItemEntity itemEntity : itemEntityList) {
-            if (itemEntity.getItemAvailabilityStatusId() == 1 && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)
+            if (itemEntity.getItemAvailabilityStatusId() == 2 && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)
                     || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)
                     || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
-
-            } else if (itemEntity.getItemAvailabilityStatusId() == 2 && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
-                // Validate Patron
+                return new ResponseEntity(ReCAPConstants.INVALID_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
             } else if (itemEntity.getItemAvailabilityStatusId() == 1 && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
                 return new ResponseEntity(ReCAPConstants.RECALL_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-            } else {
-                return new ResponseEntity(ReCAPConstants.INVALID_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
             }
             if (!(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
                 int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation);

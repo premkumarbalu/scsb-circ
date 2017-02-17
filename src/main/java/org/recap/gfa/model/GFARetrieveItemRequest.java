@@ -5,13 +5,13 @@ package org.recap.gfa.model;
  */
 public class GFARetrieveItemRequest {
 
-    private RetrieveItem retrieveItem;
+    private RetrieveItemRequest retrieveItem;
 
-    public RetrieveItem getRetrieveItem() {
+    public RetrieveItemRequest getRetrieveItem() {
         return retrieveItem;
     }
 
-    public void setRetrieveItem(RetrieveItem retrieveItem) {
+    public void setRetrieveItem(RetrieveItemRequest retrieveItem) {
         this.retrieveItem = retrieveItem;
     }
 }
