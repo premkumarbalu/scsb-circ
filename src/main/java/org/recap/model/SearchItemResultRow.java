@@ -107,4 +107,20 @@ public class SearchItemResultRow implements Comparable<SearchItemResultRow> {
         }
         return 0;
     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof SearchItemResultRow))
+            return false;
+
+        SearchItemResultRow searchItemResultRow = (SearchItemResultRow) o;
+
+        return chronologyAndEnum.equals(searchItemResultRow.chronologyAndEnum);
+    }
+
+    @Override
+    public int hashCode() {
+        return chronologyAndEnum.hashCode();
+    }
 }
