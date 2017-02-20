@@ -134,7 +134,7 @@ public class RequestItemQueueConsumer {
                 itemRequestService.updateRecapRequestItem(itemInformationResponse);
             }
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION+e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }
     }
 }

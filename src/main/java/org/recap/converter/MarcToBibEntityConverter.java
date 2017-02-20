@@ -345,7 +345,7 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
                     collectionGroupMap.put(collectionGroupEntity.getCollectionGroupCode(), collectionGroupEntity.getCollectionGroupId());
                 }
             } catch (Exception e) {
-                logger.error(ReCAPConstants.LOG_ERROR+e);
+                logger.error(ReCAPConstants.LOG_ERROR,e);
             }
         }
         return collectionGroupMap;

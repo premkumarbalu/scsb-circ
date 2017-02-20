@@ -42,7 +42,7 @@ public class JAXBHandler {
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             marshaller.marshal(object, stringWriter);
         } catch (JAXBException e) {
-            logger.error(ReCAPConstants.LOG_ERROR+e);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         }
         return stringWriter.toString();
     }

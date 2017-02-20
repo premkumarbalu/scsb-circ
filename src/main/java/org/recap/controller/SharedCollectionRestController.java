@@ -44,7 +44,7 @@ public class SharedCollectionRestController {
             }
             responseEntity = new ResponseEntity(response,getHttpHeaders(), HttpStatus.OK);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR+e);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             response = ReCAPConstants.FAILURE;
             responseEntity = new ResponseEntity(response,getHttpHeaders(), HttpStatus.OK);
         }

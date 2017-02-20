@@ -101,9 +101,9 @@ public class ItemEDDRequestService {
             // Update Topics
             itemRequestService.sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST+ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST,ex);
         } catch (Exception ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION+ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,ex);
         }
         return itemResponseInformation;
     }

@@ -31,7 +31,7 @@ public class SIP2CreateBibResponseParser extends  SIP2ResponseParser{
             }
             response.setCheckSum(parseChecksum(data));
         } catch (InvalidSIP2ResponseValueException e) {
-            logger.error(ReCAPConstants.LOG_ERROR+e);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             throw new InvalidSIP2ResponseValueException(e.getMessage() + " Response message string: \"" + data + "\"");
         }
         return response;

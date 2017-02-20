@@ -62,7 +62,7 @@ public class SIP2ItemInformationResponseParser extends SIP2ResponseParser {
             response.setCheckSum(this.parseChecksum(data));
             return response;
         } catch (InvalidSIP2ResponseValueException var4) {
-            logger.error(ReCAPConstants.LOG_ERROR+var4);
+            logger.error(ReCAPConstants.LOG_ERROR,var4);
             throw new InvalidSIP2ResponseValueException(var4.getMessage() + " Response message string: \"" + data + "\"");
         }
     }

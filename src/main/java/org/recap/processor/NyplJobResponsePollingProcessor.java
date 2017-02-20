@@ -48,25 +48,25 @@ public class NyplJobResponsePollingProcessor {
             return jobResponse;
         } catch (InterruptedException e) {
             logger.error("Nypl job response interrupted for job id -> " + jobId);
-            logger.error(ReCAPConstants.LOG_ERROR+e);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             executor.shutdown();
             jobResponse.setStatusMessage("Nypl job response interrupted : " + e.getMessage());
             return jobResponse;
         } catch (ExecutionException e) {
             logger.error("Nypl job response execution failed for job id -> " + jobId);
-            logger.error(ReCAPConstants.LOG_ERROR+e);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             executor.shutdown();
             jobResponse.setStatusMessage("Nypl job response execution failed : " + e.getMessage());
             return jobResponse;
         } catch (TimeoutException e) {
             logger.error("Nypl job response polling timed out for job id -> " + jobId);
-            logger.error(ReCAPConstants.LOG_ERROR+e);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             executor.shutdown();
             jobResponse.setStatusMessage("Nypl job response polling timed out : " + e.getMessage());
             return jobResponse;
         } catch (Exception e) {
             logger.error("Nypl job response polling failed for job id -> " + jobId);
-            logger.error(ReCAPConstants.LOG_ERROR+e);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             executor.shutdown();
             jobResponse.setStatusMessage("Nypl job response polling failed : " + e.getMessage());
             return jobResponse;

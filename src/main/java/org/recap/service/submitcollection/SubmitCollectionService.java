@@ -101,7 +101,7 @@ public class SubmitCollectionService {
                 reponse = getResponseMessage(submitCollectionRejectionInfos,submitCollectionExceptionInfos,processedBibIdList);
             }
         }catch (Exception e){
-            logger.error(ReCAPConstants.LOG_ERROR+e);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             reponse = ReCAPConstants.SUBMIT_COLLECTION_INTERNAL_ERROR;
         }
         return reponse;
@@ -144,7 +144,7 @@ public class SubmitCollectionService {
             }
         } catch (Exception e) {
             logger.info(String.valueOf(e.getCause()));
-            logger.error(ReCAPConstants.LOG_ERROR+e);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             return ReCAPConstants.INVALID_MARC_XML_FORMAT_MESSAGE;
         }
         if (CollectionUtils.isNotEmpty(records)) {
@@ -170,7 +170,7 @@ public class SubmitCollectionService {
             }
         } catch (JAXBException e) {
             logger.info(String.valueOf(e.getCause()));
-            logger.error(ReCAPConstants.LOG_ERROR+e);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             return ReCAPConstants.INVALID_SCSB_XML_FORMAT_MESSAGE;
         }
         for (BibRecord bibRecord : bibRecords.getBibRecords()) {
@@ -445,7 +445,7 @@ public class SubmitCollectionService {
                     }
                 }
             } catch (Exception e) {
-                logger.error(ReCAPConstants.LOG_ERROR+e);
+                logger.error(ReCAPConstants.LOG_ERROR,e);
             }
         }
     }
@@ -527,7 +527,7 @@ public class SubmitCollectionService {
                     itemStatusMap.put(itemStatusEntity.getItemStatusId(), itemStatusEntity.getStatusCode());
                 }
             } catch (Exception e) {
-                logger.error(ReCAPConstants.LOG_ERROR+e);            }
+                logger.error(ReCAPConstants.LOG_ERROR,e);            }
         }
         return itemStatusMap;
     }
@@ -542,7 +542,7 @@ public class SubmitCollectionService {
                     institutionEntityMap.put(institutionEntity.getInstitutionId(), institutionEntity.getInstitutionCode());
                 }
             } catch (Exception e) {
-                logger.error(ReCAPConstants.LOG_ERROR+e);
+                logger.error(ReCAPConstants.LOG_ERROR,e);
             }
         }
         return institutionEntityMap;
