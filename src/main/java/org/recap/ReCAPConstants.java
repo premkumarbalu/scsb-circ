@@ -267,4 +267,21 @@ public final class ReCAPConstants {
         return REQUEST_TYPE_LIST;
     }
 
+    //Deaccession
+    public static final String REQUESTED_ITEM_DEACCESSIONED = "The requested item has already been deaccessioned.";
+    public static final String ITEM_BARCDE_DOESNOT_EXIST = "Item Barcode doesn't exist in SCSB database.";
+    public static final String DEACCESSION_REPORT = "DeAccession_Report";
+    public static final String DEACCESSION_SUMMARY_REPORT = "DeAccession_Summary_Report";
+    public static final String DATE_OF_DEACCESSION = "DateOfDeAccession";
+    public static final String BARCODE = "Barcode";
+    public static final String OWNING_INST_BIB_ID = "OwningInstitutionBibId";
+    public static final String COLLECTION_GROUP_CODE = "CollectionGroupCode";
+    public static final String REASON_FOR_FAILURE = "ReasonForFailure";
+    public static final String STATUS = "Status";
+    public static final String DEACCESSION_IN_SOLR_URL = "deaccessionInSolrService/deaccessionInSolr";
+    public static final String DEACCESSION_NO_BARCODE_ERROR = "Provide one or more barcodes to deaccession";
+    public static final String REQUEST_ITEM_CANCEL_DEACCESSION_ITEM = "RequestItemCancel DeaccessionItem";
+    public static final String REQUEST_ITEM_CANCELED_FOR_DEACCESSION = "Request is cancelled for the item as it is deaccessioned. Item Id : ";
+    public static final String REASON_CANCEL_REQUEST_FAILED = "Canceling hold for the requested item failed for the reason";
+
 }

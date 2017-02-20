@@ -1,4 +1,4 @@
-package org.recap.submitcollection;
+package org.recap.service.submitcollection;
 
 import junit.framework.TestCase;
 import org.junit.Test;
@@ -11,7 +11,6 @@ import org.recap.ReCAPConstants;
 import org.recap.model.BibliographicEntity;
 import org.recap.model.HoldingsEntity;
 import org.recap.model.ItemEntity;
-import org.recap.service.submitcollection.SubmitCollectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

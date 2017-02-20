@@ -1,13 +1,20 @@
 package org.recap.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.recap.BaseTestCase;
+import org.recap.model.deAccession.DeAccessionRequest;
+import org.recap.service.deAccession.DeAccessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,6 +25,9 @@ public class SharedCollectionRestControllerUT extends BaseTestCase {
 
     @Autowired
     private SharedCollectionRestController sharedCollectionRestController;
+
+    @Mock
+    DeAccessionService deAccessionService;
 
     String updatedMarcXml = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">\n" +
             "<record>\n" +
@@ -139,6 +149,20 @@ public class SharedCollectionRestControllerUT extends BaseTestCase {
                 .andReturn();
         String result = mvcResult.getResponse().getContentAsString();
         assertEquals("No record(s) got updated, Exception report generated",result);
+    }
+
+    @Test
+    public void deAccession() throws Exception {
+        DeAccessionRequest deAccessionRequest = new DeAccessionRequest();
+        deAccessionRequest.setItemBarcodes(Arrays.asList("1"));
+        ObjectMapper objectMapper = new ObjectMapper();
+        MvcResult mvcResult = this.mockMvc.perform(post("/sharedCollection/deAccession")
+                .headers(getHttpHeaders())
+                .content(objectMapper.writeValueAsString(deAccessionRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+        String result = mvcResult.getResponse().getContentAsString();
+        assertNotNull(result);
     }
 
     private HttpHeaders getHttpHeaders() {
