@@ -1,0 +1,11 @@
+<collection>
+    <record>
+        <datafield tag="852" ind1=" " ind2="8">
+            <subfield code="b">rc2ma</subfield>
+            <subfield code="h">JFL 81-165</subfield>
+        </datafield>
+        <datafield tag="866" ind1=" " ind2=" ">
+            <subfield code="a">5(1978)-26:5(2000), 27(2001)-37(2011).</subfield>
+        </datafield>
+    </record>
+</collection>
