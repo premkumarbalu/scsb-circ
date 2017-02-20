@@ -336,7 +336,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
                     itemStatusMap.put(itemStatusEntity.getStatusCode(), itemStatusEntity.getItemStatusId());
                 }
             } catch (Exception e) {
-                logger.error(ReCAPConstants.LOG_ERROR,e);
+                logger.error(ReCAPConstants.LOG_ERROR+e);
             }
         }
         return itemStatusMap;
@@ -352,7 +352,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
                     collectionGroupMap.put(collectionGroupEntity.getCollectionGroupCode(), collectionGroupEntity.getCollectionGroupId());
                 }
             } catch (Exception e) {
-                logger.error(ReCAPConstants.LOG_ERROR,e);
+                logger.error(ReCAPConstants.LOG_ERROR+e);
             }
         }
         return collectionGroupMap;
@@ -368,7 +368,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
                     institutionEntityMap.put(institutionEntity.getInstitutionCode(), institutionEntity.getInstitutionId());
                 }
             } catch (Exception e) {
-                logger.error(ReCAPConstants.LOG_ERROR,e);
+                logger.error(ReCAPConstants.LOG_ERROR+e);
             }
         }
         return institutionEntityMap;

@@ -53,7 +53,7 @@ public class RequestItemController {
         } catch (Exception e) {
             itemCheckoutResponse.setSuccess(false);
             itemCheckoutResponse.setScreenMessage(e.getMessage());
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+e);
         }
 
         return itemCheckoutResponse;
@@ -79,7 +79,7 @@ public class RequestItemController {
             itemCheckinResponse = new ItemCheckinResponse();
             itemCheckinResponse.setSuccess(false);
             itemCheckinResponse.setScreenMessage(e.getMessage());
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+ e);
         }
         return itemCheckinResponse;
     }
@@ -105,7 +105,7 @@ public class RequestItemController {
                     itemRequestInformation.getCallNumber());
 
         } catch (Exception e) {
-            logger.info("Exception", e);
+            logger.info("Exception"+e);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage("ILS returned a invalid response");
         }

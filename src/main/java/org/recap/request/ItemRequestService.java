@@ -175,9 +175,9 @@ public class ItemRequestService {
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST, ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST+ex);
         } catch (Exception ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+ex);
         }
         return itemResponseInformation;
     }
@@ -230,9 +230,9 @@ public class ItemRequestService {
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST, ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST+ex);
         } catch (Exception ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+ex);
         }
         return itemResponseInformation;
     }
@@ -326,7 +326,7 @@ public class ItemRequestService {
         try {
             json = objectMapper.writeValueAsString(itemResponseInfo);
         } catch (JsonProcessingException e) {
-            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION+ e);
         }
         FluentProducerTemplate fluentProducerTemplate = new DefaultFluentProducerTemplate(exchange.getContext());
         fluentProducerTemplate
@@ -381,7 +381,7 @@ public class ItemRequestService {
         } catch (Exception e) {
             itemResponseInformation.setSuccess(false);
             itemResponseInformation.setScreenMessage(e.getMessage());
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+e);
         }
         return itemResponseInformation;
     }
@@ -435,7 +435,7 @@ public class ItemRequestService {
                 }
             }
         } catch (Exception e) {
-            logger.error("Exception : ", e);
+            logger.error("Exception : "+ e);
             messagePublish = "Failed to process request.";
             bsuccess = false;
             saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), "RequestItem - Exception", itemRequestInfo.getItemBarcodes() + " - " + e.getMessage());
@@ -609,7 +609,7 @@ public class ItemRequestService {
             ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
             logger.info(responseEntity.getBody());
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+e);
         }
     }
 
@@ -625,7 +625,7 @@ public class ItemRequestService {
             });
             statusResponse = responseEntity.getBody();
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+e);
         }
         return statusResponse;
     }
@@ -657,7 +657,7 @@ public class ItemRequestService {
             }
             logger.info(titleIdentifier);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+e);
         }
         return titleIdentifier;
     }

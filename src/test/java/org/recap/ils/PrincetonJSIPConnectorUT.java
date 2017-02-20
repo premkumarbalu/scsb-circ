@@ -124,7 +124,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
             assertNotNull(holdResponse);
             assertTrue(holdResponse.isSuccess());
         } catch (AssertionError e) {
-            logger.error("Cancel Hold Error - > ", e);
+            logger.error("Cancel Hold Error - > "+ e);
         }
         lookupItem();
     }
@@ -138,7 +138,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
             assertNotNull(holdResponse);
             assertTrue(holdResponse.isSuccess());
         } catch (AssertionError e) {
-            logger.error("Hold Error - > ", e);
+            logger.error("Hold Error - > "+e);
         }
         lookupItem();
     }

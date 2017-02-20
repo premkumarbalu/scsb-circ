@@ -137,12 +137,12 @@ public abstract class JSIPConnector implements IJSIPConnector {
         } catch (InvalidSIP2ResponseException e) {
             logger.error("Connection Invalid SIP2 Response = " + e.getMessage());
         } catch (InvalidSIP2ResponseValueException e) {
-            logger.error("Invalid SIP2 Value = ", e);
+            logger.error("Invalid SIP2 Value = "+ e);
             itemInformationResponse.setSuccess(false);
             itemInformationResponse.setScreenMessage("Item barcode not found");
             itemInformationResponse.setCirculationStatus("ITEM_BARCODE_NOT_FOUND");
         } catch (Exception e) {
-            logger.error("Exception = ", e);
+            logger.error("Exception = "+ e);
         } finally {
             connection.close();
         }
@@ -172,7 +172,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 logger.info("Item Status Request Failed");
             }
         } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = ", e);
+            logger.error("Connection Invalid SIP2 Response = "+ e);
         } catch (InvalidSIP2ResponseValueException e) {
             logger.error("Invalid SIP2 Value = " + e.getMessage());
         } catch (Exception e) {
@@ -583,9 +583,9 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 }
             }
         } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = ", e);
+            logger.error("Connection Invalid SIP2 Response = "+ e);
         } catch (InvalidSIP2ResponseValueException e) {
-            logger.error("Connection Invalid SIP2 Value = ", e);
+            logger.error("Connection Invalid SIP2 Value = "+ e);
         } finally {
             connection.close();
         }
@@ -601,7 +601,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 reformattedStr = requiredFormat.format(sipFormat.parse(sipDate));
             }
         } catch (ParseException e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+ e);
         }
         return reformattedStr;
     }

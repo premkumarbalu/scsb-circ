@@ -77,11 +77,11 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
             ItemResponse itemResponse = responseEntity.getBody();
             itemInformationResponse = nyplApiResponseUtil.buildItemInformationResponse(itemResponse);
         } catch (HttpClientErrorException httpException) {
-            logger.error(ReCAPConstants.LOG_ERROR,httpException);
+            logger.error(ReCAPConstants.LOG_ERROR+httpException);
             itemInformationResponse.setSuccess(false);
             itemInformationResponse.setScreenMessage(httpException.getStatusText());
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR+e);
             itemInformationResponse.setSuccess(false);
             itemInformationResponse.setScreenMessage(e.getMessage());
         }
@@ -127,11 +127,11 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                 }
             }
         } catch (HttpClientErrorException httpException) {
-            logger.error(ReCAPConstants.LOG_ERROR,httpException);
+            logger.error(ReCAPConstants.LOG_ERROR+httpException);
             itemCheckoutResponse.setSuccess(false);
             itemCheckoutResponse.setScreenMessage(httpException.getStatusText());
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR+e);
             itemCheckoutResponse.setSuccess(false);
             itemCheckoutResponse.setScreenMessage(e.getMessage());
         }
@@ -175,11 +175,11 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                 }
             }
         } catch (HttpClientErrorException httpException) {
-            logger.error(ReCAPConstants.LOG_ERROR,httpException);
+            logger.error(ReCAPConstants.LOG_ERROR+httpException);
             itemCheckinResponse.setSuccess(false);
             itemCheckinResponse.setScreenMessage(httpException.getStatusText());
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR+e);
             itemCheckinResponse.setSuccess(false);
             itemCheckinResponse.setScreenMessage(e.getMessage());
         }
@@ -238,11 +238,11 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                 }
             }
         } catch (HttpClientErrorException httpException) {
-            logger.error(ReCAPConstants.LOG_ERROR,httpException);
+            logger.error(ReCAPConstants.LOG_ERROR+httpException);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage(httpException.getStatusText());
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR+e);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage(e.getMessage());
         }
@@ -289,11 +289,11 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                 }
             }
         } catch (HttpClientErrorException httpException) {
-            logger.error(ReCAPConstants.LOG_ERROR,httpException);
+            logger.error(ReCAPConstants.LOG_ERROR+httpException);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage(httpException.getStatusText());
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR+e);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage(e.getMessage());
         }

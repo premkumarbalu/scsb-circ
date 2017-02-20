@@ -83,7 +83,7 @@ public class CancelItemController {
             itemCanceHoldResponse = new ItemHoldResponse();
             itemCanceHoldResponse.setSuccess(false);
             itemCanceHoldResponse.setScreenMessage(e.getMessage());
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+ e);
         } finally {
             if(itemCanceHoldResponse ==null){
                 itemCanceHoldResponse = new ItemHoldResponse();

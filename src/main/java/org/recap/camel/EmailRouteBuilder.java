@@ -65,7 +65,7 @@ public class EmailRouteBuilder {
                             }
                         }
                     } catch (IOException e) {
-                        logger.error(ReCAPConstants.LOG_ERROR,e);
+                        logger.error(ReCAPConstants.LOG_ERROR+e);
                     }
                     emailBody = out.toString();
                 }
@@ -76,13 +76,13 @@ public class EmailRouteBuilder {
                         try {
                             emailPassword = FileUtils.readFileToString(file, "UTF-8").trim();
                         } catch (IOException e) {
-                            logger.error(ReCAPConstants.LOG_ERROR,e);
+                            logger.error(ReCAPConstants.LOG_ERROR+e);
                         }
                     }
                 }
             });
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR+e);
         }
     }
 

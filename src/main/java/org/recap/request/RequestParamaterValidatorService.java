@@ -119,7 +119,7 @@ public class RequestParamaterValidatorService {
                 bSuccess = true;
             }
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR+e);
         }
         return bSuccess ;
     }

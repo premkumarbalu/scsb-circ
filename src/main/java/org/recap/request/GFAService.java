@@ -46,9 +46,9 @@ public class GFAService {
 
             logger.info(responseEntity.getStatusCode().toString());
         } catch (JsonProcessingException e) {
-            logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
+            logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION+e);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+e);
         }
         return gfaItemStatusCheckResponse;
     }
@@ -71,9 +71,9 @@ public class GFAService {
                 bSuccess = true;
             }
         } catch (JsonProcessingException e) {
-            logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
+            logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION+e);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+e);
         }
         return bSuccess;
     }
@@ -134,7 +134,7 @@ public class GFAService {
                 itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_ITEM_STATUS_CHECK_FAILED);
             }
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+ e);
         }
         return itemResponseInformation;
     }

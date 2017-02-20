@@ -69,7 +69,7 @@ public class CallGFAServicesUT extends BaseTestCase {
 
             GFAItemStatusCheckResponse statusResponse = gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
         } catch (Exception e) {
-            logger.error("Exception ", e);
+            logger.error("Exception "+e);
         }
     }
 

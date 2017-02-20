@@ -98,9 +98,9 @@ public class ItemRequestDBService {
             }
             logger.info("SCSB DB Update Successful");
         } catch (ParseException e) {
-            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION+e);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+e);
         }
         return requestId;
     }
@@ -153,9 +153,9 @@ public class ItemRequestDBService {
             itemInformationResponse.setRequestId(requestId);
             logger.info("SCSB DB Update Successful");
         } catch (ParseException e) {
-            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION+e);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION+e);
         }
         return itemInformationResponse;
     }
