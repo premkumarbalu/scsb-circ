@@ -95,7 +95,7 @@ public class DeAccessionService {
         List<String> barcodes = new ArrayList<>();
         try {
             for (String itemBarcode : itemBarcodes) {
-                List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.findByItemBarcode(itemBarcodes.get(0));
+                List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.findByItemBarcode(itemBarcode);
                 if (CollectionUtils.isNotEmpty(requestItemEntities)) {
                     RequestItemEntity activeRetrievalRequest = null;
                     RequestItemEntity activeRecallRequest = null;
