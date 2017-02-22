@@ -283,5 +283,6 @@ public final class ReCAPConstants {
     public static final String REQUEST_ITEM_CANCEL_DEACCESSION_ITEM = "RequestItemCancel DeaccessionItem";
     public static final String REQUEST_ITEM_CANCELED_FOR_DEACCESSION = "Request is cancelled for the item as it is deaccessioned. Item Id : ";
     public static final String REASON_CANCEL_REQUEST_FAILED = "Canceling hold for the requested item failed for the reason";
+    public static final String DISCOVERY = "Discovery";
 
 }

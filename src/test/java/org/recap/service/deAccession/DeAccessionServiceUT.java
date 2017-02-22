@@ -4,14 +4,19 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.recap.BaseTestCase;
 import org.recap.ReCAPConstants;
+import org.recap.gfa.model.*;
 import org.recap.model.*;
 import org.recap.model.deAccession.DeAccessionDBResponseEntity;
+import org.recap.model.deAccession.DeAccessionItem;
 import org.recap.model.deAccession.DeAccessionRequest;
 import org.recap.repository.BibliographicDetailsRepository;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.RequestItemDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -43,10 +48,19 @@ public class DeAccessionServiceUT extends BaseTestCase {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Value("${gfa.item.permanent.withdrawl.direct}")
+    private String gfaItemPermanentWithdrawlDirect;
+
+    @Value("${gfa.item.permanent.withdrawl.indirect}")
+    private String gfaItemPermanentWithdrawlInDirect;
+
+
     @Test
     public void deAccessionItemsInDB() throws Exception {
         Random random = new Random();
         String itemBarcode = String.valueOf(random.nextInt());
+        Map<String, String> barcodeAndStopCodeMap = new HashMap<>();
+        barcodeAndStopCodeMap.put(itemBarcode, "PB");
         BibliographicEntity bibliographicEntity = getBibEntityWithHoldingsAndItem(itemBarcode);
 
         BibliographicEntity savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(bibliographicEntity);
@@ -54,7 +68,7 @@ public class DeAccessionServiceUT extends BaseTestCase {
         assertNotNull(savedBibliographicEntity);
         assertNotNull(savedBibliographicEntity.getBibliographicId());
         Thread.sleep(3000);
-        List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities = deAccessionService.deAccessionItemsInDB(Arrays.asList(itemBarcode));
+        List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities = deAccessionService.deAccessionItemsInDB(barcodeAndStopCodeMap, ReCAPConstants.GUEST_USER);
         assertNotNull(deAccessionDBResponseEntities);
         assertTrue(deAccessionDBResponseEntities.size()==1);
         DeAccessionDBResponseEntity deAccessionDBResponseEntity = deAccessionDBResponseEntities.get(0);
@@ -156,23 +170,26 @@ public class DeAccessionServiceUT extends BaseTestCase {
     @Test
     public void checkAndCancelHolds() throws Exception {
         Map<String, String> resultMap = new HashMap<>();
-        List<String> itemBarcodes = new ArrayList<>();
-        itemBarcodes.add("123456");
-        List<String> barcodes = deAccessionService.checkAndCancelHolds(itemBarcodes, resultMap);
-        assertNotNull(barcodes);
-        assertTrue(itemBarcodes.size() == 1);
-        assertEquals(itemBarcodes.get(0), barcodes.get(0));
+        DeAccessionItem deAccessionItem = new DeAccessionItem();
+        deAccessionItem.setItemBarcode("123456");
+        deAccessionItem.setDeliveryLocation("PB");
+        Map<String, String> barcodeAndStopCodeMap = deAccessionService.checkAndCancelHolds(Arrays.asList(deAccessionItem), resultMap, "Test");
+        assertNotNull(barcodeAndStopCodeMap);
+        assertTrue(barcodeAndStopCodeMap.size() == 1);
+        assertEquals(deAccessionItem.getItemBarcode(), barcodeAndStopCodeMap.keySet().toArray()[0]);
     }
 
     @Test
     public void deaccessionFlowTest() throws Exception {
-        List<String> itemBarcodes = new ArrayList<>();
-        itemBarcodes.add("123456");
-
-        when(requestItemDetailsRepository.findByItemBarcode(itemBarcodes.get(0))).thenReturn(getMockRequestItemEntities());
+        String itemBarcode = "123456";
+        when(requestItemDetailsRepository.findByItemBarcode(itemBarcode)).thenReturn(getMockRequestItemEntities());
 
         DeAccessionRequest deAccessionRequest = new DeAccessionRequest();
-        deAccessionRequest.setItemBarcodes(itemBarcodes);
+        DeAccessionItem deAccessionItem = new DeAccessionItem();
+        deAccessionItem.setItemBarcode(itemBarcode);
+        deAccessionItem.setDeliveryLocation("PB");
+        deAccessionRequest.setDeAccessionItems(Arrays.asList(deAccessionItem));
+        deAccessionRequest.setUsername("Test");
         Map<String, String> resultMap = deAccessionService.deAccession(deAccessionRequest);
         assertNotNull(resultMap);
     }
@@ -259,6 +276,52 @@ public class DeAccessionServiceUT extends BaseTestCase {
         requestItemEntities.add(requestItemEntity2);
 
         return requestItemEntities;
+    }
+
+    @Test
+    public void gfaPermanentWithdrawlDirect() throws Exception {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        GFAPwdRequest gfaPwdRequest = new GFAPwdRequest();
+        GFAPwdDsItemRequest gfaPwdDsItemRequest = new GFAPwdDsItemRequest();
+        GFAPwdTtItemRequest gfaPwdTtItemRequest = new GFAPwdTtItemRequest();
+        gfaPwdTtItemRequest.setCustomerCode("AR");
+        gfaPwdTtItemRequest.setItemBarcode("AR00000612");
+        gfaPwdTtItemRequest.setDestination("AR");
+        gfaPwdTtItemRequest.setRequestor("Dev Tesr");
+        gfaPwdDsItemRequest.setTtitem(Arrays.asList(gfaPwdTtItemRequest));
+        gfaPwdRequest.setDsitem(gfaPwdDsItemRequest);
+        HttpEntity<GFAPwdRequest> requestEntity = new HttpEntity(gfaPwdRequest, getHttpHeaders());
+        ResponseEntity<GFAPwdResponse> responseEntity = restTemplate.exchange(gfaItemPermanentWithdrawlDirect, HttpMethod.POST, requestEntity, GFAPwdResponse.class);
+        assertNotNull(responseEntity);
+        GFAPwdResponse gfaPwdResponse = responseEntity.getBody();
+        assertNotNull(gfaPwdResponse);
+    }
+
+    @Test
+    public void gfaPermanentWithdrawlInDirect() throws Exception {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        GFAPwiRequest gfaPwiRequest = new GFAPwiRequest();
+        GFAPwiDsItemRequest gfaPwiDsItemRequest = new GFAPwiDsItemRequest();
+        GFAPwiTtItemRequest gfaPwiTtItemRequest = new GFAPwiTtItemRequest();
+        gfaPwiTtItemRequest.setCustomerCode("AR");
+        gfaPwiTtItemRequest.setItemBarcode("AR00051608");
+        gfaPwiDsItemRequest.setTtitem(Arrays.asList(gfaPwiTtItemRequest));
+        gfaPwiRequest.setDsitem(gfaPwiDsItemRequest);
+        HttpEntity<GFAPwdRequest> requestEntity = new HttpEntity(gfaPwiRequest, getHttpHeaders());
+        ResponseEntity<GFAPwiResponse> responseEntity = restTemplate.exchange(gfaItemPermanentWithdrawlInDirect, HttpMethod.POST, requestEntity, GFAPwiResponse.class);
+        assertNotNull(responseEntity);
+        GFAPwiResponse gfaPwiResponse = responseEntity.getBody();
+        assertNotNull(gfaPwiResponse);
+    }
+
+    private HttpHeaders getHttpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
     }
 
 
