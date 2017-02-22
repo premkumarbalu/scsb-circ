@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.recap.BaseTestCase;
+import org.recap.model.deAccession.DeAccessionItem;
 import org.recap.model.deAccession.DeAccessionRequest;
 import org.recap.service.deAccession.DeAccessionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,7 +155,10 @@ public class SharedCollectionRestControllerUT extends BaseTestCase {
     @Test
     public void deAccession() throws Exception {
         DeAccessionRequest deAccessionRequest = new DeAccessionRequest();
-        deAccessionRequest.setItemBarcodes(Arrays.asList("1"));
+        DeAccessionItem deAccessionItem = new DeAccessionItem();
+        deAccessionItem.setItemBarcode("1");
+        deAccessionItem.setDeliveryLocation("PB");
+        deAccessionRequest.setDeAccessionItems(Arrays.asList(deAccessionItem));
         ObjectMapper objectMapper = new ObjectMapper();
         MvcResult mvcResult = this.mockMvc.perform(post("/sharedCollection/deAccession")
                 .headers(getHttpHeaders())

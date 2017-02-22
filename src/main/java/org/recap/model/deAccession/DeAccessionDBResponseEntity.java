@@ -9,6 +9,12 @@ public class DeAccessionDBResponseEntity {
 
     private String barcode;
 
+    private String deliveryLocation;
+
+    private String itemStatus;
+
+    private String customerCode;
+
     private String status;
 
     private String reasonForFailure;
@@ -31,6 +37,30 @@ public class DeAccessionDBResponseEntity {
 
     public void setBarcode(String barcode) {
         this.barcode = barcode;
+    }
+
+    public String getDeliveryLocation() {
+        return deliveryLocation;
+    }
+
+    public void setDeliveryLocation(String deliveryLocation) {
+        this.deliveryLocation = deliveryLocation;
+    }
+
+    public String getItemStatus() {
+        return itemStatus;
+    }
+
+    public void setItemStatus(String itemStatus) {
+        this.itemStatus = itemStatus;
+    }
+
+    public String getCustomerCode() {
+        return customerCode;
+    }
+
+    public void setCustomerCode(String customerCode) {
+        this.customerCode = customerCode;
     }
 
     public String getStatus() {
