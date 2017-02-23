@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SIP2RecallResponseParser extends  SIP2ResponseParser{
 
-    Logger logger = LoggerFactory.getLogger(SIP2RecallResponseParser.class);
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public SIP2MessageResponse parse(String data) throws InvalidSIP2ResponseValueException, InvalidSIP2ResponseException {
@@ -36,8 +36,7 @@ public class SIP2RecallResponseParser extends  SIP2ResponseParser{
 
             response.setCheckSum(this.parseChecksum(data));
         } catch (InvalidSIP2ResponseValueException e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
-            throw new InvalidSIP2ResponseValueException(e.getMessage() + " Response message string: \"" + data + "\"");
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }
         return response;
     }

@@ -3,12 +3,12 @@ package org.recap.mqconsumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Body;
 import org.apache.camel.Exchange;
-import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
 import org.recap.request.ItemEDDRequestService;
 import org.recap.request.ItemRequestService;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -17,7 +17,7 @@ import java.io.IOException;
  */
 public class RequestItemQueueConsumer {
 
-    private Logger logger = Logger.getLogger(RequestItemQueueConsumer.class);
+    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ItemRequestService itemRequestService;
     private ItemEDDRequestService itemEDDRequestService;
@@ -128,7 +128,11 @@ public class RequestItemQueueConsumer {
         ItemInformationResponse itemInformationResponse = null;
         try {
             itemInformationResponse = om.readValue(body, ItemInformationResponse.class);
-            itemRequestService.saveItemChangeLogEntity(0, itemRequestService.getUser(itemInformationResponse.getUsername()), operationType, body);
+            Integer intRecordId =0;
+            if(itemInformationResponse.getRequestId() != null && itemInformationResponse.getRequestId()>0) {
+                intRecordId = itemInformationResponse.getRequestId();
+            }
+            itemRequestService.saveItemChangeLogEntity(intRecordId, itemRequestService.getUser(itemInformationResponse.getUsername()), operationType, body);
             if(!itemInformationResponse.isSuccess()) {
                 itemInformationResponse.setRequestNotes(itemInformationResponse.getScreenMessage());
                 itemRequestService.updateRecapRequestItem(itemInformationResponse);

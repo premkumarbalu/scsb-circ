@@ -1,12 +1,11 @@
 package org.recap.processor;
 
-import org.jboss.logging.Logger;
-import org.recap.ReCAPConstants;
 import org.recap.callable.NyplJobResponsePollingCallable;
 import org.recap.ils.NyplApiServiceConnector;
 import org.recap.ils.model.nypl.JobData;
 import org.recap.ils.model.nypl.response.JobResponse;
 import org.recap.ils.service.NyplApiResponseUtil;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,7 +18,7 @@ import java.util.concurrent.*;
 @Component
 public class NyplJobResponsePollingProcessor {
 
-    private Logger logger = Logger.getLogger(NyplJobResponsePollingProcessor.class);
+    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Value("${nypl.polling.max.timeout}")
     private Integer pollingMaxTimeOut;
@@ -48,25 +47,25 @@ public class NyplJobResponsePollingProcessor {
             return jobResponse;
         } catch (InterruptedException e) {
             logger.error("Nypl job response interrupted for job id -> " + jobId);
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error("Exception -> " + e.getMessage());
             executor.shutdown();
             jobResponse.setStatusMessage("Nypl job response interrupted : " + e.getMessage());
             return jobResponse;
         } catch (ExecutionException e) {
             logger.error("Nypl job response execution failed for job id -> " + jobId);
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error("Exception -> " + e.getMessage());
             executor.shutdown();
             jobResponse.setStatusMessage("Nypl job response execution failed : " + e.getMessage());
             return jobResponse;
         } catch (TimeoutException e) {
             logger.error("Nypl job response polling timed out for job id -> " + jobId);
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error("Exception -> " + e.getMessage());
             executor.shutdown();
             jobResponse.setStatusMessage("Nypl job response polling timed out : " + e.getMessage());
             return jobResponse;
         } catch (Exception e) {
             logger.error("Nypl job response polling failed for job id -> " + jobId);
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error("Exception -> " + e.getMessage());
             executor.shutdown();
             jobResponse.setStatusMessage("Nypl job response polling failed : " + e.getMessage());
             return jobResponse;

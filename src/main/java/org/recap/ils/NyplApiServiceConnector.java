@@ -2,7 +2,6 @@ package org.recap.ils;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.ils.model.nypl.*;
 import org.recap.ils.model.nypl.request.CancelHoldRequest;
@@ -14,6 +13,7 @@ import org.recap.ils.model.response.*;
 import org.recap.ils.service.NyplApiResponseUtil;
 import org.recap.ils.service.NyplOauthTokenApiService;
 import org.recap.processor.NyplJobResponsePollingProcessor;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -30,7 +30,7 @@ import java.util.List;
 @Component
 public abstract class NyplApiServiceConnector implements IJSIPConnector {
 
-    private Logger logger = Logger.getLogger(NyplApiServiceConnector.class);
+    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Value("${ils.nypl.data.api}")
     public String nyplDataApiUrl;

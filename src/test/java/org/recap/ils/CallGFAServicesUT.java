@@ -1,6 +1,7 @@
 package org.recap.ils;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +59,9 @@ public class CallGFAServicesUT extends BaseTestCase {
 
             gfaItemStatus001.setItemBarCode("PULTST54337");
             gfaItemStatus002.setItemBarCode("PULTST54321");
-            gfaItemStatus003.setItemBarCode("PULTST54322");
+            gfaItemStatus003.setItemBarCode("32101045675921");
+            gfaItemStatus003.setItemBarCode("32101045463104");
+            gfaItemStatus003.setItemBarCode("32101088094931");
 
             List<GFAItemStatus> gfaItemStatuses = new ArrayList<>();
 
@@ -68,6 +71,7 @@ public class CallGFAServicesUT extends BaseTestCase {
             gfaItemStatusCheckRequest.setItemStatus(gfaItemStatuses);
 
             GFAItemStatusCheckResponse statusResponse = gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
+            logger.info(parseToJason(statusResponse));
         } catch (Exception e) {
             logger.error("Exception ", e);
         }
@@ -77,29 +81,32 @@ public class CallGFAServicesUT extends BaseTestCase {
     public void testretrieveItem() {
         GFARetrieveItemRequest gfaRetrieveItemRequest = new GFARetrieveItemRequest();
         try {
-            Ttitem ttitem001 = new Ttitem();
+            TtitemRequest ttitem001 = new TtitemRequest();
 
             ttitem001.setCustomerCode("PA");
-            ttitem001.setItemBarcode("PULTST54322");
+            ttitem001.setItemBarcode("32101088094931");
             ttitem001.setDestination("PA");
             ttitem001.setDeliveryMethod("PHY");
 
-            List<Ttitem> ttitems = new ArrayList<>();
+            List<TtitemRequest> ttitems = new ArrayList<>();
             ttitems.add(ttitem001);
-            RetrieveItem retrieveItem = new RetrieveItem();
+            RetrieveItemRequest retrieveItem = new RetrieveItemRequest();
             retrieveItem.setTtitem(ttitems);
             gfaRetrieveItemRequest.setRetrieveItem(retrieveItem);
-            ObjectMapper objectMapper = new ObjectMapper();
-            String json = "";
-            json = objectMapper.writeValueAsString(gfaRetrieveItemRequest);
-            logger.info(json);
-
+            logger.info(parseToJason(gfaRetrieveItemRequest));
             RestTemplate restTemplate = new RestTemplate();
-            HttpEntity requestEntity = new HttpEntity<>(getHttpHeaders());
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(gfaItemStatus)
-                    .queryParam(ReCAPConstants.GFA_SERVICE_PARAM, json);
-            ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
+            HttpEntity requestEntity = new HttpEntity(gfaRetrieveItemRequest,getHttpHeaders());
+            ResponseEntity<String> responseEntity = restTemplate.exchange(gfaItemRetrival, HttpMethod.POST, requestEntity, String.class);
             logger.info(responseEntity.getStatusCode().toString());
+            logger.info(parseToJason(responseEntity.getBody()));
+//            if(responseEntity.getBody() != null && responseEntity.getBody().getRetrieveItem() != null && responseEntity.getBody().getRetrieveItem().getTtitem() != null && !responseEntity.getBody().getRetrieveItem().getTtitem().isEmpty()){
+//                logger.info(parseToJason(parseToJason(responseEntity.getBody().getRetrieveItem().getTtitem())));
+//                List<Ttitem> titemList = responseEntity.getBody().getRetrieveItem().getTtitem();
+//                for(Ttitem ttitem:titemList){
+//                    logger.info(ttitem.getErrorCode());
+//                    logger.info(ttitem.getErrorNote());
+//                }
+//            }
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
@@ -186,7 +193,18 @@ public class CallGFAServicesUT extends BaseTestCase {
     private HttpHeaders getHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set(ReCAPConstants.API_KEY, ReCAPConstants.RECAP);
         return headers;
+    }
+
+    private String parseToJason(Object obj){
+        String jsonString="";
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            jsonString=objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            logger.error(e.getMessage());
+        }
+        return jsonString;
+
     }
 }

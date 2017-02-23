@@ -44,7 +44,7 @@ public class GFAService {
             ResponseEntity<GFAItemStatusCheckResponse> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, GFAItemStatusCheckResponse.class);
             gfaItemStatusCheckResponse = responseEntity.getBody();
 
-            logger.info(responseEntity.getStatusCode().toString());
+            logger.info("",responseEntity.getStatusCode());
         } catch (JsonProcessingException e) {
             logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
         } catch (Exception e) {
@@ -53,31 +53,40 @@ public class GFAService {
         return gfaItemStatusCheckResponse;
     }
 
-    public boolean itemRetrival(GFARetrieveItemRequest gfaRetrieveItemRequest) {
-        boolean bSuccess = false;
-        ObjectMapper objectMapper = new ObjectMapper();
-        String filterParamValue = "";
+    public GFARetrieveItemResponse itemRetrival(GFARetrieveItemRequest gfaRetrieveItemRequest) {
+        GFARetrieveItemResponse gfaRetrieveItemResponse = null;
         try {
-            filterParamValue = objectMapper.writeValueAsString(gfaRetrieveItemRequest);
-            logger.info(filterParamValue);
-
             RestTemplate restTemplate = new RestTemplate();
-            HttpEntity requestEntity = new HttpEntity<>(new HttpHeaders());
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(gfaItemRetrival)
-                    .queryParam(ReCAPConstants.GFA_SERVICE_PARAM, filterParamValue);
-            ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
+            HttpEntity requestEntity = new HttpEntity(gfaRetrieveItemRequest, getHttpHeaders());
+            ResponseEntity<GFARetrieveItemResponse> responseEntity = restTemplate.exchange(gfaItemRetrival, HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
             logger.info(responseEntity.getStatusCode().toString());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                bSuccess = true;
+                gfaRetrieveItemResponse = responseEntity.getBody();
+                if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
+                    List<Ttitem> titemList = gfaRetrieveItemResponse.getRetrieveItem().getTtitem();
+                    for (Ttitem ttitem : titemList) {
+                        logger.info(ttitem.getErrorCode());
+                        logger.info(ttitem.getErrorNote());
+                        gfaRetrieveItemResponse.setSuccess(false);
+                        gfaRetrieveItemResponse.setScrenMessage(ttitem.getErrorNote());
+                    }
+                } else {
+                    gfaRetrieveItemResponse.setSuccess(true);
+                }
+            } else {
+                gfaRetrieveItemResponse.setSuccess(false);
             }
-        } catch (JsonProcessingException e) {
-            logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
-        return bSuccess;
+        return gfaRetrieveItemResponse;
     }
 
+    private HttpHeaders getHttpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
 
     public ItemInformationResponse executeRetriveOrder(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
@@ -106,19 +115,23 @@ public class GFAService {
                 logger.info(gfaOnlyStaus);
 
                 if (ReCAPConstants.getGFAStatusAvailableList().contains(gfaOnlyStaus)) {
-                    Ttitem ttitem001 = new Ttitem();
+                    TtitemRequest ttitem001 = new TtitemRequest();
                     ttitem001.setCustomerCode(itemRequestInfo.getCustomerCode());
                     ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
                     ttitem001.setDestination(itemRequestInfo.getDeliveryLocation());
-                    ttitem001.setDeliveryMethod(ReCAPConstants.REQUEST_DELIVERY_METHOD);
+                    if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
+                        ttitem001.setDeliveryMethod(ReCAPConstants.REQUEST_DELIVERY_METHOD_EDD);
+                    } else {
+                        ttitem001.setDeliveryMethod(ReCAPConstants.REQUEST_DELIVERY_METHOD_PHY);
+                    }
 
-                    List<Ttitem> ttitems = new ArrayList<>();
+                    List<TtitemRequest> ttitems = new ArrayList<>();
                     ttitems.add(ttitem001);
-                    RetrieveItem retrieveItem = new RetrieveItem();
+                    RetrieveItemRequest retrieveItem = new RetrieveItemRequest();
                     retrieveItem.setTtitem(ttitems);
-
-                    boolean bSuccsess = itemRetrival(gfaRetrieveItemRequest);
-                    if (bSuccsess) {
+                    gfaRetrieveItemRequest.setRetrieveItem(retrieveItem);
+                    GFARetrieveItemResponse gfaRetrieveItemResponse = itemRetrival(gfaRetrieveItemRequest);
+                    if (gfaRetrieveItemResponse.isSuccess()) {
                         itemResponseInformation.setSuccess(true);
                         itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
                     } else {

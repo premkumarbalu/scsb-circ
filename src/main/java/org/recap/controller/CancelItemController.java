@@ -26,8 +26,6 @@ import java.util.Arrays;
 @RequestMapping("/cancelRequest")
 public class CancelItemController {
 
-    public static final String REQUEST_CANCELLATION_NOT_ACTIVE = "RequestId is not active status to be canceled";
-    public static final String REQUEST_CANCELLATION_DOES_NOT_EXIST = "RequestId does not exist";
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
@@ -45,7 +43,7 @@ public class CancelItemController {
     @RequestMapping(value = "/cancel", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public CancelRequestResponse cancelRequest(@ApiParam(value = "Parameters for cancelling", required = true, name = "requestId") @RequestParam Integer requestId) {
         CancelRequestResponse cancelRequestResponse = new CancelRequestResponse();
-        ItemHoldResponse itemCanceHoldResponse=null;
+        ItemHoldResponse itemCanceHoldResponse = null;
         try {
             RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(requestId);
             if (requestItemEntity != null) {
@@ -56,7 +54,7 @@ public class CancelItemController {
                 itemRequestInformation.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
                 itemRequestInformation.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 itemRequestInformation.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
-                itemRequestInformation.setPatronBarcode(requestItemEntity.getPatronEntity().getInstitutionIdentifier());
+                itemRequestInformation.setPatronBarcode(requestItemEntity.getPatronId());
                 itemRequestInformation.setDeliveryLocation(requestItemEntity.getStopCode());
 
                 String requestStatus = requestItemEntity.getRequestStatusEntity().getRequestStatusCode();
@@ -68,16 +66,16 @@ public class CancelItemController {
                 } else if (requestStatus.equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_RECALLED)) {
                     itemCanceHoldResponse = processRecall(itemRequestInformation, itemInformationResponse, requestItemEntity);
                 } else if (requestStatus.equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_EDD)) {
-                    itemCanceHoldResponse =processEDD(requestItemEntity);
+                    itemCanceHoldResponse = processEDD(requestItemEntity);
                 } else {
                     itemCanceHoldResponse = new ItemHoldResponse();
                     itemCanceHoldResponse.setSuccess(false);
-                    itemCanceHoldResponse.setScreenMessage(REQUEST_CANCELLATION_NOT_ACTIVE);
+                    itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_NOT_ACTIVE);
                 }
             } else {
                 itemCanceHoldResponse = new ItemHoldResponse();
                 itemCanceHoldResponse.setSuccess(false);
-                itemCanceHoldResponse.setScreenMessage(REQUEST_CANCELLATION_DOES_NOT_EXIST);
+                itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_DOES_NOT_EXIST);
             }
         } catch (Exception e) {
             itemCanceHoldResponse = new ItemHoldResponse();
@@ -85,7 +83,7 @@ public class CancelItemController {
             itemCanceHoldResponse.setScreenMessage(e.getMessage());
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         } finally {
-            if(itemCanceHoldResponse ==null){
+            if (itemCanceHoldResponse == null) {
                 itemCanceHoldResponse = new ItemHoldResponse();
             }
             cancelRequestResponse.setSuccess(itemCanceHoldResponse.isSuccess());

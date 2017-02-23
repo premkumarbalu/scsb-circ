@@ -1,12 +1,15 @@
 package org.recap.controller;
 
 import org.recap.ReCAPConstants;
+import org.recap.model.deAccession.DeAccessionRequest;
+import org.recap.service.deAccession.DeAccessionService;
 import org.recap.service.submitcollection.SubmitCollectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +26,9 @@ public class SharedCollectionRestController {
 
     @Autowired
     private SubmitCollectionService submitCollectionService;
+
+    @Autowired
+    DeAccessionService deAccessionService;
 
     @RequestMapping(value = "/submitCollection", method = RequestMethod.POST)
     @ResponseBody
@@ -49,6 +55,17 @@ public class SharedCollectionRestController {
             responseEntity = new ResponseEntity(response,getHttpHeaders(), HttpStatus.OK);
         }
         return responseEntity;
+    }
+
+    @RequestMapping(value = "/deAccession", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity deAccession(@RequestBody DeAccessionRequest deAccessionRequest) {
+        Map<String, String> resultMap = deAccessionService.deAccession(deAccessionRequest);
+        if (resultMap != null) {
+            ResponseEntity responseEntity = new ResponseEntity(resultMap, getHttpHeaders(), HttpStatus.OK);
+            return responseEntity;
+        }
+        return null;
     }
 
     private HttpHeaders getHttpHeaders() {
