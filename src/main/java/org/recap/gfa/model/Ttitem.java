@@ -34,6 +34,8 @@ public class Ttitem {
     private String notes;
     private String requestDate;
     private String requestTime;
+    private String errorCode;
+    private String errorNote;
 
     public String getItemBarcode() {
         return itemBarcode;
@@ -265,5 +267,21 @@ public class Ttitem {
 
     public void setRequestTime(String requestTime) {
         this.requestTime = requestTime;
+    }
+
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public String getErrorNote() {
+        return errorNote;
+    }
+
+    public void setErrorNote(String errorNote) {
+        this.errorNote = errorNote;
     }
 }

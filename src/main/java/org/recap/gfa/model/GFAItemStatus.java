@@ -5,7 +5,7 @@ package org.recap.gfa.model;
  */
 public class GFAItemStatus {
 
-    public String itemBarCode;
+    private String itemBarCode;
 
     public String getItemBarCode() {
         return itemBarCode;

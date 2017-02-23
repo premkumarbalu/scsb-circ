@@ -6,7 +6,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.builder.DefaultFluentProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.controller.RequestItemController;
 import org.recap.controller.RequestItemValidatorController;
@@ -16,6 +15,7 @@ import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.ils.model.response.ItemRecallResponse;
 import org.recap.model.*;
 import org.recap.repository.*;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -33,7 +33,8 @@ import java.util.List;
 @Component
 public class ItemRequestService {
 
-    private Logger logger = Logger.getLogger(ItemRequestService.class);
+
+    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Value("${ils.princeton.cul.patron}")
     private String princetonCULPatron;
@@ -71,9 +72,6 @@ public class ItemRequestService {
 
     @Autowired
     private RequestItemController requestItemController;
-
-    @Autowired
-    private PatronDetailsRepository patronDetailsRepository;
 
     @Autowired
     private RequestItemDetailsRepository requestItemDetailsRepository;
@@ -283,7 +281,7 @@ public class ItemRequestService {
             itemRequestInfo.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
 
             if (itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
-                itemRequestInfo.setPatronBarcode(requestItemEntity.getPatronEntity().getInstitutionIdentifier());
+                itemRequestInfo.setPatronBarcode(requestItemEntity.getPatronId());
                 requestItemController.checkinItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
             }
             if (!itemRequestInfo.isOwningInstitutionItem() && (itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.NYPL) || itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON))) {
@@ -376,7 +374,7 @@ public class ItemRequestService {
                 itemResponseInformation = gfaService.executeRetriveOrder(itemRequestInfo, itemResponseInformation);
             } else {
                 itemResponseInformation.setSuccess(true);
-                itemResponseInformation.setScreenMessage("Retrival Order Not Required for Recall");
+                itemResponseInformation.setScreenMessage(ReCAPConstants.RETRIVAL_ORDER_NOT_REQUIRED_FOR_RECALL);
             }
         } catch (Exception e) {
             itemResponseInformation.setSuccess(false);
@@ -401,7 +399,7 @@ public class ItemRequestService {
                 } else { // If Hold command Failure
                     messagePublish = itemHoldResponse.getScreenMessage();
                     bsuccess = false;
-                    rollbackUpdateItemAvailabilutyStatus(itemEntity,itemRequestInfo.getUsername());
+                    rollbackUpdateItemAvailabilutyStatus(itemEntity, itemRequestInfo.getUsername());
                     saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, itemHoldResponse.getPatronIdentifier() + " - " + itemHoldResponse.getScreenMessage());
                 }
             } else {// Not the Owning Institute
@@ -424,13 +422,13 @@ public class ItemRequestService {
                     } else {
                         messagePublish = itemHoldResponse.getScreenMessage();
                         bsuccess = false;
-                        rollbackUpdateItemAvailabilutyStatus(itemEntity,itemRequestInfo.getUsername());
+                        rollbackUpdateItemAvailabilutyStatus(itemEntity, itemRequestInfo.getUsername());
                         saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, itemHoldResponse.getPatronIdentifier() + " - " + itemHoldResponse.getScreenMessage());
                     }
                 } else {
                     messagePublish = createBibResponse.getScreenMessage();
                     bsuccess = false;
-                    rollbackUpdateItemAvailabilutyStatus(itemEntity,itemRequestInfo.getUsername());
+                    rollbackUpdateItemAvailabilutyStatus(itemEntity, itemRequestInfo.getUsername());
                     saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, createBibResponse.getBibId() + " - " + createBibResponse.getScreenMessage());
                 }
             }
@@ -645,6 +643,8 @@ public class ItemRequestService {
                 } else {
                     lTitle = "";
                 }
+            } else {
+                lTitle = title;
             }
 
             if (lTitle != null && lTitle.trim().length() > 126) {
@@ -663,7 +663,7 @@ public class ItemRequestService {
     }
 
     private void rollbackAfterGFA(ItemEntity itemEntity, ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
-        rollbackUpdateItemAvailabilutyStatus(itemEntity,itemRequestInfo.getUsername());
+        rollbackUpdateItemAvailabilutyStatus(itemEntity, itemRequestInfo.getUsername());
         saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), ReCAPConstants.REQUEST_ITEM_GFA_FAILURE, itemRequestInfo.getPatronBarcode() + " - " + itemResponseInformation.getScreenMessage());
         requestItemController.cancelHoldItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
     }

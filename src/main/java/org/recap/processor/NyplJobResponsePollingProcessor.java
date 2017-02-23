@@ -1,12 +1,12 @@
 package org.recap.processor;
 
-import org.jboss.logging.Logger;
-import org.recap.ReCAPConstants;
 import org.recap.callable.NyplJobResponsePollingCallable;
 import org.recap.ils.NyplApiServiceConnector;
 import org.recap.ils.model.nypl.JobData;
 import org.recap.ils.model.nypl.response.JobResponse;
 import org.recap.ils.service.NyplApiResponseUtil;
+import org.slf4j.LoggerFactory;
+import org.recap.ReCAPConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,7 @@ import java.util.concurrent.*;
 @Component
 public class NyplJobResponsePollingProcessor {
 
-    private Logger logger = Logger.getLogger(NyplJobResponsePollingProcessor.class);
+    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Value("${nypl.polling.max.timeout}")
     private Integer pollingMaxTimeOut;

@@ -1,7 +1,6 @@
 package org.recap.request;
 
 import org.apache.camel.Exchange;
-import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.controller.RequestItemValidatorController;
 import org.recap.ils.model.response.ItemInformationResponse;
@@ -10,6 +9,7 @@ import org.recap.model.ItemRequestInformation;
 import org.recap.model.RequestTypeEntity;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.RequestTypeDetailsRepository;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ import java.util.List;
 @Component
 public class ItemEDDRequestService {
 
-    private Logger logger = Logger.getLogger(ItemEDDRequestService.class);
+    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;

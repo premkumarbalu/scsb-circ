@@ -1,11 +1,11 @@
 package org.recap.request;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
 import org.recap.ReCAPConstants;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.*;
 import org.recap.repository.*;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,15 +21,12 @@ import java.util.List;
 @Component
 public class ItemRequestDBService {
 
-    private Logger logger = Logger.getLogger(ItemRequestDBService.class);
+    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;
-
-    @Autowired
-    private PatronDetailsRepository patronDetailsRepository;
 
     @Autowired
     private RequestItemDetailsRepository requestItemDetailsRepository;
@@ -52,28 +49,11 @@ public class ItemRequestDBService {
     public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity, String requestStatusCode) {
 
         RequestItemEntity requestItemEntity = new RequestItemEntity();
-        PatronEntity patronEntity;
-        PatronEntity savedPatronEntity;
         RequestItemEntity savedItemRequest;
         Integer requestId = 0;
         try {
-            // Patron Information
-            patronEntity = patronDetailsRepository.findByInstitutionIdentifier(itemRequestInformation.getPatronBarcode());
             RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(requestStatusCode);
             InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode(itemRequestInformation.getRequestingInstitution());
-
-            if (patronEntity == null) {
-                patronEntity = new PatronEntity();
-                patronEntity.setInstitutionIdentifier(itemRequestInformation.getPatronBarcode());
-                patronEntity.setInstitutionId(itemEntity.getInstitutionEntity().getInstitutionId());
-                patronEntity.setEmailId(itemRequestInformation.getEmailAddress());
-                savedPatronEntity = patronDetailsRepository.save(patronEntity);
-            } else {
-                if (itemRequestInformation.getEmailAddress() != null && itemRequestInformation.getEmailAddress().trim().length() > 0) {
-                    patronEntity.setEmailId(itemRequestInformation.getEmailAddress());
-                }
-                savedPatronEntity = patronDetailsRepository.save(patronEntity);
-            }
 
             //Request Item
             requestItemEntity.setItemId(itemEntity.getItemId());
@@ -83,17 +63,15 @@ public class ItemRequestDBService {
             requestItemEntity.setCreatedBy(getUser(itemRequestInformation.getUsername()));
             requestItemEntity.setCreatedDate(new Date());
             requestItemEntity.setLastUpdatedDate(new Date());
-            requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
+            requestItemEntity.setPatronId(itemRequestInformation.getPatronBarcode());
             requestItemEntity.setStopCode(itemRequestInformation.getDeliveryLocation());
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+            requestItemEntity.setEmailId(itemRequestInformation.getEmailAddress());
             requestItemEntity.setNotes(itemRequestInformation.getRequestNotes());
-
 
             savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
             if (savedItemRequest != null) {
                 requestId = savedItemRequest.getRequestId();
-
-
                 saveItemChangeLogEntity(savedItemRequest.getRequestId(), getUser(itemRequestInformation.getUsername()), "Request Item Insert", savedItemRequest.getItemId() + " - " + savedItemRequest.getPatronId());
             }
             logger.info("SCSB DB Update Successful");
@@ -108,29 +86,12 @@ public class ItemRequestDBService {
     public ItemInformationResponse updateRecapRequestItem(ItemInformationResponse itemInformationResponse) {
 
         RequestItemEntity requestItemEntity = new RequestItemEntity();
-        PatronEntity patronEntity;
-        PatronEntity savedPatronEntity;
         RequestItemEntity savedItemRequest;
         Integer requestId = 0;
         try {
-            // Patron Information
-            patronEntity = patronDetailsRepository.findByInstitutionIdentifier(itemInformationResponse.getPatronBarcode());
             RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
             RequestTypeEntity requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemInformationResponse.getRequestType());
             InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode(itemInformationResponse.getRequestingInstitution());
-
-            if (patronEntity == null) {
-                patronEntity = new PatronEntity();
-                patronEntity.setInstitutionIdentifier(itemInformationResponse.getPatronBarcode());
-                patronEntity.setInstitutionId(institutionEntity.getInstitutionId());
-                patronEntity.setEmailId(itemInformationResponse.getEmailAddress());
-                savedPatronEntity = patronDetailsRepository.save(patronEntity);
-            } else {
-                if (itemInformationResponse.getEmailAddress() != null && itemInformationResponse.getEmailAddress().trim().length() > 0) {
-                    patronEntity.setEmailId(itemInformationResponse.getEmailAddress());
-                }
-                savedPatronEntity = patronDetailsRepository.save(patronEntity);
-            }
 
             //Request Item
             requestItemEntity.setItemId(itemInformationResponse.getItemId());
@@ -140,9 +101,10 @@ public class ItemRequestDBService {
             requestItemEntity.setCreatedBy(getUser(itemInformationResponse.getUsername()));
             requestItemEntity.setCreatedDate(new Date());
             requestItemEntity.setLastUpdatedDate(new Date());
-            requestItemEntity.setPatronId(savedPatronEntity.getPatronId());
+            requestItemEntity.setPatronId(itemInformationResponse.getPatronBarcode());
             requestItemEntity.setStopCode(itemInformationResponse.getDeliveryLocation());
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+            requestItemEntity.setEmailId(itemInformationResponse.getEmailAddress());
             requestItemEntity.setNotes(itemInformationResponse.getRequestNotes());
 
             savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
