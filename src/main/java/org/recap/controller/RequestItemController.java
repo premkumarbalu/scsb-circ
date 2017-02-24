@@ -228,7 +228,7 @@ public class RequestItemController {
                 String name = field.getName();
                 Object value = field.get(clsObject);
                 if(!StringUtils.isBlank(name) && value !=null) {
-                    logger.info(String.format("Field name: %sFiled Value :%s", name, value));
+                    logger.info("Field name: {} Filed Value : {} ", name, value);
                 }
             }
         } catch (IllegalAccessException e) {

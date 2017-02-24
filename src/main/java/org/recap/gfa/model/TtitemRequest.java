@@ -6,7 +6,7 @@ package org.recap.gfa.model;
 public class TtitemRequest {
     private String itemBarcode;
     private String itemStatus;
-    private String CustomerCode;
+    private String customerCode;
     private String destination;
     private String deliveryMethod;
 
@@ -27,11 +27,11 @@ public class TtitemRequest {
     }
 
     public String getCustomerCode() {
-        return CustomerCode;
+        return customerCode;
     }
 
     public void setCustomerCode(String customerCode) {
-        CustomerCode = customerCode;
+        this.customerCode = customerCode;
     }
 
     public String getDestination() {

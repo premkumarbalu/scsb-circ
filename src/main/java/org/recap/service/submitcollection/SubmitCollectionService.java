@@ -310,7 +310,6 @@ public class SubmitCollectionService {
         fetchBibliographicEntity.setHoldingsEntities(fetchHoldingsEntities);
         fetchBibliographicEntity.setItemEntities(fetchItemsEntities);
         savedOrUnsavedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(fetchBibliographicEntity);
-        //}
         return savedOrUnsavedBibliographicEntity;
     }
 

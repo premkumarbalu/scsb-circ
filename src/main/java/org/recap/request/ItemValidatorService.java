@@ -105,8 +105,8 @@ public class ItemValidatorService {
         List<ItemEntity> itemEntityList = getItemEntities(itemRequestInformation.getItemBarcodes());
 
         if (itemRequestInformation.getItemBarcodes().size() == 1) {
-            if (itemEntityList != null && itemEntityList.size() != 0) {
-                if (itemEntityList.size() > 0) {
+            if (itemEntityList != null && !itemEntityList.isEmpty()) {
+                if (!itemEntityList.isEmpty()) {
                     for (ItemEntity itemEntity1 : itemEntityList) {
                         String availabilityStatus = getItemStatus(itemEntity1.getItemAvailabilityStatusId());
                         if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.NOT_AVAILABLE) && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)

@@ -73,7 +73,7 @@ public class DataFieldType implements Serializable {
      */
     public List<SubfieldatafieldType> getSubfield() {
         if (subfield == null) {
-            subfield = new ArrayList<SubfieldatafieldType>();
+            subfield = new ArrayList<>();
         }
         return this.subfield;
     }

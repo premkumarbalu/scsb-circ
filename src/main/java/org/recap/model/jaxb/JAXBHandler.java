@@ -58,7 +58,7 @@ public class JAXBHandler {
         return getMarshallerMap().get(cl.getName());
     }
 
-    synchronized public Object unmarshal(String content, Class cl) throws JAXBException  {
+    public synchronized Object unmarshal(String content, Class cl) throws JAXBException  {
         Object object;
         Unmarshaller unmarshaller = getUnmarshaller(cl);
         object = unmarshaller.unmarshal(new StringReader(content));

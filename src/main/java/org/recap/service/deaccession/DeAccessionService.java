@@ -1,4 +1,4 @@
-package org.recap.service.deAccession;
+package org.recap.service.deaccession;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -10,10 +10,10 @@ import org.recap.gfa.model.*;
 import org.recap.ils.model.response.ItemHoldResponse;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.*;
-import org.recap.model.deAccession.DeAccessionDBResponseEntity;
-import org.recap.model.deAccession.DeAccessionItem;
-import org.recap.model.deAccession.DeAccessionRequest;
-import org.recap.model.deAccession.DeAccessionSolrRequest;
+import org.recap.model.deaccession.DeAccessionDBResponseEntity;
+import org.recap.model.deaccession.DeAccessionItem;
+import org.recap.model.deaccession.DeAccessionRequest;
+import org.recap.model.deaccession.DeAccessionSolrRequest;
 import org.recap.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -223,8 +223,7 @@ public class DeAccessionService {
         itemRequestInformation.setRequestingInstitution(activeRetrievalRequest.getInstitutionEntity().getInstitutionCode());
         itemRequestInformation.setPatronBarcode(activeRetrievalRequest.getPatronId());
         itemRequestInformation.setDeliveryLocation(activeRetrievalRequest.getStopCode());
-        ItemInformationResponse itemInformationResponse = (ItemInformationResponse) requestItemController.itemInformation(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
-        return itemInformationResponse;
+        return (ItemInformationResponse) requestItemController.itemInformation(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
     }
 
     public ItemHoldResponse cancelRequest(RequestItemEntity requestItemEntity, String username) {
@@ -311,7 +310,7 @@ public class DeAccessionService {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,ex);
         }
         return deAccessionDBResponseEntities;
     }
@@ -421,7 +420,7 @@ public class DeAccessionService {
             try {
                 populateDeAccessionDBResponseEntity(itemEntity, deAccessionDBResponseEntity);
             } catch (JSONException e) {
-                e.printStackTrace();
+                logger.error(ReCAPConstants.LOG_ERROR,e);
             }
         }
         return deAccessionDBResponseEntity;

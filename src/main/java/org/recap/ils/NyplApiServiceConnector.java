@@ -109,20 +109,20 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                 String jobId = checkoutData.getJobId();
                 itemCheckoutResponse.setJobId(jobId);
                 logger.info("Initiated checkout on NYPL");
-                logger.info("Nypl checkout job id -> " + jobId);
+                logger.info("Nypl checkout job id -> {} " , jobId);
                 JobResponse jobResponse = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemCheckoutResponse.getJobId());
                 String statusMessage = jobResponse.getStatusMessage();
                 itemCheckoutResponse.setScreenMessage(statusMessage);
                 JobData jobData = jobResponse.getData();
                 if (null != jobData) {
                     itemCheckoutResponse.setSuccess(jobData.getSuccess());
-                    logger.info("Checkout Finished -> " + jobData.getFinished());
-                    logger.info("Checkout Success -> " + jobData.getSuccess());
+                    logger.info("Checkout Finished ->  {} " , jobData.getFinished());
+                    logger.info("Checkout Success -> {}", jobData.getSuccess());
                     logger.info(statusMessage);
                 } else {
                     itemCheckoutResponse.setSuccess(false);
-                    logger.info("Checkout Finished -> " + false);
-                    logger.info("Checkout Success -> " + false);
+                    logger.info("Checkout Finished -> {}" , false);
+                    logger.info("Checkout Success -> {}", false);
                     logger.info(statusMessage);
                 }
             }
@@ -157,15 +157,15 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                 String jobId = checkinData.getJobId();
                 itemCheckinResponse.setJobId(jobId);
                 logger.info("Initiated checkin on NYPL");
-                logger.info("Nypl checkin job id -> " + jobId);
+                logger.info("Nypl checkin job id -> {} " , jobId);
                 JobResponse jobResponse = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemCheckinResponse.getJobId());
                 String statusMessage = jobResponse.getStatusMessage();
                 itemCheckinResponse.setScreenMessage(statusMessage);
                 JobData jobData = jobResponse.getData();
                 if (null != jobData) {
                     itemCheckinResponse.setSuccess(jobData.getSuccess());
-                    logger.info("Checkin Finished -> " + jobData.getFinished());
-                    logger.info("Checkin Success -> " + jobData.getSuccess());
+                    logger.info("Checkin Finished -> {}" , jobData.getFinished());
+                    logger.info("Checkin Success -> {}" , jobData.getSuccess());
                     logger.info(statusMessage);
                 } else {
                     itemCheckinResponse.setSuccess(false);
@@ -219,7 +219,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                     String jobId = nyplHoldData.getJobId();
                     itemHoldResponse.setJobId(jobId);
                     logger.info("Initiated recap hold request on NYPL");
-                    logger.info("Nypl Hold request job id -> " + jobId);
+                    logger.info("Nypl Hold request job id -> {} " , jobId);
                     JobResponse jobResponse = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemHoldResponse.getJobId());
                     String statusMessage = jobResponse.getStatusMessage();
                     itemHoldResponse.setScreenMessage(statusMessage);
@@ -271,7 +271,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
                 String jobId = cancelHoldData.getJobId();
                 itemHoldResponse.setJobId(jobId);
                 logger.info("Initiated cancel hold request on NYPL");
-                logger.info("Nypl cancel hold request job id -> " + jobId);
+                logger.info("Nypl cancel hold request job id -> {}" , jobId);
                 JobResponse jobResponse = nyplJobResponsePollingProcessor.pollNyplRequestItemJobResponse(itemHoldResponse.getJobId());
                 String statusMessage = jobResponse.getStatusMessage();
                 itemHoldResponse.setScreenMessage(statusMessage);

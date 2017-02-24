@@ -38,7 +38,7 @@ public class NyplJobResponsePollingProcessor {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
             Future<JobResponse> future = executor.submit(new NyplJobResponsePollingCallable(jobId, pollingTimeInterval, nyplApiServiceConnector));
-            logger.info("Polling on job id " + jobId + " started");
+            logger.info("Polling on job id {} started" , jobId);
             jobResponse = future.get(pollingMaxTimeOut, TimeUnit.SECONDS);
             JobData jobData = jobResponse.getData();
             if (null != jobData) {

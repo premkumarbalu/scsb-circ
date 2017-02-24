@@ -75,7 +75,7 @@ public class ItemEDDRequestService {
                         messagePublish = itemResponseInformation.getScreenMessage();
                     }
                 } else {
-                    logger.warn("Validate Request Errors : " + res.getBody().toString());
+                    logger.warn("Validate Request Errors : {} " , res.getBody().toString());
                     messagePublish = res.getBody().toString();
                     bsuccess = false;
                 }
