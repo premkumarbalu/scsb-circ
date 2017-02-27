@@ -19,14 +19,27 @@ public class JSIPConnectorFactory {
     @Autowired
     private NyplApiConnector nyplAPIConnector;
 
+    public ColumbiaJSIPConnector getColumbiaJSIPConnector() {
+        return columbiaJSIPConnector;
+    }
+
+    public PrincetonJSIPConnector getPrincetonJSIPConnector() {
+        return princetonJSIPConnector;
+    }
+
+    public NyplApiConnector getNyplAPIConnector() {
+        return nyplAPIConnector;
+    }
+
+
     public IJSIPConnector getJSIPConnector(String institutionId) {
         IJSIPConnector ijsipConnector = null;
         if (institutionId.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
-            ijsipConnector = princetonJSIPConnector;
+            ijsipConnector = getPrincetonJSIPConnector();
         } else if (institutionId.equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
-            ijsipConnector = columbiaJSIPConnector;
+            ijsipConnector = getColumbiaJSIPConnector();
         } else if (institutionId.equalsIgnoreCase(ReCAPConstants.NYPL)) {
-            ijsipConnector = nyplAPIConnector;
+            ijsipConnector = getNyplAPIConnector();
         }
         return ijsipConnector;
     }

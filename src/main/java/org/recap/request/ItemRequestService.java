@@ -15,6 +15,7 @@ import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.ils.model.response.ItemRecallResponse;
 import org.recap.model.*;
 import org.recap.repository.*;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -97,6 +98,90 @@ public class ItemRequestService {
     @Autowired
     private ItemRequestDBService itemRequestDBService;
 
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public ItemRequestDBService getItemRequestDBService() {
+        return itemRequestDBService;
+    }
+
+    public InstitutionDetailsRepository getInstitutionDetailsRepository() {
+        return institutionDetailsRepository;
+    }
+
+    public String getPrincetonCULPatron() {
+        return princetonCULPatron;
+    }
+
+    public String getPrincetonNYPLPatron() {
+        return princetonNYPLPatron;
+    }
+
+    public String getColumbiaPULPatron() {
+        return columbiaPULPatron;
+    }
+
+    public String getColumbiaNYPLPatron() {
+        return columbiaNYPLPatron;
+    }
+
+    public String getNyplPrincetonPatron() {
+        return nyplPrincetonPatron;
+    }
+
+    public String getNyplColumbiaPatron() {
+        return nyplColumbiaPatron;
+    }
+
+    public String getServerProtocol() {
+        return serverProtocol;
+    }
+
+    public String getScsbSolrClientUrl() {
+        return scsbSolrClientUrl;
+    }
+
+    public ItemDetailsRepository getItemDetailsRepository() {
+        return itemDetailsRepository;
+    }
+
+    public RequestTypeDetailsRepository getRequestTypeDetailsRepository() {
+        return requestTypeDetailsRepository;
+    }
+
+    public RequestItemValidatorController getRequestItemValidatorController() {
+        return requestItemValidatorController;
+    }
+
+    public RequestItemController getRequestItemController() {
+        return requestItemController;
+    }
+
+    public RequestItemDetailsRepository getRequestItemDetailsRepository() {
+        return requestItemDetailsRepository;
+    }
+
+    public ItemChangeLogDetailsRepository getItemChangeLogDetailsRepository() {
+        return itemChangeLogDetailsRepository;
+    }
+
+    public EmailService getEmailService() {
+        return emailService;
+    }
+
+    public RequestItemStatusDetailsRepository getRequestItemStatusDetailsRepository() {
+        return requestItemStatusDetailsRepository;
+    }
+
+    public GFAService getGfaService() {
+        return gfaService;
+    }
+
+    public RequestInstitutionBibDetailsRepository getRequestInstitutionBibDetailsRepository() {
+        return requestInstitutionBibDetailsRepository;
+    }
+
     public ItemInformationResponse requestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
         String messagePublish = "";
@@ -108,10 +193,10 @@ public class ItemRequestService {
         ResponseEntity res;
 
         try {
-            itemEntities = itemDetailsRepository.findByBarcodeIn(itemRequestInfo.getItemBarcodes());
+            itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
             if (itemEntities != null && !itemEntities.isEmpty()) {
-                logger.info("Item Exists in SCSB Database");
+                getLogger().info("Item Exists in SCSB Database");
                 itemEntity = itemEntities.get(0);
                 if (StringUtils.isBlank(itemRequestInfo.getBibId())) {
                     itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
@@ -120,12 +205,12 @@ public class ItemRequestService {
                 itemRequestInfo.setTitleIdentifier(getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity));
                 itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
                 // Validate Patron
-                res = requestItemValidatorController.validateItemRequestInformations(itemRequestInfo);
+                res = getRequestItemValidatorController().validateItemRequestInformations(itemRequestInfo);
                 if (res.getStatusCode() == HttpStatus.OK) {
-                    logger.info("Request Validation Successful");
+                    getLogger().info("Request Validation Successful");
                     // Change Item Availablity
                     updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
-                    requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
+                    requestTypeEntity = getRequestTypeDetailsRepository().findByrequestTypeCode(itemRequestInfo.getRequestType());
                     // Action based on Request Type
                     if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
                         itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity, requestTypeEntity);
@@ -144,7 +229,7 @@ public class ItemRequestService {
                         }
                     }
                 } else {
-                    logger.warn("Validate Request Errors : " + res.getBody().toString());
+                    getLogger().warn("Validate Request Errors : " + res.getBody().toString());
                     messagePublish = res.getBody().toString();
                     bsuccess = false;
                 }
@@ -153,7 +238,7 @@ public class ItemRequestService {
                 messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
                 bsuccess = false;
             }
-            logger.info("Finish Processing");
+            getLogger().info("Finish Processing");
             itemResponseInformation.setScreenMessage(messagePublish);
             itemResponseInformation.setSuccess(bsuccess);
             itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
@@ -611,7 +696,7 @@ public class ItemRequestService {
         }
     }
 
-    private List<SearchResultRow> searchRecords(ItemEntity itemEntity) {
+    public List<SearchResultRow> searchRecords(ItemEntity itemEntity) {
         List<SearchResultRow> statusResponse = null;
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -655,7 +740,7 @@ public class ItemRequestService {
             if (lTitle != null) {
                 titleIdentifier = String.format("[%s] %s%s", useRestrictions, lTitle.toUpperCase(), ReCAPConstants.REQUEST_ITEM_TITLE_SUFFIX);
             }
-            logger.info(titleIdentifier);
+            getLogger().info(titleIdentifier);
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }

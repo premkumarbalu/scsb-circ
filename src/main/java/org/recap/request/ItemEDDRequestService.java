@@ -9,6 +9,7 @@ import org.recap.model.ItemRequestInformation;
 import org.recap.model.RequestTypeEntity;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.RequestTypeDetailsRepository;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,30 @@ public class ItemEDDRequestService {
     @Autowired
     private ItemRequestService itemRequestService;
 
+    public ItemDetailsRepository getItemDetailsRepository() {
+        return itemDetailsRepository;
+    }
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
+
+    public RequestTypeDetailsRepository getRequestTypeDetailsRepository() {
+        return requestTypeDetailsRepository;
+    }
+
+    public RequestItemValidatorController getRequestItemValidatorController() {
+        return requestItemValidatorController;
+    }
+
+    public ItemRequestService getItemRequestService() {
+        return itemRequestService;
+    }
+
     public ItemInformationResponse eddRequestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
         String messagePublish;
@@ -49,25 +74,25 @@ public class ItemEDDRequestService {
         ResponseEntity res;
 
         try {
-            itemEntities = itemDetailsRepository.findByBarcodeIn(itemRequestInfo.getItemBarcodes());
+            itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
             if (itemEntities != null && !itemEntities.isEmpty()) {
-                logger.info("Item Exists in SCSB Database");
+                getLogger().info("Item Exists in SCSB Database");
                 itemEntity = itemEntities.get(0);
                 if (itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId().trim().length() <= 0) {
                     itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 }
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
-                itemRequestInfo.setTitleIdentifier(itemRequestService.getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity));
+                itemRequestInfo.setTitleIdentifier(getItemRequestService().getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity));
                 itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
                 // Validate Patron
-                res = requestItemValidatorController.validateItemRequestInformations(itemRequestInfo);
+                res = getRequestItemValidatorController().validateItemRequestInformations(itemRequestInfo);
                 if (res.getStatusCode() == HttpStatus.OK) {
-                    logger.info("Request Validation Successful");
-                    requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInfo.getRequestType());
-                    itemResponseInformation = itemRequestService.updateGFA(itemRequestInfo, itemResponseInformation);
+                    getLogger().info("Request Validation Successful");
+                    requestTypeEntity = getRequestTypeDetailsRepository().findByrequestTypeCode(itemRequestInfo.getRequestType());
+                    itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
                     if (itemResponseInformation.isSuccess()) {
-                        itemRequestService.updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_EDD);
+                        getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_EDD);
                         bsuccess = true;
                         messagePublish = "EDD requests is successfull";
                     } else {
@@ -75,7 +100,7 @@ public class ItemEDDRequestService {
                         messagePublish = itemResponseInformation.getScreenMessage();
                     }
                 } else {
-                    logger.warn("Validate Request Errors : " + res.getBody().toString());
+                    getLogger().warn("Validate Request Errors : " + res.getBody().toString());
                     messagePublish = res.getBody().toString();
                     bsuccess = false;
                 }
@@ -84,7 +109,7 @@ public class ItemEDDRequestService {
                 messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
                 bsuccess = false;
             }
-            logger.info("Finish Processing");
+            getLogger().info("Finish Processing");
             itemResponseInformation.setScreenMessage(messagePublish);
             itemResponseInformation.setSuccess(bsuccess);
             itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
@@ -99,7 +124,7 @@ public class ItemEDDRequestService {
             itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
             itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes());
             // Update Topics
-            itemRequestService.sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
+            getItemRequestService().sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST, ex);
         } catch (Exception ex) {

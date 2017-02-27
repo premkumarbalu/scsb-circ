@@ -2,6 +2,7 @@ package org.recap.request;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.camel.component.rest.RestEndpoint;
 import org.recap.ReCAPConstants;
 import org.recap.gfa.model.*;
 import org.recap.ils.model.response.ItemInformationResponse;
@@ -28,6 +29,26 @@ public class GFAService {
     private String gfaItemStatus;
     @Value("${gfa.item.retrieval.order}")
     private String gfaItemRetrival;
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
+
+    public String getGfaItemStatus() {
+        return gfaItemStatus;
+    }
+
+    public String getGfaItemRetrival() {
+        return gfaItemRetrival;
+    }
+
+    public RestTemplate getRestTemplate(){
+        return new RestTemplate();
+    }
 
     public GFAItemStatusCheckResponse itemStatusCheck(GFAItemStatusCheckRequest gfaItemStatusCheckRequest) {
 
@@ -58,15 +79,15 @@ public class GFAService {
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity(gfaRetrieveItemRequest, getHttpHeaders());
-            ResponseEntity<GFARetrieveItemResponse> responseEntity = restTemplate.exchange(gfaItemRetrival, HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
-            logger.info(responseEntity.getStatusCode().toString());
+            ResponseEntity<GFARetrieveItemResponse> responseEntity = getRestTemplate().exchange(getGfaItemRetrival(), HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
+            getLogger().info(responseEntity.getStatusCode().toString());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 gfaRetrieveItemResponse = responseEntity.getBody();
                 if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
                     List<Ttitem> titemList = gfaRetrieveItemResponse.getRetrieveItem().getTtitem();
                     for (Ttitem ttitem : titemList) {
-                        logger.info(ttitem.getErrorCode());
-                        logger.info(ttitem.getErrorNote());
+                        getLogger().info(ttitem.getErrorCode());
+                        getLogger().info(ttitem.getErrorNote());
                         gfaRetrieveItemResponse.setSuccess(false);
                         gfaRetrieveItemResponse.setScrenMessage(ttitem.getErrorNote());
                     }
@@ -77,7 +98,7 @@ public class GFAService {
                 gfaRetrieveItemResponse.setSuccess(false);
             }
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            getLogger().error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return gfaRetrieveItemResponse;
     }
