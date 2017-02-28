@@ -2,7 +2,11 @@ package org.recap.ils;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.recap.BaseTestCase;
+import org.recap.ils.model.nypl.CancelHoldData;
+import org.recap.ils.model.nypl.DebugInfo;
 import org.recap.ils.model.nypl.Description;
 import org.recap.ils.model.nypl.response.*;
 import org.recap.ils.model.nypl.request.CancelHoldRequest;
@@ -40,6 +44,9 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
     @Value("${ils.nypl.operator.password}")
     private String operatorPassword;
+
+    @Mock
+    RestTemplate restTemplate;
 
     @Test
     public void testGenerateOAuthToken() throws Exception {
@@ -107,8 +114,16 @@ public class NyplDataApiServiceUT extends BaseTestCase {
         cancelHoldRequest.setItemBarcode("");
         cancelHoldRequest.setPatronBarcode("");
 
-        RestTemplate restTemplate = new RestTemplate();
+        CancelHoldResponse cancelHoldResponse1 = new CancelHoldResponse();
+        cancelHoldResponse1.setCount(1);
+        cancelHoldResponse1.setData(new CancelHoldData());
+        cancelHoldResponse1.setDebugInfo(Arrays.asList(new DebugInfo()));
+        cancelHoldResponse1.setStatusCode(1);
+
+        ResponseEntity<CancelHoldResponse> cancelHoldResponseResponseEntity = new ResponseEntity<CancelHoldResponse>(cancelHoldResponse1,HttpStatus.OK);
+
         HttpEntity<CancelHoldRequest> requestEntity = new HttpEntity(cancelHoldRequest, headers);
+        Mockito.when(restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, CancelHoldResponse.class)).thenReturn(cancelHoldResponseResponseEntity);
         ResponseEntity<CancelHoldResponse> responseEntity = restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, CancelHoldResponse.class);
         assertNotNull(responseEntity);
         assertNotNull(responseEntity.getBody());
