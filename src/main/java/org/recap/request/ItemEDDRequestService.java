@@ -6,7 +6,6 @@ import org.recap.controller.RequestItemValidatorController;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemEntity;
 import org.recap.model.ItemRequestInformation;
-import org.recap.model.RequestTypeEntity;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.RequestTypeDetailsRepository;
 import org.slf4j.Logger;
@@ -25,7 +24,7 @@ import java.util.List;
 @Component
 public class ItemEDDRequestService {
 
-    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;
@@ -69,7 +68,6 @@ public class ItemEDDRequestService {
         boolean bsuccess;
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
-        RequestTypeEntity requestTypeEntity;
         ItemInformationResponse itemResponseInformation = new ItemInformationResponse();
         ResponseEntity res;
 
@@ -85,26 +83,22 @@ public class ItemEDDRequestService {
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
                 itemRequestInfo.setTitleIdentifier(getItemRequestService().getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity));
                 itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
+                itemResponseInformation.setItemId(itemEntity.getItemId());
+                itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
                 // Validate Patron
                 res = getRequestItemValidatorController().validateItemRequestInformations(itemRequestInfo);
                 if (res.getStatusCode() == HttpStatus.OK) {
                     getLogger().info("Request Validation Successful");
-                    requestTypeEntity = getRequestTypeDetailsRepository().findByrequestTypeCode(itemRequestInfo.getRequestType());
+                    Integer requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_EDD);
+                    itemResponseInformation.setRequestId(requestId);
                     itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
-                    if (itemResponseInformation.isSuccess()) {
-                        getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, requestTypeEntity, ReCAPConstants.REQUEST_STATUS_EDD);
-                        bsuccess = true;
-                        messagePublish = "EDD requests is successfull";
-                    } else {
-                        bsuccess = false;
-                        messagePublish = itemResponseInformation.getScreenMessage();
-                    }
+                    bsuccess = true;
+                    messagePublish = "EDD requests is successfull";
                 } else {
                     getLogger().warn("Validate Request Errors : " + res.getBody().toString());
                     messagePublish = res.getBody().toString();
                     bsuccess = false;
                 }
-                itemResponseInformation.setItemId(itemEntity.getItemId());
             } else {
                 messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
                 bsuccess = false;
@@ -116,13 +110,12 @@ public class ItemEDDRequestService {
             itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
             itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
             itemResponseInformation.setTitleIdentifier(itemRequestInfo.getTitleIdentifier());
-            itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
             itemResponseInformation.setBibID(itemRequestInfo.getBibId());
             itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
             itemResponseInformation.setRequestType(itemRequestInfo.getRequestType());
             itemResponseInformation.setEmailAddress(itemRequestInfo.getEmailAddress());
             itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
-            itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes());
+            itemResponseInformation.setRequestNotes(itemRequestService.getNotes(bsuccess, messagePublish, itemRequestInfo.getRequestNotes()));
             // Update Topics
             getItemRequestService().sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {

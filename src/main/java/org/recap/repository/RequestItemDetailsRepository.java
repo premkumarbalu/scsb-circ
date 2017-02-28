@@ -19,6 +19,7 @@ import java.util.List;
 public interface RequestItemDetailsRepository extends JpaRepository<RequestItemEntity, Integer>, JpaSpecificationExecutor {
 
     RequestItemEntity findByRequestId(@Param("requestId") Integer requestId);
+    List<RequestItemEntity> findByRequestIdIn(List<Integer> requestIds);
 
     @Query(value = "select request from RequestItemEntity request where request.itemId = (select item.itemId from ItemEntity item where item.barcode = :itemBarcode)")
     Page<RequestItemEntity> findByItemBarcode(Pageable pageable, @Param("itemBarcode") String itemBarcode);
