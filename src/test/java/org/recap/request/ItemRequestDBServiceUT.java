@@ -45,7 +45,7 @@ public class ItemRequestDBServiceUT extends BaseTestCase{
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
         itemRequestInformation.setRequestNotes("test");
 
-        Integer response = itemRequestDBService.updateRecapRequestItem(itemRequestInformation,saveBibSingleHoldingsSingleItem().getItemEntities().get(0),createRequestType(),requestStatusCode);
+        Integer response = itemRequestDBService.updateRecapRequestItem(itemRequestInformation,saveBibSingleHoldingsSingleItem().getItemEntities().get(0),requestStatusCode);
         assertNotNull(response);
 
 

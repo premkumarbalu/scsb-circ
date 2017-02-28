@@ -38,7 +38,6 @@ public class GFAServiceUT extends BaseTestCase{
         RetrieveItemRequest retrieveItemRequest = new RetrieveItemRequest();
         TtitemRequest ttitemRequest = new TtitemRequest();
         ttitemRequest.setCustomerCode("PB");
-        ttitemRequest.setDeliveryMethod("test");
         ttitemRequest.setDestination("PUL");
         ttitemRequest.setItemBarcode("123");
         ttitemRequest.setItemStatus("Available");
