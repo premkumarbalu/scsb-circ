@@ -86,7 +86,6 @@ public class CallGFAServicesUT extends BaseTestCase {
             ttitem001.setCustomerCode("PA");
             ttitem001.setItemBarcode("32101088094931");
             ttitem001.setDestination("PA");
-            ttitem001.setDeliveryMethod("PHY");
 
             List<TtitemRequest> ttitems = new ArrayList<>();
             ttitems.add(ttitem001);

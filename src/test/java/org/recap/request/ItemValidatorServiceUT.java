@@ -57,7 +57,6 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         saveBibSingleHoldingsMultipleItem();
         List<String> itemBarcodes = new ArrayList<>();
         itemBarcodes.add("100");
-        itemBarcodes.add("101");
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         itemRequestInformation.setItemBarcodes(itemBarcodes);
         itemRequestInformation.setDeliveryLocation("PB");

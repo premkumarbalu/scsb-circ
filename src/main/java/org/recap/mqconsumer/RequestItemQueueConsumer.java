@@ -134,7 +134,6 @@ public class RequestItemQueueConsumer {
             }
             itemRequestService.saveItemChangeLogEntity(intRecordId, itemRequestService.getUser(itemInformationResponse.getUsername()), operationType, body);
             if(!itemInformationResponse.isSuccess()) {
-                itemInformationResponse.setRequestNotes(itemInformationResponse.getScreenMessage());
                 itemRequestService.updateRecapRequestItem(itemInformationResponse);
             }
         } catch (Exception e) {

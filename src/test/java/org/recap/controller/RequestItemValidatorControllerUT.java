@@ -46,7 +46,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
         itemRequestInformation.setItemOwningInstitution("PUL");
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
         itemRequestInformation.setRequestingInstitution("PUL");
-        itemRequestInformation.setItemBarcodes(Arrays.asList(bibliographicEntity.getItemEntities().get(0).getBarcode(),bibliographicEntity.getItemEntities().get(1).getBarcode()));
+        itemRequestInformation.setItemBarcodes(Arrays.asList(bibliographicEntity.getItemEntities().get(0).getBarcode()));
         ResponseEntity responseEntity = requestItemValidatorController.validateItemRequestInformations(itemRequestInformation);
         assertNotNull(responseEntity);
         assertEquals(responseEntity.getBody(), ReCAPConstants.VALID_REQUEST);
@@ -63,11 +63,10 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
         itemRequestInformation.setItemOwningInstitution("PUL");
         itemRequestInformation.setRequestingInstitution("PUL");
-        itemRequestInformation.setItemBarcodes(Arrays.asList(bibliographicEntity.getItemEntities().get(0).getBarcode(),bibliographicEntity.getItemEntities().get(1).getBarcode()));
+        itemRequestInformation.setItemBarcodes(Arrays.asList(bibliographicEntity.getItemEntities().get(0).getBarcode()));
         ResponseEntity responseEntity = requestItemValidatorController.validateItemRequestInformations(itemRequestInformation);
         assertNotNull(responseEntity);
         assertEquals(responseEntity.getBody(), ReCAPConstants.INVALID_PATRON);
-
     }
 
     public BibliographicEntity saveBibSingleHoldingsMultipleItem() throws Exception {
