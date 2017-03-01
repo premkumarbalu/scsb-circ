@@ -38,15 +38,12 @@ public class ItemRequestDBService {
     private RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
 
     @Autowired
-    private RequestInstitutionBibDetailsRepository requestInstitutionBibDetailsRepository;
-
-    @Autowired
     private InstitutionDetailsRepository institutionDetailsRepository;
 
     @Autowired
     private RequestTypeDetailsRepository requestTypeDetailsRepository;
 
-    public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, RequestTypeEntity requestTypeEntity, String requestStatusCode) {
+    public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, String requestStatusCode) {
 
         RequestItemEntity requestItemEntity = new RequestItemEntity();
         RequestItemEntity savedItemRequest;
@@ -54,7 +51,7 @@ public class ItemRequestDBService {
         try {
             RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(requestStatusCode);
             InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode(itemRequestInformation.getRequestingInstitution());
-
+            RequestTypeEntity requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInformation.getRequestType());
             //Request Item
             requestItemEntity.setItemId(itemEntity.getItemId());
             requestItemEntity.setRequestingInstitutionId(institutionEntity.getInstitutionId());
@@ -72,7 +69,7 @@ public class ItemRequestDBService {
             savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
             if (savedItemRequest != null) {
                 requestId = savedItemRequest.getRequestId();
-                saveItemChangeLogEntity(savedItemRequest.getRequestId(), getUser(itemRequestInformation.getUsername()), "Request Item Insert", savedItemRequest.getItemId() + " - " + savedItemRequest.getPatronId());
+                saveItemChangeLogEntity(savedItemRequest.getRequestId(), getUser(itemRequestInformation.getUsername()), ReCAPConstants.REQUEST_ITEM_INSERT, savedItemRequest.getItemId() + " - " + savedItemRequest.getPatronId());
             }
             logger.info("SCSB DB Update Successful");
         } catch (ParseException e) {
@@ -122,7 +119,7 @@ public class ItemRequestDBService {
         return itemInformationResponse;
     }
 
-    public void updateItemAvailabilutyStatus(List<ItemEntity> itemEntities,String userName) {
+    public void updateItemAvailabilutyStatus(List<ItemEntity> itemEntities, String userName) {
         for (ItemEntity itemEntity : itemEntities) {
             itemEntity.setItemAvailabilityStatusId(2); // Not Available
             itemEntity.setLastUpdatedBy(getUser(userName));
@@ -151,25 +148,6 @@ public class ItemRequestDBService {
         itemChangeLogEntity.setRecordId(recordId);
         itemChangeLogEntity.setNotes(notes);
         itemChangeLogDetailsRepository.save(itemChangeLogEntity);
-    }
-
-    public void getTempBibId(ItemRequestInformation itemRequestInfo, ItemEntity itemEntity) {
-        InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode(itemRequestInfo.getRequestingInstitution());
-        RequestInstitutionBibEntity requestInstitutionBibEntity = requestInstitutionBibDetailsRepository.findByItemIdAndOwningInstitutionId(itemEntity.getItemId(), institutionEntity.getInstitutionId());
-        if (requestInstitutionBibEntity != null) {
-            itemRequestInfo.setBibId(requestInstitutionBibEntity.getOwningInstitutionBibId());
-        } else {
-            itemRequestInfo.setBibId("");
-        }
-    }
-
-    public void createTempBibId(ItemRequestInformation itemRequestInfo, ItemEntity itemEntity) {
-        InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode(itemRequestInfo.getRequestingInstitution());
-        RequestInstitutionBibEntity requestInstitutionBibEntityIns = new RequestInstitutionBibEntity();
-        requestInstitutionBibEntityIns.setItemId(itemEntity.getItemId());
-        requestInstitutionBibEntityIns.setOwningInstitutionId(institutionEntity.getInstitutionId());
-        requestInstitutionBibEntityIns.setOwningInstitutionBibId(itemRequestInfo.getBibId());
-        requestInstitutionBibDetailsRepository.save(requestInstitutionBibEntityIns);
     }
 
     public String getUser(String userId) {

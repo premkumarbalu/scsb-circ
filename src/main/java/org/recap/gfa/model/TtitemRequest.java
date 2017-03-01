@@ -8,7 +8,8 @@ public class TtitemRequest {
     private String itemStatus;
     private String customerCode;
     private String destination;
-    private String deliveryMethod;
+    private String requestId;
+    private String requestor;
 
     public String getItemBarcode() {
         return itemBarcode;
@@ -42,11 +43,19 @@ public class TtitemRequest {
         this.destination = destination;
     }
 
-    public String getDeliveryMethod() {
-        return deliveryMethod;
+    public String getRequestId() {
+        return requestId;
     }
 
-    public void setDeliveryMethod(String deliveryMethod) {
-        this.deliveryMethod = deliveryMethod;
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public String getRequestor() {
+        return requestor;
+    }
+
+    public void setRequestor(String requestor) {
+        this.requestor = requestor;
     }
 }

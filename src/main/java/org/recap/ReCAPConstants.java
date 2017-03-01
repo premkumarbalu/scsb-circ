@@ -250,6 +250,7 @@ public final class ReCAPConstants {
 
     public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Successful created retrival order in GFA";
     public static final String GFA_RETRIVAL_ORDER_ERROR = "GFA returned error while creating retrival order";
+    public static final String GFA_EDD_RETRIVAL_ORDER_ERROR = "GFA returned error while creating EDD retrival order";
     public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "Item not available in GFA";
     public static final String GFA_ITEM_STATUS_CHECK_FAILED = "Item status check faield to return valid response";
     public static final String SUBMIT_COLLECTION_FAILURE_REPORT = "SubmitCollection_Failure_Report";
