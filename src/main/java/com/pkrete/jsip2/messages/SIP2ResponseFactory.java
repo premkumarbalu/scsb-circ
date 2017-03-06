@@ -84,7 +84,7 @@ public class SIP2ResponseFactory {
             throw new InvalidSIP2ResponseException("Response message is too short.");
         }
 
-        SIP2ResponseParser parser = null;
+        SIP2ResponseParser parser;
         // Get the command identifier
         String code = data.substring(0, 2);
         logger.info(data);

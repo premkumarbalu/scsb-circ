@@ -31,6 +31,9 @@ public class GFAService {
     @Value("${gfa.item.retrieval.order}")
     private String gfaItemRetrival;
 
+    @Value("${gfa.item.edd.retrieval.order}")
+    private String gfaItemEDDRetrival;
+
     public Logger getLogger() {
         return logger;
     }
@@ -50,9 +53,6 @@ public class GFAService {
     public RestTemplate getRestTemplate(){
         return new RestTemplate();
     }
-
-    @Value("${gfa.item.edd.retrieval.order}")
-    private String gfaItemEDDRetrival;
 
     public GFAItemStatusCheckResponse itemStatusCheck(GFAItemStatusCheckRequest gfaItemStatusCheckRequest) {
 
@@ -81,7 +81,6 @@ public class GFAService {
     public GFARetrieveItemResponse itemRetrival(GFARetrieveItemRequest gfaRetrieveItemRequest) {
         GFARetrieveItemResponse gfaRetrieveItemResponse = null;
         try {
-            RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity(gfaRetrieveItemRequest, getHttpHeaders());
             ResponseEntity<GFARetrieveItemResponse> responseEntity = getRestTemplate().exchange(getGfaItemRetrival(), HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
             getLogger().info(responseEntity.getStatusCode().toString());
