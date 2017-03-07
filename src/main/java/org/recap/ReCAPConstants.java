@@ -14,6 +14,7 @@ public final class ReCAPConstants {
     public static final String COLUMBIA = "CUL";
     public static final String PRINCETON = "PUL";
     public static final String NYPL = "NYPL";
+    public static final String GFA = "GFA";
 
     public static final String RESPONSE_DATE = "Date";
 
@@ -253,6 +254,9 @@ public final class ReCAPConstants {
     public static final String GFA_EDD_RETRIVAL_ORDER_ERROR = "GFA returned error while creating EDD retrival order";
     public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "Item not available in GFA";
     public static final String GFA_ITEM_STATUS_CHECK_FAILED = "Item status check faield to return valid response";
+    public static final String REQUEST_CANCELLED_NO_REFILED = "SCSB doesn't expect a re-file to happen on this item.";
+    public static final String REQUEST_CANCELLED_REFILE_REQUIRED = "SCSB expects a re-file to happen on this item. Only on re-file will the item status in SCSB be updated.";
+    public static final String CANCEL_REQUEST_PROCESSED_SCSB = "Cancel Request - ";
     public static final String SUBMIT_COLLECTION_FAILURE_REPORT = "SubmitCollection_Failure_Report";
 
 

@@ -1,6 +1,5 @@
 package org.recap.controller;
 
-import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.ils.JSIPConnectorFactory;
@@ -204,7 +203,7 @@ public class RequestItemController {
     }
 
     @RequestMapping(value = "/refile", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ItemRefileResponse refileItem(@ApiParam(value = "Parameters for requesting re-file", required = true, name = "refileInformation") @RequestBody ItemRefileRequest itemRefileRequest) {
+    public ItemRefileResponse refileItem(@RequestBody ItemRefileRequest itemRefileRequest) {
         boolean bSuccess = getItemRequestService().reFileItem(itemRefileRequest);
         ItemRefileResponse itemRefileResponse = new ItemRefileResponse();
         itemRefileResponse.setSuccess(bSuccess);

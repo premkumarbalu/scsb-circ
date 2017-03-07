@@ -42,7 +42,7 @@ public class GFAService {
         return gfaItemRetrival;
     }
 
-    public RestTemplate getRestTemplate(){
+    public RestTemplate getRestTemplate() {
         return new RestTemplate();
     }
 
@@ -181,6 +181,43 @@ public class GFAService {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemResponseInformation;
+    }
+
+    public boolean getGFAStatus(String barcode) {
+        GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
+
+        GFAItemStatusCheckResponse gfaItemStatusCheckResponse = null;
+        String itemStatus = "";
+        String gfaOnlyStaus = "";
+        boolean bSuccess = false;
+
+        try {
+            GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
+            gfaItemStatus001.setItemBarCode(barcode);
+            List<GFAItemStatus> gfaItemStatuses = new ArrayList<>();
+            gfaItemStatuses.add(gfaItemStatus001);
+            gfaItemStatusCheckRequest.setItemStatus(gfaItemStatuses);
+            gfaItemStatusCheckResponse = itemStatusCheck(gfaItemStatusCheckRequest);
+            if (gfaItemStatusCheckResponse != null
+                    && gfaItemStatusCheckResponse.getDsitem() != null
+                    && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
+
+                itemStatus = gfaItemStatusCheckResponse.getDsitem().getTtitem().get(0).getItemStatus();
+                if (itemStatus.contains(":")) {
+                    gfaOnlyStaus = itemStatus.substring(0, itemStatus.indexOf(':') + 1).toUpperCase();
+                } else {
+                    gfaOnlyStaus = itemStatus.toUpperCase();
+                }
+                logger.info(gfaOnlyStaus);
+
+                if (ReCAPConstants.getGFAStatusAvailableList().contains(gfaOnlyStaus)) {
+                    bSuccess=true;
+                }
+            }
+        } catch (Exception e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+        }
+        return bSuccess;
     }
 
     private ItemInformationResponse callItemRetrivate(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {

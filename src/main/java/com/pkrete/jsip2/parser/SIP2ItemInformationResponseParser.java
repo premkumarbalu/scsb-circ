@@ -17,10 +17,6 @@ public class SIP2ItemInformationResponseParser extends SIP2ResponseParser {
 
     private static final Logger logger = LoggerFactory.getLogger(SIP2ItemInformationResponseParser.class);
 
-    public SIP2ItemInformationResponseParser() {
-        //Do nothing
-    }
-
     @Override
     public SIP2ItemInformationResponse parse(String data) throws InvalidSIP2ResponseValueException, InvalidSIP2ResponseException {
         SIP2ItemInformationResponse response = new SIP2ItemInformationResponse(data);

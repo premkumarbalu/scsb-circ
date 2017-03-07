@@ -41,7 +41,7 @@ public class EmailRouteBuilder {
                             .end()
                             .choice()
                                 .when(header(ReCAPConstants.REQUEST_RECALL_EMAILBODY_FOR).isEqualTo(ReCAPConstants.REQUEST_RECALL_MAIL_QUEUE))
-                                    .setHeader("subject", simple(subject))
+                                    .setHeader("subject", simple("${header.emailPayLoad.subject}"))
                                     .setBody(simple(emailBody))
                                     .setHeader("from", simple(from))
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
@@ -82,7 +82,7 @@ public class EmailRouteBuilder {
                 }
             });
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }
     }
 

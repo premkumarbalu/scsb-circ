@@ -1,7 +1,7 @@
-
-This Item has been recalled-:
+The following item request has been cancelled.
 
 Item Barcode 	: ${header.emailPayLoad.itemBarcode}
+Customer Code   : ${header.emailPayLoad.customerCode}
 Patron Barcode 	: ${header.emailPayLoad.patronBarcode}
-Institution	: ${header.emailPayLoad.institutionCode}
-Title 		: ${header.emailPayLoad.titleIdentifier}
+
+${header.emailPayLoad.messageDisplay}
