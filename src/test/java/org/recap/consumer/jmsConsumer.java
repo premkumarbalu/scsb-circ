@@ -15,11 +15,12 @@ public class jmsConsumer implements MessageListener{
 
     private static String dev_BrokerURL = "tcp://192.168.55.198:61616";
     private static String tst_BrokerURL = "tcp://tst-recap.htcinc.com:61616";
+    private static String tst_ssl_BrokerURL = "ssl://tst-recap.htcinc.com:61616?trace=false";
     private static String uat_BrokerURL = "tcp://uat-recap.htcinc.com:61616";
 
     public static void main(String[] args) throws Exception{
 
-        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(tst_BrokerURL);
+        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(tst_ssl_BrokerURL);
         Connection connection = connectionFactory.createConnection();
         connection.start();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

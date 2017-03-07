@@ -22,16 +22,20 @@ public class EmailService {
     @Value("${request.recall.email.cul.to}")
     private String culMailTo;
 
+    @Value("${request.cancel.email.recap.to}")
+    private String recapMailTo;
+
     @Autowired
     private ProducerTemplate producer;
 
-    public void recallEmail(String institution, String itemBarcode, String titleIdentifier, String patronBarcode) {
+    public void sendEmail(String customerCode, String itemBarcode, String messageDisplay, String patronBarcode, String toInstitution) {
         EmailPayLoad emailPayLoad = new EmailPayLoad();
-        emailPayLoad.setTo(emailIdTo(institution));
-        emailPayLoad.setInstitutionCode(institution);
+        emailPayLoad.setTo(emailIdTo(toInstitution));
+        emailPayLoad.setCustomerCode(customerCode);
         emailPayLoad.setItemBarcode(itemBarcode);
-        emailPayLoad.setTitleIdentifier(titleIdentifier);
+        emailPayLoad.setMessageDisplay(messageDisplay);
         emailPayLoad.setPatronBarcode(patronBarcode);
+        emailPayLoad.setSubject(ReCAPConstants.CANCEL_REQUEST_PROCESSED_SCSB +itemBarcode);
         producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, emailPayLoad, ReCAPConstants.REQUEST_RECALL_EMAILBODY_FOR, ReCAPConstants.REQUEST_RECALL_MAIL_QUEUE);
     }
 
@@ -42,6 +46,8 @@ public class EmailService {
             return culMailTo;
         } else if (institution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
             return pulMailTo;
+        } else if (institution.equalsIgnoreCase(ReCAPConstants.GFA)) {
+            return recapMailTo;
         }
         return null;
     }
