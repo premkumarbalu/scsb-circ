@@ -111,7 +111,9 @@ public class CancelItemController {
                 itemRequestService.updateSolrIndex(savedRequestItemEntity.getItemEntity());
                 itemCanceHoldResponse.setSuccess(true);
                 itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_SUCCCESS);
+                logger.info("Send Mail");
                 sendEmail(requestItemEntity.getItemEntity().getCustomerCode(),requestItemEntity.getItemEntity().getBarcode(),requestItemEntity.getPatronId());
+                logger.info("Send Mail Done");
             } else {
                 itemCanceHoldResponse.setSuccess(false);
                 itemCanceHoldResponse.setScreenMessage(itemCanceHoldResponse.getScreenMessage());
@@ -171,9 +173,12 @@ public class CancelItemController {
     }
 
     private void sendEmail(String customerCode, String itemBarcode, String patronBarcode) {
+        logger.info("Check GFA Status");
         if (itemRequestService.getGfaService().getGFAStatus(itemBarcode)) {
+            logger.info("Check GFA Status In");
             itemRequestService.getEmailService().sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_CANCELLED_NO_REFILED, patronBarcode, ReCAPConstants.GFA);
         } else {
+            logger.info("Check GFA Status Out");
             itemRequestService.getEmailService().sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_CANCELLED_REFILE_REQUIRED, patronBarcode, ReCAPConstants.GFA);
         }
     }
