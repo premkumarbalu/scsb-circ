@@ -298,8 +298,6 @@ public class ItemRequestService {
                 requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
                 requestItemEntity.setLastUpdatedDate(new Date());
                 getRequestItemDetailsRepository().save(requestItemEntity);
-                rollbackUpdateItemAvailabilutyStatus(itemEntity, ReCAPConstants.GUEST_USER);
-                updateSolrIndex(itemEntity);
                 bSuccess = true;
             } else {
                 RequestItemEntity requestItemEntityRecalled = getRequestItemDetailsRepository().findByItemBarcodeAndRequestStaCode(itemBarcode, ReCAPConstants.REQUEST_STATUS_RECALLED);
