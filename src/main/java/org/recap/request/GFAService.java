@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 public class GFAService {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(GFAService.class);
 
     @Value("${gfa.item.status}")
     private String gfaItemStatus;
@@ -33,14 +33,6 @@ public class GFAService {
 
     @Value("${gfa.item.edd.retrieval.order}")
     private String gfaItemEDDRetrival;
-
-    public Logger getLogger() {
-        return logger;
-    }
-
-    public void setLogger(Logger logger) {
-        this.logger = logger;
-    }
 
     public String getGfaItemStatus() {
         return gfaItemStatus;
@@ -83,14 +75,14 @@ public class GFAService {
         try {
             HttpEntity requestEntity = new HttpEntity(gfaRetrieveItemRequest, getHttpHeaders());
             ResponseEntity<GFARetrieveItemResponse> responseEntity = getRestTemplate().exchange(getGfaItemRetrival(), HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
-            getLogger().info(responseEntity.getStatusCode().toString());
+            logger.info(responseEntity.getStatusCode().toString());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 gfaRetrieveItemResponse = responseEntity.getBody();
                 if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
                     List<Ttitem> titemList = gfaRetrieveItemResponse.getRetrieveItem().getTtitem();
                     for (Ttitem ttitem : titemList) {
-                        getLogger().info(ttitem.getErrorCode());
-                        getLogger().info(ttitem.getErrorNote());
+                        logger.info(ttitem.getErrorCode());
+                        logger.info(ttitem.getErrorNote());
                         gfaRetrieveItemResponse.setSuccess(false);
                         gfaRetrieveItemResponse.setScrenMessage(ttitem.getErrorNote());
                     }
@@ -101,7 +93,7 @@ public class GFAService {
                 gfaRetrieveItemResponse.setSuccess(false);
             }
         } catch (Exception e) {
-            getLogger().error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return gfaRetrieveItemResponse;
     }

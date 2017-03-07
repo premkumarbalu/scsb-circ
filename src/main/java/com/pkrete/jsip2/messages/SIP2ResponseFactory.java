@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SIP2ResponseFactory {
 
-    private Logger logger= LoggerFactory.getLogger(SIP2ResponseFactory.class);
+    private static final Logger logger= LoggerFactory.getLogger(SIP2ResponseFactory.class);
     /**
      * Reference to the singleton object.
      */

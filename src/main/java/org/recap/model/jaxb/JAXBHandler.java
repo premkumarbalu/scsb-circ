@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class JAXBHandler {
 
-    Logger logger = LoggerFactory.getLogger(JAXBHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(JAXBHandler.class);
 
     private static JAXBHandler jaxbHandler;
     private Map<String, Unmarshaller> unmarshallerMap;

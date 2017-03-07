@@ -27,7 +27,7 @@ import java.lang.reflect.Field;
 @RequestMapping("/requestItem")
 public class RequestItemController {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RequestItemController.class);
 
     @Autowired
     JSIPConnectorFactory jsipConectorFactory;
@@ -35,20 +35,13 @@ public class RequestItemController {
     @Autowired
     ItemRequestService itemRequestService;
 
-    public Logger getLogger() {
-        return logger;
-    }
-
-
     public JSIPConnectorFactory getJsipConectorFactory() {
         return jsipConectorFactory;
     }
 
-
     public ItemRequestService getItemRequestService() {
         return itemRequestService;
     }
-
 
     @RequestMapping(value = "/checkoutItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem checkoutItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {

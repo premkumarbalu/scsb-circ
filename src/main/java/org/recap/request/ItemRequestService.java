@@ -36,7 +36,7 @@ import java.util.List;
 public class ItemRequestService {
 
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ItemRequestService.class);
 
     @Value("${ils.princeton.cul.patron}")
     private String princetonCULPatron;
@@ -86,10 +86,6 @@ public class ItemRequestService {
 
     @Autowired
     private ItemRequestDBService itemRequestDBService;
-
-    public Logger getLogger() {
-        return logger;
-    }
 
     public ItemRequestDBService getItemRequestDBService() {
         return itemRequestDBService;
@@ -168,7 +164,7 @@ public class ItemRequestService {
             itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
             if (itemEntities != null && !itemEntities.isEmpty()) {
-                getLogger().info("Item Exists in SCSB Database");
+                logger.info("Item Exists in SCSB Database");
                 itemEntity = itemEntities.get(0);
                 if (StringUtils.isBlank(itemRequestInfo.getBibId())) {
                     itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
@@ -180,7 +176,7 @@ public class ItemRequestService {
                 // Validate Patron
                 res = getRequestItemValidatorController().validateItemRequestInformations(itemRequestInfo);
                 if (res.getStatusCode() == HttpStatus.OK) {
-                    getLogger().info("Request Validation Successful");
+                    logger.info("Request Validation Successful");
                     // Change Item Availablity
                     updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
                     // Action based on Request Type
@@ -190,7 +186,7 @@ public class ItemRequestService {
                         messagePublish = itemResponseInformation.getScreenMessage();
                     }
                 } else {
-                    getLogger().warn("Validate Request Errors : {} ", res.getBody().toString());
+                    logger.warn("Validate Request Errors : {} ", res.getBody().toString());
                     messagePublish = res.getBody().toString();
                     bsuccess = false;
                 }
@@ -652,7 +648,7 @@ public class ItemRequestService {
             if (lTitle != null) {
                 titleIdentifier = String.format("[%s] %s%s", useRestrictions, lTitle.toUpperCase(), ReCAPConstants.REQUEST_ITEM_TITLE_SUFFIX);
             }
-            getLogger().info(titleIdentifier);
+            logger.info(titleIdentifier);
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }

@@ -27,7 +27,7 @@ import java.util.Date;
 @RequestMapping("/cancelRequest")
 public class CancelItemController {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(CancelItemController.class);
 
     @Autowired
     private RequestItemController requestItemController;

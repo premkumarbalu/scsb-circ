@@ -5,6 +5,7 @@ import org.recap.ReCAPConstants;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.*;
 import org.recap.repository.*;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,7 @@ import java.util.List;
 @Component
 public class ItemRequestDBService {
 
-    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ItemRequestDBService.class);
 
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 

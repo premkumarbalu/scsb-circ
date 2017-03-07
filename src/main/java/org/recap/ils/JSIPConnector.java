@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat;
  * Created by sudhishk on 9/11/16.
  */
 public abstract class JSIPConnector implements IJSIPConnector {
-    private Logger logger = LoggerFactory.getLogger(JSIPConnector.class);
+    private static final Logger logger = LoggerFactory.getLogger(JSIPConnector.class);
 
     private SIP2SocketConnection getSocketConnection() {
         SIP2SocketConnection connection = new SIP2SocketConnection(getHost(), 7031);

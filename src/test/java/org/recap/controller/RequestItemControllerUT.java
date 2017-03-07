@@ -35,7 +35,7 @@ import static org.junit.Assert.assertTrue;
 public class RequestItemControllerUT extends BaseTestCase {
 
 
-    private Logger logger = LoggerFactory.getLogger(RequestItemControllerUT.class);
+    private static final Logger logger = LoggerFactory.getLogger(RequestItemControllerUT.class);
 
     @Mock
     RequestItemController requestItemController;

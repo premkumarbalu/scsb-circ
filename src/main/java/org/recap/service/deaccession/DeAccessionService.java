@@ -30,7 +30,7 @@ import java.util.*;
 @Component
 public class DeAccessionService {
 
-    private Logger logger = Logger.getLogger(DeAccessionService.class);
+    private static final Logger logger = Logger.getLogger(DeAccessionService.class);
 
     @Autowired
     BibliographicDetailsRepository bibliographicDetailsRepository;

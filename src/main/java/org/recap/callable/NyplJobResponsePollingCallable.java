@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
  */
 public class NyplJobResponsePollingCallable implements Callable {
 
-    Logger logger = LoggerFactory.getLogger(NyplJobResponsePollingCallable.class);
+    private static final Logger logger = LoggerFactory.getLogger(NyplJobResponsePollingCallable.class);
 
     private String jobId;
     private NyplApiServiceConnector nyplApiServiceConnector;

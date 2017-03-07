@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public class SIP2ItemInformationResponseParser extends SIP2ResponseParser {
 
-    Logger logger = LoggerFactory.getLogger(SIP2ItemInformationResponseParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(SIP2ItemInformationResponseParser.class);
 
     public SIP2ItemInformationResponseParser() {
         //Do nothing

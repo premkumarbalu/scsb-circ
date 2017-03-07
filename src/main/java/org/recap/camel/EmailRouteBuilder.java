@@ -18,7 +18,7 @@ import java.io.*;
 @Component
 public class EmailRouteBuilder {
 
-    Logger logger = LoggerFactory.getLogger(EmailRouteBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(EmailRouteBuilder.class);
 
     private String emailBody;
     private String emailPassword;

@@ -8,6 +8,7 @@ import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
 import org.recap.request.ItemEDDRequestService;
 import org.recap.request.ItemRequestService;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -17,7 +18,7 @@ import java.io.IOException;
  */
 public class RequestItemQueueConsumer {
 
-    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RequestItemQueueConsumer.class);
 
     private ItemRequestService itemRequestService;
     private ItemEDDRequestService itemEDDRequestService;
