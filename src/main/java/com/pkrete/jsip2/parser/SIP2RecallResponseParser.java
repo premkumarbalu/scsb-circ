@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SIP2RecallResponseParser extends  SIP2ResponseParser{
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(SIP2RecallResponseParser.class);
 
     @Override
     public SIP2MessageResponse parse(String data) throws InvalidSIP2ResponseValueException, InvalidSIP2ResponseException {

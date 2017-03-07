@@ -43,7 +43,7 @@ public class MarcUtil {
     }
 
     public String getDataFieldValueStartsWith(Record record, String dataFieldStartTag) {
-        StringBuffer fieldValue = new StringBuffer();
+        StringBuilder fieldValue = new StringBuilder();
         if (record != null) {
             List<VariableField> variableFields = record.getVariableFields();
             if (!CollectionUtils.isEmpty(variableFields)) {
@@ -65,7 +65,7 @@ public class MarcUtil {
     }
 
     public String getDataFieldValueStartsWith(Record record, String dataFieldStartTag, List<Character> subFieldTags) {
-        StringBuffer fieldValue = new StringBuffer();
+        StringBuilder fieldValue = new StringBuilder();
         if (record != null) {
             List<VariableField> variableFields = record.getVariableFields();
             if (!CollectionUtils.isEmpty(variableFields)) {
@@ -123,15 +123,14 @@ public class MarcUtil {
 
     private List<String> resolveValue(Record marcRecord, String field, String ind1, String ind2, String subField) {
         List<String> values = new ArrayList<>();
-        String indicator1 = (StringUtils.isNotBlank(ind1) ? String.valueOf(ind1.charAt(0)) : " ");
-        String indicator2 = (StringUtils.isNotBlank(ind2) ? String.valueOf(ind2.charAt(0)) : " ");
+        String indicator1 = StringUtils.isNotBlank(ind1) ? String.valueOf(ind1.charAt(0)) : " ";
+        String indicator2 = StringUtils.isNotBlank(ind2) ? String.valueOf(ind2.charAt(0)) : " ";
         List<VariableField> dataFields = marcRecord.getVariableFields(field);
 
         for (Iterator<VariableField> variableFieldIterator = dataFields.iterator(); variableFieldIterator.hasNext(); ) {
             DataField dataField = (DataField) variableFieldIterator.next();
-            if(dataField!=null){
-                if (doIndicatorsMatch(indicator1, indicator2, dataField)) {
-                    List<Subfield> subFields = dataField.getSubfields(subField);
+            if(dataField!=null && doIndicatorsMatch(indicator1, indicator2, dataField)){
+                List<Subfield> subFields = dataField.getSubfields(subField);
                     for (Iterator<Subfield> subfieldIterator = subFields.iterator(); subfieldIterator.hasNext(); ) {
                         Subfield subfield = subfieldIterator.next();
                         if (subField!=null){
@@ -142,7 +141,6 @@ public class MarcUtil {
                         }
                     }
                 }
-            }
         }
         return values;
     }

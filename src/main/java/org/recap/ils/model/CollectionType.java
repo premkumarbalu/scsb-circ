@@ -1,8 +1,6 @@
 
 package org.recap.ils.model;
 
-import org.apache.log4j.Logger;
-
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -37,8 +35,6 @@ import java.util.List;
 @XmlRootElement(name = "collection")
 public class CollectionType implements Serializable {
 
-    private static final Logger LOG = Logger.getLogger(CollectionType.class);
-
     @XmlElement(nillable = true)
     protected List<RecordType> record;
     @XmlAttribute(name = "id")
@@ -68,7 +64,7 @@ public class CollectionType implements Serializable {
      */
     public List<RecordType> getRecord() {
         if (record == null) {
-            record = new ArrayList<RecordType>();
+            record = new ArrayList<>();
         }
         return this.record;
     }

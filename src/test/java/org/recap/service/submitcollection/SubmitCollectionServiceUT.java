@@ -33,7 +33,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class SubmitCollectionServiceUT extends BaseTestCase {
 
-    private Logger logger = LoggerFactory.getLogger(SubmitCollectionServiceUT.class);
+    private static final Logger logger = LoggerFactory.getLogger(SubmitCollectionServiceUT.class);
 
     @Autowired
     private SubmitCollectionService submitCollectionService;

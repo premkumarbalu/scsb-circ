@@ -24,25 +24,25 @@ public class FeeTypeFactory {
 
     public FeeType getFeeType(String code) throws InvalidSIP2ResponseValueException {
 
-        if (code.equals("00")) {
+        if ("00".equals(code)) {
             return FeeType.EMPTY;
-        } else if (code.equals("01")) {
+        } else if ("01".equals(code)) {
             return FeeType.OTHER_UNKNONW;
-        } else if (code.equals("02")) {
+        } else if ("02".equals(code)) {
             return FeeType.ADMINISTRATIVE;
-        } else if (code.equals("03")) {
+        } else if ("03".equals(code)) {
             return FeeType.DAMAGE;
-        } else if (code.equals("04")) {
+        } else if ("04".equals(code)) {
             return FeeType.OVERDUE;
-        } else if (code.equals("05")) {
+        } else if ("05".equals(code)) {
             return FeeType.PROCESSING;
-        } else if (code.equals("06")) {
+        } else if ("06".equals(code)) {
             return FeeType.RENTAL;
-        } else if (code.equals("07")) {
+        } else if ("07".equals(code)) {
             return FeeType.REPLACEMENT;
-        } else if (code.equals("08")) {
+        } else if ("08".equals(code)) {
             return FeeType.COMPUTER_ACCESS_CHARGE;
-        } else if (code.equals("09")) {
+        } else if ("09".equals(code)) {
             return FeeType.HOLD_FEE;
         } else {
             return FeeType.EMPTY;

@@ -24,7 +24,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
     @Mock
     private PrincetonJSIPConnector princetonESIPConnector;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(PrincetonJSIPConnectorUT.class);
 
     String[] itemIds = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414","32101057972166","PULTST54329"};
     private String itemIdentifier = "32101077423406";
@@ -138,7 +138,7 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
             assertNotNull(holdResponse);
             assertTrue(holdResponse.isSuccess());
         } catch (AssertionError e) {
-            logger.error("Hold Error - > ", e);
+            logger.error("Hold Error - > ",e);
         }
         lookupItem();
     }

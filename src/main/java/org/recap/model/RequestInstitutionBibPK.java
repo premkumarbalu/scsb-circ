@@ -10,7 +10,7 @@ public class RequestInstitutionBibPK implements Serializable {
     private Integer owningInstitutionId;
 
     public RequestInstitutionBibPK(){
-
+        //Do nothing
     }
 
     public RequestInstitutionBibPK(Integer itemId, Integer owningInstitutionId) {
@@ -36,8 +36,10 @@ public class RequestInstitutionBibPK implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         RequestInstitutionBibPK requestInstitutionBibPK = (RequestInstitutionBibPK) o;
 

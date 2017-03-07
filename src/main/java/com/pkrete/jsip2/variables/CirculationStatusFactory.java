@@ -23,33 +23,33 @@ public class CirculationStatusFactory {
     }
 
     public CirculationStatus getCirculationStatus(String code) throws InvalidSIP2ResponseValueException {
-        if(code.equals("00")) {
+        if("00".equals(code)) {
             return CirculationStatus.ITEM_BARCODE_NOT_FOUND;
-        } else if(code.equals("01")) {
+        } else if("01".equals(code)) {
             return CirculationStatus.OTHER;
-        } else if(code.equals("02")) {
+        } else if("02".equals(code)) {
             return CirculationStatus.ON_ORDER;
-        } else if(code.equals("03")) {
+        } else if("03".equals(code)) {
             return CirculationStatus.AVAILABLE;
-        } else if(code.equals("04")) {
+        } else if("04".equals(code)) {
             return CirculationStatus.CHARGED;
-        } else if(code.equals("05")) {
+        } else if("05".equals(code)) {
             return CirculationStatus.CHARGED_NOT_TO_BE_RECALLED_UNTIL_EARLIEST_RECALL_DATE;
-        } else if(code.equals("06")) {
+        } else if("06".equals(code)) {
             return CirculationStatus.IN_PROCESS;
-        } else if(code.equals("07")) {
+        } else if("07".equals(code)) {
             return CirculationStatus.RECALLED;
-        } else if(code.equals("08")) {
+        } else if("08".equals(code)) {
             return CirculationStatus.WAITING_ON_HOLD_SHELF;
-        } else if(code.equals("09")) {
+        } else if("09".equals(code)) {
             return CirculationStatus.WAITING_TO_BE_RESHELVED;
-        } else if(code.equals("10")) {
+        } else if("10".equals(code)) {
             return CirculationStatus.IN_TRANSIT;
-        } else if(code.equals("11")) {
+        } else if("11".equals(code)) {
             return CirculationStatus.CLAIMED_RETURNED;
-        } else if(code.equals("12")) {
+        } else if("12".equals(code)) {
             return CirculationStatus.LOST;
-        } else if(code.equals("13")) {
+        } else if("13".equals(code)) {
             return CirculationStatus.MISSING;
         } else {
             throw new InvalidSIP2ResponseValueException("Invalid circulation status code! The given code \"" + code + "\" doesn\'t match with any circulation status!");

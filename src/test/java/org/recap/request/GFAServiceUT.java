@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
  */
 public class GFAServiceUT extends BaseTestCase{
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(GFAServiceUT.class);
     @Mock
     GFAService gfaService;
 
@@ -53,7 +53,6 @@ public class GFAServiceUT extends BaseTestCase{
 
         ResponseEntity<GFARetrieveItemResponse> responseEntity = new ResponseEntity(gfaRetrieveItemResponse, HttpStatus.OK);
         HttpEntity requestEntity = new HttpEntity(gfaRetrieveItemRequest, getHttpHeaders());
-        Mockito.when(gfaService.getLogger()).thenReturn(logger);
         Mockito.when(gfaService.getGfaItemRetrival()).thenReturn(gfaItemRetrival);
         Mockito.when(gfaService.getGfaItemStatus()).thenReturn(gfaItemStatus);
         Mockito.when(gfaService.getRestTemplate()).thenReturn(restTemplate);

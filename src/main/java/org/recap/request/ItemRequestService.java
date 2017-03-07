@@ -36,7 +36,7 @@ import java.util.List;
 public class ItemRequestService {
 
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ItemRequestService.class);
 
     @Value("${ils.princeton.cul.patron}")
     private String princetonCULPatron;
@@ -86,10 +86,6 @@ public class ItemRequestService {
 
     @Autowired
     private ItemRequestDBService itemRequestDBService;
-
-    public Logger getLogger() {
-        return logger;
-    }
 
     public ItemRequestDBService getItemRequestDBService() {
         return itemRequestDBService;
@@ -168,7 +164,7 @@ public class ItemRequestService {
             itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
             if (itemEntities != null && !itemEntities.isEmpty()) {
-                getLogger().info("Item Exists in SCSB Database");
+                logger.info("Item Exists in SCSB Database");
                 itemEntity = itemEntities.get(0);
                 if (StringUtils.isBlank(itemRequestInfo.getBibId())) {
                     itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
@@ -180,7 +176,7 @@ public class ItemRequestService {
                 // Validate Patron
                 res = getRequestItemValidatorController().validateItemRequestInformations(itemRequestInfo);
                 if (res.getStatusCode() == HttpStatus.OK) {
-                    getLogger().info("Request Validation Successful");
+                    logger.info("Request Validation Successful");
                     // Change Item Availablity
                     updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
                     // Action based on Request Type
@@ -190,7 +186,7 @@ public class ItemRequestService {
                         messagePublish = itemResponseInformation.getScreenMessage();
                     }
                 } else {
-                    getLogger().warn("Validate Request Errors : " + res.getBody().toString());
+                    logger.warn("Validate Request Errors : {} ", res.getBody().toString());
                     messagePublish = res.getBody().toString();
                     bsuccess = false;
                 }
@@ -218,9 +214,9 @@ public class ItemRequestService {
             sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
             logger.info("Finish Processing");
         } catch (RestClientException ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST, ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST,ex);
         } catch (Exception ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,ex);
         }
         return itemResponseInformation;
     }
@@ -274,9 +270,9 @@ public class ItemRequestService {
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST, ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST,ex);
         } catch (Exception ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,ex);
         }
         return itemResponseInformation;
     }
@@ -430,7 +426,7 @@ public class ItemRequestService {
         } catch (Exception e) {
             itemResponseInformation.setSuccess(false);
             itemResponseInformation.setScreenMessage(e.getMessage());
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }
         return itemResponseInformation;
     }
@@ -602,7 +598,7 @@ public class ItemRequestService {
             ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
             logger.info(responseEntity.getBody());
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }
     }
 
@@ -618,7 +614,7 @@ public class ItemRequestService {
             });
             statusResponse = responseEntity.getBody();
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }
         return statusResponse;
     }
@@ -650,9 +646,9 @@ public class ItemRequestService {
             if (lTitle != null) {
                 titleIdentifier = String.format("[%s] %s%s", useRestrictions, lTitle.toUpperCase(), ReCAPConstants.REQUEST_ITEM_TITLE_SUFFIX);
             }
-            getLogger().info(titleIdentifier);
+            logger.info(titleIdentifier);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }
         return titleIdentifier;
     }

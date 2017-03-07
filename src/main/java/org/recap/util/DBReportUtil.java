@@ -75,13 +75,11 @@ public class DBReportUtil {
         List<ReportDataEntity> reportDataEntities = new ArrayList<>();
         reportDataEntities.addAll(generateBibFailureReportEntity(bibliographicEntity, bibRecord));
         if (holdingsEntity != null) {
-            if (StringUtils.isNotBlank(holdingsEntity.getOwningInstitutionHoldingsId())) {
                 ReportDataEntity owningInstitutionHoldingsIdReportDataEntity = new ReportDataEntity();
                 owningInstitutionHoldingsIdReportDataEntity.setHeaderName(ReCAPConstants.OWNING_INSTITUTION_HOLDINGS_ID);
                 owningInstitutionHoldingsIdReportDataEntity.setHeaderValue(holdingsEntity.getOwningInstitutionHoldingsId());
                 reportDataEntities.add(owningInstitutionHoldingsIdReportDataEntity);
             }
-        }
         return reportDataEntities;
     }
 

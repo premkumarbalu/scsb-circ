@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 @Component
 public class RequestParamaterValidatorService {
 
-    private Logger logger = LoggerFactory.getLogger(RequestParamaterValidatorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RequestParamaterValidatorService.class);
 
     @Value("${server.protocol}")
     String serverProtocol;
@@ -114,7 +114,7 @@ public class RequestParamaterValidatorService {
                 bSuccess = true;
             }
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         }
         return bSuccess;
     }
@@ -127,9 +127,7 @@ public class RequestParamaterValidatorService {
 
     private String buildErrorMessage(Map<Integer, String> erroMessageMap) {
         StringBuilder errorMessageBuilder = new StringBuilder();
-        erroMessageMap.entrySet().forEach(entry -> {
-            errorMessageBuilder.append(entry.getValue()).append("\n");
-        });
+        erroMessageMap.entrySet().forEach(entry -> errorMessageBuilder.append(entry.getValue()).append("\n"));
         return errorMessageBuilder.toString();
     }
 }

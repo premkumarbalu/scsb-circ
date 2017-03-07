@@ -1,5 +1,9 @@
 package org.recap.model.jaxb;
 
+import org.recap.ReCAPConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -14,7 +18,11 @@ import java.util.Map;
  */
 public class JAXBHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(JAXBHandler.class);
+
     private static JAXBHandler jaxbHandler;
+    private Map<String, Unmarshaller> unmarshallerMap;
+    private Map<String, Marshaller> marshallerMap;
 
     private JAXBHandler() {
 
@@ -27,9 +35,6 @@ public class JAXBHandler {
         return jaxbHandler;
     }
 
-    private Map<String, Unmarshaller> unmarshallerMap;
-    private Map<String, Marshaller> marshallerMap;
-
     public String marshal(Object object) {
         StringWriter stringWriter = new StringWriter();
         try {
@@ -37,7 +42,7 @@ public class JAXBHandler {
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             marshaller.marshal(object, stringWriter);
         } catch (JAXBException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         }
         return stringWriter.toString();
     }
@@ -53,8 +58,8 @@ public class JAXBHandler {
         return getMarshallerMap().get(cl.getName());
     }
 
-    synchronized public Object unmarshal(String content, Class cl) throws JAXBException  {
-        Object object = null;
+    public synchronized Object unmarshal(String content, Class cl) throws JAXBException  {
+        Object object;
         Unmarshaller unmarshaller = getUnmarshaller(cl);
         object = unmarshaller.unmarshal(new StringReader(content));
         return object;

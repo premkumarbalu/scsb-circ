@@ -32,15 +32,13 @@ public class RequestItemValidatorController {
 
     @RequestMapping(value = "/validateItemRequestInformations", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity validateItemRequestInformations(@RequestBody ItemRequestInformation itemRequestInformation) {
-        ResponseEntity responseEntity = null;
+        ResponseEntity responseEntity;
         responseEntity = requestParamaterValidatorService.validateItemRequestParameters(itemRequestInformation);
         if (responseEntity == null) {
             responseEntity = itemValidatorService.itemValidation(itemRequestInformation);
-            if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                if (!jsipConnectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).patronValidation(itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getPatronBarcode())) {
+            if (responseEntity.getStatusCode() == HttpStatus.OK && !jsipConnectorFactory.getJSIPConnector(itemRequestInformation.getRequestingInstitution()).patronValidation(itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getPatronBarcode())) {
                     responseEntity = new ResponseEntity(ReCAPConstants.INVALID_PATRON, requestParamaterValidatorService.getHttpHeaders(), HttpStatus.BAD_REQUEST);
                 }
-            }
         }
         return responseEntity;
     }

@@ -90,7 +90,7 @@ public class RecordType implements Serializable {
      */
     public List<ControlFieldType> getControlfield() {
         if (controlfield == null) {
-            controlfield = new ArrayList<ControlFieldType>();
+            controlfield = new ArrayList<>();
         }
         return this.controlfield;
     }
@@ -117,7 +117,7 @@ public class RecordType implements Serializable {
      */
     public List<DataFieldType> getDatafield() {
         if (datafield == null) {
-            datafield = new ArrayList<DataFieldType>();
+            datafield = new ArrayList<>();
         }
         return this.datafield;
     }

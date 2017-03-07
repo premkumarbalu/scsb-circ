@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ColumbiaJSIPConnectorUT extends BaseTestCase {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ColumbiaJSIPConnectorUT.class);
 
     @Mock
     private ColumbiaJSIPConnector columbiaJSIPConnector;

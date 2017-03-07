@@ -4,6 +4,9 @@ import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseException;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.messages.SIP2MessageResponse;
 import com.pkrete.jsip2.messages.responses.SIP2CreateBibResponse;
+import org.recap.ReCAPConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
@@ -12,6 +15,7 @@ import java.util.Arrays;
  */
 public class SIP2CreateBibResponseParser extends  SIP2ResponseParser{
 
+    private static final Logger logger = LoggerFactory.getLogger(SIP2CreateBibResponseParser.class);
     @Override
     public SIP2MessageResponse parse(String data) throws InvalidSIP2ResponseValueException, InvalidSIP2ResponseException {
         SIP2CreateBibResponse response = new SIP2CreateBibResponse(data);
@@ -27,6 +31,7 @@ public class SIP2CreateBibResponseParser extends  SIP2ResponseParser{
             }
             response.setCheckSum(parseChecksum(data));
         } catch (InvalidSIP2ResponseValueException e) {
+            logger.error(ReCAPConstants.LOG_ERROR,e);
             throw new InvalidSIP2ResponseValueException(e.getMessage() + " Response message string: \"" + data + "\"");
         }
         return response;

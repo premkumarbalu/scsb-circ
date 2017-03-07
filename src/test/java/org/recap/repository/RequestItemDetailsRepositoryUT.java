@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.recap.BaseTestCase;
 import org.recap.ReCAPConstants;
 import org.recap.model.*;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -25,7 +26,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class RequestItemDetailsRepositoryUT extends BaseTestCase {
 
-    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RequestItemDetailsRepositoryUT.class);
 
     @PersistenceContext
     private EntityManager entityManager;

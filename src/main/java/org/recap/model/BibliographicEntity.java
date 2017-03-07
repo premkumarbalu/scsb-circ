@@ -85,6 +85,7 @@ public class BibliographicEntity implements Serializable {
     private List<ItemEntity> itemEntities;
 
     public BibliographicEntity() {
+        //Do Nothing
     }
 
     public Integer getBibliographicId() {

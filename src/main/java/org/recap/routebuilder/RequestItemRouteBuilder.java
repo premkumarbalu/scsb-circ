@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RequestItemRouteBuilder {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RequestItemRouteBuilder.class);
 
     @Autowired
     private ItemRequestService itemRequestService;

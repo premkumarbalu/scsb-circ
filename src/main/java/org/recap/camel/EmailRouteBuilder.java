@@ -18,7 +18,8 @@ import java.io.*;
 @Component
 public class EmailRouteBuilder {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(EmailRouteBuilder.class);
+
     private String emailBody;
     private String emailPassword;
 
@@ -64,7 +65,7 @@ public class EmailRouteBuilder {
                             }
                         }
                     } catch (IOException e) {
-                        logger.error("IOException :",e);
+                        logger.error(ReCAPConstants.LOG_ERROR,e);
                     }
                     emailBody = out.toString();
                 }
@@ -75,7 +76,7 @@ public class EmailRouteBuilder {
                         try {
                             emailPassword = FileUtils.readFileToString(file, "UTF-8").trim();
                         } catch (IOException e) {
-                            logger.error("IOException :",e);
+                            logger.error(ReCAPConstants.LOG_ERROR,e);
                         }
                     }
                 }

@@ -12,6 +12,8 @@ public class JAXBContextHandler {
 
     private static JAXBContextHandler jaxbContextHandler;
 
+    private Map<String, JAXBContext> contextMap;
+
     private JAXBContextHandler() {
     }
 
@@ -22,8 +24,6 @@ public class JAXBContextHandler {
 
         return jaxbContextHandler;
     }
-
-    private Map<String, JAXBContext> contextMap;
 
     public JAXBContext getJAXBContextForClass(Class cl) throws JAXBException {
         if(getContextMap().containsKey(cl.getName())){

@@ -26,7 +26,7 @@ import java.lang.reflect.Field;
 @RequestMapping("/requestItem")
 public class RequestItemController {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RequestItemController.class);
 
     @Autowired
     JSIPConnectorFactory jsipConectorFactory;
@@ -34,20 +34,13 @@ public class RequestItemController {
     @Autowired
     ItemRequestService itemRequestService;
 
-    public Logger getLogger() {
-        return logger;
-    }
-
-
     public JSIPConnectorFactory getJsipConectorFactory() {
         return jsipConectorFactory;
     }
 
-
     public ItemRequestService getItemRequestService() {
         return itemRequestService;
     }
-
 
     @RequestMapping(value = "/checkoutItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem checkoutItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
@@ -67,7 +60,7 @@ public class RequestItemController {
         } catch (Exception e) {
             itemCheckoutResponse.setSuccess(false);
             itemCheckoutResponse.setScreenMessage(e.getMessage());
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }
 
         return itemCheckoutResponse;
@@ -119,7 +112,7 @@ public class RequestItemController {
                     itemRequestInformation.getCallNumber());
 
         } catch (Exception e) {
-            logger.info("Exception", e);
+            logger.info("Exception",e);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage("ILS returned a invalid response");
         }
@@ -242,7 +235,7 @@ public class RequestItemController {
                 String name = field.getName();
                 Object value = field.get(clsObject);
                 if(!StringUtils.isBlank(name) && value !=null) {
-                    logger.info(String.format("Field name: %sFiled Value :%s", name, value));
+                    logger.info("Field name: {} Filed Value : {} ", name, value);
                 }
             }
         } catch (IllegalAccessException e) {
