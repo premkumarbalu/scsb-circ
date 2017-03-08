@@ -34,12 +34,30 @@ public class GFAService {
     @Value("${gfa.item.edd.retrieval.order}")
     private String gfaItemEDDRetrival;
 
+    @Value("${gfa.item.permanent.withdrawl.direct}")
+    private String gfaItemPermanentWithdrawlDirect;
+
+    @Value("${gfa.item.permanent.withdrawl.indirect}")
+    private String gfaItemPermanentWithdrawlInDirect;
+
     public String getGfaItemStatus() {
         return gfaItemStatus;
     }
 
     public String getGfaItemRetrival() {
         return gfaItemRetrival;
+    }
+
+    public String getGfaItemEDDRetrival() {
+        return gfaItemEDDRetrival;
+    }
+
+    public String getGfaItemPermanentWithdrawlDirect() {
+        return gfaItemPermanentWithdrawlDirect;
+    }
+
+    public String getGfaItemPermanentWithdrawlInDirect() {
+        return gfaItemPermanentWithdrawlInDirect;
     }
 
     public RestTemplate getRestTemplate() {
@@ -61,7 +79,7 @@ public class GFAService {
             ResponseEntity<GFAItemStatusCheckResponse> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, GFAItemStatusCheckResponse.class);
             gfaItemStatusCheckResponse = responseEntity.getBody();
 
-            logger.info("", responseEntity.getStatusCode());
+            logger.info(responseEntity.getStatusCode().toString());
         } catch (JsonProcessingException e) {
             logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION,e);
         } catch (Exception e) {
@@ -271,6 +289,34 @@ public class GFAService {
             itemResponseInformation.setScreenMessage(gfaRetrieveItemResponse.getScrenMessage());
         }
         return itemResponseInformation;
+    }
+
+    public GFAPwdResponse gfaPermanentWithdrawlDirect(GFAPwdRequest gfaPwdRequest) {
+        GFAPwdResponse gfaPwdResponse = null;
+        try {
+            HttpEntity<GFAPwdRequest> requestEntity = new HttpEntity(gfaPwdRequest, getHttpHeaders());
+            ResponseEntity<GFAPwdResponse> responseEntity = getRestTemplate().exchange(getGfaItemPermanentWithdrawlDirect(), HttpMethod.POST, requestEntity, GFAPwdResponse.class);
+            gfaPwdResponse = responseEntity.getBody();
+            logger.info(responseEntity.getStatusCode().toString());
+            logger.info("GFA PWD item status processed");
+        } catch (Exception e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+        }
+        return gfaPwdResponse;
+    }
+
+    public GFAPwiResponse gfaPermanentWithdrawlInDirect(GFAPwiRequest gfaPwiRequest) {
+        GFAPwiResponse gfaPwiResponse = null;
+        try {
+            HttpEntity<GFAPwiRequest> requestEntity = new HttpEntity(gfaPwiRequest, getHttpHeaders());
+            ResponseEntity<GFAPwiResponse> responseEntity = getRestTemplate().exchange(getGfaItemPermanentWithdrawlInDirect(), HttpMethod.POST, requestEntity, GFAPwiResponse.class);
+            gfaPwiResponse = responseEntity.getBody();
+            logger.info(responseEntity.getStatusCode().toString());
+            logger.info("GFA PWI item status processed");
+        } catch (Exception e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+        }
+        return gfaPwiResponse;
     }
 
 }
