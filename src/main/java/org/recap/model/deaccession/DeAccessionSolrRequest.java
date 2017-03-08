@@ -1,4 +1,4 @@
-package org.recap.model.deAccession;
+package org.recap.model.deaccession;
 
 import java.util.ArrayList;
 import java.util.List;

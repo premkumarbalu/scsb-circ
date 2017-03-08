@@ -8,10 +8,11 @@ import java.io.Serializable;
 public class EmailPayLoad implements Serializable{
 
     private String to;
+    private String subject;
     private String itemBarcode;
     private String patronBarcode;
-    private String institutionCode;
-    private String titleIdentifier;
+    private String customerCode;
+    private String messageDisplay;
 
     public String getTo() {
         return to;
@@ -37,19 +38,27 @@ public class EmailPayLoad implements Serializable{
         this.patronBarcode = patronBarcode;
     }
 
-    public String getInstitutionCode() {
-        return institutionCode;
+    public String getCustomerCode() {
+        return customerCode;
     }
 
-    public void setInstitutionCode(String institutionCode) {
-        this.institutionCode = institutionCode;
+    public void setCustomerCode(String customerCode) {
+        this.customerCode = customerCode;
     }
 
-    public String getTitleIdentifier() {
-        return titleIdentifier;
+    public String getMessageDisplay() {
+        return messageDisplay;
     }
 
-    public void setTitleIdentifier(String titleIdentifier) {
-        this.titleIdentifier = titleIdentifier;
+    public void setMessageDisplay(String messageDisplay) {
+        this.messageDisplay = messageDisplay;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 }

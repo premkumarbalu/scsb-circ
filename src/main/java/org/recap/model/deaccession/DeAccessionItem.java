@@ -1,4 +1,4 @@
-package org.recap.model.deAccession;
+package org.recap.model.deaccession;
 
 /**
  * Created by rajeshbabuk on 21/2/17.

@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  */
 public class CallGFAServicesUT extends BaseTestCase {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(CallGFAServicesUT.class);
 
     @Value("${gfa.item.status}")
     private String gfaItemStatus;
@@ -73,7 +73,7 @@ public class CallGFAServicesUT extends BaseTestCase {
             GFAItemStatusCheckResponse statusResponse = gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
             logger.info(parseToJason(statusResponse));
         } catch (Exception e) {
-            logger.error("Exception ", e);
+            logger.error("Exception ",e);
         }
     }
 

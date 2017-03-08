@@ -11,7 +11,7 @@ public class ItemPK implements Serializable {
 
 
     public ItemPK(){
-
+        //Do nothing
     }
 
     public ItemPK(Integer owningInstitutionId, String owningInstitutionItemId) {
@@ -37,8 +37,10 @@ public class ItemPK implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         ItemPK itemPK = (ItemPK) o;
 

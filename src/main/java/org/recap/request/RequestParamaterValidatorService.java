@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 @Component
 public class RequestParamaterValidatorService {
 
-    private Logger logger = LoggerFactory.getLogger(RequestParamaterValidatorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RequestParamaterValidatorService.class);
 
     @Value("${server.protocol}")
     String serverProtocol;

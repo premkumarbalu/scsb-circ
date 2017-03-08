@@ -57,7 +57,7 @@ public class ItemValidatorService {
             return new ResponseEntity(ReCAPConstants.ITEM_BARCODE_IS_REQUIRED, getHttpHeaders(), HttpStatus.BAD_REQUEST);
         }
         itemEntityList = itemController.findByBarcodeIn(itemBarcodes);
-        if (itemEntityList != null && itemEntityList.size() != 0) { // barcode does not exist in database
+        if (itemEntityList != null && !itemEntityList.isEmpty()) { // barcode does not exist in database
             if (splitStringAndGetList(itemBarcodes).size() == itemEntityList.size()) { // Check if the no. of barcode from input and database is same.
                 ItemEntity itemEntity = itemEntityList.get(0);
                 // Item availability Status from SCSB Item table
@@ -105,8 +105,8 @@ public class ItemValidatorService {
         List<ItemEntity> itemEntityList = getItemEntities(itemRequestInformation.getItemBarcodes());
 
         if (itemRequestInformation.getItemBarcodes().size() == 1) {
-            if (itemEntityList != null && itemEntityList.size() != 0) {
-                if (itemEntityList.size() > 0) {
+            if (itemEntityList != null && !itemEntityList.isEmpty()) {
+                if (!itemEntityList.isEmpty()) {
                     for (ItemEntity itemEntity1 : itemEntityList) {
                         String availabilityStatus = getItemStatus(itemEntity1.getItemAvailabilityStatusId());
                         if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.NOT_AVAILABLE) && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)

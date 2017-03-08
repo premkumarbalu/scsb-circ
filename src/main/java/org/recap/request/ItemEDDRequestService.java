@@ -24,7 +24,7 @@ import java.util.List;
 @Component
 public class ItemEDDRequestService {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ItemEDDRequestService.class);
 
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;
@@ -40,14 +40,6 @@ public class ItemEDDRequestService {
 
     public ItemDetailsRepository getItemDetailsRepository() {
         return itemDetailsRepository;
-    }
-
-    public Logger getLogger() {
-        return logger;
-    }
-
-    public void setLogger(Logger logger) {
-        this.logger = logger;
     }
 
     public RequestTypeDetailsRepository getRequestTypeDetailsRepository() {
@@ -75,7 +67,7 @@ public class ItemEDDRequestService {
             itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
             if (itemEntities != null && !itemEntities.isEmpty()) {
-                getLogger().info("Item Exists in SCSB Database");
+                logger.info("Item Exists in SCSB Database");
                 itemEntity = itemEntities.get(0);
                 if (itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId().trim().length() <= 0) {
                     itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
@@ -88,14 +80,14 @@ public class ItemEDDRequestService {
                 // Validate Patron
                 res = getRequestItemValidatorController().validateItemRequestInformations(itemRequestInfo);
                 if (res.getStatusCode() == HttpStatus.OK) {
-                    getLogger().info("Request Validation Successful");
+                    logger.info("Request Validation Successful");
                     Integer requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_EDD);
                     itemResponseInformation.setRequestId(requestId);
                     itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
                     bsuccess = true;
                     messagePublish = "EDD requests is successfull";
                 } else {
-                    getLogger().warn("Validate Request Errors : " + res.getBody().toString());
+                    logger.warn("Validate Request Errors : {} " , res.getBody().toString());
                     messagePublish = res.getBody().toString();
                     bsuccess = false;
                 }
@@ -103,7 +95,7 @@ public class ItemEDDRequestService {
                 messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
                 bsuccess = false;
             }
-            getLogger().info("Finish Processing");
+            logger.info("Finish Processing");
             itemResponseInformation.setScreenMessage(messagePublish);
             itemResponseInformation.setSuccess(bsuccess);
             itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
@@ -119,9 +111,9 @@ public class ItemEDDRequestService {
             // Update Topics
             getItemRequestService().sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST, ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST,ex);
         } catch (Exception ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,ex);
         }
         return itemResponseInformation;
     }

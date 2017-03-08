@@ -1,4 +1,4 @@
-package org.recap.service.deAccession;
+package org.recap.service.deaccession;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -6,9 +6,9 @@ import org.recap.BaseTestCase;
 import org.recap.ReCAPConstants;
 import org.recap.gfa.model.*;
 import org.recap.model.*;
-import org.recap.model.deAccession.DeAccessionDBResponseEntity;
-import org.recap.model.deAccession.DeAccessionItem;
-import org.recap.model.deAccession.DeAccessionRequest;
+import org.recap.model.deaccession.DeAccessionDBResponseEntity;
+import org.recap.model.deaccession.DeAccessionItem;
+import org.recap.model.deaccession.DeAccessionRequest;
 import org.recap.repository.BibliographicDetailsRepository;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.RequestItemDetailsRepository;

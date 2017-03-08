@@ -33,7 +33,7 @@ import java.util.*;
 @Service
 public class SubmitCollectionService {
 
-    private final Logger logger = LoggerFactory.getLogger(SubmitCollectionService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SubmitCollectionService.class);
 
     @Autowired
     private BibliographicDetailsRepository bibliographicDetailsRepository;
@@ -310,7 +310,6 @@ public class SubmitCollectionService {
         fetchBibliographicEntity.setHoldingsEntities(fetchHoldingsEntities);
         fetchBibliographicEntity.setItemEntities(fetchItemsEntities);
         savedOrUnsavedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(fetchBibliographicEntity);
-        //}
         return savedOrUnsavedBibliographicEntity;
     }
 

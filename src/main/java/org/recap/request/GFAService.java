@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 public class GFAService {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(GFAService.class);
 
     @Value("${gfa.item.status}")
     private String gfaItemStatus;
@@ -31,13 +31,8 @@ public class GFAService {
     @Value("${gfa.item.retrieval.order}")
     private String gfaItemRetrival;
 
-    public Logger getLogger() {
-        return logger;
-    }
-
-    public void setLogger(Logger logger) {
-        this.logger = logger;
-    }
+    @Value("${gfa.item.edd.retrieval.order}")
+    private String gfaItemEDDRetrival;
 
     public String getGfaItemStatus() {
         return gfaItemStatus;
@@ -47,12 +42,9 @@ public class GFAService {
         return gfaItemRetrival;
     }
 
-    public RestTemplate getRestTemplate(){
+    public RestTemplate getRestTemplate() {
         return new RestTemplate();
     }
-
-    @Value("${gfa.item.edd.retrieval.order}")
-    private String gfaItemEDDRetrival;
 
     public GFAItemStatusCheckResponse itemStatusCheck(GFAItemStatusCheckRequest gfaItemStatusCheckRequest) {
 
@@ -71,9 +63,9 @@ public class GFAService {
 
             logger.info("", responseEntity.getStatusCode());
         } catch (JsonProcessingException e) {
-            logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
+            logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION,e);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }
         return gfaItemStatusCheckResponse;
     }
@@ -81,17 +73,16 @@ public class GFAService {
     public GFARetrieveItemResponse itemRetrival(GFARetrieveItemRequest gfaRetrieveItemRequest) {
         GFARetrieveItemResponse gfaRetrieveItemResponse = null;
         try {
-            RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity(gfaRetrieveItemRequest, getHttpHeaders());
             ResponseEntity<GFARetrieveItemResponse> responseEntity = getRestTemplate().exchange(getGfaItemRetrival(), HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
-            getLogger().info(responseEntity.getStatusCode().toString());
+            logger.info(responseEntity.getStatusCode().toString());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 gfaRetrieveItemResponse = responseEntity.getBody();
                 if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
                     List<Ttitem> titemList = gfaRetrieveItemResponse.getRetrieveItem().getTtitem();
                     for (Ttitem ttitem : titemList) {
-                        getLogger().info(ttitem.getErrorCode());
-                        getLogger().info(ttitem.getErrorNote());
+                        logger.info(ttitem.getErrorCode());
+                        logger.info(ttitem.getErrorNote());
                         gfaRetrieveItemResponse.setSuccess(false);
                         gfaRetrieveItemResponse.setScrenMessage(ttitem.getErrorNote());
                     }
@@ -102,7 +93,7 @@ public class GFAService {
                 gfaRetrieveItemResponse.setSuccess(false);
             }
         } catch (Exception e) {
-            getLogger().error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return gfaRetrieveItemResponse;
     }
@@ -190,6 +181,43 @@ public class GFAService {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemResponseInformation;
+    }
+
+    public boolean getGFAStatus(String barcode) {
+        GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
+
+        GFAItemStatusCheckResponse gfaItemStatusCheckResponse = null;
+        String itemStatus = "";
+        String gfaOnlyStaus = "";
+        boolean bSuccess = false;
+
+        try {
+            GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
+            gfaItemStatus001.setItemBarCode(barcode);
+            List<GFAItemStatus> gfaItemStatuses = new ArrayList<>();
+            gfaItemStatuses.add(gfaItemStatus001);
+            gfaItemStatusCheckRequest.setItemStatus(gfaItemStatuses);
+            gfaItemStatusCheckResponse = itemStatusCheck(gfaItemStatusCheckRequest);
+            if (gfaItemStatusCheckResponse != null
+                    && gfaItemStatusCheckResponse.getDsitem() != null
+                    && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
+
+                itemStatus = gfaItemStatusCheckResponse.getDsitem().getTtitem().get(0).getItemStatus();
+                if (itemStatus.contains(":")) {
+                    gfaOnlyStaus = itemStatus.substring(0, itemStatus.indexOf(':') + 1).toUpperCase();
+                } else {
+                    gfaOnlyStaus = itemStatus.toUpperCase();
+                }
+                logger.info(gfaOnlyStaus);
+
+                if (ReCAPConstants.getGFAStatusAvailableList().contains(gfaOnlyStaus)) {
+                    bSuccess=true;
+                }
+            }
+        } catch (Exception e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+        }
+        return bSuccess;
     }
 
     private ItemInformationResponse callItemRetrivate(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {

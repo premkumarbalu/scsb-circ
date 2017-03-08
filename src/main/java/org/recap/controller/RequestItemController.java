@@ -1,6 +1,5 @@
 package org.recap.controller;
 
-import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.ils.JSIPConnectorFactory;
@@ -27,7 +26,7 @@ import java.lang.reflect.Field;
 @RequestMapping("/requestItem")
 public class RequestItemController {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RequestItemController.class);
 
     @Autowired
     JSIPConnectorFactory jsipConectorFactory;
@@ -35,20 +34,13 @@ public class RequestItemController {
     @Autowired
     ItemRequestService itemRequestService;
 
-    public Logger getLogger() {
-        return logger;
-    }
-
-
     public JSIPConnectorFactory getJsipConectorFactory() {
         return jsipConectorFactory;
     }
 
-
     public ItemRequestService getItemRequestService() {
         return itemRequestService;
     }
-
 
     @RequestMapping(value = "/checkoutItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem checkoutItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
@@ -68,7 +60,7 @@ public class RequestItemController {
         } catch (Exception e) {
             itemCheckoutResponse.setSuccess(false);
             itemCheckoutResponse.setScreenMessage(e.getMessage());
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
         }
 
         return itemCheckoutResponse;
@@ -120,7 +112,7 @@ public class RequestItemController {
                     itemRequestInformation.getCallNumber());
 
         } catch (Exception e) {
-            logger.info("Exception", e);
+            logger.info("Exception",e);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage("ILS returned a invalid response");
         }
@@ -211,7 +203,7 @@ public class RequestItemController {
     }
 
     @RequestMapping(value = "/refile", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ItemRefileResponse refileItem(@ApiParam(value = "Parameters for requesting re-file", required = true, name = "refileInformation") @RequestBody ItemRefileRequest itemRefileRequest) {
+    public ItemRefileResponse refileItem(@RequestBody ItemRefileRequest itemRefileRequest) {
         boolean bSuccess = getItemRequestService().reFileItem(itemRefileRequest);
         ItemRefileResponse itemRefileResponse = new ItemRefileResponse();
         itemRefileResponse.setSuccess(bSuccess);
@@ -243,7 +235,7 @@ public class RequestItemController {
                 String name = field.getName();
                 Object value = field.get(clsObject);
                 if(!StringUtils.isBlank(name) && value !=null) {
-                    logger.info(String.format("Field name: %sFiled Value :%s", name, value));
+                    logger.info("Field name: {} Filed Value : {} ", name, value);
                 }
             }
         } catch (IllegalAccessException e) {

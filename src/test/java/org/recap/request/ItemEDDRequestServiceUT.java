@@ -13,6 +13,7 @@ import org.recap.model.*;
 import org.recap.repository.InstitutionDetailsRepository;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.RequestTypeDetailsRepository;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
  */
 public class ItemEDDRequestServiceUT extends BaseTestCase{
 
-    private org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ItemEDDRequestServiceUT.class);
 
     @Mock
     ItemEDDRequestService itemEDDRequestService;
@@ -88,9 +89,7 @@ public class ItemEDDRequestServiceUT extends BaseTestCase{
 
         BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem();
         ItemEntity itemEntity = bibliographicEntity.getItemEntities().get(0);
-        Mockito.when(itemEDDRequestService.getLogger()).thenReturn(logger);
         Mockito.when(itemEDDRequestService.getItemRequestService()).thenReturn(itemRequestService);
-        Mockito.when(itemEDDRequestService.getItemRequestService().getLogger()).thenReturn(logger);
         Mockito.when(itemEDDRequestService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
         Mockito.when(itemEDDRequestService.getRequestItemValidatorController()).thenReturn(requestItemValidatorController);
         Mockito.when(itemEDDRequestService.getRequestTypeDetailsRepository()).thenReturn(requestTypeDetailsRepository);

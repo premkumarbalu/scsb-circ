@@ -28,7 +28,7 @@ import java.util.*;
 @Service
 public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterface{
 
-    Logger logger = LoggerFactory.getLogger(MarcToBibEntityConverter.class);
+    private static final Logger logger = LoggerFactory.getLogger(MarcToBibEntityConverter.class);
 
     @Autowired
     private MarcUtil marcUtil;

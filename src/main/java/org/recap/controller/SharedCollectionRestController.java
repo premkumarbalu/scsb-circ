@@ -1,8 +1,8 @@
 package org.recap.controller;
 
 import org.recap.ReCAPConstants;
-import org.recap.model.deAccession.DeAccessionRequest;
-import org.recap.service.deAccession.DeAccessionService;
+import org.recap.model.deaccession.DeAccessionRequest;
+import org.recap.service.deaccession.DeAccessionService;
 import org.recap.service.submitcollection.SubmitCollectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ import java.util.*;
 @RequestMapping("/sharedCollection")
 public class SharedCollectionRestController {
 
-    Logger logger = LoggerFactory.getLogger(SharedCollectionRestController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SharedCollectionRestController.class);
 
     @Autowired
     private SubmitCollectionService submitCollectionService;
@@ -62,8 +62,7 @@ public class SharedCollectionRestController {
     public ResponseEntity deAccession(@RequestBody DeAccessionRequest deAccessionRequest) {
         Map<String, String> resultMap = deAccessionService.deAccession(deAccessionRequest);
         if (resultMap != null) {
-            ResponseEntity responseEntity = new ResponseEntity(resultMap, getHttpHeaders(), HttpStatus.OK);
-            return responseEntity;
+            return new ResponseEntity(resultMap, getHttpHeaders(), HttpStatus.OK);
         }
         return null;
     }

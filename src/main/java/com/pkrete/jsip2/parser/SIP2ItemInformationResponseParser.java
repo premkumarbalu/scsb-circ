@@ -15,11 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public class SIP2ItemInformationResponseParser extends SIP2ResponseParser {
 
-    private Logger logger = LoggerFactory.getLogger(SIP2ItemInformationResponseParser.class);
-
-    public SIP2ItemInformationResponseParser() {
-        //Do nothing
-    }
+    private static final Logger logger = LoggerFactory.getLogger(SIP2ItemInformationResponseParser.class);
 
     @Override
     public SIP2ItemInformationResponse parse(String data) throws InvalidSIP2ResponseValueException, InvalidSIP2ResponseException {

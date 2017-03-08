@@ -1,6 +1,5 @@
 package org.recap.controller;
 
-import io.swagger.annotations.ApiParam;
 import org.recap.ReCAPConstants;
 import org.recap.ils.model.response.ItemHoldResponse;
 import org.recap.ils.model.response.ItemInformationResponse;
@@ -27,7 +26,7 @@ import java.util.Date;
 @RequestMapping("/cancelRequest")
 public class CancelItemController {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(CancelItemController.class);
 
     @Autowired
     private RequestItemController requestItemController;
@@ -42,7 +41,7 @@ public class CancelItemController {
     private ItemRequestService itemRequestService;
 
     @RequestMapping(value = "/cancel", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public CancelRequestResponse cancelRequest(@ApiParam(value = "Parameters for cancelling", required = true, name = "requestId") @RequestParam Integer requestId) {
+    public CancelRequestResponse cancelRequest(@RequestParam Integer requestId) {
         CancelRequestResponse cancelRequestResponse = new CancelRequestResponse();
         ItemHoldResponse itemCanceHoldResponse = null;
         try {
@@ -112,6 +111,9 @@ public class CancelItemController {
                 itemRequestService.updateSolrIndex(savedRequestItemEntity.getItemEntity());
                 itemCanceHoldResponse.setSuccess(true);
                 itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_SUCCCESS);
+                logger.info("Send Mail");
+                sendEmail(requestItemEntity.getItemEntity().getCustomerCode(),requestItemEntity.getItemEntity().getBarcode(),requestItemEntity.getPatronId());
+                logger.info("Send Mail Done");
             } else {
                 itemCanceHoldResponse.setSuccess(false);
                 itemCanceHoldResponse.setScreenMessage(itemCanceHoldResponse.getScreenMessage());
@@ -158,6 +160,7 @@ public class CancelItemController {
         itemRequestService.saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS, ReCAPConstants.REQUEST_STATUS_CANCELED + savedRequestItemEntity.getItemId());
         itemCanceHoldResponse.setSuccess(true);
         itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_EDD_SUCCCESS);
+        sendEmail(requestItemEntity.getItemEntity().getCustomerCode(),requestItemEntity.getItemEntity().getBarcode(),requestItemEntity.getPatronId());
         return itemCanceHoldResponse;
     }
 
@@ -168,4 +171,16 @@ public class CancelItemController {
         }
         return iholdQueue;
     }
+
+    private void sendEmail(String customerCode, String itemBarcode, String patronBarcode) {
+        logger.info("Check GFA Status");
+        if (itemRequestService.getGfaService().getGFAStatus(itemBarcode)) {
+            logger.info("Check GFA Status In");
+            itemRequestService.getEmailService().sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_CANCELLED_NO_REFILED, patronBarcode, ReCAPConstants.GFA);
+        } else {
+            logger.info("Check GFA Status Out");
+            itemRequestService.getEmailService().sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_CANCELLED_REFILE_REQUIRED, patronBarcode, ReCAPConstants.GFA);
+        }
+    }
+
 }
