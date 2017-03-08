@@ -15,12 +15,14 @@ import org.recap.model.deaccession.DeAccessionItem;
 import org.recap.model.deaccession.DeAccessionRequest;
 import org.recap.model.deaccession.DeAccessionSolrRequest;
 import org.recap.repository.*;
+import org.recap.request.GFAService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -56,6 +58,9 @@ public class DeAccessionService {
     @Autowired
     RequestItemController requestItemController;
 
+    @Autowired
+    GFAService gfaService;
+
     @Value("${server.protocol}")
     String serverProtocol;
 
@@ -68,13 +73,19 @@ public class DeAccessionService {
     @Value("${gfa.item.permanent.withdrawl.indirect}")
     private String gfaItemPermanentWithdrawlInDirect;
 
+    @Value("${request.cancel.email.recap.to}")
+    private String gfaAssistanceEmailTo;
+
 
     public Map<String, String> deAccession(DeAccessionRequest deAccessionRequest) {
         Map<String, String> resultMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(deAccessionRequest.getDeAccessionItems())) {
+            Map<String, String> barcodeAndStopCodeMap = new HashMap<>();
+            List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities = new ArrayList<>();
             String username = StringUtils.isNotBlank(deAccessionRequest.getUsername()) ? deAccessionRequest.getUsername() : ReCAPConstants.DISCOVERY;
-            Map<String, String> barcodeAndStopCodeMap = checkAndCancelHolds(deAccessionRequest.getDeAccessionItems(), resultMap, username);
-            List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities = deAccessionItemsInDB(barcodeAndStopCodeMap, username);
+            checkGfaItemStatusForPWI(deAccessionRequest.getDeAccessionItems(), deAccessionDBResponseEntities, barcodeAndStopCodeMap);
+            checkAndCancelHolds(barcodeAndStopCodeMap, deAccessionDBResponseEntities, username);
+            deAccessionItemsInDB(barcodeAndStopCodeMap, deAccessionDBResponseEntities, username);
             processAndSave(deAccessionDBResponseEntities);
             if (CollectionUtils.isNotEmpty(deAccessionDBResponseEntities)) {
                 List<Integer> bibIds = new ArrayList<>();
@@ -101,13 +112,62 @@ public class DeAccessionService {
         return resultMap;
     }
 
+    private void checkGfaItemStatusForPWI(List<DeAccessionItem> deAccessionItems, List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, Map<String, String> barcodeAndStopCodeMap) {
+        try {
+            for (DeAccessionItem deAccessionItem : deAccessionItems) {
+                String itemBarcode = deAccessionItem.getItemBarcode();
+                if (StringUtils.isNotBlank(itemBarcode)) {
+                    List<ItemEntity> itemEntities = itemDetailsRepository.findByBarcode(itemBarcode.trim());
+                    if (CollectionUtils.isNotEmpty(itemEntities)) {
+                        ItemEntity itemEntity = itemEntities.get(0);
+                        if (itemEntity.isDeleted()) {
+                            deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), ReCAPConstants.REQUESTED_ITEM_DEACCESSIONED, itemEntity));
+                        } else {
+                            ItemStatusEntity itemStatusEntity = itemEntity.getItemStatusEntity();
+                            if (ReCAPConstants.NOT_AVAILABLE.equals(itemStatusEntity.getStatusCode())) {
+                                String gfaItemStatus = callGfaItemStatus(itemBarcode);
+                                if (StringUtils.isNotBlank(gfaItemStatus) && ReCAPConstants.getGFAStatusNotAvailableList().contains(gfaItemStatus) && !ReCAPConstants.GFA_STATUS_NOT_ON_FILE.equalsIgnoreCase(gfaItemStatus)) {
+                                    barcodeAndStopCodeMap.put(itemBarcode.trim(), deAccessionItem.getDeliveryLocation());
+                                } else {
+                                    deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), MessageFormat.format(ReCAPConstants.GFA_ITEM_STATUS_MISMATCH, gfaAssistanceEmailTo), itemEntity));
+                                }
+                            } else {
+                                barcodeAndStopCodeMap.put(itemBarcode.trim(), deAccessionItem.getDeliveryLocation());
+                            }
+                        }
+                    } else {
+                        deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), ReCAPConstants.ITEM_BARCDE_DOESNOT_EXIST, null));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Exception : ", e);
+        }
+    }
+
+    private String callGfaItemStatus(String itemBarcode) {
+        String gfaItemStatusValue = null;
+        GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
+        GFAItemStatus gfaItemStatus = new GFAItemStatus();
+        gfaItemStatus.setItemBarCode(itemBarcode);
+        gfaItemStatusCheckRequest.setItemStatus(Arrays.asList(gfaItemStatus));
+        GFAItemStatusCheckResponse gfaItemStatusCheckResponse = gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
+        if (null != gfaItemStatusCheckResponse) {
+            Dsitem dsitem = gfaItemStatusCheckResponse.getDsitem();
+            if (null != dsitem) {
+                List<Ttitem> ttitems = dsitem.getTtitem();
+                if (CollectionUtils.isNotEmpty(ttitems)) {
+                    gfaItemStatusValue = ttitems.get(0).getItemStatus();
+                }
+            }
+        }
+        return gfaItemStatusValue;
+    }
+
     private void callGfaDeaccessionService(List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, String username) {
         if (CollectionUtils.isNotEmpty(deAccessionDBResponseEntities)) {
-            RestTemplate restTemplate = new RestTemplate();
             for (DeAccessionDBResponseEntity deAccessionDBResponseEntity : deAccessionDBResponseEntities) {
                 if (ReCAPConstants.SUCCESS.equalsIgnoreCase(deAccessionDBResponseEntity.getStatus()) && ReCAPConstants.AVAILABLE.equalsIgnoreCase(deAccessionDBResponseEntity.getItemStatus())) {
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.APPLICATION_JSON);
                     GFAPwdRequest gfaPwdRequest = new GFAPwdRequest();
                     GFAPwdDsItemRequest gfaPwdDsItemRequest = new GFAPwdDsItemRequest();
                     GFAPwdTtItemRequest gfaPwdTtItemRequest = new GFAPwdTtItemRequest();
@@ -117,13 +177,8 @@ public class DeAccessionService {
                     gfaPwdTtItemRequest.setRequestor(username);
                     gfaPwdDsItemRequest.setTtitem(Arrays.asList(gfaPwdTtItemRequest));
                     gfaPwdRequest.setDsitem(gfaPwdDsItemRequest);
-                    HttpEntity<GFAPwdRequest> requestEntity = new HttpEntity(gfaPwdRequest, getHttpHeaders());
-                    ResponseEntity<GFAPwdResponse> responseEntity = restTemplate.exchange(gfaItemPermanentWithdrawlDirect, HttpMethod.POST, requestEntity, GFAPwdResponse.class);
-                    GFAPwdResponse gfaPwdResponse = responseEntity.getBody();
-                    logger.info("GFA PWD item status processed");
+                    gfaService.gfaPermanentWithdrawlDirect(gfaPwdRequest);
                 } else if (ReCAPConstants.SUCCESS.equalsIgnoreCase(deAccessionDBResponseEntity.getStatus()) && ReCAPConstants.NOT_AVAILABLE.equalsIgnoreCase(deAccessionDBResponseEntity.getItemStatus())) {
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.APPLICATION_JSON);
                     GFAPwiRequest gfaPwiRequest = new GFAPwiRequest();
                     GFAPwiDsItemRequest gfaPwiDsItemRequest = new GFAPwiDsItemRequest();
                     GFAPwiTtItemRequest gfaPwiTtItemRequest = new GFAPwiTtItemRequest();
@@ -131,21 +186,19 @@ public class DeAccessionService {
                     gfaPwiTtItemRequest.setItemBarcode(deAccessionDBResponseEntity.getBarcode());
                     gfaPwiDsItemRequest.setTtitem(Arrays.asList(gfaPwiTtItemRequest));
                     gfaPwiRequest.setDsitem(gfaPwiDsItemRequest);
-                    HttpEntity<GFAPwdRequest> requestEntity = new HttpEntity(gfaPwiRequest, getHttpHeaders());
-                    ResponseEntity<GFAPwiResponse> responseEntity = restTemplate.exchange(gfaItemPermanentWithdrawlInDirect, HttpMethod.POST, requestEntity, GFAPwiResponse.class);
-                    GFAPwiResponse gfaPwiResponse = responseEntity.getBody();
-                    logger.info("GFA PWI item status processed");
+                    gfaService.gfaPermanentWithdrawlInDirect(gfaPwiRequest);
                 }
             }
         }
     }
 
-    public Map<String, String> checkAndCancelHolds(List<DeAccessionItem> deAccessionItems, Map<String, String> resultMap, String username) {
-        Map<String, String> barcodeAndStopCodeMap = new HashMap<>();
-        try {
-            for (DeAccessionItem deAccessionItem : deAccessionItems) {
-                String itemBarcode = deAccessionItem.getItemBarcode();
-                if (StringUtils.isNotBlank(itemBarcode)) {
+    public void checkAndCancelHolds(Map<String, String> barcodeAndStopCodeMap, List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, String username) {
+        Set<String> itemBarcodeList = barcodeAndStopCodeMap.keySet();
+        if (CollectionUtils.isNotEmpty(itemBarcodeList)) {
+            String deliveryLocation = null;
+            for (String itemBarcode : itemBarcodeList) {
+                try {
+                    deliveryLocation = barcodeAndStopCodeMap.get(itemBarcode);
                     List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.findByItemBarcode(itemBarcode);
                     if (CollectionUtils.isNotEmpty(requestItemEntities)) {
                         RequestItemEntity activeRetrievalRequest = null;
@@ -164,9 +217,9 @@ public class DeAccessionService {
                             if (retrievalRequestingInstitution.equals(recallRequestingInstitution)) { // If retrieval order institution and recall order institution are same, cancel recall request.
                                 ItemHoldResponse cancelRecallResponse = cancelRequest(activeRecallRequest, username);
                                 if (cancelRecallResponse.isSuccess()) {
-                                    barcodeAndStopCodeMap.put(itemBarcode, deAccessionItem.getDeliveryLocation());
+                                    barcodeAndStopCodeMap.put(itemBarcode, deliveryLocation);
                                 } else {
-                                    resultMap.put(itemBarcode, ReCAPConstants.REASON_CANCEL_REQUEST_FAILED + " - " + cancelRecallResponse.getScreenMessage());
+                                    deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deliveryLocation, ReCAPConstants.REASON_CANCEL_REQUEST_FAILED + " - " + cancelRecallResponse.getScreenMessage(), null));
                                 }
                             } else { // If retrieval order institution and recall order institution are different, cancel retrieval request and recall request.
                                 ItemInformationResponse itemInformationResponse = getItemInformation(activeRetrievalRequest);
@@ -175,15 +228,15 @@ public class DeAccessionService {
                                     if (cancelRetrievalResponse.isSuccess()) {
                                         ItemHoldResponse cancelRecallResponse = cancelRequest(activeRecallRequest, username);
                                         if (cancelRecallResponse.isSuccess()) {
-                                            barcodeAndStopCodeMap.put(itemBarcode, deAccessionItem.getDeliveryLocation());
+                                            barcodeAndStopCodeMap.put(itemBarcode, deliveryLocation);
                                         } else {
-                                            resultMap.put(itemBarcode, ReCAPConstants.REASON_CANCEL_REQUEST_FAILED + " - " + cancelRecallResponse.getScreenMessage());
+                                            deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deliveryLocation, ReCAPConstants.REASON_CANCEL_REQUEST_FAILED + " - " + cancelRecallResponse.getScreenMessage(), null));
                                         }
                                     } else {
-                                        resultMap.put(itemBarcode, ReCAPConstants.REASON_CANCEL_REQUEST_FAILED + " - " + cancelRetrievalResponse.getScreenMessage());
+                                        deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deliveryLocation, ReCAPConstants.REASON_CANCEL_REQUEST_FAILED + " - " + cancelRetrievalResponse.getScreenMessage(), null));
                                     }
                                 } else {
-                                    barcodeAndStopCodeMap.put(itemBarcode, deAccessionItem.getDeliveryLocation());
+                                    barcodeAndStopCodeMap.put(itemBarcode, deliveryLocation);
                                 }
                             }
                         } else if (activeRetrievalRequest != null && activeRecallRequest == null) {
@@ -191,27 +244,27 @@ public class DeAccessionService {
                             if (getHoldQueueLength(itemInformationResponse) > 0) {
                                 ItemHoldResponse cancelRetrievalResponse = cancelRequest(activeRetrievalRequest, username);
                                 if (cancelRetrievalResponse.isSuccess()) {
-                                    barcodeAndStopCodeMap.put(itemBarcode, deAccessionItem.getDeliveryLocation());
+                                    barcodeAndStopCodeMap.put(itemBarcode, deliveryLocation);
                                 } else {
-                                    resultMap.put(itemBarcode, ReCAPConstants.REASON_CANCEL_REQUEST_FAILED + " - " + cancelRetrievalResponse.getScreenMessage());
+                                    deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deliveryLocation, ReCAPConstants.REASON_CANCEL_REQUEST_FAILED + " - " + cancelRetrievalResponse.getScreenMessage(), null));
                                 }
                             } else {
-                                barcodeAndStopCodeMap.put(itemBarcode, deAccessionItem.getDeliveryLocation());
+                                barcodeAndStopCodeMap.put(itemBarcode, deliveryLocation);
                             }
                         } else if (activeRetrievalRequest == null && activeRecallRequest != null) {
-                            barcodeAndStopCodeMap.put(itemBarcode, deAccessionItem.getDeliveryLocation());
+                            barcodeAndStopCodeMap.put(itemBarcode, deliveryLocation);
                         } else if (activeRetrievalRequest == null && activeRecallRequest == null) {
-                            barcodeAndStopCodeMap.put(itemBarcode, deAccessionItem.getDeliveryLocation());
+                            barcodeAndStopCodeMap.put(itemBarcode, deliveryLocation);
                         }
                     } else {
-                        barcodeAndStopCodeMap.put(itemBarcode, deAccessionItem.getDeliveryLocation());
+                        barcodeAndStopCodeMap.put(itemBarcode, deliveryLocation);
                     }
+                } catch (Exception e) {
+                    deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deliveryLocation, ReCAPConstants.FAILURE + " - " + e, null));
+                    logger.error("Exception : ", e);
                 }
             }
-        } catch (Exception e) {
-            logger.error("Exception : ", e);
         }
-        return barcodeAndStopCodeMap;
     }
 
     private ItemInformationResponse getItemInformation(RequestItemEntity activeRetrievalRequest) {
@@ -266,14 +319,11 @@ public class DeAccessionService {
         return iholdQueue;
     }
 
-    public List<DeAccessionDBResponseEntity> deAccessionItemsInDB(Map<String, String> barcodeAndStopCodeMap, String username) {
-        List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities = new ArrayList<>();
+    public void deAccessionItemsInDB(Map<String, String> barcodeAndStopCodeMap, List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, String username) {
         DeAccessionDBResponseEntity deAccessionDBResponseEntity;
-        List<String> responseItemBarcodeList = new ArrayList<>();
         Date currentDate = new Date();
         Set<String> itemBarcodeList = barcodeAndStopCodeMap.keySet();
         List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcodeIn(new ArrayList<>(itemBarcodeList));
-
         try {
             String barcode = null;
             String deliveryLocation = null;
@@ -281,38 +331,23 @@ public class DeAccessionService {
                 try {
                     barcode = itemEntity.getBarcode();
                     deliveryLocation = barcodeAndStopCodeMap.get(barcode);
-                    responseItemBarcodeList.add(barcode);
-                    if(itemEntity.isDeleted()) {
-                        deAccessionDBResponseEntity = prepareFailureResponse(barcode, deliveryLocation, ReCAPConstants.REQUESTED_ITEM_DEACCESSIONED, itemEntity);
-                        deAccessionDBResponseEntities.add(deAccessionDBResponseEntity);
-                    } else {
-                        List<HoldingsEntity> holdingsEntities = itemEntity.getHoldingsEntities();
-                        List<BibliographicEntity> bibliographicEntities = itemEntity.getBibliographicEntities();
-                        Integer itemId = itemEntity.getItemId();
-                        List<Integer> holdingsIds = processHoldings(holdingsEntities, username);
-                        List<Integer> bibliographicIds = processBibs(bibliographicEntities, username);
-                        itemDetailsRepository.markItemAsDeleted(itemId, username, currentDate);
-                        updateBibliographicWithLastUpdatedDate(itemId, username,currentDate);
-                        deAccessionDBResponseEntity = prepareSuccessResponse(barcode, deliveryLocation, itemEntity, holdingsIds, bibliographicIds);
-                        deAccessionDBResponseEntities.add(deAccessionDBResponseEntity);
-                    }
+                    List<HoldingsEntity> holdingsEntities = itemEntity.getHoldingsEntities();
+                    List<BibliographicEntity> bibliographicEntities = itemEntity.getBibliographicEntities();
+                    Integer itemId = itemEntity.getItemId();
+                    List<Integer> holdingsIds = processHoldings(holdingsEntities, username);
+                    List<Integer> bibliographicIds = processBibs(bibliographicEntities, username);
+                    itemDetailsRepository.markItemAsDeleted(itemId, username, currentDate);
+                    updateBibliographicWithLastUpdatedDate(itemId, username,currentDate);
+                    deAccessionDBResponseEntity = prepareSuccessResponse(barcode, deliveryLocation, itemEntity, holdingsIds, bibliographicIds);
+                    deAccessionDBResponseEntities.add(deAccessionDBResponseEntity);
                 } catch (Exception ex) {
                     deAccessionDBResponseEntity = prepareFailureResponse(barcode, deliveryLocation, "Exception" + ex, null);
                     deAccessionDBResponseEntities.add(deAccessionDBResponseEntity);
                 }
             }
-            if (responseItemBarcodeList.size() != itemBarcodeList.size()) {
-                for (String itemBarcode : itemBarcodeList) {
-                    if (!responseItemBarcodeList.contains(itemBarcode)) {
-                        deAccessionDBResponseEntity = prepareFailureResponse(itemBarcode, barcodeAndStopCodeMap.get(itemBarcode), ReCAPConstants.ITEM_BARCDE_DOESNOT_EXIST, null);
-                        deAccessionDBResponseEntities.add(deAccessionDBResponseEntity);
-                    }
-                }
-            }
         } catch (Exception ex) {
             logger.error(ReCAPConstants.LOG_ERROR,ex);
         }
-        return deAccessionDBResponseEntities;
     }
 
     public List<ReportEntity> processAndSave(List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities) {
@@ -484,16 +519,18 @@ public class DeAccessionService {
 
     public void deAccessionItemsInSolr(List<Integer> bibIds, List<Integer> holdingsIds, List<Integer> itemIds) {
         try {
-            String deAccessionSolrClientUrl = serverProtocol + scsbSolrClientUrl + ReCAPConstants.DEACCESSION_IN_SOLR_URL;
-            DeAccessionSolrRequest deAccessionSolrRequest = new DeAccessionSolrRequest();
-            deAccessionSolrRequest.setBibIds(bibIds);
-            deAccessionSolrRequest.setHoldingsIds(holdingsIds);
-            deAccessionSolrRequest.setItemIds(itemIds);
+            if (CollectionUtils.isNotEmpty(bibIds) || CollectionUtils.isNotEmpty(holdingsIds) || CollectionUtils.isNotEmpty(itemIds)) {
+                String deAccessionSolrClientUrl = serverProtocol + scsbSolrClientUrl + ReCAPConstants.DEACCESSION_IN_SOLR_URL;
+                DeAccessionSolrRequest deAccessionSolrRequest = new DeAccessionSolrRequest();
+                deAccessionSolrRequest.setBibIds(bibIds);
+                deAccessionSolrRequest.setHoldingsIds(holdingsIds);
+                deAccessionSolrRequest.setItemIds(itemIds);
 
-            RestTemplate restTemplate = new RestTemplate();
-            HttpEntity<DeAccessionSolrRequest> requestEntity = new HttpEntity(deAccessionSolrRequest, getHttpHeaders());
-            ResponseEntity<String> responseEntity = restTemplate.exchange(deAccessionSolrClientUrl, HttpMethod.POST, requestEntity, String.class);
-            logger.info(responseEntity.getBody());
+                RestTemplate restTemplate = new RestTemplate();
+                HttpEntity<DeAccessionSolrRequest> requestEntity = new HttpEntity(deAccessionSolrRequest, getHttpHeaders());
+                ResponseEntity<String> responseEntity = restTemplate.exchange(deAccessionSolrClientUrl, HttpMethod.POST, requestEntity, String.class);
+                logger.info(responseEntity.getBody());
+            }
         } catch (Exception e) {
             logger.error("Exception : ", e);
         }
