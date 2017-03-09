@@ -281,6 +281,7 @@ public final class ReCAPConstants {
 
     //Logger
     public static final String LOG_ERROR="error-->";
+    public static final String GFA_ITEM_STATUS_MISMATCH = "There is a mismatch in item status between SCSB and GFA. Please contact ReCAP staff (mailto:{0}) for further assistance.";
 
     private ReCAPConstants() {}
 
