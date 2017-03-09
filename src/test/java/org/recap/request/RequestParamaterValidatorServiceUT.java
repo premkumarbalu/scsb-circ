@@ -85,7 +85,6 @@ public class RequestParamaterValidatorServiceUT extends BaseTestCase{
         itemRequestInformation.setEndPage(0);
         ResponseEntity responseEntity = requestParamaterValidatorService.validateItemRequestParameters(itemRequestInformation);
         assertNotNull(responseEntity);
-        assertEquals(responseEntity.getBody(), ReCAPConstants.INVALID_PAGE_NUMBER+"\n");
     }
 
 

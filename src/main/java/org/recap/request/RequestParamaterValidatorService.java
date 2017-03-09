@@ -78,14 +78,6 @@ public class RequestParamaterValidatorService {
                 if (itemRequestInformation.getStartPage() == null || itemRequestInformation.getEndPage() == null) {
                     errorMessageMap.put(errorCount, ReCAPConstants.START_PAGE_AND_END_PAGE_REQUIRED);
                     errorCount++;
-                } else if (itemRequestInformation.getStartPage() == 0 || itemRequestInformation.getEndPage() == 0) {
-                    errorMessageMap.put(errorCount, ReCAPConstants.INVALID_PAGE_NUMBER);
-                    errorCount++;
-                } else {
-                    if (itemRequestInformation.getEndPage() < itemRequestInformation.getStartPage()) {
-                        errorMessageMap.put(errorCount, ReCAPConstants.INVALID_END_PAGE);
-                        errorCount++;
-                    }
                 }
             } else if (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)) {
                 if (StringUtils.isEmpty(itemRequestInformation.getDeliveryLocation())) {

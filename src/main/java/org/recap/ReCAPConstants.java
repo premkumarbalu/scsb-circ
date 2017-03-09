@@ -22,18 +22,13 @@ public final class ReCAPConstants {
     public static final String INVALID_REQUEST_INSTITUTION = "Please enter valid Institution PUL/CUL/NYPL for requestingInstitution";
     public static final String INVALID_EMAIL_ADDRESS = "Please enter valid emailAddress";
     public static final String START_PAGE_AND_END_PAGE_REQUIRED = "Start page and end page required.";
-    public static final String INVALID_PAGE_NUMBER = "Page number should not be 0. Page number starts with 1";
-    public static final String INVALID_END_PAGE = "End page should not be 0 and less than start page";
     public static final String DELIVERY_LOCATION_REQUIRED = "Delivery Location is required for request type Recall/hold/retrieval";
-    public static final String EMPTY_PATRON_BARCODE = "Patron barcode should not be null or empty.Please enter the valid patron barcode";
     public static final String INVALID_REQUEST_TYPE = "Please enter the valid request type";
     public static final String RETRIEVAL = "RETRIEVAL";
     public static final String EDD_REQUEST = "EDD";
     public static final String BORROW_DIRECT = "BORROW DIRECT";
-    public static final String PHYSICAL_REQUEST = "Physical";
     public static final String VALID_REQUEST = "All request parameters are valid.Patron is eligible to raise a request";
     public static final String INVALID_PATRON = "Patron not on file in ILS";
-    public static final String VALID_PATRON = "Patron validated successfully.";
     public static final String AVAILABLE = "Available";
     public static final String NOT_AVAILABLE = "Not Available";
     public static final String ITEMBARCODE_WITH_DIFFERENT_BIB = "All items must be attached to the same bibliographic record, have the same customer code, and the same availability.";
@@ -41,12 +36,10 @@ public final class ReCAPConstants {
     public static final String INVALID_DELIVERY_CODE = "Delivery location not valid for this item.";
     public static final String INVALID_ITEM_BARCODE = "Item is not available";
     public static final String ITEM_BARCODE_IS_REQUIRED = "Item Barcode is required";
-    public static final String VALID_CUSTOMER_CODE = "Customer code is valid";
     public static final String MULTIPLE_ITEMS_NOT_ALLOWED_FOR_EDD = "EDD requests must be done on a single item.";
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
     public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Item not available for request.";
     public static final String RECALL_NOT_FOR_AVAILABLE_ITEM = "Recall not available for this item.";
-    public static final String RECALL_FOR_AVAILABLE_ITEM = "Requested Item for Not Available can be Recalled";
 
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
@@ -237,9 +230,6 @@ public final class ReCAPConstants {
 
     protected static final List<String> REQUEST_TYPE_LIST = Arrays.asList(ReCAPConstants.RETRIEVAL,ReCAPConstants.REQUEST_TYPE_EDD,ReCAPConstants.BORROW_DIRECT,ReCAPConstants.REQUEST_TYPE_RECALL);
 
-    public static final String REQUEST_DELIVERY_METHOD_PHY = "PHY";
-    public static final String REQUEST_DELIVERY_METHOD_EDD = "EDD";
-
     public static final String SUCCESSFULLY_PROCESSED_REQUEST_ITEM = "Successfully Processed Request Item";
     public static final String REQUEST_ITEM_BARCODE_NOT_FOUND = "ITEM BARCODE NOT FOUND.";
     public static final String REQUEST_CANCELLATION_SUCCCESS = "Request cancellation succcessfully processed";
@@ -250,8 +240,6 @@ public final class ReCAPConstants {
     public static final String REQUEST_CANCELLATION_DOES_NOT_EXIST = "RequestId does not exist";
 
     public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Retrieval order successfully created in GFA.";
-    public static final String GFA_RETRIVAL_ORDER_ERROR = "GFA returned error while creating retrival order";
-    public static final String GFA_EDD_RETRIVAL_ORDER_ERROR = "GFA returned error while creating EDD retrival order";
     public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "Item not available in GFA";
     public static final String GFA_ITEM_STATUS_CHECK_FAILED = "Item status check failed to return valid response.";
     public static final String REQUEST_CANCELLED_NO_REFILED = "SCSB doesn't expect a re-file to happen on this item.";
