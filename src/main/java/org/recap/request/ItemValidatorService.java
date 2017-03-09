@@ -161,7 +161,8 @@ public class ItemValidatorService {
 
     private List<String> splitStringAndGetList(String inputString) {
         String[] splittedString = inputString.split(",");
-        return Arrays.asList(splittedString);
+        List<String> stringList = Arrays.asList(splittedString);
+        return stringList;
     }
 
     private HttpHeaders getHttpHeaders() {
@@ -182,7 +183,7 @@ public class ItemValidatorService {
 
     public ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, Integer itemAvailabilityStatusId, List<Integer> bibliographicIds, ItemRequestInformation itemRequestInformation) {
         String status = "";
-        List<BibliographicEntity> bibliographicList;
+        List<BibliographicEntity> bibliographicList = null;
 
         for (ItemEntity itemEntity : itemEntityList) {
             if (itemEntity.getItemAvailabilityStatusId() == 2 && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)
