@@ -793,7 +793,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         List<Integer> processedBibIdList = new ArrayList<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         String response = submitCollectionService.process(updatedMarcForPULWtihNewItem,processedBibIdList,idMapToRemoveIndex);
-        assertEquals("No record(s) got updated, Exception report generated",response);
+        assertEquals("No record(s) updated., Exception report generated",response);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
         String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
         List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);

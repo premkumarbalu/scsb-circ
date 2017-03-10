@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.ArrayList;
 import java.util.List;
 
+import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -84,7 +85,7 @@ public class RequestParamaterValidatorServiceUT extends BaseTestCase{
         itemRequestInformation.setStartPage(0);
         itemRequestInformation.setEndPage(0);
         ResponseEntity responseEntity = requestParamaterValidatorService.validateItemRequestParameters(itemRequestInformation);
-        assertNotNull(responseEntity);
+        assertNull(responseEntity);
     }
 
 

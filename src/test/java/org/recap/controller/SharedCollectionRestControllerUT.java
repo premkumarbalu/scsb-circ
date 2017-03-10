@@ -149,7 +149,7 @@ public class SharedCollectionRestControllerUT extends BaseTestCase {
                 .andExpect(status().isOk())
                 .andReturn();
         String result = mvcResult.getResponse().getContentAsString();
-        assertEquals("No record(s) got updated, Exception report generated",result);
+        assertEquals("No record(s) updated., Exception report generated",result);
     }
 
     @Test

@@ -5,6 +5,7 @@ import org.recap.BaseTestCase;
 import org.recap.model.*;
 import org.recap.repository.InstitutionDetailsRepository;
 import org.recap.repository.RequestItemDetailsRepository;
+import org.recap.repository.RequestItemStatusDetailsRepository;
 import org.recap.repository.RequestTypeDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -34,24 +35,23 @@ public class CancelItemControllerUT extends BaseTestCase{
     InstitutionDetailsRepository institutionDetailsRepository;
 
     @Autowired
+    RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
+
+    @Autowired
     CancelItemController cancelItemController;
 
     @Test
-    public void testCancelRequest(){
-        CancelRequestResponse cancelRequestResponse = cancelItemController.cancelRequest(123);
+    public void testCancelRequest() throws Exception {
+        RequestItemEntity requestItemEntity = createRequestItem();
+        CancelRequestResponse cancelRequestResponse = cancelItemController.cancelRequest(requestItemEntity.getRequestId());
         assertNotNull(cancelRequestResponse);
-        assertEquals(cancelRequestResponse.getScreenMessage(),"RequestId does not exist");
-        assertFalse(cancelRequestResponse.isSuccess());
+        assertEquals(cancelRequestResponse.getScreenMessage(),"EDD request cancellation successfully processed.");
     }
 
-
-
-    public void createRequestItem() throws Exception {
+    public RequestItemEntity createRequestItem() throws Exception {
         InstitutionEntity institutionEntity = new InstitutionEntity();
-        institutionEntity.setInstitutionCode("UOC");
-        institutionEntity.setInstitutionName("University of Chicago");
-        InstitutionEntity entity = institutionDetailsRepository.save(institutionEntity);
-        assertNotNull(entity);
+        institutionEntity.setInstitutionCode("PUL");
+        institutionEntity.setInstitutionName("PUL");
 
         BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem();
 
@@ -61,18 +61,24 @@ public class CancelItemControllerUT extends BaseTestCase{
         RequestTypeEntity savedRequestTypeEntity = requestTypeDetailsRepository.save(requestTypeEntity);
         assertNotNull(savedRequestTypeEntity);
 
+        RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusId(3);
+
         RequestItemEntity requestItemEntity = new RequestItemEntity();
         requestItemEntity.setItemId(bibliographicEntity.getItemEntities().get(0).getItemId());
         requestItemEntity.setRequestTypeId(savedRequestTypeEntity.getRequestTypeId());
-        requestItemEntity.setRequestingInstitutionId(1);
+        requestItemEntity.setRequestStatusEntity(requestStatusEntity);
+        requestItemEntity.setRequestingInstitutionId(2);
         requestItemEntity.setStopCode("test");
+        requestItemEntity.setItemEntity(bibliographicEntity.getItemEntities().get(0));
+        requestItemEntity.setInstitutionEntity(institutionEntity);
+        requestItemEntity.setPatronId("1");
         requestItemEntity.setCreatedDate(new Date());
         requestItemEntity.setRequestExpirationDate(new Date());
         requestItemEntity.setRequestExpirationDate(new Date());
-        requestItemEntity.setRequestStatusId(4);
+        requestItemEntity.setRequestStatusId(3);
         requestItemEntity.setCreatedBy("test");
         RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
-        assertNotNull(savedRequestItemEntity);
+        return savedRequestItemEntity;
     }
 
     public BibliographicEntity saveBibSingleHoldingsSingleItem() throws Exception {
@@ -115,9 +121,6 @@ public class CancelItemControllerUT extends BaseTestCase{
 
         BibliographicEntity savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(bibliographicEntity);
         entityManager.refresh(savedBibliographicEntity);
-        assertNotNull(savedBibliographicEntity);
-        assertNotNull(savedBibliographicEntity.getHoldingsEntities());
-        assertNotNull(savedBibliographicEntity.getItemEntities());
         return savedBibliographicEntity;
 
     }

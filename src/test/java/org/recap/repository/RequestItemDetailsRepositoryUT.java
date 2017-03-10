@@ -40,6 +40,9 @@ public class RequestItemDetailsRepositoryUT extends BaseTestCase {
     @Autowired
     InstitutionDetailsRepository institutionDetailsRepository;
 
+    @Autowired
+    RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
+
     @Test
     public void testRecallPatronValidation() {
         Pageable pageable = new PageRequest(0, 1);
@@ -74,7 +77,7 @@ public class RequestItemDetailsRepositoryUT extends BaseTestCase {
     }
 
 
-    public void getRequestItemEntity() throws Exception {
+    public RequestItemEntity getRequestItemEntity() throws Exception {
         InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setInstitutionCode("UOC");
         institutionEntity.setInstitutionName("University of Chicago");
@@ -89,11 +92,17 @@ public class RequestItemDetailsRepositoryUT extends BaseTestCase {
         RequestTypeEntity savedRequestTypeEntity = requestTypeDetailsRepository.save(requestTypeEntity);
         assertNotNull(savedRequestTypeEntity);
 
+        RequestStatusEntity requestStatusEntity = new RequestStatusEntity();
+        requestStatusEntity.setRequestStatusCode("Refile");
+        requestStatusEntity.setRequestStatusDescription("Refile");
+        RequestStatusEntity savedRequestStatusEntity = requestItemStatusDetailsRepository.save(requestStatusEntity);
+        assertNotNull(savedRequestStatusEntity);
+
         RequestItemEntity requestItemEntity = new RequestItemEntity();
         requestItemEntity.setItemId(bibliographicEntity.getItemEntities().get(0).getItemId());
         requestItemEntity.setRequestTypeId(savedRequestTypeEntity.getRequestTypeId());
         requestItemEntity.setRequestingInstitutionId(1);
-        requestItemEntity.setRequestStatusId(4);
+        requestItemEntity.setRequestStatusId(1);
         requestItemEntity.setCreatedBy("test");
         requestItemEntity.setPatronId("45678912");
         requestItemEntity.setStopCode("test");
@@ -101,8 +110,11 @@ public class RequestItemDetailsRepositoryUT extends BaseTestCase {
         requestItemEntity.setLastUpdatedDate(new Date());
         requestItemEntity.setRequestExpirationDate(new Date());
         requestItemEntity.setRequestExpirationDate(new Date());
+        requestItemEntity.setRequestTypeEntity(savedRequestTypeEntity);
+        requestItemEntity.setRequestStatusEntity(savedRequestStatusEntity);
         RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
         assertNotNull(savedRequestItemEntity);
+        return savedRequestItemEntity;
     }
 
     public BibliographicEntity saveBibSingleHoldingsSingleItem() throws Exception {

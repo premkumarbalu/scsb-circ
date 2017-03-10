@@ -8,10 +8,11 @@ import org.recap.ils.model.response.ItemCheckinResponse;
 import org.recap.ils.model.response.ItemCheckoutResponse;
 import org.recap.ils.model.response.ItemHoldResponse;
 import org.recap.ils.model.response.ItemInformationResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+
 
 import java.util.Date;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -58,16 +59,19 @@ public class NyplApiServiceConnectorUT extends BaseTestCase {
         String patronBarcode = "23333095887111";
         String callInstitutionId = "NYPL";
         String itemInstitutionId = "NYPL";
-        String expirationDate = "";
+        String expirationDate = new Date().toString();
         String bibId = "";
         String pickupLocation = "";
         String trackingId = "";
         String title = "";
         String author = "";
         String callNumber = "";
-        Mockito.when((ItemHoldResponse)nyplApiServiceConnector.placeHold(itemBarcode, patronBarcode, callInstitutionId, itemInstitutionId, expirationDate, bibId, pickupLocation, trackingId, title, author, callNumber)).thenReturn(new ItemHoldResponse());
+        ItemHoldResponse itemHoldResponse1 = new ItemHoldResponse();
+        itemHoldResponse1.setSuccess(true);
+        Mockito.when((ItemHoldResponse)nyplApiServiceConnector.placeHold(itemBarcode, patronBarcode, callInstitutionId, itemInstitutionId, expirationDate, bibId, pickupLocation, trackingId, title, author, callNumber)).thenReturn(itemHoldResponse1);
         ItemHoldResponse itemHoldResponse = (ItemHoldResponse)nyplApiServiceConnector.placeHold(itemBarcode, patronBarcode, callInstitutionId, itemInstitutionId, expirationDate, bibId, pickupLocation, trackingId, title, author, callNumber);
         assertNotNull(itemHoldResponse);
+        assertTrue(itemHoldResponse.isSuccess());
     }
 
     @Test
@@ -79,9 +83,12 @@ public class NyplApiServiceConnectorUT extends BaseTestCase {
         String bibId = "";
         String pickupLocation = "";
         String trackingId = "";
-        Mockito.when((ItemHoldResponse)nyplApiServiceConnector.cancelHold(itemBarcode, patronBarcode, institutionId, expirationDate, bibId, pickupLocation, trackingId)).thenReturn(new ItemHoldResponse());
+        ItemHoldResponse itemHoldResponse1 = new ItemHoldResponse();
+        itemHoldResponse1.setScreenMessage("Request cancelled.");
+        Mockito.when((ItemHoldResponse)nyplApiServiceConnector.cancelHold(itemBarcode, patronBarcode, institutionId, expirationDate, bibId, pickupLocation, trackingId)).thenReturn(itemHoldResponse1);
         ItemHoldResponse itemHoldResponse = (ItemHoldResponse)nyplApiServiceConnector.cancelHold(itemBarcode, patronBarcode, institutionId, expirationDate, bibId, pickupLocation, trackingId);
         assertNotNull(itemHoldResponse);
+        assertEquals(itemHoldResponse.getScreenMessage(),"Request cancelled.");
     }
 
     public ItemInformationResponse getItemInformationResponse(){
