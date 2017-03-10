@@ -2,6 +2,7 @@ package org.recap.service.deaccession;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.recap.BaseTestCase;
 import org.recap.ReCAPConstants;
 import org.recap.gfa.model.*;
@@ -291,5 +292,54 @@ public class DeAccessionServiceUT extends BaseTestCase {
 
         return requestItemEntities;
     }
+
+    @Test
+    public void gfaPermanentWithdrawlDirect() throws Exception {
+        GFAPwdResponse gfaPwdResponse1 = new GFAPwdResponse();
+        ResponseEntity<GFAPwdResponse> gfaPwdResponseResponseEntity = new ResponseEntity<GFAPwdResponse>(gfaPwdResponse1,HttpStatus.OK);
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        GFAPwdRequest gfaPwdRequest = new GFAPwdRequest();
+        GFAPwdDsItemRequest gfaPwdDsItemRequest = new GFAPwdDsItemRequest();
+        GFAPwdTtItemRequest gfaPwdTtItemRequest = new GFAPwdTtItemRequest();
+        gfaPwdTtItemRequest.setCustomerCode("AR");
+        gfaPwdTtItemRequest.setItemBarcode("AR00000612");
+        gfaPwdTtItemRequest.setDestination("AR");
+        gfaPwdTtItemRequest.setRequestor("Dev Tesr");
+        gfaPwdDsItemRequest.setTtitem(Arrays.asList(gfaPwdTtItemRequest));
+        gfaPwdRequest.setDsitem(gfaPwdDsItemRequest);
+        HttpEntity<GFAPwdRequest> requestEntity = new HttpEntity(gfaPwdRequest, getHttpHeaders());
+        ResponseEntity<GFAPwdResponse> responseEntity = restTemplate.exchange(gfaItemPermanentWithdrawlDirect, HttpMethod.POST, requestEntity, GFAPwdResponse.class);
+        assertNotNull(responseEntity);
+        GFAPwdResponse gfaPwdResponse = responseEntity.getBody();
+        assertNotNull(gfaPwdResponse);
+    }
+
+    @Test
+    public void gfaPermanentWithdrawlInDirect() throws Exception {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        GFAPwiRequest gfaPwiRequest = new GFAPwiRequest();
+        GFAPwiDsItemRequest gfaPwiDsItemRequest = new GFAPwiDsItemRequest();
+        GFAPwiTtItemRequest gfaPwiTtItemRequest = new GFAPwiTtItemRequest();
+        gfaPwiTtItemRequest.setCustomerCode("AR");
+        gfaPwiTtItemRequest.setItemBarcode("AR00051608");
+        gfaPwiDsItemRequest.setTtitem(Arrays.asList(gfaPwiTtItemRequest));
+        gfaPwiRequest.setDsitem(gfaPwiDsItemRequest);
+        HttpEntity<GFAPwdRequest> requestEntity = new HttpEntity(gfaPwiRequest, getHttpHeaders());
+        ResponseEntity<GFAPwiResponse> responseEntity = restTemplate.exchange(gfaItemPermanentWithdrawlInDirect, HttpMethod.POST, requestEntity, GFAPwiResponse.class);
+        assertNotNull(responseEntity);
+        GFAPwiResponse gfaPwiResponse = responseEntity.getBody();
+        assertNotNull(gfaPwiResponse);
+    }
+
+    private HttpHeaders getHttpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
+
 
 }

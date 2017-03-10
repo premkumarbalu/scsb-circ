@@ -60,6 +60,7 @@ public class PatronDetailsRepositoryUT extends BaseTestCase {
         requestItemEntity.setRequestStatusId(4);
         RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
         assertNotNull(savedRequestItemEntity);
+        assertNotNull(savedRequestItemEntity.getRequestId());
     }
 
     public BibliographicEntity saveBibSingleHoldingsSingleItem() throws Exception {
