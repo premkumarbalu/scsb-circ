@@ -182,7 +182,7 @@ public class DeAccessionService {
                     gfaPwdTtItemRequest.setRequestor(username);
                     gfaPwdDsItemRequest.setTtitem(Arrays.asList(gfaPwdTtItemRequest));
                     gfaPwdRequest.setDsitem(gfaPwdDsItemRequest);
-                    //gfaService.gfaPermanentWithdrawlDirect(gfaPwdRequest);
+                    gfaService.gfaPermanentWithdrawlDirect(gfaPwdRequest);
                 } else if (ReCAPConstants.SUCCESS.equalsIgnoreCase(deAccessionDBResponseEntity.getStatus()) && ReCAPConstants.NOT_AVAILABLE.equalsIgnoreCase(deAccessionDBResponseEntity.getItemStatus())) {
                     GFAPwiRequest gfaPwiRequest = new GFAPwiRequest();
                     GFAPwiDsItemRequest gfaPwiDsItemRequest = new GFAPwiDsItemRequest();
@@ -191,7 +191,7 @@ public class DeAccessionService {
                     gfaPwiTtItemRequest.setItemBarcode(deAccessionDBResponseEntity.getBarcode());
                     gfaPwiDsItemRequest.setTtitem(Arrays.asList(gfaPwiTtItemRequest));
                     gfaPwiRequest.setDsitem(gfaPwiDsItemRequest);
-                    //gfaService.gfaPermanentWithdrawlInDirect(gfaPwiRequest);
+                    gfaService.gfaPermanentWithdrawlInDirect(gfaPwiRequest);
                 }
             }
         }
