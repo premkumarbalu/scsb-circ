@@ -126,6 +126,11 @@ public class DeAccessionService {
                             ItemStatusEntity itemStatusEntity = itemEntity.getItemStatusEntity();
                             if (ReCAPConstants.NOT_AVAILABLE.equals(itemStatusEntity.getStatusCode())) {
                                 String gfaItemStatus = callGfaItemStatus(itemBarcode);
+                                if (StringUtils.isNotBlank(gfaItemStatus) && gfaItemStatus.contains(":")) {
+                                    gfaItemStatus = gfaItemStatus.substring(0, gfaItemStatus.indexOf(':') + 1).toUpperCase();
+                                } else {
+                                    gfaItemStatus = gfaItemStatus.toUpperCase();
+                                }
                                 if (StringUtils.isNotBlank(gfaItemStatus) && ReCAPConstants.getGFAStatusNotAvailableList().contains(gfaItemStatus) && !ReCAPConstants.GFA_STATUS_NOT_ON_FILE.equalsIgnoreCase(gfaItemStatus)) {
                                     barcodeAndStopCodeMap.put(itemBarcode.trim(), deAccessionItem.getDeliveryLocation());
                                 } else {

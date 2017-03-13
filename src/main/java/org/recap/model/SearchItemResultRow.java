@@ -102,25 +102,27 @@ public class SearchItemResultRow implements Comparable<SearchItemResultRow> {
 
     @Override
     public int compareTo(SearchItemResultRow searchItemResultRow) {
-        if (null != this.getChronologyAndEnum()) {
+        if (null != this.getChronologyAndEnum() && null != searchItemResultRow && null != searchItemResultRow.getChronologyAndEnum()) {
             return this.getChronologyAndEnum().compareTo(searchItemResultRow.getChronologyAndEnum());
         }
         return 0;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof SearchItemResultRow))
+        if (o == null || getClass() != o.getClass())
             return false;
 
-        SearchItemResultRow searchItemResultRow = (SearchItemResultRow) o;
+        SearchItemResultRow that = (SearchItemResultRow) o;
 
-        return chronologyAndEnum.equals(searchItemResultRow.chronologyAndEnum);
+        return chronologyAndEnum != null ? chronologyAndEnum.equals(that.chronologyAndEnum) : that.chronologyAndEnum == null;
+
     }
 
     @Override
     public int hashCode() {
-        return chronologyAndEnum.hashCode();
+        return chronologyAndEnum != null ? chronologyAndEnum.hashCode() : 0;
     }
 }
