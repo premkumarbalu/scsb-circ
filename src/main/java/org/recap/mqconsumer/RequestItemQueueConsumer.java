@@ -124,21 +124,46 @@ public class RequestItemQueueConsumer {
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_NYPL_BORROW_DIRECT_TOPIC);
     }
 
+    public void lasOutgoingQOnCompletion(@Body String body) {
+        logger.info(body);
+    }
+
+    public void lasIngoingQOnCompletion(@Body String body) {
+        logger.info(body);
+    }
+
+    public void lasResponseRetrivalOnMessage(@Body String body) {
+        logger.info(body);
+        itemRequestService.processLASRetrieveResponse(body);
+    }
+
+    public void lasResponseEDDOnMessage(@Body String body) {
+        logger.info(body);
+    }
+
+    public void lasResponsePWIOnMessage(@Body String body) {
+        logger.info(body);
+    }
+
+    public void lasResponsePWDOnMessage(@Body String body) {
+        logger.info(body);
+    }
+
     private void setTopicMessageToDb(String body, String operationType) {
         ObjectMapper om = new ObjectMapper();
         ItemInformationResponse itemInformationResponse = null;
         try {
             itemInformationResponse = om.readValue(body, ItemInformationResponse.class);
-            Integer intRecordId =0;
-            if(itemInformationResponse.getRequestId() != null && itemInformationResponse.getRequestId()>0) {
+            Integer intRecordId = 0;
+            if (itemInformationResponse.getRequestId() != null && itemInformationResponse.getRequestId() > 0) {
                 intRecordId = itemInformationResponse.getRequestId();
             }
             itemRequestService.saveItemChangeLogEntity(intRecordId, itemRequestService.getUser(itemInformationResponse.getUsername()), operationType, body);
-            if(!itemInformationResponse.isSuccess()) {
+            if (!itemInformationResponse.isSuccess()) {
                 itemRequestService.updateRecapRequestItem(itemInformationResponse);
             }
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
     }
 }

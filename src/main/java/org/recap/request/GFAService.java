@@ -2,18 +2,21 @@ package org.recap.request;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.camel.ProducerTemplate;
 import org.recap.ReCAPConstants;
 import org.recap.gfa.model.*;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +43,12 @@ public class GFAService {
     @Value("${gfa.item.permanent.withdrawl.indirect}")
     private String gfaItemPermanentWithdrawlInDirect;
 
+    @Value("${las.use.queue}")
+    private boolean useQueueLasCall;
+
+    @Autowired
+    private ProducerTemplate producer;
+
     public String getGfaItemStatus() {
         return gfaItemStatus;
     }
@@ -64,6 +73,10 @@ public class GFAService {
         return new RestTemplate();
     }
 
+    public boolean isUseQueueLasCall() {
+        return useQueueLasCall;
+    }
+
     public GFAItemStatusCheckResponse itemStatusCheck(GFAItemStatusCheckRequest gfaItemStatusCheckRequest) {
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -81,9 +94,9 @@ public class GFAService {
 
             logger.info(responseEntity.getStatusCode().toString());
         } catch (JsonProcessingException e) {
-            logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION,e);
+            logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return gfaItemStatusCheckResponse;
     }
@@ -96,17 +109,7 @@ public class GFAService {
             logger.info(responseEntity.getStatusCode().toString());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 gfaRetrieveItemResponse = responseEntity.getBody();
-                if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
-                    List<Ttitem> titemList = gfaRetrieveItemResponse.getRetrieveItem().getTtitem();
-                    for (Ttitem ttitem : titemList) {
-                        logger.info(ttitem.getErrorCode());
-                        logger.info(ttitem.getErrorNote());
-                        gfaRetrieveItemResponse.setSuccess(false);
-                        gfaRetrieveItemResponse.setScrenMessage(ttitem.getErrorNote());
-                    }
-                } else {
-                    gfaRetrieveItemResponse.setSuccess(true);
-                }
+                gfaRetrieveItemResponse = getLASRetrieveResponse(gfaRetrieveItemResponse);
             } else {
                 gfaRetrieveItemResponse.setSuccess(false);
             }
@@ -116,26 +119,31 @@ public class GFAService {
         return gfaRetrieveItemResponse;
     }
 
+    private GFARetrieveItemResponse getLASRetrieveResponse(GFARetrieveItemResponse gfaRetrieveItemResponse) {
+        if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
+            List<Ttitem> titemList = gfaRetrieveItemResponse.getRetrieveItem().getTtitem();
+            for (Ttitem ttitem : titemList) {
+                logger.info(ttitem.getErrorCode());
+                logger.info(ttitem.getErrorNote());
+                gfaRetrieveItemResponse.setSuccess(false);
+                gfaRetrieveItemResponse.setScrenMessage(ttitem.getErrorNote());
+            }
+        } else {
+            gfaRetrieveItemResponse.setSuccess(true);
+        }
+        return gfaRetrieveItemResponse;
+    }
+
     public GFARetrieveItemResponse itemEDDRetrival(GFARetrieveEDDItemRequest gfaRetrieveEDDItemRequest) {
         GFARetrieveItemResponse gfaRetrieveItemResponse = null;
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity(gfaRetrieveEDDItemRequest, getHttpHeaders());
-            ResponseEntity<GFARetrieveItemResponse> responseEntity = restTemplate.exchange(gfaItemEDDRetrival, HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
+            ResponseEntity<GFARetrieveItemResponse> responseEntity = restTemplate.exchange(getGfaItemEDDRetrival(), HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
             logger.info(responseEntity.getStatusCode().toString());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 gfaRetrieveItemResponse = responseEntity.getBody();
-                if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
-                    List<Ttitem> titemList = gfaRetrieveItemResponse.getRetrieveItem().getTtitem();
-                    for (Ttitem ttitem : titemList) {
-                        logger.info(ttitem.getErrorCode());
-                        logger.info(ttitem.getErrorNote());
-                        gfaRetrieveItemResponse.setSuccess(false);
-                        gfaRetrieveItemResponse.setScrenMessage(ttitem.getErrorNote());
-                    }
-                } else {
-                    gfaRetrieveItemResponse.setSuccess(true);
-                }
+                gfaRetrieveItemResponse = getLASRetrieveResponse(gfaRetrieveItemResponse);
             } else {
                 gfaRetrieveItemResponse.setSuccess(false);
                 gfaRetrieveItemResponse.setScrenMessage("GFA HTTP request error");
@@ -229,7 +237,7 @@ public class GFAService {
                 logger.info(gfaOnlyStaus);
 
                 if (ReCAPConstants.getGFAStatusAvailableList().contains(gfaOnlyStaus)) {
-                    bSuccess=true;
+                    bSuccess = true;
                 }
             }
         } catch (Exception e) {
@@ -241,52 +249,79 @@ public class GFAService {
     private ItemInformationResponse callItemRetrivate(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFARetrieveItemRequest gfaRetrieveItemRequest = new GFARetrieveItemRequest();
         TtitemRequest ttitem001 = new TtitemRequest();
-        ttitem001.setCustomerCode(itemRequestInfo.getCustomerCode());
-        ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
-        ttitem001.setDestination(itemRequestInfo.getDeliveryLocation());
-        ttitem001.setRequestId(itemResponseInformation.getRequestId().toString());
-        ttitem001.setRequestor(itemRequestInfo.getPatronBarcode());
+        try {
+            ttitem001.setCustomerCode(itemRequestInfo.getCustomerCode());
+            ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
+            ttitem001.setDestination(itemRequestInfo.getDeliveryLocation());
+            ttitem001.setRequestId(itemResponseInformation.getRequestId().toString());
+            ttitem001.setRequestor(itemRequestInfo.getPatronBarcode());
 
-        List<TtitemRequest> ttitems = new ArrayList<>();
-        ttitems.add(ttitem001);
-        RetrieveItemRequest retrieveItem = new RetrieveItemRequest();
-        retrieveItem.setTtitem(ttitems);
-        gfaRetrieveItemRequest.setRetrieveItem(retrieveItem);
-        GFARetrieveItemResponse gfaRetrieveItemResponse = itemRetrival(gfaRetrieveItemRequest);
-        if (gfaRetrieveItemResponse.isSuccess()) {
-            itemResponseInformation.setSuccess(true);
-            itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
-        } else {
-            itemResponseInformation.setSuccess(false);
-            itemResponseInformation.setScreenMessage(gfaRetrieveItemResponse.getScrenMessage());
+            List<TtitemRequest> ttitems = new ArrayList<>();
+            ttitems.add(ttitem001);
+            RetrieveItemRequest retrieveItem = new RetrieveItemRequest();
+            retrieveItem.setTtitem(ttitems);
+            gfaRetrieveItemRequest.setRetrieveItem(retrieveItem);
+            if (isUseQueueLasCall()) { // Queue
+                ObjectMapper objectMapper = new ObjectMapper();
+                String json = objectMapper.writeValueAsString(gfaRetrieveItemRequest);
+                producer.sendBodyAndHeader(ReCAPConstants.SCSB_OUTGOING_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
+                itemResponseInformation.setSuccess(true);
+                itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
+            } else {
+                GFARetrieveItemResponse gfaRetrieveItemResponse = itemRetrival(gfaRetrieveItemRequest);
+                if (gfaRetrieveItemResponse.isSuccess()) {
+                    itemResponseInformation.setSuccess(true);
+                    itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
+                } else {
+                    itemResponseInformation.setSuccess(false);
+                    itemResponseInformation.setScreenMessage(gfaRetrieveItemResponse.getScrenMessage());
+                }
+            }
+        } catch (Exception e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemResponseInformation;
     }
 
     private ItemInformationResponse callItemEDDRetrivate(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFARetrieveEDDItemRequest gfaRetrieveEDDItemRequest = new GFARetrieveEDDItemRequest();
+        GFARetrieveItemResponse gfaRetrieveItemResponse;
         TtitemEDDRequest ttitem001 = new TtitemEDDRequest();
-        ttitem001.setCustomerCode(itemRequestInfo.getCustomerCode());
-        ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
-        ttitem001.setRequestId(itemResponseInformation.getRequestId().toString());
-        ttitem001.setRequestor(itemResponseInformation.getPatronBarcode());
-        ttitem001.setStartPage(itemRequestInfo.getStartPage().toString());
-        ttitem001.setEndPage(itemRequestInfo.getEndPage().toString());
-        ttitem001.setArticleTitle(itemRequestInfo.getChapterTitle());
-        ttitem001.setArticleAuthor(itemRequestInfo.getAuthor());
+        try {
+            ttitem001.setCustomerCode(itemRequestInfo.getCustomerCode());
+            ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
+            ttitem001.setRequestId(itemResponseInformation.getRequestId().toString());
+            ttitem001.setRequestor(itemResponseInformation.getPatronBarcode());
+            ttitem001.setStartPage(itemRequestInfo.getStartPage().toString());
+            ttitem001.setEndPage(itemRequestInfo.getEndPage().toString());
+            ttitem001.setArticleTitle(itemRequestInfo.getChapterTitle());
+            ttitem001.setArticleAuthor(itemRequestInfo.getAuthor());
+            ttitem001.setRequestorEmail(itemRequestInfo.getEmailAddress());
+            ttitem001.setNotes(itemRequestInfo.getRequestNotes());
 
-        List<TtitemEDDRequest> ttitems = new ArrayList<>();
-        ttitems.add(ttitem001);
-        RetrieveItemEDDRequest retrieveItemEDDRequest = new RetrieveItemEDDRequest();
-        retrieveItemEDDRequest.setTtitem(ttitems);
-        gfaRetrieveEDDItemRequest.setRetrieveEDD(retrieveItemEDDRequest);
-        GFARetrieveItemResponse gfaRetrieveItemResponse = itemEDDRetrival(gfaRetrieveEDDItemRequest);
-        if (gfaRetrieveItemResponse.isSuccess()) {
-            itemResponseInformation.setSuccess(true);
-            itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
-        } else {
-            itemResponseInformation.setSuccess(false);
-            itemResponseInformation.setScreenMessage(gfaRetrieveItemResponse.getScrenMessage());
+            List<TtitemEDDRequest> ttitems = new ArrayList<>();
+            ttitems.add(ttitem001);
+            RetrieveItemEDDRequest retrieveItemEDDRequest = new RetrieveItemEDDRequest();
+            retrieveItemEDDRequest.setTtitem(ttitems);
+            gfaRetrieveEDDItemRequest.setRetrieveEDD(retrieveItemEDDRequest);
+            if (isUseQueueLasCall()) { // Queue
+                ObjectMapper objectMapper = new ObjectMapper();
+                String json = objectMapper.writeValueAsString(gfaRetrieveEDDItemRequest);
+                producer.sendBodyAndHeader(ReCAPConstants.SCSB_OUTGOING_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
+                itemResponseInformation.setSuccess(true);
+                itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
+            } else {
+                gfaRetrieveItemResponse = itemEDDRetrival(gfaRetrieveEDDItemRequest);
+                if (gfaRetrieveItemResponse.isSuccess()) {
+                    itemResponseInformation.setSuccess(true);
+                    itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
+                } else {
+                    itemResponseInformation.setSuccess(false);
+                    itemResponseInformation.setScreenMessage(gfaRetrieveItemResponse.getScrenMessage());
+                }
+            }
+        } catch (JsonProcessingException e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemResponseInformation;
     }
@@ -317,6 +352,26 @@ public class GFAService {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return gfaPwiResponse;
+    }
+
+    public ItemInformationResponse processLASRetrieveResponse(String body) {
+        ItemInformationResponse itemInformationResponse= new ItemInformationResponse();
+        ObjectMapper om = new ObjectMapper();
+        try {
+            GFARetrieveItemResponse gfaRetrieveItemResponse = om.readValue(body, GFARetrieveItemResponse.class);
+            gfaRetrieveItemResponse = getLASRetrieveResponse(gfaRetrieveItemResponse);
+            if (gfaRetrieveItemResponse.isSuccess()) {
+                itemInformationResponse.setRequestId(gfaRetrieveItemResponse.getRetrieveItem().getTtitem().get(0).getRequestId());
+                itemInformationResponse.setSuccess(true);
+                itemInformationResponse.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
+            } else {
+                itemInformationResponse.setSuccess(false);
+                itemInformationResponse.setScreenMessage(gfaRetrieveItemResponse.getScrenMessage());
+            }
+        } catch (Exception e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+        }
+        return itemInformationResponse;
     }
 
 }

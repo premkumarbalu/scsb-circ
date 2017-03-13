@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -44,6 +45,7 @@ public class ItemRequestDBService {
     @Autowired
     private RequestTypeDetailsRepository requestTypeDetailsRepository;
 
+
     public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, String requestStatusCode) {
 
         RequestItemEntity requestItemEntity = new RequestItemEntity();
@@ -74,9 +76,9 @@ public class ItemRequestDBService {
             }
             logger.info("SCSB DB Update Successful");
         } catch (ParseException e) {
-            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION,e);
+            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return requestId;
     }
@@ -113,10 +115,23 @@ public class ItemRequestDBService {
             itemInformationResponse.setRequestId(requestId);
             logger.info("SCSB DB Update Successful");
         } catch (ParseException e) {
-            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION,e);
+            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
+        return itemInformationResponse;
+    }
+
+    public ItemInformationResponse updateRecapRequestStatus(ItemInformationResponse itemInformationResponse) {
+        RequestStatusEntity requestStatusEntity;
+        RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
+        if(itemInformationResponse.isSuccess()) {
+            requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_PENDING);
+        }else{
+            requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
+        }
+        requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+        requestItemDetailsRepository.save(requestItemEntity);
         return itemInformationResponse;
     }
 
@@ -169,6 +184,19 @@ public class ItemRequestDBService {
             }
         }
         return null;
+    }
+
+    public ItemRequestInformation rollbackAfterGFA(ItemInformationResponse itemInformationResponse) {
+        ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
+        RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
+        rollbackUpdateItemAvailabilutyStatus(requestItemEntity.getItemEntity(), ReCAPConstants.GUEST_USER);
+        saveItemChangeLogEntity(itemInformationResponse.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_GFA_FAILURE, ReCAPConstants.GFA_ITEM_STATUS_CHECK_FAILED);
+        itemRequestInformation.setBibId(requestItemEntity.getItemEntity().getBibliographicEntities().get(0).getOwningInstitutionBibId());
+        itemRequestInformation.setPatronBarcode(requestItemEntity.getPatronId());
+        itemRequestInformation.setItemBarcodes(Arrays.asList(requestItemEntity.getItemEntity().getBarcode()));
+
+
+        return itemRequestInformation;
     }
 
 }

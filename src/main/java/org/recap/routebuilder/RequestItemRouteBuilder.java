@@ -20,33 +20,51 @@ public class RequestItemRouteBuilder {
     private static final Logger logger = LoggerFactory.getLogger(RequestItemRouteBuilder.class);
 
     @Autowired
-    private ItemRequestService itemRequestService;
-
-    @Autowired
-    private ItemEDDRequestService itemEDDRequestService;
-
-    @Autowired
     public RequestItemRouteBuilder(CamelContext camelContext, ItemRequestService itemRequestService,ItemEDDRequestService itemEDDRequestService ) {
         try {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
                     from(ReCAPConstants.REQUEST_ITEM_QUEUE)
-                            .routeId(ReCAPConstants.REQUEST_ITEM_QUEUE_ROUTEID)
-                            .threads(10)
-                            .choice()
-                            .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RETRIEVAL))
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemOnMessage")
-                            .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_EDD))
-                            .bean(new RequestItemQueueConsumer(itemEDDRequestService), "requestItemEDDOnMessage")
-                            .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT))
-                            .bean(new RequestItemQueueConsumer(itemRequestService, itemEDDRequestService), "requestItemBorrowDirectOnMessage")
-                            .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RECALL))
-                            .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemRecallOnMessage");
-
+                        .routeId(ReCAPConstants.REQUEST_ITEM_QUEUE_ROUTEID)
+                        .choice()
+                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RETRIEVAL))
+                        .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemOnMessage")
+                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_EDD))
+                        .bean(new RequestItemQueueConsumer(itemEDDRequestService), "requestItemEDDOnMessage")
+                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT))
+                        .bean(new RequestItemQueueConsumer(itemRequestService, itemEDDRequestService), "requestItemBorrowDirectOnMessage")
+                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RECALL))
+                        .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemRecallOnMessage");
                 }
             });
 
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.SCSB_OUTGOING_QUEUE)
+                        .routeId(ReCAPConstants.SCSB_OUTGOING_ROUTE_ID)
+                        .to(ReCAPConstants.LAS_OUTGOING_QUEUE)
+                        .onCompletion().bean(new RequestItemQueueConsumer(itemRequestService),"lasOutgoingQOnCompletion");
+                }
+            });
+
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.LAS_INCOMING_QUEUE)
+                        .routeId(ReCAPConstants.LAS_INCOMING_ROUTE_ID)
+                        .choice()
+                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RETRIEVAL))
+                        .bean(new RequestItemQueueConsumer(itemRequestService), "lasResponseRetrivalOnMessage")
+                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_EDD))
+                        .bean(new RequestItemQueueConsumer(itemRequestService), "lasResponseEDDOnMessage")
+                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_PW_INDIRECT))
+                        .bean(new RequestItemQueueConsumer(itemRequestService), "lasResponsePWIOnMessage")
+                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_PW_DIRECT))
+                        .bean(new RequestItemQueueConsumer(itemRequestService), "lasResponsePWDOnMessage");
+                }
+            });
 
             /* PUL Topics*/
             camelContext.addRoutes(new RouteBuilder() {
