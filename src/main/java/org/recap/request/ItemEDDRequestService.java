@@ -81,7 +81,12 @@ public class ItemEDDRequestService {
                 res = getRequestItemValidatorController().validateItemRequestInformations(itemRequestInfo);
                 if (res.getStatusCode() == HttpStatus.OK) {
                     logger.info("Request Validation Successful");
-                    Integer requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_EDD);
+                    Integer requestId;
+                    if(getItemRequestService().getGfaService().isUseQueueLasCall()){
+                        requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
+                    }else{
+                        requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_EDD);
+                    }
                     itemResponseInformation.setRequestId(requestId);
                     itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
                     bsuccess = true;

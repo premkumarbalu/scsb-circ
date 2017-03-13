@@ -4,7 +4,6 @@ import org.recap.model.ReportEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.Date;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.List;
 /**
  * Created by SheikS on 8/8/2016.
  */
-@RepositoryRestResource(collectionResourceRel = "report", path = "report")
 public interface ReportDetailRepository extends JpaRepository<ReportEntity, Integer> {
 
     List<ReportEntity> findByFileName(String fileName);

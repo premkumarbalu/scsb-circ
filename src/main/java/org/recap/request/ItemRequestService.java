@@ -214,9 +214,9 @@ public class ItemRequestService {
             sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
             logger.info("Finish Processing");
         } catch (RestClientException ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST,ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST, ex);
         } catch (Exception ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, ex);
         }
         return itemResponseInformation;
     }
@@ -270,9 +270,9 @@ public class ItemRequestService {
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST,ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST, ex);
         } catch (Exception ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, ex);
         }
         return itemResponseInformation;
     }
@@ -398,6 +398,10 @@ public class ItemRequestService {
         return getItemRequestDBService().updateRecapRequestItem(itemInformationResponse);
     }
 
+    public ItemInformationResponse updateRecapRequestStatus(ItemInformationResponse itemInformationResponse) {
+        return getItemRequestDBService().updateRecapRequestStatus(itemInformationResponse);
+    }
+
     private void updateItemAvailabilutyStatus(List<ItemEntity> itemEntities, String username) {
         getItemRequestDBService().updateItemAvailabilutyStatus(itemEntities, username);
     }
@@ -426,7 +430,7 @@ public class ItemRequestService {
         } catch (Exception e) {
             itemResponseInformation.setSuccess(false);
             itemResponseInformation.setScreenMessage(e.getMessage());
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemResponseInformation;
     }
@@ -434,7 +438,7 @@ public class ItemRequestService {
     private ItemInformationResponse checkOwningInstitution(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
         try {
             if (itemRequestInfo.isOwningInstitutionItem()) {
-                hodlItem(itemRequestInfo, itemResponseInformation, itemEntity);
+                itemResponseInformation = hodlItem(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo, itemResponseInformation, itemEntity);
             } else {// Not the Owning Institute
                 // Get Temporary bibI from SCSB DB
                 ItemCreateBibResponse createBibResponse;
@@ -445,7 +449,7 @@ public class ItemRequestService {
                 }
                 if (createBibResponse.isSuccess() || ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
                     itemRequestInfo.setBibId(createBibResponse.getBibId());
-                    hodlItem(itemRequestInfo, itemResponseInformation, itemEntity);
+                    itemResponseInformation = hodlItem(itemRequestInfo.getRequestingInstitution(), itemRequestInfo, itemResponseInformation, itemEntity);
                 } else {
                     itemResponseInformation.setScreenMessage(createBibResponse.getScreenMessage());
                     itemResponseInformation.setSuccess(createBibResponse.isSuccess());
@@ -480,8 +484,8 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
-    private ItemInformationResponse hodlItem(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
-        ItemHoldResponse itemHoldResponse = (ItemHoldResponse) getRequestItemController().holdItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
+    private ItemInformationResponse hodlItem(String callingInst, ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
+        ItemHoldResponse itemHoldResponse = (ItemHoldResponse) getRequestItemController().holdItem(itemRequestInfo, callingInst);
         if (itemHoldResponse.isSuccess()) { // IF Hold command is successfully
             itemResponseInformation.setExpirationDate(itemHoldResponse.getExpirationDate());
             itemRequestInfo.setExpirationDate(itemHoldResponse.getExpirationDate());
@@ -496,7 +500,12 @@ public class ItemRequestService {
     }
 
     private ItemInformationResponse updateScsbAndGfa(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
-        Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+        Integer requestId;
+        if (getGfaService().isUseQueueLasCall()) {
+            requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
+        } else {
+            requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+        }
         itemResponseInformation.setRequestId(requestId);
         itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
         if (itemResponseInformation.isSuccess()) {
@@ -598,7 +607,7 @@ public class ItemRequestService {
             ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
             logger.info(responseEntity.getBody());
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
     }
 
@@ -614,7 +623,7 @@ public class ItemRequestService {
             });
             statusResponse = responseEntity.getBody();
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return statusResponse;
     }
@@ -648,7 +657,7 @@ public class ItemRequestService {
             }
             logger.info(titleIdentifier);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return titleIdentifier;
     }
@@ -657,6 +666,11 @@ public class ItemRequestService {
         rollbackUpdateItemAvailabilutyStatus(itemEntity, itemRequestInfo.getUsername());
         saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), ReCAPConstants.REQUEST_ITEM_GFA_FAILURE, itemRequestInfo.getPatronBarcode() + " - " + itemResponseInformation.getScreenMessage());
         getRequestItemController().cancelHoldItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+    }
+
+    private void rollbackAfterGFA(ItemInformationResponse itemResponseInformation) {
+        ItemRequestInformation itemRequestInformation = getItemRequestDBService().rollbackAfterGFA(itemResponseInformation);
+        getRequestItemController().cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
     }
 
     public String getNotes(boolean success, String screenMessage, String userNotes) {
@@ -678,5 +692,15 @@ public class ItemRequestService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set(ReCAPConstants.API_KEY, ReCAPConstants.RECAP);
         return headers;
+    }
+
+    public void processLASRetrieveResponse(String body) {
+        ItemInformationResponse itemInformationResponse = getGfaService().processLASRetrieveResponse(body);
+        if (itemInformationResponse.isSuccess()) {
+            updateRecapRequestStatus(itemInformationResponse);
+        } else {
+            updateRecapRequestStatus(itemInformationResponse);
+            rollbackAfterGFA(itemInformationResponse);
+        }
     }
 }

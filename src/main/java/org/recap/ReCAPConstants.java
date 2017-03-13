@@ -53,10 +53,17 @@ public final class ReCAPConstants {
     public static final String REQUEST_TYPE_EDD = "EDD";
     public static final String REQUEST_TYPE_RECALL = "RECALL";
     public static final String REQUEST_TYPE_BORROW_DIRECT = "BORROW DIRECT";
+    public static final String REQUEST_TYPE_PW_INDIRECT = "PWI";
+    public static final String REQUEST_TYPE_PW_DIRECT = "PWD";
+
 
     // MQ URI
     public static final String REQUEST_ITEM_QUEUE = "scsbactivemq:queue:RequestItemQ";
     public static final String EMAIL_Q = "scsbactivemq:queue:CircEmailQ";
+    public static final String SCSB_OUTGOING_QUEUE = "scsbactivemq:queue:scsbOutgoingQ";
+    public static final String LAS_OUTGOING_QUEUE = "scsbactivemq:queue:lasOutgoingQ";
+    public static final String LAS_INCOMING_QUEUE = "scsbactivemq:queue:lasIncomingQ";
+
 
     public static final String PUL_REQUEST_TOPIC = "scsbactivemq:topic:PUL.RequestT";
     public static final String PUL_EDD_TOPIC = "scsbactivemq:topic:PUL.EDDT";
@@ -79,6 +86,8 @@ public final class ReCAPConstants {
     //RoutId
     public static final String REQUEST_ITEM_QUEUE_ROUTEID = "RequestItemRouteId";
     public static final String EMAIL_ROUTE_ID = "RequestRecallEmailRouteId";
+    public static final String SCSB_OUTGOING_ROUTE_ID = "LasOutgoingRouteId";
+    public static final String LAS_INCOMING_ROUTE_ID = "LasIncomingQueueRouteId";
 
     public static final String PUL_REQUEST_TOPIC_ROUTEID = "PULRequestTopicRouteId";
     public static final String PUL_EDD_TOPIC_ROUTEID = "PULEDDTopicRouteId";
@@ -154,7 +163,7 @@ public final class ReCAPConstants {
     public static final String GUEST_USER = "Guest";
     public static final String REQUEST_ITEM_HOLD_FAILURE = "RequestItem - Hold Request Failed";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "RequestItem AvailabilityStatus Change";
-    public static final String REQUEST_ITEM_GFA_FAILURE = "RequestItem - GFA Request Failed";
+    public static final String REQUEST_ITEM_GFA_FAILURE = "RequestItem - LAS Request Failed";
     public static final String REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS = "RequestItemCancel AvailabilityStatus Change";
     public static final String REQUEST_ITEM_INSERT = "Request Item Insert";
     public static final String RETRIVAL_ORDER_NOT_REQUIRED_FOR_RECALL = "Retrival order not required for recall";
@@ -187,7 +196,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_STATUS_REFILED = "REFILED";
     public static final String REQUEST_STATUS_CANCELED = "CANCELED";
     public static final String REQUEST_STATUS_EXCEPTION = "EXCEPTION";
-
+    public static final String REQUEST_STATUS_PENDING = "PENDING";
 
 
     public static final String NYPL_SOURCE_NYPL = "nypl-sierra";
@@ -269,7 +278,7 @@ public final class ReCAPConstants {
 
     //Logger
     public static final String LOG_ERROR="error-->";
-    public static final String GFA_ITEM_STATUS_MISMATCH = "There is a mismatch in item status between SCSB and GFA. Please contact ReCAP staff (mailto:{0}) for further assistance.";
+    public static final String GFA_ITEM_STATUS_MISMATCH = "There is a mismatch in item status between SCSB and LAS. Please contact ReCAP staff (mailto:{0}) for further assistance.";
 
     private ReCAPConstants() {}
 
