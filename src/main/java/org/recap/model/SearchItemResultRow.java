@@ -109,15 +109,15 @@ public class SearchItemResultRow implements Comparable<SearchItemResultRow> {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
+    public boolean equals(Object object) {
+        if (this == object)
             return true;
-        if (o == null || getClass() != o.getClass())
+        if (object == null || getClass() != object.getClass())
             return false;
 
-        SearchItemResultRow that = (SearchItemResultRow) o;
+        SearchItemResultRow searchItemResultRow = (SearchItemResultRow) object;
 
-        return chronologyAndEnum != null ? chronologyAndEnum.equals(that.chronologyAndEnum) : that.chronologyAndEnum == null;
+        return chronologyAndEnum != null ? chronologyAndEnum.equals(searchItemResultRow.chronologyAndEnum) : searchItemResultRow.chronologyAndEnum == null;
 
     }
 
