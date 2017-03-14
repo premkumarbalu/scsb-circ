@@ -15,8 +15,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Created by hemalathas on 16/11/16.
@@ -29,6 +28,9 @@ public class ItemDetailsRepositoryUT extends BaseTestCase{
     @Autowired
     BibliographicDetailsRepository bibliographicDetailsRepository;
 
+    @Autowired
+    ItemDetailsRepository itemDetailsRepository;
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -40,6 +42,13 @@ public class ItemDetailsRepositoryUT extends BaseTestCase{
         assertEquals(itemEntityList.size() , 2);
 //        bibliographicDetailsRepository.delete(savedBibliographicEntity);
 
+    }
+
+    @Test
+    public void testfindByBarcodeInIsDeletedFalseCatalogingStatusComplete(){
+        List<String> lstBarcode = Arrays.asList("32101045675921","32101099791665","32101086866140","CU73995576");
+        List<ItemEntity> itemEntities= itemDetailsRepository.findByBarcodeInAndComplete(lstBarcode);
+        assertEquals("Size ",3,itemEntities.size());
     }
 
     public BibliographicEntity saveBibSingleHoldingsMultipleItem() throws Exception {
