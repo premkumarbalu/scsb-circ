@@ -26,8 +26,8 @@ public class ItemRequestInformation {
     /**
      * EDD Request
      */
-    private Integer startPage = 0;
-    private Integer endPage = 0;
+    private String startPage;
+    private String endPage;
     private String chapterTitle = "";
     private String expirationDate;
     private String bibId = "";
@@ -137,19 +137,19 @@ public class ItemRequestInformation {
         this.itemBarcodes = itemBarcodes;
     }
 
-    public Integer getStartPage() {
+    public String getStartPage() {
         return startPage;
     }
 
-    public void setStartPage(Integer startPage) {
+    public void setStartPage(String startPage) {
         this.startPage = startPage;
     }
 
-    public Integer getEndPage() {
+    public String getEndPage() {
         return endPage;
     }
 
-    public void setEndPage(Integer endPage) {
+    public void setEndPage(String endPage) {
         this.endPage = endPage;
     }
 
