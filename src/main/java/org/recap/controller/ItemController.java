@@ -27,7 +27,7 @@ public class ItemController {
     @RequestMapping(method = RequestMethod.GET, value ="/findByBarcodeIn")
     public List<ItemEntity> findByBarcodeIn(String barcodes){
 
-        List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcodeIn(splitStringAndGetList(barcodes));
+        List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcodeInAndComplete(splitStringAndGetList(barcodes));
         for (Iterator<ItemEntity> itemEntityIterator = itemEntityList.iterator(); itemEntityIterator.hasNext(); ) {
             ItemEntity itemEntity = itemEntityIterator.next();
             for(BibliographicEntity bibliographicEntity : itemEntity.getBibliographicEntities()){
