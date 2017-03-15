@@ -82,8 +82,8 @@ public class RequestParamaterValidatorServiceUT extends BaseTestCase{
         itemRequestInformation.setDeliveryLocation("AC");
         itemRequestInformation.setRequestingInstitution("PUL");
         itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
-        itemRequestInformation.setStartPage(0);
-        itemRequestInformation.setEndPage(0);
+        itemRequestInformation.setStartPage("0");
+        itemRequestInformation.setEndPage("0");
         ResponseEntity responseEntity = requestParamaterValidatorService.validateItemRequestParameters(itemRequestInformation);
         assertNull(responseEntity);
     }
