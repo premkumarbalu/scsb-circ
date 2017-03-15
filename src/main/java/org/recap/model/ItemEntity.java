@@ -1,5 +1,8 @@
 package org.recap.model;
 
+import org.apache.commons.lang3.StringUtils;
+import org.recap.ReCAPConstants;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -271,6 +274,13 @@ public class ItemEntity implements Serializable {
 
     public void setBibliographicEntities(List<BibliographicEntity> bibliographicEntities) {
         this.bibliographicEntities = bibliographicEntities;
+    }
+
+    public boolean isComplete() {
+        if (StringUtils.isNotBlank(this.catalogingStatus) && ReCAPConstants.COMPLETE_STATUS.equals(this.catalogingStatus)) {
+            return true;
+        }
+        return false;
     }
 }
 

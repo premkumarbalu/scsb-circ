@@ -122,6 +122,8 @@ public class DeAccessionService {
                         ItemEntity itemEntity = itemEntities.get(0);
                         if (itemEntity.isDeleted()) {
                             deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), ReCAPConstants.REQUESTED_ITEM_DEACCESSIONED, itemEntity));
+                        } else if (!itemEntity.isComplete()) {
+                            deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), ReCAPConstants.ITEM_BARCDE_DOESNOT_EXIST, itemEntity));
                         } else {
                             ItemStatusEntity itemStatusEntity = itemEntity.getItemStatusEntity();
                             if (ReCAPConstants.NOT_AVAILABLE.equals(itemStatusEntity.getStatusCode())) {
