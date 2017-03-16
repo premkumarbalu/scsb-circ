@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 /**
  * Created by hemalathas on 16/11/16.
  */
-public class ItemDetailsRepositoryUT extends BaseTestCase{
+public class ItemDetailsRepositoryUT extends BaseTestCase {
 
     @Autowired
     ItemController itemController;
@@ -35,20 +35,19 @@ public class ItemDetailsRepositoryUT extends BaseTestCase{
     private EntityManager entityManager;
 
     @Test
-    public void testItemDetails() throws Exception{
-        BibliographicEntity savedBibliographicEntity = saveBibSingleHoldingsMultipleItem();
+    public void testItemDetails() throws Exception {
+        saveBibSingleHoldingsMultipleItem();
         List<ItemEntity> itemEntityList = itemController.findByBarcodeIn("009,010");
         assertNotNull(itemEntityList);
-        assertEquals(itemEntityList.size() , 2);
-//        bibliographicDetailsRepository.delete(savedBibliographicEntity);
-
+        assertEquals(itemEntityList.size(), 4);
     }
 
     @Test
-    public void testfindByBarcodeInIsDeletedFalseCatalogingStatusComplete(){
-        List<String> lstBarcode = Arrays.asList("32101045675921","32101099791665","32101086866140","CU73995576");
-        List<ItemEntity> itemEntities= itemDetailsRepository.findByBarcodeInAndComplete(lstBarcode);
-        assertEquals("Size ",3,itemEntities.size());
+    public void testfindByBarcodeInIsDeletedFalseCatalogingStatusComplete() throws Exception {
+        saveMultipleItem();
+        List<String> lstBarcode = Arrays.asList("100000999", "100009999");
+        List<ItemEntity> itemEntities = itemDetailsRepository.findByBarcodeInAndComplete(lstBarcode);
+        assertEquals("Size ", 2, itemEntities.size());
     }
 
     public BibliographicEntity saveBibSingleHoldingsMultipleItem() throws Exception {
@@ -103,6 +102,73 @@ public class ItemDetailsRepositoryUT extends BaseTestCase{
         assertNotNull(savedBibliographicEntity.getItemEntities().get(1).getItemId());
 
         return savedBibliographicEntity;
+    }
+
+    public void saveMultipleItem() throws Exception {
+        Random random = new Random();
+        BibliographicEntity bibliographicEntity = getBibliographicEntity(1, String.valueOf(random.nextInt()));
+
+        HoldingsEntity holdingsEntity = getHoldingsEntity(random, 1);
+
+        ItemEntity itemEntity1 = new ItemEntity();
+        itemEntity1.setCreatedDate(new Date());
+        itemEntity1.setCreatedBy("etl");
+        itemEntity1.setLastUpdatedDate(new Date());
+        itemEntity1.setLastUpdatedBy("etl");
+        itemEntity1.setCustomerCode("1");
+        itemEntity1.setItemAvailabilityStatusId(1);
+        itemEntity1.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
+        itemEntity1.setOwningInstitutionId(1);
+        itemEntity1.setBarcode("100000999");
+        itemEntity1.setCallNumber("x.12321");
+        itemEntity1.setCollectionGroupId(1);
+        itemEntity1.setCallNumberType("1");
+        itemEntity1.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity1.setCatalogingStatus("Complete");
+
+        ItemEntity itemEntity2 = new ItemEntity();
+        itemEntity2.setCreatedDate(new Date());
+        itemEntity2.setCreatedBy("etl");
+        itemEntity2.setLastUpdatedDate(new Date());
+        itemEntity2.setLastUpdatedBy("etl");
+        itemEntity2.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
+        itemEntity2.setOwningInstitutionId(1);
+        itemEntity2.setCustomerCode("1");
+        itemEntity2.setBarcode("100009999");
+        itemEntity2.setItemAvailabilityStatusId(1);
+        itemEntity2.setCallNumber("x.12321");
+        itemEntity2.setCollectionGroupId(1);
+        itemEntity2.setCallNumberType("1");
+        itemEntity2.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity2.setCatalogingStatus("Complete");
+
+        ItemEntity itemEntity3 = new ItemEntity();
+        itemEntity3.setCreatedDate(new Date());
+        itemEntity3.setCreatedBy("etl");
+        itemEntity3.setLastUpdatedDate(new Date());
+        itemEntity3.setLastUpdatedBy("etl");
+        itemEntity3.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
+        itemEntity3.setOwningInstitutionId(1);
+        itemEntity3.setCustomerCode("1");
+        itemEntity3.setBarcode("100099999");
+        itemEntity3.setItemAvailabilityStatusId(1);
+        itemEntity3.setCallNumber("x.12321");
+        itemEntity3.setCollectionGroupId(1);
+        itemEntity3.setCallNumberType("1");
+        itemEntity3.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity3.setCatalogingStatus("InComplete");
+
+        bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        bibliographicEntity.setItemEntities(Arrays.asList(itemEntity1, itemEntity2, itemEntity3));
+
+        BibliographicEntity savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(bibliographicEntity);
+        entityManager.refresh(savedBibliographicEntity);
+
+        assertNotNull(savedBibliographicEntity);
+        assertNotNull(savedBibliographicEntity.getBibliographicId());
+        assertNotNull(savedBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId());
+        assertNotNull(savedBibliographicEntity.getItemEntities().get(0).getItemId());
+        assertNotNull(savedBibliographicEntity.getItemEntities().get(1).getItemId());
     }
 
     private HoldingsEntity getHoldingsEntity(Random random, Integer institutionId) {

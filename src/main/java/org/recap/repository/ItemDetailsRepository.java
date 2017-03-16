@@ -37,7 +37,6 @@ public interface ItemDetailsRepository extends PagingAndSortingRepository<ItemEn
     @Query("select item from ItemEntity item where item.barcode in (:barcodes) and item.isDeleted = 0 and item.catalogingStatus='Complete'")
     List<ItemEntity> findByBarcodeInAndComplete(@Param("barcodes") List<String> barcodes);
 
-
     List<ItemEntity> findByBarcode(String barcode);
 
     @Modifying(clearAutomatically = true)

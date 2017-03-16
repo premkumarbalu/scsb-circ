@@ -32,6 +32,9 @@ public class ItemRequestInformation {
     private String expirationDate;
     private String bibId = "";
     private String username;
+    private String issue;
+    private String volume;
+
 
     public String getBibId() {
         return bibId;
@@ -183,6 +186,22 @@ public class ItemRequestInformation {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getIssue() {
+        return issue;
+    }
+
+    public void setIssue(String issue) {
+        this.issue = issue;
+    }
+
+    public String getVolume() {
+        return volume;
+    }
+
+    public void setVolume(String volume) {
+        this.volume = volume;
     }
 
     @JsonIgnore
