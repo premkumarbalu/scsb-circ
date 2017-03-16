@@ -296,6 +296,8 @@ public class GFAService {
             ttitem001.setEndPage(itemRequestInfo.getEndPage().toString());
             ttitem001.setArticleTitle(itemRequestInfo.getChapterTitle());
             ttitem001.setArticleAuthor(itemRequestInfo.getAuthor());
+            ttitem001.setArticleVolume(itemRequestInfo.getVolume());
+            ttitem001.setArticleIssue(itemRequestInfo.getIssue());
             ttitem001.setRequestorEmail(itemRequestInfo.getEmailAddress());
             ttitem001.setNotes(itemRequestInfo.getRequestNotes());
 

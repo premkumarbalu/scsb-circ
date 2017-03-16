@@ -23,7 +23,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by hemalathas on 11/11/16.
  */
-public class RequestItemValidatorControllerUT extends BaseTestCase{
+public class RequestItemValidatorControllerUT extends BaseTestCase {
     @Autowired
     RequestItemValidatorController requestItemValidatorController;
 
@@ -37,7 +37,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
     private EntityManager entityManager;
 
     @Test
-    public void testValidRequest()throws Exception{
+    public void testValidRequest() throws Exception {
         BibliographicEntity bibliographicEntity = saveBibSingleHoldingsMultipleItem();
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         itemRequestInformation.setPatronBarcode("45678915");
@@ -69,7 +69,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
         assertEquals(responseEntity.getBody(), ReCAPConstants.INVALID_PATRON);
     }
 
-    public BibliographicEntity saveBibSingleHoldingsMultipleItem() throws Exception {
+    private BibliographicEntity saveBibSingleHoldingsMultipleItem() throws Exception {
         Random random = new Random();
         BibliographicEntity bibliographicEntity = getBibliographicEntity(1, String.valueOf(random.nextInt()));
 
@@ -89,6 +89,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
         itemEntity1.setCollectionGroupId(1);
         itemEntity1.setCallNumberType("1");
         itemEntity1.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity1.setCatalogingStatus("Complete");
 
         ItemEntity itemEntity2 = new ItemEntity();
         itemEntity2.setCreatedDate(new Date());
@@ -104,6 +105,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
         itemEntity2.setCollectionGroupId(1);
         itemEntity2.setCallNumberType("1");
         itemEntity2.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity2.setCatalogingStatus("Complete");
 
         bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         bibliographicEntity.setItemEntities(Arrays.asList(itemEntity1, itemEntity2));
@@ -112,6 +114,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
         bibliographicEntity.setItemEntities(Arrays.asList(itemEntity1, itemEntity2));
 
         BibliographicEntity savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(bibliographicEntity);
+
         entityManager.refresh(savedBibliographicEntity);
 
         assertNotNull(savedBibliographicEntity);
@@ -122,6 +125,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase{
 
         return savedBibliographicEntity;
     }
+
     private HoldingsEntity getHoldingsEntity(Random random, Integer institutionId) {
         HoldingsEntity holdingsEntity = new HoldingsEntity();
         holdingsEntity.setContent("mock holdings".getBytes());
