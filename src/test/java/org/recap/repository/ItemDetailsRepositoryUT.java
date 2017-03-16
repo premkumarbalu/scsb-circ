@@ -37,9 +37,9 @@ public class ItemDetailsRepositoryUT extends BaseTestCase {
     @Test
     public void testItemDetails() throws Exception {
         saveBibSingleHoldingsMultipleItem();
-        List<ItemEntity> itemEntityList = itemController.findByBarcodeIn("009,010");
+        List<ItemEntity> itemEntityList = itemController.findByBarcodeIn("00009,00010");
         assertNotNull(itemEntityList);
-        assertEquals(itemEntityList.size(), 4);
+        assertEquals(2,itemEntityList.size());
     }
 
     @Test
@@ -65,11 +65,12 @@ public class ItemDetailsRepositoryUT extends BaseTestCase {
         itemEntity1.setItemAvailabilityStatusId(1);
         itemEntity1.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
         itemEntity1.setOwningInstitutionId(1);
-        itemEntity1.setBarcode("009");
+        itemEntity1.setBarcode("00009");
         itemEntity1.setCallNumber("x.12321");
         itemEntity1.setCollectionGroupId(1);
         itemEntity1.setCallNumberType("1");
         itemEntity1.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity1.setCatalogingStatus("Complete");
 
         ItemEntity itemEntity2 = new ItemEntity();
         itemEntity2.setCreatedDate(new Date());
@@ -79,12 +80,13 @@ public class ItemDetailsRepositoryUT extends BaseTestCase {
         itemEntity2.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
         itemEntity2.setOwningInstitutionId(1);
         itemEntity2.setCustomerCode("1");
-        itemEntity2.setBarcode("010");
+        itemEntity2.setBarcode("00010");
         itemEntity2.setItemAvailabilityStatusId(1);
         itemEntity2.setCallNumber("x.12321");
         itemEntity2.setCollectionGroupId(1);
         itemEntity2.setCallNumberType("1");
         itemEntity2.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity2.setCatalogingStatus("Complete");
 
         bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         bibliographicEntity.setItemEntities(Arrays.asList(itemEntity1, itemEntity2));
