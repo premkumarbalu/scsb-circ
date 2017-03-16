@@ -63,7 +63,7 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemRequestInformation.setRequestType(ReCAPConstants.RETRIEVAL);
         ResponseEntity responseEntity = itemValidatorService.itemValidation(itemRequestInformation);
         assertNotNull(responseEntity);
-        assertEquals(responseEntity.getBody(), ReCAPConstants.VALID_REQUEST);
+        assertEquals("Item Validation ",ReCAPConstants.VALID_REQUEST,responseEntity.getBody());
     }
 
     @Test
@@ -103,6 +103,7 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemEntity1.setCollectionGroupId(1);
         itemEntity1.setCallNumberType("1");
         itemEntity1.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity1.setCatalogingStatus("Complete");
 
         ItemEntity itemEntity2 = new ItemEntity();
         itemEntity2.setCreatedDate(new Date());
@@ -118,6 +119,7 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemEntity2.setCollectionGroupId(1);
         itemEntity2.setCallNumberType("1");
         itemEntity2.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity2.setCatalogingStatus("Complete");
 
         bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         bibliographicEntity.setItemEntities(Arrays.asList(itemEntity1, itemEntity2));
@@ -158,6 +160,7 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemEntity.setCustomerCode("PB");
         itemEntity.setItemAvailabilityStatusId(1);
         itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity.setCatalogingStatus("Complete");
 
         bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
