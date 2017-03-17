@@ -90,10 +90,10 @@ public class ItemRequestDBService {
         Integer requestId = 0;
         try {
             RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
-            if(itemInformationResponse.getRequestId()>0){
+            if (itemInformationResponse.getRequestId() != null && itemInformationResponse.getRequestId() > 0) {
                 requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
                 requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-            }else {
+            } else {
                 requestItemEntity = new RequestItemEntity();
                 RequestTypeEntity requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemInformationResponse.getRequestType());
                 InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode(itemInformationResponse.getRequestingInstitution());
@@ -130,9 +130,9 @@ public class ItemRequestDBService {
     public ItemInformationResponse updateRecapRequestStatus(ItemInformationResponse itemInformationResponse) {
         RequestStatusEntity requestStatusEntity;
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
-        if(itemInformationResponse.isSuccess()) {
+        if (itemInformationResponse.isSuccess()) {
             requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_PENDING);
-        }else{
+        } else {
             requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
         }
         requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
