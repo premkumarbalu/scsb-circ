@@ -9,7 +9,8 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Callable;
 
 /**
- * Created by rajeshbabuk on 11/1/17.
+ * Created on 11/1/17.
+ * @author rajeshbabuk
  */
 public class NyplJobResponsePollingCallable implements Callable {
 
@@ -19,17 +20,33 @@ public class NyplJobResponsePollingCallable implements Callable {
     private NyplApiServiceConnector nyplApiServiceConnector;
     private Integer pollingTimeInterval;
 
+    /**
+     *
+     * @param jobId
+     * @param pollingTimeInterval
+     * @param nyplApiServiceConnector
+     */
     public NyplJobResponsePollingCallable(String jobId, Integer pollingTimeInterval, NyplApiServiceConnector nyplApiServiceConnector) {
         this.jobId = jobId;
         this.nyplApiServiceConnector = nyplApiServiceConnector;
         this.pollingTimeInterval = pollingTimeInterval;
     }
 
+    /**
+     *
+     * @return
+     * @throws Exception
+     */
     @Override
     public JobResponse call() throws Exception {
         return poll();
     }
 
+    /**
+     *
+     * @return
+     * @throws Exception
+     */
     private JobResponse poll() throws Exception {
         Boolean statusFlag;
         JobResponse jobResponse = nyplApiServiceConnector.queryForJob(jobId);

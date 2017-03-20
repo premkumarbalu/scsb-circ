@@ -23,6 +23,16 @@ public class EmailRouteBuilder {
     private String emailBody;
     private String emailPassword;
 
+    /**
+     * Instantiates a new Email route builder.
+     *
+     * @param context           the context
+     * @param username          the username
+     * @param passwordDirectory the password directory
+     * @param from              the from
+     * @param subject           the subject
+     * @param smtpServer        the smtp server
+     */
     @Autowired
     public EmailRouteBuilder(CamelContext context, @Value("${request.recall.email.username}") String username, @Value("${request.recall.email.password.file}") String passwordDirectory,
                              @Value("${request.recall.email.from}") String from, @Value("${request.recall.email.subject}") String subject,
