@@ -46,6 +46,16 @@ public class CancelItemControllerUT extends BaseTestCase{
         CancelRequestResponse cancelRequestResponse = cancelItemController.cancelRequest(requestItemEntity.getRequestId());
         assertNotNull(cancelRequestResponse);
         assertEquals(cancelRequestResponse.getScreenMessage(),"EDD request cancellation successfully processed.");
+        assertTrue(cancelRequestResponse.isSuccess());
+        assertNotNull(requestItemEntity.getRequestTypeId());
+        assertNotNull(requestItemEntity.getNotes());
+        assertNotNull(requestItemEntity.getRequestExpirationDate());
+        assertNotNull(requestItemEntity.getRequestStatusId());
+        assertNotNull(requestItemEntity.getCreatedDate());
+        assertNotNull(requestItemEntity.getCreatedBy());
+        assertNotNull(requestItemEntity.getLastUpdatedDate());
+        assertNotNull(requestItemEntity.getEmailId());
+
     }
 
     public RequestItemEntity createRequestItem() throws Exception {
@@ -69,6 +79,7 @@ public class CancelItemControllerUT extends BaseTestCase{
         requestItemEntity.setRequestStatusEntity(requestStatusEntity);
         requestItemEntity.setRequestingInstitutionId(2);
         requestItemEntity.setStopCode("test");
+        requestItemEntity.setNotes("test");
         requestItemEntity.setItemEntity(bibliographicEntity.getItemEntities().get(0));
         requestItemEntity.setInstitutionEntity(institutionEntity);
         requestItemEntity.setPatronId("1");
@@ -77,6 +88,8 @@ public class CancelItemControllerUT extends BaseTestCase{
         requestItemEntity.setRequestExpirationDate(new Date());
         requestItemEntity.setRequestStatusId(3);
         requestItemEntity.setCreatedBy("test");
+        requestItemEntity.setEmailId("test@gmail.com");
+        requestItemEntity.setLastUpdatedDate(new Date());
         RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
         return savedRequestItemEntity;
     }
