@@ -40,6 +40,12 @@ public class CancelItemController {
     @Autowired
     private ItemRequestService itemRequestService;
 
+    /**
+     * Cancel request cancel request response.
+     *
+     * @param requestId the request id
+     * @return the cancel request response
+     */
     @RequestMapping(value = "/cancel", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public CancelRequestResponse cancelRequest(@RequestParam Integer requestId) {
         CancelRequestResponse cancelRequestResponse = new CancelRequestResponse();

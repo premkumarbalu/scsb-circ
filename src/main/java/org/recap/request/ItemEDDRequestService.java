@@ -1,6 +1,7 @@
 package org.recap.request;
 
 import org.apache.camel.Exchange;
+import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.controller.RequestItemValidatorController;
 import org.recap.ils.model.response.ItemInformationResponse;
@@ -33,9 +34,6 @@ public class ItemEDDRequestService {
     private RequestTypeDetailsRepository requestTypeDetailsRepository;
 
     @Autowired
-    private RequestItemValidatorController requestItemValidatorController;
-
-    @Autowired
     private ItemRequestService itemRequestService;
 
     public ItemDetailsRepository getItemDetailsRepository() {
@@ -44,10 +42,6 @@ public class ItemEDDRequestService {
 
     public RequestTypeDetailsRepository getRequestTypeDetailsRepository() {
         return requestTypeDetailsRepository;
-    }
-
-    public RequestItemValidatorController getRequestItemValidatorController() {
-        return requestItemValidatorController;
     }
 
     public ItemRequestService getItemRequestService() {
@@ -61,8 +55,6 @@ public class ItemEDDRequestService {
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
         ItemInformationResponse itemResponseInformation = new ItemInformationResponse();
-        ResponseEntity res;
-
         try {
             itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
@@ -77,25 +69,18 @@ public class ItemEDDRequestService {
                 itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
                 itemResponseInformation.setItemId(itemEntity.getItemId());
                 itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
-                // Validate Patron
-                res = getRequestItemValidatorController().validateItemRequestInformations(itemRequestInfo);
-                if (res.getStatusCode() == HttpStatus.OK) {
-                    logger.info("Request Validation Successful");
-                    Integer requestId;
-                    if(getItemRequestService().getGfaService().isUseQueueLasCall()){
-                        requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
-                    }else{
-                        requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_EDD);
-                    }
-                    itemResponseInformation.setRequestId(requestId);
-                    itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
-                    bsuccess = true;
-                    messagePublish = "EDD requests is successfull";
+                itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
+
+                Integer requestId;
+                if (getItemRequestService().getGfaService().isUseQueueLasCall()) {
+                    requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
                 } else {
-                    logger.warn("Validate Request Errors : {} " , res.getBody().toString());
-                    messagePublish = res.getBody().toString();
-                    bsuccess = false;
+                    requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_EDD);
                 }
+                itemResponseInformation.setRequestId(requestId);
+                itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
+                bsuccess = true;
+                messagePublish = "EDD requests is successfull";
             } else {
                 messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
                 bsuccess = false;
@@ -116,10 +101,19 @@ public class ItemEDDRequestService {
             // Update Topics
             getItemRequestService().sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST,ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST, ex);
         } catch (Exception ex) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,ex);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, ex);
         }
         return itemResponseInformation;
+    }
+
+    private String getNotes(ItemRequestInformation itemRequestInfo) {
+        String notes = "";
+        if (!StringUtils.isBlank(itemRequestInfo.getRequestNotes())) {
+            notes = String.format("User: %s", itemRequestInfo.getRequestNotes());
+        }
+        notes += String.format("\nStart Page: %s ;End Page: %s ;Volume Number: %s ;Issue: %s ;Article Author: %s ;Article/Chapter Title: %s ", itemRequestInfo.getStartPage(), itemRequestInfo.getEndPage(), itemRequestInfo.getVolume(), itemRequestInfo.getIssue(), itemRequestInfo.getAuthor(), itemRequestInfo.getChapterTitle());
+        return notes;
     }
 }

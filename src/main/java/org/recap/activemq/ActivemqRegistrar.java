@@ -14,10 +14,15 @@ import javax.jms.JMSException;
 /**
  * Created by premkb on 12/10/16.
  */
-
 @Component
 public class ActivemqRegistrar {
 
+    /**
+     * Register ActiveMQ queue service, with Camel context
+     * @param camelContext
+     * @param defaultBrokerURL
+     * @throws JMSException
+     */
     @Autowired
     public ActivemqRegistrar(CamelContext camelContext , @Value("${activemq.broker.url}") String defaultBrokerURL) throws JMSException {
         ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(defaultBrokerURL);

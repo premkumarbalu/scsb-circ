@@ -91,10 +91,8 @@ public class ItemEDDRequestServiceUT extends BaseTestCase{
         ItemEntity itemEntity = bibliographicEntity.getItemEntities().get(0);
         Mockito.when(itemEDDRequestService.getItemRequestService()).thenReturn(itemRequestService);
         Mockito.when(itemEDDRequestService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
-        Mockito.when(itemEDDRequestService.getRequestItemValidatorController()).thenReturn(requestItemValidatorController);
         Mockito.when(itemEDDRequestService.getRequestTypeDetailsRepository()).thenReturn(requestTypeDetailsRepository);
         Mockito.when(itemEDDRequestService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
-        Mockito.when(itemEDDRequestService.getRequestItemValidatorController().validateItemRequestInformations(itemRequestInfo)).thenReturn(res);
         Mockito.when(itemEDDRequestService.getItemRequestService().searchRecords(itemEntity)).thenReturn(getSearchResultRowList());
         Mockito.when(itemEDDRequestService.getItemRequestService().getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity)).thenCallRealMethod();
         Mockito.when(itemEDDRequestService.getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes())).thenReturn(bibliographicEntity.getItemEntities());

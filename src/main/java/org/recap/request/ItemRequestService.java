@@ -57,17 +57,13 @@ public class ItemRequestService {
     private String nyplColumbiaPatron;
 
     @Value("${server.protocol}")
-    String serverProtocol;
+    private String serverProtocol;
 
     @Value("${scsb.solr.client.url}")
-    String scsbSolrClientUrl;
-
+    private String scsbSolrClientUrl;
 
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;
-
-    @Autowired
-    private RequestItemValidatorController requestItemValidatorController;
 
     @Autowired
     private RequestItemController requestItemController;
@@ -127,10 +123,6 @@ public class ItemRequestService {
         return itemDetailsRepository;
     }
 
-    public RequestItemValidatorController getRequestItemValidatorController() {
-        return requestItemValidatorController;
-    }
-
     public RequestItemController getRequestItemController() {
         return requestItemController;
     }
@@ -158,8 +150,6 @@ public class ItemRequestService {
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
         ItemInformationResponse itemResponseInformation = new ItemInformationResponse();
-        ResponseEntity res;
-
         try {
             itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
@@ -173,24 +163,14 @@ public class ItemRequestService {
                 itemRequestInfo.setTitleIdentifier(getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity));
                 itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
                 itemResponseInformation.setItemId(itemEntity.getItemId());
-                // Validate Patron
-                res = getRequestItemValidatorController().validateItemRequestInformations(itemRequestInfo);
-                if (res.getStatusCode() == HttpStatus.OK) {
-                    logger.info("Request Validation Successful");
-                    // Change Item Availablity
-                    updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
-                    // Action based on Request Type
-                    if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
-                        itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity);
-                        bsuccess = itemResponseInformation.isSuccess();
-                        messagePublish = itemResponseInformation.getScreenMessage();
-                    }
-                } else {
-                    logger.warn("Validate Request Errors : {} ", res.getBody().toString());
-                    messagePublish = res.getBody().toString();
-                    bsuccess = false;
+                // Change Item Availablity
+                updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
+                // Action based on Request Type
+                if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
+                    itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity);
+                    bsuccess = itemResponseInformation.isSuccess();
+                    messagePublish = itemResponseInformation.getScreenMessage();
                 }
-
             } else {
                 messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
                 bsuccess = false;
@@ -236,18 +216,10 @@ public class ItemRequestService {
                 itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
                 itemResponseInformation.setItemId(itemEntity.getItemId());
-                // Validate Patron
-                ResponseEntity res = getRequestItemValidatorController().validateItemRequestInformations(itemRequestInfo);
-                if (res.getStatusCode() == HttpStatus.OK) {
-                    logger.info("Request Validation Successful");
-                    // Check if Request Item  for any existint request
-                    itemResponseInformation = checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity);
-                    messagePublish = itemResponseInformation.getScreenMessage();
-                    bsuccess = itemResponseInformation.isSuccess();
-                } else {
-                    messagePublish = res.getBody().toString();
-                    bsuccess = false;
-                }
+                // Check if Request Item  for any existint request
+                itemResponseInformation = checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity);
+                messagePublish = itemResponseInformation.getScreenMessage();
+                bsuccess = itemResponseInformation.isSuccess();
             } else {
                 messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
                 bsuccess = false;
