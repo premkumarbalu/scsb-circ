@@ -23,6 +23,14 @@ public class RequestItemQueueConsumer {
     private ItemRequestService itemRequestService;
     private ItemEDDRequestService itemEDDRequestService;
 
+    public ItemRequestService getItemRequestService() {
+        return itemRequestService;
+    }
+
+    public ItemEDDRequestService getItemEDDRequestService() {
+        return itemEDDRequestService;
+    }
+
     public RequestItemQueueConsumer(ItemRequestService itemRequestService) {
         this.itemRequestService = itemRequestService;
     }
@@ -36,117 +44,126 @@ public class RequestItemQueueConsumer {
         this.itemEDDRequestService = itemEDDRequestService;
     }
 
+    public ObjectMapper getObjectMapper(){
+        return new ObjectMapper();
+    }
+
+    public Logger getLogger(){
+        return logger;
+    }
+
+
     public void requestItemOnMessage(@Body String body, Exchange exchange) throws IOException {
-        ObjectMapper om = new ObjectMapper();
+        ObjectMapper om = getObjectMapper();
         ItemRequestInformation itemRequestInformation = om.readValue(body, ItemRequestInformation.class);
-        logger.info("Item Barcode Recevied for Processing Request -> " + itemRequestInformation.getItemBarcodes().get(0));
-        itemRequestService.requestItem(itemRequestInformation, exchange);
+        getLogger().info("Item Barcode Recevied for Processing Request -> " + itemRequestInformation.getItemBarcodes().get(0));
+        getItemRequestService().requestItem(itemRequestInformation, exchange);
     }
 
     public void requestItemEDDOnMessage(@Body String body, Exchange exchange) throws IOException {
-        ObjectMapper om = new ObjectMapper();
+        ObjectMapper om = getObjectMapper();
         ItemRequestInformation itemRequestInformation = om.readValue(body, ItemRequestInformation.class);
-        logger.info("Item Barcode Recevied for Processing EDD -> " + itemRequestInformation.getItemBarcodes().get(0));
-        itemEDDRequestService.eddRequestItem(itemRequestInformation, exchange);
+        getLogger().info("Item Barcode Recevied for Processing EDD -> " + itemRequestInformation.getItemBarcodes().get(0));
+        getItemEDDRequestService().eddRequestItem(itemRequestInformation, exchange);
     }
 
     public void requestItemBorrowDirectOnMessage(@Body String body, Exchange exchange) throws IOException {
-        ObjectMapper om = new ObjectMapper();
+        ObjectMapper om = getObjectMapper();
         ItemRequestInformation itemRequestInformation = om.readValue(body, ItemRequestInformation.class);
-        logger.info("Item Barcode Recevied for Processing Borrow Direct -> " + itemRequestInformation.getItemBarcodes().get(0));
-        itemRequestService.requestItem(itemRequestInformation, exchange);
+        getLogger().info("Item Barcode Recevied for Processing Borrow Direct -> " + itemRequestInformation.getItemBarcodes().get(0));
+        getItemRequestService().requestItem(itemRequestInformation, exchange);
     }
 
     public void requestItemRecallOnMessage(@Body String body, Exchange exchange) throws IOException {
-        ObjectMapper om = new ObjectMapper();
+        ObjectMapper om = getObjectMapper();
         ItemRequestInformation itemRequestInformation = om.readValue(body, ItemRequestInformation.class);
-        logger.info("Item Barcode Recevied for Processing Recall -> " + itemRequestInformation.getItemBarcodes().get(0));
-        itemRequestService.recallItem(itemRequestInformation, exchange);
+        getLogger().info("Item Barcode Recevied for Processing Recall -> " + itemRequestInformation.getItemBarcodes().get(0));
+        getItemRequestService().recallItem(itemRequestInformation, exchange);
     }
 
     public void pulRequestTopicOnMessage(@Body String body) {
-        logger.info("PUL Request Topic - Lisinting to messages");
+        getLogger().info("PUL Request Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_PUL_REQUEST_TOPIC);
     }
 
     public void pulEDDTopicOnMessage(@Body String body) {
-        logger.info("PUL EDD Topic - Lisinting to messages");
+        getLogger().info("PUL EDD Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_PUL_EDD_TOPIC);
     }
 
     public void pulRecalTopicOnMessage(@Body String body) {
-        logger.info("PUL Recall Topic - Lisinting to messages");
+        getLogger().info("PUL Recall Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_PUL_RECALL_TOPIC);
     }
 
     public void pulBorrowDirectTopicOnMessage(@Body String body) {
-        logger.info("PUL BorrowDirect Topic - Lisinting to messages");
+        getLogger().info("PUL BorrowDirect Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_PUL_BORROW_DIRECT_TOPIC);
     }
 
     public void culRequestTopicOnMessage(@Body String body) {
-        logger.info("CUL Request Topic - Lisinting to messages");
+        getLogger().info("CUL Request Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_CUL_REQUEST_TOPIC);
     }
 
     public void culEDDTopicOnMessage(@Body String body) {
-        logger.info("CUL EDD Topic - Lisinting to messages");
+        getLogger().info("CUL EDD Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_CUL_EDD_TOPIC);
     }
 
     public void culRecalTopicOnMessage(@Body String body) {
-        logger.info("CUL Recall Topic - Lisinting to messages");
+        getLogger().info("CUL Recall Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_CUL_RECALL_TOPIC);
     }
 
     public void culBorrowDirectTopicOnMessage(@Body String body) {
-        logger.info("CUL Borrow Direct Topic - Lisinting to messages");
+        getLogger().info("CUL Borrow Direct Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_CUL_BORROW_DIRECT_TOPIC);
     }
 
     public void nyplRequestTopicOnMessage(@Body String body) {
-        logger.info("NYPL Request Topic - Lisinting to messages");
+        getLogger().info("NYPL Request Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_NYPL_REQUEST_TOPIC);
     }
 
     public void nyplEDDTopicOnMessage(@Body String body) {
-        logger.info("NYPL EDD Topic - Lisinting to messages");
+        getLogger().info("NYPL EDD Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_NYPL_EDD_TOPIC);
     }
 
     public void nyplRecalTopicOnMessage(@Body String body) {
-        logger.info("NYPL Recall Topic - Lisinting to messages");
+        getLogger().info("NYPL Recall Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_NYPL_RECALL_TOPIC);
     }
 
     public void nyplBorrowDirectTopicOnMessage(@Body String body) {
-        logger.info("NYPL Borrow Direct Topic - Lisinting to messages");
+        getLogger().info("NYPL Borrow Direct Topic - Lisinting to messages");
         setTopicMessageToDb(body, ReCAPConstants.REQUEST_ITEM_NYPL_BORROW_DIRECT_TOPIC);
     }
 
     public void lasOutgoingQOnCompletion(@Body String body) {
-        logger.info(body);
+        getLogger().info(body);
     }
 
     public void lasIngoingQOnCompletion(@Body String body) {
-        logger.info(body);
+        getLogger().info(body);
     }
 
     public void lasResponseRetrivalOnMessage(@Body String body) {
-        logger.info(body);
-        itemRequestService.processLASRetrieveResponse(body);
+        getLogger().info(body);
+        getItemRequestService().processLASRetrieveResponse(body);
     }
 
     public void lasResponseEDDOnMessage(@Body String body) {
-        logger.info(body);
+        getLogger().info(body);
     }
 
     public void lasResponsePWIOnMessage(@Body String body) {
-        logger.info(body);
+        getLogger().info(body);
     }
 
     public void lasResponsePWDOnMessage(@Body String body) {
-        logger.info(body);
+        getLogger().info(body);
     }
 
     private void setTopicMessageToDb(String body, String operationType) {
