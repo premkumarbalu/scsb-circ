@@ -69,6 +69,21 @@ public class RequestItemValidatorControllerUT extends BaseTestCase {
         assertEquals(responseEntity.getBody(), ReCAPConstants.INVALID_PATRON);
     }
 
+    @Test
+    public void testvalidateItemRequest() throws Exception {
+        BibliographicEntity bibliographicEntity = saveBibSingleHoldingsMultipleItem();
+        ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
+        itemRequestInformation.setPatronBarcode("4567gfdr8915");
+        itemRequestInformation.setRequestType(ReCAPConstants.REQUEST_TYPE_RETRIEVAL);
+        itemRequestInformation.setDeliveryLocation("PB");
+        itemRequestInformation.setEmailAddress("hemalatha.s@htcindia.com");
+        itemRequestInformation.setItemOwningInstitution("PUL");
+        itemRequestInformation.setRequestingInstitution("PUL");
+        itemRequestInformation.setItemBarcodes(Arrays.asList(bibliographicEntity.getItemEntities().get(0).getBarcode()));
+        ResponseEntity responseEntity = requestItemValidatorController.validateItemRequest(itemRequestInformation);
+        assertNotNull(responseEntity);
+        assertEquals(responseEntity.getBody(), ReCAPConstants.INVALID_PATRON);
+    }
     private BibliographicEntity saveBibSingleHoldingsMultipleItem() throws Exception {
         Random random = new Random();
         BibliographicEntity bibliographicEntity = getBibliographicEntity(1, String.valueOf(random.nextInt()));
