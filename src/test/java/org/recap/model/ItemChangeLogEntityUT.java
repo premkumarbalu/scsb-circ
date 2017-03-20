@@ -24,9 +24,15 @@ public class ItemChangeLogEntityUT extends BaseTestCase{
         itemChangeLogEntity.setOperationType("test");
         itemChangeLogEntity.setUpdatedBy("test");
         itemChangeLogEntity.setRecordId(1);
+        itemChangeLogEntity.setChangeLogId(12);
         itemChangeLogEntity.setUpdatedDate(new Date());
         ItemChangeLogEntity savedItemChangeLogEntity = itemChangeLogDetailsRepository.save(itemChangeLogEntity);
         assertNotNull(savedItemChangeLogEntity);
+        assertNotNull(savedItemChangeLogEntity.getChangeLogId());
+        assertNotNull(savedItemChangeLogEntity.getNotes());
+        assertNotNull(savedItemChangeLogEntity.getOperationType());
+        assertNotNull(savedItemChangeLogEntity.getUpdatedBy());
+        assertNotNull(savedItemChangeLogEntity.getUpdatedDate());
         assertNotNull(savedItemChangeLogEntity.getChangeLogId());
     }
 

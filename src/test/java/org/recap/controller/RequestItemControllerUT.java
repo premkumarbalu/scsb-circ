@@ -115,14 +115,16 @@ public class RequestItemControllerUT extends BaseTestCase {
     public void testRefileItem(){
         ItemRefileRequest itemRefileRequest = new ItemRefileRequest();
         itemRefileRequest.setItemBarcodes(Arrays.asList("123"));
+        itemRefileRequest.setRequestIds(Arrays.asList(1));
         Mockito.when(requestItemController.getItemRequestService()).thenReturn(itemRequestService);
         Mockito.when(requestItemController.getItemRequestService().reFileItem(itemRefileRequest)).thenReturn(true);
         Mockito.when(requestItemController.refileItem(itemRefileRequest)).thenCallRealMethod();
         ItemRefileResponse refileResponse = requestItemController.refileItem(itemRefileRequest);
+        assertNotNull(itemRefileRequest.getItemBarcodes());
+        assertNotNull(itemRefileRequest.getRequestIds());
         assertNotNull(refileResponse);
         assertTrue(refileResponse.isSuccess());
         assertEquals(refileResponse.getScreenMessage(),"Successfully Refiled");
-
     }
 
     public ItemHoldResponse getItemHoldResponse(){
@@ -206,7 +208,6 @@ public class RequestItemControllerUT extends BaseTestCase {
         AbstractResponseItem abstractResponseItem = requestItemController.holdItem(itemRequestInformation,callInstitition);
         assertNotNull(abstractResponseItem);
         assertTrue(abstractResponseItem.isSuccess());
-
     }
 
     @Test
