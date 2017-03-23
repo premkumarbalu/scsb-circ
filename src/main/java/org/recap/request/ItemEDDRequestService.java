@@ -48,13 +48,17 @@ public class ItemEDDRequestService {
         return itemRequestService;
     }
 
+    public ItemInformationResponse getItemInformationResponse(){
+        return new ItemInformationResponse();
+    }
+
     public ItemInformationResponse eddRequestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
         String messagePublish;
         boolean bsuccess;
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
-        ItemInformationResponse itemResponseInformation = new ItemInformationResponse();
+        ItemInformationResponse itemResponseInformation = getItemInformationResponse();
         try {
             itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
@@ -97,7 +101,7 @@ public class ItemEDDRequestService {
             itemResponseInformation.setRequestType(itemRequestInfo.getRequestType());
             itemResponseInformation.setEmailAddress(itemRequestInfo.getEmailAddress());
             itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
-            itemResponseInformation.setRequestNotes(itemRequestService.getNotes(bsuccess, messagePublish, itemRequestInfo.getRequestNotes()));
+            itemResponseInformation.setRequestNotes(getItemRequestService().getNotes(bsuccess, messagePublish, itemRequestInfo.getRequestNotes()));
             // Update Topics
             getItemRequestService().sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {

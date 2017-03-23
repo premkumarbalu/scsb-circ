@@ -61,6 +61,9 @@ public class ItemEDDRequestServiceUT extends BaseTestCase{
     @Autowired
     private WebApplicationContext webApplicationContext;
 
+    @Mock
+    private GFAService gfaService;
+
     @Before
     public void setup() throws Exception {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
@@ -93,14 +96,18 @@ public class ItemEDDRequestServiceUT extends BaseTestCase{
         Mockito.when(itemEDDRequestService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
         Mockito.when(itemEDDRequestService.getRequestTypeDetailsRepository()).thenReturn(requestTypeDetailsRepository);
         Mockito.when(itemEDDRequestService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
+        Mockito.when(itemEDDRequestService.getItemRequestService().getGfaService()).thenReturn(gfaService);
+        Mockito.when(itemEDDRequestService.getItemInformationResponse()).thenReturn(itemResponseInformation);
+        Mockito.when(itemEDDRequestService.getItemRequestService().getGfaService().isUseQueueLasCall()).thenReturn(false);
+        Mockito.when(itemEDDRequestService.getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_EDD)).thenReturn(1);
         Mockito.when(itemEDDRequestService.getItemRequestService().searchRecords(itemEntity)).thenReturn(getSearchResultRowList());
         Mockito.when(itemEDDRequestService.getItemRequestService().getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity)).thenCallRealMethod();
         Mockito.when(itemEDDRequestService.getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes())).thenReturn(bibliographicEntity.getItemEntities());
+        Mockito.when(itemEDDRequestService.getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation)).thenReturn(itemResponseInformation);
         Mockito.when(itemEDDRequestService.eddRequestItem(itemRequestInfo,exchange)).thenCallRealMethod();
-        Mockito.when(itemEDDRequestService.getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation)).thenReturn(itemResponseInformation1);
         ItemInformationResponse itemInfoResponse = itemEDDRequestService.eddRequestItem(itemRequestInfo,exchange);
         assertNotNull(itemInfoResponse);
-        assertEquals(itemInfoResponse.getScreenMessage(),"Item Barcode(s) not available in database.");
+        assertEquals(itemInfoResponse.getScreenMessage(),"EDD requests is successfull");
     }
 
     public BibliographicEntity saveBibSingleHoldingsSingleItem() throws Exception {
