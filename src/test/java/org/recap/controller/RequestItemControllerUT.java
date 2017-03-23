@@ -120,11 +120,13 @@ public class RequestItemControllerUT extends BaseTestCase {
         Mockito.when(requestItemController.getItemRequestService().reFileItem(itemRefileRequest)).thenReturn(true);
         Mockito.when(requestItemController.refileItem(itemRefileRequest)).thenCallRealMethod();
         ItemRefileResponse refileResponse = requestItemController.refileItem(itemRefileRequest);
+        refileResponse.setRequestId(1);
         assertNotNull(itemRefileRequest.getItemBarcodes());
         assertNotNull(itemRefileRequest.getRequestIds());
         assertNotNull(refileResponse);
         assertTrue(refileResponse.isSuccess());
         assertEquals(refileResponse.getScreenMessage(),"Successfully Refiled");
+        assertNotNull(refileResponse.getRequestId());
     }
 
     public ItemHoldResponse getItemHoldResponse(){
