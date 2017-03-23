@@ -31,6 +31,10 @@ public class NyplApiResponseUtil {
     @Autowired
     ItemDetailsRepository itemDetailsRepository;
 
+    public ItemDetailsRepository getItemDetailsRepository() {
+        return itemDetailsRepository;
+    }
+
     public ItemInformationResponse buildItemInformationResponse(ItemResponse itemResponse) {
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
         ItemData itemData = itemResponse.getItemData();
@@ -133,7 +137,7 @@ public class NyplApiResponseUtil {
 
     public String getNormalizedItemIdForNypl(String itemBarcode) throws Exception {
         String itemId = null;
-        List<ItemEntity> itemEntities = itemDetailsRepository.findByBarcode(itemBarcode);
+        List<ItemEntity> itemEntities = getItemDetailsRepository().findByBarcode(itemBarcode);
         if (CollectionUtils.isNotEmpty(itemEntities)) {
             ItemEntity itemEntity = itemEntities.get(0);
             if (null != itemEntity.getInstitutionEntity()) {
@@ -156,7 +160,7 @@ public class NyplApiResponseUtil {
 
     public String getItemOwningInstitutionByItemBarcode(String itemBarcode) throws Exception {
         String institutionCode = null;
-        List<ItemEntity> itemEntities = itemDetailsRepository.findByBarcode(itemBarcode);
+        List<ItemEntity> itemEntities = getItemDetailsRepository().findByBarcode(itemBarcode);
         if (CollectionUtils.isNotEmpty(itemEntities)) {
             ItemEntity itemEntity = itemEntities.get(0);
             if (null != itemEntity.getInstitutionEntity()) {

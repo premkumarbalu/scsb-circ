@@ -1,28 +1,28 @@
-package org.recap.converter;
+package org.recap.util;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.marc4j.marc.Record;
 import org.recap.BaseTestCase;
 import org.recap.model.BibliographicEntity;
-import org.recap.util.MarcUtil;
+import org.recap.model.HoldingsEntity;
+import org.recap.model.ItemEntity;
+import org.recap.model.ReportDataEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
- * Created by premkb on 21/12/16.
+ * Created by hemalathas on 23/3/17.
  */
-public class MarcToBibEntityConverterUT extends BaseTestCase {
+public class DBReportUtilUT extends BaseTestCase{
 
     @Autowired
-    private MarcToBibEntityConverter marcToBibEntityConverter;
+    DBReportUtil dbReportUtil;
 
     @Autowired
     private MarcUtil marcUtil;
@@ -138,64 +138,39 @@ public class MarcToBibEntityConverterUT extends BaseTestCase {
             "</record>\n" +
             "</collection>\n";
 
-    @Test
-    public void convert(){
-        List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        Map convertedMap = marcToBibEntityConverter.convert(recordList.get(0));
-        BibliographicEntity bibliographicEntity = (BibliographicEntity)convertedMap.get("bibliographicEntity");
-        assertNotNull(bibliographicEntity);
-        assertEquals("115115",bibliographicEntity.getOwningInstitutionBibId());
-        assertEquals(new Integer(1),bibliographicEntity.getOwningInstitutionId());
-        assertEquals("128532",bibliographicEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId());
-        assertEquals("PA",bibliographicEntity.getItemEntities().get(0).getCustomerCode());
-    }
 
     @Test
-    public void testDataFieldValueStartsWith(){
+    public void testDBReportUtil(){
         List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        String response = marcUtil.getDataFieldValueStartsWith(recordList.get(0),"100");
-        assertNotNull(response);
-        assertEquals(response,"Stokes, William Lee, 1915-1994. (uri)http://id.loc.gov/authorities/names/n50011514");
+        Map<String, Integer> institutionEntitiesMap = new HashMap<>();
+        institutionEntitiesMap.put("owningInstitutionId",1);
+        Map<String, Integer> collectionGroupMap = new HashMap<>();
+        collectionGroupMap.put("collectionGroupId",1);
+        dbReportUtil.setCollectionGroupMap(collectionGroupMap);
+        dbReportUtil.setInstitutionEntitiesMap(institutionEntitiesMap);
+        BibliographicEntity bibliographicEntity = new BibliographicEntity();
+        bibliographicEntity.setOwningInstitutionId(1);
+        bibliographicEntity.setOwningInstitutionBibId(".b000565654");
+
+        ItemEntity itemEntity = new ItemEntity();
+        itemEntity.setOwningInstitutionId(1);
+        itemEntity.setOwningInstitutionItemId(".b56464645");
+        itemEntity.setBarcode("321468256658765");
+        itemEntity.setCreatedDate(new Date());
+        itemEntity.setLastUpdatedDate(new Date());
+        itemEntity.setCustomerCode("PB");
+        itemEntity.setCollectionGroupId(1);
+
+        HoldingsEntity holdingsEntity = new HoldingsEntity();
+        holdingsEntity.setOwningInstitutionId(1);
+        holdingsEntity.setOwningInstitutionHoldingsId(".b564654654564");
+
+        List<ReportDataEntity> reportDataEntityList = dbReportUtil.generateBibHoldingsAndItemsFailureReportEntities(bibliographicEntity,holdingsEntity,itemEntity,"PUL",recordList.get(0));
+        assertNotNull(reportDataEntityList);
+        assertNotNull(dbReportUtil.getCollectionGroupMap());
+        assertNotNull(dbReportUtil.getInstitutionEntitiesMap());
     }
 
-    @Test
-    public void testDataFieldValueSubFieldValueStartsWith(){
-        List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        List<Character> subfieldTag = new ArrayList<>();
-        subfieldTag.add('a');
-        String response = marcUtil.getDataFieldValueStartsWith(recordList.get(0),"100",subfieldTag);
-        assertNotNull(response);
-        assertEquals(response,"Stokes, William Lee,");
-    }
-
-    @Test
-    public void testListDataFieldValueSubFieldValueStartsWith(){
-        List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        List<Character> subfieldTag = new ArrayList<>();
-        subfieldTag.add('a');
-        subfieldTag.add('d');
-        List<String> response = marcUtil.getListOfDataFieldValuesStartsWith(recordList.get(0),"100",subfieldTag);
-        assertNotNull(response);
-        assertEquals(response.size(),2);
-    }
-
-    @Test
-    public void testGetDataFieldValue(){
-        List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        String response = marcUtil.getDataFieldValue(recordList.get(0),"100",null,null,"a");
-        assertNotNull(response);
-        Assert.assertEquals(response,"Stokes, William Lee,");
-    }
-
-    @Test
-    public void testGetMultipleDataFieldValue(){
-        List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        List<String> response = marcUtil.getMultiDataFieldValues(recordList.get(0),"100",null,null,"a,d");
-        assertNotNull(response);
-        Assert.assertEquals(response.size(),2);
-        Assert.assertEquals(response.get(0),"Stokes, William Lee,");
-        Assert.assertEquals(response.get(1),"1915-1994.");
-    }
 
 
 }

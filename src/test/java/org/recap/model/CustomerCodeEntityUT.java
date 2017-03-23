@@ -32,6 +32,7 @@ public class CustomerCodeEntityUT extends BaseTestCase{
         customerCodeEntity.setDeliveryRestrictions("AC,BC");
         customerCodeEntity.setDescription("test");
         customerCodeEntity.setOwningInstitutionId(entity.getInstitutionId());
+        customerCodeEntity.setInstitutionEntity(entity);
         CustomerCodeEntity savedCustomerCodeEntity = customerCodeDetailsRepository.save(customerCodeEntity);
         assertNotNull(savedCustomerCodeEntity);
         assertNotNull(savedCustomerCodeEntity.getCustomerCodeId());
@@ -39,6 +40,7 @@ public class CustomerCodeEntityUT extends BaseTestCase{
         assertEquals(savedCustomerCodeEntity.getDeliveryRestrictions(),"AC,BC");
         assertEquals(savedCustomerCodeEntity.getDescription(),"test");
         assertNotNull(savedCustomerCodeEntity.getOwningInstitutionId());
+        assertNotNull(savedCustomerCodeEntity.getInstitutionEntity());
     }
 
 }

@@ -283,7 +283,7 @@ public class GFAService {
         return itemResponseInformation;
     }
 
-    private ItemInformationResponse callItemEDDRetrivate(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
+    public ItemInformationResponse callItemEDDRetrivate(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFARetrieveEDDItemRequest gfaRetrieveEDDItemRequest = new GFARetrieveEDDItemRequest();
         GFARetrieveItemResponse gfaRetrieveItemResponse;
         TtitemEDDRequest ttitem001 = new TtitemEDDRequest();
