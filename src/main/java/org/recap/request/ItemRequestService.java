@@ -27,6 +27,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.text.Normalizer;
 import java.util.Date;
 import java.util.List;
 
@@ -159,7 +160,8 @@ public class ItemRequestService {
                 }
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
                 SearchResultRow searchResultRow = searchRecords(itemEntity);
-                itemRequestInfo.setTitleIdentifier(getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity, searchResultRow).replaceAll("[^\\x00-\\x7F]", "?"));
+
+                itemRequestInfo.setTitleIdentifier(getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity, searchResultRow));
                 itemRequestInfo.setAuthor(searchResultRow.getAuthor());
                 itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
                 itemResponseInformation.setItemId(itemEntity.getItemId());
@@ -611,8 +613,7 @@ public class ItemRequestService {
             if (lTitle != null) {
                 titleIdentifier = String.format("[%s] %s%s", useRestrictions, lTitle.toUpperCase(), ReCAPConstants.REQUEST_ITEM_TITLE_SUFFIX);
             }
-            logger.info(titleIdentifier);
-            returnTitle = new String(titleIdentifier.getBytes(), "ISO-8859-1");
+            returnTitle = removeDiacritical(titleIdentifier);
             logger.info(returnTitle);
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
@@ -660,5 +661,9 @@ public class ItemRequestService {
             updateRecapRequestStatus(itemInformationResponse);
             rollbackAfterGFA(itemInformationResponse);
         }
+    }
+
+    public static String removeDiacritical(String text) {
+        return text == null ? null : Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
     }
 }
