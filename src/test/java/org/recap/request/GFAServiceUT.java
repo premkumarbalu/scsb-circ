@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.recap.BaseTestCase;
+import org.recap.ReCAPConstants;
 import org.recap.gfa.model.*;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
@@ -122,7 +123,7 @@ public class GFAServiceUT extends BaseTestCase{
         ItemInformationResponse itemInformationResponse = getItemInformationResponse();
         ItemInformationResponse response = getGfaService.callItemEDDRetrivate(itemRequestInformation,itemInformationResponse);
         assertNotNull(response);
-        assertEquals(response.getScreenMessage(),"Retrieval order successfully created in GFA.");
+        assertEquals(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL,response.getScreenMessage());
     }
 
     @Test
@@ -175,7 +176,6 @@ public class GFAServiceUT extends BaseTestCase{
         assertNotNull(gfaPwdTtItemResponse.getErrorNote());
     }
 
-
     public GFAPwdTtItemResponse getGFAPwdTtItemResponse(){
         GFAPwdTtItemResponse gfaPwdTtItemResponse = new GFAPwdTtItemResponse();
         gfaPwdTtItemResponse.setCustomerCode("PB");
@@ -196,7 +196,6 @@ public class GFAServiceUT extends BaseTestCase{
         gfaPwdTtItemResponse.setErrorNote("test");
         return gfaPwdTtItemResponse;
     }
-
 
     public GFAPwdDsItemResponse getGFAPwdDsItemResponse(){
         GFAPwdTtItemResponse gfaPwdTtItemResponse = getGFAPwdTtItemResponse();

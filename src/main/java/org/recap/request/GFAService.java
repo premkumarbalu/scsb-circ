@@ -13,10 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,9 +90,12 @@ public class GFAService {
             HttpEntity requestEntity = new HttpEntity<>(new HttpHeaders());
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(gfaItemStatus).queryParam(ReCAPConstants.GFA_SERVICE_PARAM, filterParamValue);
             ResponseEntity<GFAItemStatusCheckResponse> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, GFAItemStatusCheckResponse.class);
-            gfaItemStatusCheckResponse = responseEntity.getBody();
-
-            logger.info(responseEntity.getStatusCode().toString());
+            if (responseEntity != null && responseEntity.getBody() != null) {
+                gfaItemStatusCheckResponse = responseEntity.getBody();
+            }
+            if (responseEntity != null && responseEntity.getStatusCode() != null) {
+                logger.info("" + responseEntity.getStatusCode());
+            }
         } catch (JsonProcessingException e) {
             logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
         } catch (Exception e) {
@@ -106,11 +109,12 @@ public class GFAService {
         try {
             HttpEntity requestEntity = new HttpEntity(gfaRetrieveItemRequest, getHttpHeaders());
             ResponseEntity<GFARetrieveItemResponse> responseEntity = getRestTemplate().exchange(getGfaItemRetrival(), HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
-            logger.info(responseEntity.getStatusCode().toString());
+            logger.info("" + responseEntity.getStatusCode());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 gfaRetrieveItemResponse = responseEntity.getBody();
                 gfaRetrieveItemResponse = getLASRetrieveResponse(gfaRetrieveItemResponse);
             } else {
+                gfaRetrieveItemResponse = new GFARetrieveItemResponse();
                 gfaRetrieveItemResponse.setSuccess(false);
             }
         } catch (Exception e) {
@@ -119,7 +123,8 @@ public class GFAService {
         return gfaRetrieveItemResponse;
     }
 
-    private GFARetrieveItemResponse getLASRetrieveResponse(GFARetrieveItemResponse gfaRetrieveItemResponse) {
+    private GFARetrieveItemResponse getLASRetrieveResponse(GFARetrieveItemResponse gfaRetrieveItemResponseParam) {
+        GFARetrieveItemResponse gfaRetrieveItemResponse = gfaRetrieveItemResponseParam;
         if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
             List<Ttitem> titemList = gfaRetrieveItemResponse.getRetrieveItem().getTtitem();
             for (Ttitem ttitem : titemList) {
@@ -129,6 +134,9 @@ public class GFAService {
                 gfaRetrieveItemResponse.setScrenMessage(ttitem.getErrorNote());
             }
         } else {
+            if (gfaRetrieveItemResponse == null) {
+                gfaRetrieveItemResponse = new GFARetrieveItemResponse();
+            }
             gfaRetrieveItemResponse.setSuccess(true);
         }
         return gfaRetrieveItemResponse;
@@ -139,15 +147,20 @@ public class GFAService {
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity(gfaRetrieveEDDItemRequest, getHttpHeaders());
+            logger.info("" + convertJsontoString(requestEntity.getBody()));
             ResponseEntity<GFARetrieveItemResponse> responseEntity = restTemplate.exchange(getGfaItemEDDRetrival(), HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
-            logger.info(responseEntity.getStatusCode().toString());
+            logger.info(responseEntity.getStatusCode() + " - " + responseEntity.getBody());
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 gfaRetrieveItemResponse = responseEntity.getBody();
                 gfaRetrieveItemResponse = getLASRetrieveResponse(gfaRetrieveItemResponse);
             } else {
+                gfaRetrieveItemResponse = new GFARetrieveItemResponse();
                 gfaRetrieveItemResponse.setSuccess(false);
                 gfaRetrieveItemResponse.setScrenMessage("GFA HTTP request error");
             }
+
+        } catch (HttpServerErrorException e) {
+            logger.error("HttpServerErrorException ", e);
         } catch (Exception e) {
             gfaRetrieveItemResponse = new GFARetrieveItemResponse();
             gfaRetrieveItemResponse.setSuccess(false);
@@ -166,9 +179,9 @@ public class GFAService {
     public ItemInformationResponse executeRetriveOrder(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
 
-        GFAItemStatusCheckResponse gfaItemStatusCheckResponse = null;
-        String itemStatus = "";
-        String gfaOnlyStaus = "";
+        GFAItemStatusCheckResponse gfaItemStatusCheckResponse;
+        String itemStatus;
+        String gfaOnlyStaus;
 
         try {
             GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
@@ -292,14 +305,22 @@ public class GFAService {
             ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
             ttitem001.setRequestId(itemResponseInformation.getRequestId().toString());
             ttitem001.setRequestor(itemResponseInformation.getPatronBarcode());
-            ttitem001.setStartPage(itemRequestInfo.getStartPage().toString());
-            ttitem001.setEndPage(itemRequestInfo.getEndPage().toString());
+            ttitem001.setRequestorEmail(itemRequestInfo.getEmailAddress());
+
+            ttitem001.setStartPage(itemRequestInfo.getStartPage());
+            ttitem001.setEndPage(itemRequestInfo.getEndPage());
+
             ttitem001.setArticleTitle(itemRequestInfo.getChapterTitle());
             ttitem001.setArticleAuthor(itemRequestInfo.getAuthor());
             ttitem001.setArticleVolume(itemRequestInfo.getVolume());
             ttitem001.setArticleIssue(itemRequestInfo.getIssue());
-            ttitem001.setRequestorEmail(itemRequestInfo.getEmailAddress());
+
             ttitem001.setNotes(itemRequestInfo.getRequestNotes());
+
+            ttitem001.setBiblioTitle(itemRequestInfo.getTitleIdentifier());
+            ttitem001.setBiblioAuthor(itemRequestInfo.getItemAuthor());
+            ttitem001.setBiblioVolume(itemRequestInfo.getItemVolume());
+            ttitem001.setBiblioLocation(itemRequestInfo.getCallNumber());
 
             List<TtitemEDDRequest> ttitems = new ArrayList<>();
             ttitems.add(ttitem001);
@@ -322,7 +343,7 @@ public class GFAService {
                     itemResponseInformation.setScreenMessage(gfaRetrieveItemResponse.getScrenMessage());
                 }
             }
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemResponseInformation;
@@ -357,7 +378,7 @@ public class GFAService {
     }
 
     public ItemInformationResponse processLASRetrieveResponse(String body) {
-        ItemInformationResponse itemInformationResponse= new ItemInformationResponse();
+        ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
         ObjectMapper om = new ObjectMapper();
         try {
             GFARetrieveItemResponse gfaRetrieveItemResponse = om.readValue(body, GFARetrieveItemResponse.class);
@@ -374,6 +395,17 @@ public class GFAService {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemInformationResponse;
+    }
+
+    private String convertJsontoString(Object objJson) {
+        String strJson = "";
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            strJson = objectMapper.writeValueAsString(objJson);
+        } catch (JsonProcessingException e) {
+            logger.error("", e);
+        }
+        return strJson;
     }
 
 }

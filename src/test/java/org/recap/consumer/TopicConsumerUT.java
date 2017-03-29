@@ -6,10 +6,13 @@ import org.apache.activemq.broker.TransportConnector;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.recap.BaseTestCase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jms.*;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.text.DateFormat;
 import java.util.Date;
@@ -20,6 +23,8 @@ import java.util.Properties;
  * Created by sudhishk on 12/1/17.
  */
 public class TopicConsumerUT extends BaseTestCase {
+
+    private final static Logger logger = LoggerFactory.getLogger(TopicConsumerUT.class);
 
     private String topicName = "PUL.RequestT";
     private String initialContextFactory = "org.apache.activemq.jndi.ActiveMQInitialContextFactory";
@@ -107,5 +112,20 @@ public class TopicConsumerUT extends BaseTestCase {
     public static void main(String[] args) throws NamingException {
         TopicConsumerUT subscriber = new TopicConsumerUT();
         subscriber.subscribeWithTopicLookup();
+    }
+
+    @Test
+    public void testStringEncoding(){
+        String name = "procès Laval | gri︠a︡dushchee : poluvekovai︠a︡ paradigma poėtiki Serebri︠a︡nogo Kikhneĭ, I. Erokhinoĭ]. Mikhaĭlovskoe čeká kat. Vilém  Soi︠u︡za preobrazovanni︠k︡h";
+        String encoded ="";
+        try {
+            logger.info(name);
+            encoded = new String(name.getBytes(), "ISO-8859-1");
+            String resultString = name.replaceAll("[^\\x00-\\x7F]", "?");
+            logger.info(encoded);
+            logger.info(resultString);
+        } catch (UnsupportedEncodingException e) {
+            logger.error("",e);
+        }
     }
 }

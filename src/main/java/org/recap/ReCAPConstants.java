@@ -212,6 +212,8 @@ public final class ReCAPConstants {
     public static final String REQUEST_EXCEPTION_REST = "RestClient : ";
     public static final String REQUEST_EXCEPTION = "Exception : ";
     public static final String REQUEST_PARSE_EXCEPTION = "ParseException : ";
+    public static final String REQUEST_INVALID_SIP2_RESPONSE = "InvalidSIP2Response ";
+    public static final String REQUEST_INVALID_SIP2_RESPONSE_VALUE = "InvalidSIP2ResponseValue ";
 
     public static final String GFA_SERVICE_PARAM = "filter";
     public static final String GFA_STATUS_INCOMING_ON_WORK_ORDER = "INC ON WO:";
@@ -248,8 +250,8 @@ public final class ReCAPConstants {
     public static final String REQUEST_CANCELLATION_NOT_ACTIVE = "RequestId is not active status to be canceled";
     public static final String REQUEST_CANCELLATION_DOES_NOT_EXIST = "RequestId does not exist";
 
-    public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Retrieval order successfully created in GFA.";
-    public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "Item not available in GFA";
+    public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Retrieval order successfully created in LAS.";
+    public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "Item not available in LAS";
     public static final String GFA_ITEM_STATUS_CHECK_FAILED = "Item status check failed to return valid response.";
     public static final String REQUEST_CANCELLED_NO_REFILED = "SCSB doesn't expect a re-file to happen on this item.";
     public static final String REQUEST_CANCELLED_REFILE_REQUIRED = "SCSB expects a re-file to happen on this item. Only on re-file will the item status in SCSB be updated.";
@@ -279,6 +281,11 @@ public final class ReCAPConstants {
     //Logger
     public static final String LOG_ERROR="error-->";
     public static final String GFA_ITEM_STATUS_MISMATCH = "There is a mismatch in item status between SCSB and LAS. Please contact ReCAP staff ({0}) for further assistance.";
+    public static final String CREATING_A_BIB_RECORD_FAILED_IN_ILS = "Creating a Bib record failed in ILS";
+    public static final String INVALID_NO_RESPONSE_FROM_ILS = "Invalid/No Response from ILS";
+    public static final String LOGIN_FAILED = "Login Failed";
+    public static final String PATRON_VALIDATION_FAILED = "Patron Validation Failed";
+    public static final String ITEM_STATUS_REQUEST_FAILED = "Item Status Request Failed";
 
     private ReCAPConstants() {}
 

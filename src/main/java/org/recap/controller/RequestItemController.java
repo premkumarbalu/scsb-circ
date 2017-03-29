@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 
 /**
  * Created by sudhishk on 16/11/16.
+ * Class for all service part of Requesting Item Functionality
  */
 @RestController
 @RequestMapping("/requestItem")
@@ -29,10 +30,10 @@ public class RequestItemController {
     private static final Logger logger = LoggerFactory.getLogger(RequestItemController.class);
 
     @Autowired
-    JSIPConnectorFactory jsipConectorFactory;
+    private JSIPConnectorFactory jsipConectorFactory;
 
     @Autowired
-    ItemRequestService itemRequestService;
+    private ItemRequestService itemRequestService;
 
     public JSIPConnectorFactory getJsipConectorFactory() {
         return jsipConectorFactory;
@@ -47,12 +48,10 @@ public class RequestItemController {
         ItemCheckoutResponse itemCheckoutResponse = new ItemCheckoutResponse();
         String itemBarcode;
         try {
-            if (callInstitition == null) {
-                callInstitition = itemRequestInformation.getItemOwningInstitution();
-            }
+            String callInst = callingInsttution(callInstitition, itemRequestInformation);
             if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
                 itemBarcode = itemRequestInformation.getItemBarcodes().get(0);
-                itemCheckoutResponse = (ItemCheckoutResponse) getJsipConectorFactory().getJSIPConnector(callInstitition).checkOutItem(itemBarcode, itemRequestInformation.getPatronBarcode());
+                itemCheckoutResponse = (ItemCheckoutResponse) getJsipConectorFactory().getJSIPConnector(callInst).checkOutItem(itemBarcode, itemRequestInformation.getPatronBarcode());
             } else {
                 itemCheckoutResponse.setSuccess(false);
                 itemCheckoutResponse.setScreenMessage("Item Id not found");
@@ -60,9 +59,8 @@ public class RequestItemController {
         } catch (Exception e) {
             itemCheckoutResponse.setSuccess(false);
             itemCheckoutResponse.setScreenMessage(e.getMessage());
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION,e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
-
         return itemCheckoutResponse;
     }
 
@@ -71,12 +69,10 @@ public class RequestItemController {
         ItemCheckinResponse itemCheckinResponse;
         String itemBarcode;
         try {
-            if (callInstitition == null) {
-                callInstitition = itemRequestInformation.getItemOwningInstitution();
-            }
+            String callInst = callingInsttution(callInstitition, itemRequestInformation);
             if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
                 itemBarcode = itemRequestInformation.getItemBarcodes().get(0);
-                itemCheckinResponse = (ItemCheckinResponse) getJsipConectorFactory().getJSIPConnector(callInstitition).checkInItem(itemBarcode, itemRequestInformation.getPatronBarcode());
+                itemCheckinResponse = (ItemCheckinResponse) getJsipConectorFactory().getJSIPConnector(callInst).checkInItem(itemBarcode, itemRequestInformation.getPatronBarcode());
             } else {
                 itemCheckinResponse = new ItemCheckinResponse();
                 itemCheckinResponse.setSuccess(false);
@@ -95,12 +91,9 @@ public class RequestItemController {
     public AbstractResponseItem holdItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         try {
-            if (callInstitition == null) {
-                callInstitition = itemRequestInformation.getItemOwningInstitution();
-            }
+            String callInst = callingInsttution(callInstitition, itemRequestInformation);
             String itembarcode = itemRequestInformation.getItemBarcodes().get(0);
-
-            itemHoldResponse = (ItemHoldResponse) getJsipConectorFactory().getJSIPConnector(callInstitition).placeHold(itembarcode, itemRequestInformation.getPatronBarcode(),
+            itemHoldResponse = (ItemHoldResponse) getJsipConectorFactory().getJSIPConnector(callInst).placeHold(itembarcode, itemRequestInformation.getPatronBarcode(),
                     itemRequestInformation.getRequestingInstitution(),
                     itemRequestInformation.getItemOwningInstitution(),
                     itemRequestInformation.getExpirationDate(),
@@ -112,7 +105,7 @@ public class RequestItemController {
                     itemRequestInformation.getCallNumber());
 
         } catch (Exception e) {
-            logger.info("Exception",e);
+            logger.info(ReCAPConstants.REQUEST_EXCEPTION, e);
             itemHoldResponse.setSuccess(false);
             itemHoldResponse.setScreenMessage("ILS returned a invalid response");
         }
@@ -123,14 +116,11 @@ public class RequestItemController {
     public AbstractResponseItem cancelHoldItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemHoldResponse itemHoldCancelResponse;
         String itembarcode = "";
-        if (callInstitition == null) {
-            callInstitition = itemRequestInformation.getItemOwningInstitution();
-        }
-
+        String callInst = callingInsttution(callInstitition, itemRequestInformation);
         if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
             itembarcode = itemRequestInformation.getItemBarcodes().get(0);
         }
-        itemHoldCancelResponse = (ItemHoldResponse) getJsipConectorFactory().getJSIPConnector(callInstitition).cancelHold(itembarcode, itemRequestInformation.getPatronBarcode(),
+        itemHoldCancelResponse = (ItemHoldResponse) getJsipConectorFactory().getJSIPConnector(callInst).cancelHold(itembarcode, itemRequestInformation.getPatronBarcode(),
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
@@ -142,22 +132,20 @@ public class RequestItemController {
     public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemCreateBibResponse itemCreateBibResponse;
         String itemBarcode;
-        if (callInstitition == null) {
-            callInstitition = itemRequestInformation.getItemOwningInstitution();
-        }
-        if(!itemRequestInformation.getItemBarcodes().isEmpty()) {
+        String callInst = callingInsttution(callInstitition, itemRequestInformation);
+        if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
             itemBarcode = itemRequestInformation.getItemBarcodes().get(0);
             ItemInformationResponse itemInformation = (ItemInformationResponse) itemInformation(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
             if (itemInformation.getScreenMessage().toUpperCase().contains(ReCAPConstants.REQUEST_ITEM_BARCODE_NOT_FOUND)) {
-                itemCreateBibResponse = (ItemCreateBibResponse) getJsipConectorFactory().getJSIPConnector(callInstitition).createBib(itemBarcode, itemRequestInformation.getPatronBarcode(), itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getTitleIdentifier());
-            }else{
+                itemCreateBibResponse = (ItemCreateBibResponse) getJsipConectorFactory().getJSIPConnector(callInst).createBib(itemBarcode, itemRequestInformation.getPatronBarcode(), itemRequestInformation.getRequestingInstitution(), itemRequestInformation.getTitleIdentifier());
+            } else {
                 itemCreateBibResponse = new ItemCreateBibResponse();
                 itemCreateBibResponse.setSuccess(true);
                 itemCreateBibResponse.setScreenMessage("Item Barcode already Exist");
                 itemCreateBibResponse.setItemBarcode(itemBarcode);
                 itemCreateBibResponse.setBibId(itemInformation.getBibID());
             }
-        }else{
+        } else {
             itemCreateBibResponse = new ItemCreateBibResponse();
         }
         return itemCreateBibResponse;
@@ -165,25 +153,19 @@ public class RequestItemController {
 
     @RequestMapping(value = "/itemInformation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem itemInformation(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
-        ItemInformationResponse itemInformationResponse;
-
-        if (callInstitition == null) {
-            callInstitition = itemRequestInformation.getItemOwningInstitution();
-        }
+        AbstractResponseItem itemInformationResponse;
+        String callInst = callingInsttution(callInstitition, itemRequestInformation);
         String itembarcode = itemRequestInformation.getItemBarcodes().get(0);
-
-        itemInformationResponse = (ItemInformationResponse) getJsipConectorFactory().getJSIPConnector(callInstitition).lookupItem(itembarcode);
+        itemInformationResponse = getJsipConectorFactory().getJSIPConnector(callInst).lookupItem(itembarcode);
         return itemInformationResponse;
     }
 
     @RequestMapping(value = "/recallItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem recallItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemRecallResponse itemRecallResponse;
-        if (callInstitition == null) {
-            callInstitition = itemRequestInformation.getItemOwningInstitution();
-        }
+        String callInst = callingInsttution(callInstitition, itemRequestInformation);
         String itembarcode = itemRequestInformation.getItemBarcodes().get(0);
-        itemRecallResponse = (ItemRecallResponse) getJsipConectorFactory().getJSIPConnector(callInstitition).recallItem(itembarcode, itemRequestInformation.getPatronBarcode(),
+        itemRecallResponse = (ItemRecallResponse) getJsipConectorFactory().getJSIPConnector(callInst).recallItem(itembarcode, itemRequestInformation.getPatronBarcode(),
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
@@ -195,10 +177,8 @@ public class RequestItemController {
     @RequestMapping(value = "/patronInformation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem patronInformation(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         PatronInformationResponse patronInformationResponse;
-        if (callInstitition == null) {
-            callInstitition = itemRequestInformation.getItemOwningInstitution();
-        }
-        patronInformationResponse = (PatronInformationResponse) getJsipConectorFactory().getJSIPConnector(callInstitition).lookupPatron(itemRequestInformation.getPatronBarcode());
+        String callInst = callingInsttution(callInstitition, itemRequestInformation);
+        patronInformationResponse = (PatronInformationResponse) getJsipConectorFactory().getJSIPConnector(callInst).lookupPatron(itemRequestInformation.getPatronBarcode());
         return patronInformationResponse;
     }
 
@@ -210,7 +190,7 @@ public class RequestItemController {
         if (bSuccess) {
             itemRefileResponse.setScreenMessage("Successfully Refiled");
         } else {
-            itemRefileResponse.setScreenMessage("Failed to Refile");
+            itemRefileResponse.setScreenMessage("Cannot refile a already available Item");
         }
 
         return itemRefileResponse;
@@ -234,12 +214,22 @@ public class RequestItemController {
                 field.setAccessible(true);
                 String name = field.getName();
                 Object value = field.get(clsObject);
-                if(!StringUtils.isBlank(name) && value !=null) {
+                if (!StringUtils.isBlank(name) && value != null) {
                     logger.info("Field name: {} Filed Value : {} ", name, value);
                 }
             }
         } catch (IllegalAccessException e) {
             logger.error("", e);
         }
+    }
+
+    private String callingInsttution(String callingInst, ItemRequestInformation itemRequestInformation) {
+        String inst;
+        if (callingInst == null) {
+            inst = itemRequestInformation.getItemOwningInstitution();
+        } else {
+            inst = callingInst;
+        }
+        return inst;
     }
 }

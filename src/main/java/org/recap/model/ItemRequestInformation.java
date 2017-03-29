@@ -34,7 +34,8 @@ public class ItemRequestInformation {
     private String username;
     private String issue;
     private String volume;
-
+    private String itemAuthor;
+    private String itemVolume;
 
     public String getBibId() {
         return bibId;
@@ -202,6 +203,22 @@ public class ItemRequestInformation {
 
     public void setVolume(String volume) {
         this.volume = volume;
+    }
+
+    public String getItemAuthor() {
+        return itemAuthor;
+    }
+
+    public void setItemAuthor(String itemAuthor) {
+        this.itemAuthor = itemAuthor;
+    }
+
+    public String getItemVolume() {
+        return itemVolume;
+    }
+
+    public void setItemVolume(String itemVolume) {
+        this.itemVolume = itemVolume;
     }
 
     @JsonIgnore

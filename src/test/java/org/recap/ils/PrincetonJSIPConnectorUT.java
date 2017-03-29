@@ -24,11 +24,14 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
     @Mock
     private PrincetonJSIPConnector princetonESIPConnector;
 
+    @Autowired
+    private PrincetonJSIPConnector pulESIPConnector;
+
     private static final Logger logger = LoggerFactory.getLogger(PrincetonJSIPConnectorUT.class);
 
     String[] itemIds = {"32101077423406", "32101061738587", "77777", "77777777777779", "32101065514414","32101057972166","PULTST54329"};
     private String itemIdentifier = "32101077423406";
-    private String patronIdentifier = "45678912";
+    private String patronIdentifier = "22101008354581";
     private String[] patronId = {"45678912","45678913","45678915"};
     private String pickupLocation = "rcpcirc";
     private String bibId = "9959052";
@@ -38,8 +41,8 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
 
     @Test
     public void login() throws Exception {
-        Mockito.when(princetonESIPConnector.jSIPLogin(null, patronIdentifier)).thenReturn(true);
-        boolean sip2LoginRequest = princetonESIPConnector.jSIPLogin(null, patronIdentifier);
+//        Mockito.when(princetonESIPConnector.jSIPLogin(null, patronIdentifier)).thenReturn(true);
+        boolean sip2LoginRequest = pulESIPConnector.jSIPLogin(null, patronIdentifier);
         assertTrue(sip2LoginRequest);
     }
 
@@ -76,8 +79,8 @@ public class PrincetonJSIPConnectorUT extends BaseTestCase {
     public void lookupUser() throws Exception {
         String patronIdentifier = "45678912";
         String institutionId = "htccul";
-        Mockito.when((PatronInformationResponse) princetonESIPConnector.lookupPatron(patronIdentifier)).thenReturn(new PatronInformationResponse());
-        PatronInformationResponse patronInformationResponse =  (PatronInformationResponse) princetonESIPConnector.lookupPatron(patronIdentifier);
+//        Mockito.when((PatronInformationResponse) princetonESIPConnector.lookupPatron(patronIdentifier)).thenReturn(new PatronInformationResponse());
+        PatronInformationResponse patronInformationResponse =  (PatronInformationResponse) pulESIPConnector.lookupPatron(patronIdentifier);
         assertNotNull(patronInformationResponse);
     }
 

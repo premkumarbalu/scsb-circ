@@ -89,7 +89,7 @@ public class ItemValidatorService {
                         for (BibliographicEntity bibliographicEntityDetails : bibliographicList) {
                             bibliographicIds.add(bibliographicEntityDetails.getBibliographicId());
                         }
-                        responseEntity1 = multipleRequestItemValidation(itemEntityList, itemEntity.getItemAvailabilityStatusId(), bibliographicIds, itemRequestInformation);
+                        responseEntity1 = multipleRequestItemValidation(itemEntityList, bibliographicIds, itemRequestInformation);
                     }
                     return responseEntity1;
                 }
@@ -146,7 +146,7 @@ public class ItemValidatorService {
                 }
                 itemEntity1 = itemEntity;
             }
-            return multipleRequestItemValidation(itemEntityList, itemEntity1.getItemAvailabilityStatusId(), bibliographicIds, itemRequestInformation);
+            return multipleRequestItemValidation(itemEntityList, bibliographicIds, itemRequestInformation);
         }
         return new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
     }
@@ -181,7 +181,7 @@ public class ItemValidatorService {
         return status;
     }
 
-    public ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, Integer itemAvailabilityStatusId, List<Integer> bibliographicIds, ItemRequestInformation itemRequestInformation) {
+    private ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, List<Integer> bibliographicIds, ItemRequestInformation itemRequestInformation) {
         String status = "";
         List<BibliographicEntity> bibliographicList = null;
 
