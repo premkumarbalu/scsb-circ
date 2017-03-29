@@ -663,7 +663,7 @@ public class ItemRequestService {
         }
     }
 
-    public static String removeDiacritical(String text) {
+    private static String removeDiacritical(String text) {
         return text == null ? null : Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
     }
 }
