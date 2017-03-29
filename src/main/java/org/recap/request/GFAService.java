@@ -156,15 +156,17 @@ public class GFAService {
             } else {
                 gfaRetrieveItemResponse = new GFARetrieveItemResponse();
                 gfaRetrieveItemResponse.setSuccess(false);
-                gfaRetrieveItemResponse.setScrenMessage("GFA HTTP request error");
+                gfaRetrieveItemResponse.setScrenMessage("HTTP Error response from LAS");
             }
-
         } catch (HttpServerErrorException e) {
+            gfaRetrieveItemResponse = new GFARetrieveItemResponse();
+            gfaRetrieveItemResponse.setSuccess(false);
+            gfaRetrieveItemResponse.setScrenMessage("HTTP Error response from LAS");
             logger.error("HttpServerErrorException ", e);
         } catch (Exception e) {
             gfaRetrieveItemResponse = new GFARetrieveItemResponse();
             gfaRetrieveItemResponse.setSuccess(false);
-            gfaRetrieveItemResponse.setScrenMessage(e.getMessage());
+            gfaRetrieveItemResponse.setScrenMessage("Error occured at SCSB");
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return gfaRetrieveItemResponse;
@@ -217,6 +219,8 @@ public class GFAService {
                 itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_ITEM_STATUS_CHECK_FAILED);
             }
         } catch (Exception e) {
+            itemResponseInformation.setSuccess(false);
+            itemResponseInformation.setScreenMessage("Error occured at SCSB");
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemResponseInformation;
@@ -344,6 +348,8 @@ public class GFAService {
                 }
             }
         } catch (Exception e) {
+            itemResponseInformation.setSuccess(false);
+            itemResponseInformation.setScreenMessage("Error occured at SCSB");
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemResponseInformation;

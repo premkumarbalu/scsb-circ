@@ -46,17 +46,17 @@ public class ItemEDDRequestService {
         return itemRequestService;
     }
 
-    public ItemInformationResponse getItemInformationResponse(){
+    public ItemInformationResponse getItemInformationResponse() {
         return new ItemInformationResponse();
     }
 
     public ItemInformationResponse eddRequestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
-        String messagePublish;
-        boolean bsuccess;
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
         ItemInformationResponse itemResponseInformation = getItemInformationResponse();
+        Integer requestId;
+        String userNotes = "";
         try {
             itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
@@ -72,25 +72,25 @@ public class ItemEDDRequestService {
                 itemRequestInfo.setTitleIdentifier(searchResultRow.getTitle().replaceAll("[^\\x00-\\x7F]", "?"));
                 itemRequestInfo.setItemAuthor(searchResultRow.getAuthor());
                 itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
+                userNotes = itemRequestInfo.getRequestNotes();
+                itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
                 itemResponseInformation.setItemId(itemEntity.getItemId());
                 itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
-                Integer requestId;
+
                 if (getItemRequestService().getGfaService().isUseQueueLasCall()) {
                     requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
                 } else {
                     requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_EDD);
                 }
                 itemResponseInformation.setRequestId(requestId);
+                itemRequestInfo.setRequestNotes(userNotes);
                 itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
-                bsuccess = true;
-                messagePublish = "EDD requests is successfull";
+                itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
             } else {
-                messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
-                bsuccess = false;
+                itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
+                itemResponseInformation.setSuccess(false);
             }
             logger.info("Finish Processing");
-            itemResponseInformation.setScreenMessage(messagePublish);
-            itemResponseInformation.setSuccess(bsuccess);
             itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
             itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
             itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
@@ -100,7 +100,8 @@ public class ItemEDDRequestService {
             itemResponseInformation.setRequestType(itemRequestInfo.getRequestType());
             itemResponseInformation.setEmailAddress(itemRequestInfo.getEmailAddress());
             itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
-            itemResponseInformation.setRequestNotes(getItemRequestService().getNotes(bsuccess, messagePublish, itemRequestInfo.getRequestNotes()));
+            itemResponseInformation.setRequestNotes(getItemRequestService().getNotes(itemResponseInformation.isSuccess(), itemResponseInformation.getScreenMessage(), itemRequestInfo.getRequestNotes()));
+            itemResponseInformation.setUsername(itemRequestInfo.getUsername());
             // Update Topics
             getItemRequestService().sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {

@@ -84,39 +84,39 @@ public class ItemRequestService {
     @Autowired
     private ItemRequestDBService itemRequestDBService;
 
-    public ItemRequestDBService getItemRequestDBService() {
+    private ItemRequestDBService getItemRequestDBService() {
         return itemRequestDBService;
     }
 
-    public String getPrincetonCULPatron() {
+    private String getPrincetonCULPatron() {
         return princetonCULPatron;
     }
 
-    public String getPrincetonNYPLPatron() {
+    private String getPrincetonNYPLPatron() {
         return princetonNYPLPatron;
     }
 
-    public String getColumbiaPULPatron() {
+    private String getColumbiaPULPatron() {
         return columbiaPULPatron;
     }
 
-    public String getColumbiaNYPLPatron() {
+    private String getColumbiaNYPLPatron() {
         return columbiaNYPLPatron;
     }
 
-    public String getNyplPrincetonPatron() {
+    private String getNyplPrincetonPatron() {
         return nyplPrincetonPatron;
     }
 
-    public String getNyplColumbiaPatron() {
+    private String getNyplColumbiaPatron() {
         return nyplColumbiaPatron;
     }
 
-    public String getServerProtocol() {
+    private String getServerProtocol() {
         return serverProtocol;
     }
 
-    public String getScsbSolrClientUrl() {
+    private String getScsbSolrClientUrl() {
         return scsbSolrClientUrl;
     }
 
@@ -124,11 +124,11 @@ public class ItemRequestService {
         return itemDetailsRepository;
     }
 
-    public RequestItemController getRequestItemController() {
+    private RequestItemController getRequestItemController() {
         return requestItemController;
     }
 
-    public RequestItemDetailsRepository getRequestItemDetailsRepository() {
+    private RequestItemDetailsRepository getRequestItemDetailsRepository() {
         return requestItemDetailsRepository;
     }
 
@@ -136,7 +136,7 @@ public class ItemRequestService {
         return emailService;
     }
 
-    public RequestItemStatusDetailsRepository getRequestItemStatusDetailsRepository() {
+    private RequestItemStatusDetailsRepository getRequestItemStatusDetailsRepository() {
         return requestItemStatusDetailsRepository;
     }
 
@@ -146,8 +146,6 @@ public class ItemRequestService {
 
     public ItemInformationResponse requestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
-        String messagePublish = "";
-        boolean bsuccess = false;
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
         ItemInformationResponse itemResponseInformation = new ItemInformationResponse();
@@ -155,7 +153,6 @@ public class ItemRequestService {
             itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
             if (itemEntities != null && !itemEntities.isEmpty()) {
-                logger.info("Item Exists in SCSB Database");
                 itemEntity = itemEntities.get(0);
                 if (StringUtils.isBlank(itemRequestInfo.getBibId())) {
                     itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
@@ -168,31 +165,12 @@ public class ItemRequestService {
                 itemResponseInformation.setItemId(itemEntity.getItemId());
                 // Change Item Availablity
                 updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
-                // Action based on Request Type
-                if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
-                    itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity);
-                    bsuccess = itemResponseInformation.isSuccess();
-                    messagePublish = itemResponseInformation.getScreenMessage();
-                }
+                itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity);
             } else {
-                messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
-                bsuccess = false;
+                itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
+                itemResponseInformation.setSuccess(false);
             }
-            itemResponseInformation.setScreenMessage(messagePublish);
-            itemResponseInformation.setSuccess(bsuccess);
-            itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
-            itemResponseInformation.setBibID(itemRequestInfo.getBibId());
-            itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
-            itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
-            itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
-            itemResponseInformation.setRequestType(itemRequestInfo.getRequestType());
-            itemResponseInformation.setEmailAddress(itemRequestInfo.getEmailAddress());
-            itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
-            itemResponseInformation.setRequestNotes(getNotes(bsuccess, messagePublish, itemRequestInfo.getRequestNotes()));
-            itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
-            itemResponseInformation.setTitleIdentifier(itemRequestInfo.getTitleIdentifier());
-            itemResponseInformation.setUsername(itemRequestInfo.getUsername());
-
+            itemResponseInformation = setItemResponseInformation(itemRequestInfo, itemResponseInformation);
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
             logger.info("Finish Processing");
@@ -205,8 +183,7 @@ public class ItemRequestService {
     }
 
     public ItemInformationResponse recallItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
-        String messagePublish = "";
-        boolean bsuccess = false;
+
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
         ItemInformationResponse itemResponseInformation = new ItemInformationResponse();
@@ -214,34 +191,17 @@ public class ItemRequestService {
             itemEntities = itemDetailsRepository.findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
             if (itemEntities != null && !itemEntities.isEmpty()) {
-                logger.info("Item Exists in SCSB Database");
                 itemEntity = itemEntities.get(0);
                 itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
                 itemResponseInformation.setItemId(itemEntity.getItemId());
-                // Check if Request Item  for any existint request
                 itemResponseInformation = checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity);
-                messagePublish = itemResponseInformation.getScreenMessage();
-                bsuccess = itemResponseInformation.isSuccess();
             } else {
-                messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
-                bsuccess = false;
+                itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
+                itemResponseInformation.setSuccess(false);
             }
             logger.info("Finish Processing");
-            itemResponseInformation.setScreenMessage(messagePublish);
-            itemResponseInformation.setSuccess(bsuccess);
-            itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
-            itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
-            itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
-            itemResponseInformation.setTitleIdentifier(itemRequestInfo.getTitleIdentifier());
-            itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
-            itemResponseInformation.setBibID(itemRequestInfo.getBibId());
-            itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
-            itemResponseInformation.setRequestType(itemRequestInfo.getRequestType());
-            itemResponseInformation.setEmailAddress(itemRequestInfo.getEmailAddress());
-            itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
-            itemResponseInformation.setRequestNotes(getNotes(bsuccess, messagePublish, itemRequestInfo.getRequestNotes()));
-            itemResponseInformation.setUsername(itemRequestInfo.getUsername());
+            itemResponseInformation = setItemResponseInformation(itemRequestInfo, itemResponseInformation);
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
@@ -365,6 +325,23 @@ public class ItemRequestService {
         fluentProducerTemplate.send();
     }
 
+    private ItemInformationResponse setItemResponseInformation(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInfo) {
+        ItemInformationResponse itemResponseInformation = itemResponseInfo;
+        itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
+        itemResponseInformation.setBibID(itemRequestInfo.getBibId());
+        itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
+        itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
+        itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
+        itemResponseInformation.setRequestType(itemRequestInfo.getRequestType());
+        itemResponseInformation.setEmailAddress(itemRequestInfo.getEmailAddress());
+        itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
+        itemResponseInformation.setRequestNotes(getNotes(itemResponseInformation.isSuccess(), itemResponseInformation.getScreenMessage(), itemRequestInfo.getRequestNotes()));
+        itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
+        itemResponseInformation.setTitleIdentifier(itemRequestInfo.getTitleIdentifier());
+        itemResponseInformation.setUsername(itemRequestInfo.getUsername());
+        return itemResponseInformation;
+    }
+
     public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, String requestStatusCode) {
         return getItemRequestDBService().updateRecapRequestItem(itemRequestInformation, itemEntity, requestStatusCode);
     }
@@ -393,7 +370,7 @@ public class ItemRequestService {
         return getItemRequestDBService().getUser(userId);
     }
 
-    public ItemInformationResponse updateGFA(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
+    protected ItemInformationResponse updateGFA(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
 
         try {
             if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL) || itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
@@ -436,7 +413,7 @@ public class ItemRequestService {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
             itemResponseInformation.setScreenMessage(e.getMessage());
             itemResponseInformation.setSuccess(false);
-            saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), "RequestItem - Exception", itemRequestInfo.getItemBarcodes() + " - " + e.getMessage());
+            saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), ReCAPConstants.REQUEST_ITEM_ITEM_CHANGE_LOG_EXCEPTION, itemRequestInfo.getItemBarcodes() + " - " + e.getMessage());
         }
         return itemResponseInformation;
     }
@@ -586,7 +563,7 @@ public class ItemRequestService {
         }
     }
 
-    public SearchResultRow searchRecords(ItemEntity itemEntity) {
+    protected SearchResultRow searchRecords(ItemEntity itemEntity) {
         List<SearchResultRow> statusResponse = null;
         SearchResultRow searchResultRow = null;
         try {
@@ -607,11 +584,11 @@ public class ItemRequestService {
         return searchResultRow;
     }
 
-    public String getTitle(String title, ItemEntity itemEntity, SearchResultRow searchResultRow) {
+    protected String getTitle(String title, ItemEntity itemEntity, SearchResultRow searchResultRow) {
         String titleIdentifier = "";
         String useRestrictions = ReCAPConstants.REQUEST_USE_RESTRICTIONS;
         String lTitle = "";
-        String returnTitle="";
+        String returnTitle = "";
         try {
             if (itemEntity != null && itemEntity.getUseRestrictions() != null) {
                 useRestrictions = itemEntity.getUseRestrictions();
@@ -635,7 +612,7 @@ public class ItemRequestService {
                 titleIdentifier = String.format("[%s] %s%s", useRestrictions, lTitle.toUpperCase(), ReCAPConstants.REQUEST_ITEM_TITLE_SUFFIX);
             }
             logger.info(titleIdentifier);
-            returnTitle= new String(titleIdentifier.getBytes(), "ISO-8859-1");
+            returnTitle = new String(titleIdentifier.getBytes(), "ISO-8859-1");
             logger.info(returnTitle);
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
@@ -654,7 +631,7 @@ public class ItemRequestService {
         getRequestItemController().cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
     }
 
-    public String getNotes(boolean success, String screenMessage, String userNotes) {
+    protected String getNotes(boolean success, String screenMessage, String userNotes) {
         String notes = "";
         if (!StringUtils.isBlank(userNotes)) {
             notes = String.format("User: %s", userNotes);

@@ -164,6 +164,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_ITEM_HOLD_FAILURE = "RequestItem - Hold Request Failed";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "RequestItem AvailabilityStatus Change";
     public static final String REQUEST_ITEM_GFA_FAILURE = "RequestItem - LAS Request Failed";
+    public static final String REQUEST_ITEM_ITEM_CHANGE_LOG_EXCEPTION = "RequestItem - Exception";
     public static final String REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS = "RequestItemCancel AvailabilityStatus Change";
     public static final String REQUEST_ITEM_INSERT = "Request Item Insert";
     public static final String RETRIVAL_ORDER_NOT_REQUIRED_FOR_RECALL = "Retrival order not required for recall";
@@ -233,6 +234,7 @@ public final class ReCAPConstants {
     public static final String GFA_STATUS_VER_ON_PW_DIRECT_WORK_ORDER = "VER ON PWD WO:";
     public static final String GFA_STATUS_VER_ON_RET_WORK_ORDER = "VER ON RET WO:";
     public static final String GFA_STATUS_VER_ON_WORK_ORDER = "VER ON WO:";
+
 
 
     protected static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER,GFA_STATUS_SCH_ON_WORK_ORDER, GFA_STATUS_VER_ON_EDD_WORK_ORDER, GFA_STATUS_IN);

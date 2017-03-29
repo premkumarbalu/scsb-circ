@@ -58,9 +58,7 @@ public class CallGFAServicesUT extends BaseTestCase {
             GFAItemStatus gfaItemStatus003 = new GFAItemStatus();
 
             gfaItemStatus001.setItemBarCode("PULTST54337");
-            gfaItemStatus002.setItemBarCode("PULTST54321");
-            gfaItemStatus003.setItemBarCode("32101045675921");
-            gfaItemStatus003.setItemBarCode("32101045463104");
+            gfaItemStatus002.setItemBarCode("XXXXXXX");
             gfaItemStatus003.setItemBarCode("32101088094931");
 
             List<GFAItemStatus> gfaItemStatuses = new ArrayList<>();

@@ -144,34 +144,6 @@ public abstract class JSIPConnector implements IJSIPConnector {
         connection.send(sip2SCStatusRequest);
     }
 
-    public SIP2ItemInformationResponse lookupItemStatus(String itemIdentifier, String itemProperties, String patronIdentifier) {
-        SIP2SocketConnection connection = getSocketConnection();
-        SIP2ItemInformationResponse itemResponse = null;
-        try {
-            if (connection.connect() && jSIPLogin(connection, patronIdentifier)) {
-                sendAcsStatus(connection);
-                SIP2ItemInformationRequest itemRequest = new SIP2ItemInformationRequest(itemIdentifier);
-                logger.info(itemRequest.getData());
-                itemResponse = (SIP2ItemInformationResponse) connection.send(itemRequest);
-
-                SIP2ItemStatusUpdateRequest sip2ItemStatusUpdateRequest = new SIP2ItemStatusUpdateRequest(itemIdentifier, "");
-                SIP2ItemStatusUpdateResponse sip2ItemStatusUpdateResponse = (SIP2ItemStatusUpdateResponse) connection.send(sip2ItemStatusUpdateRequest);
-                logger.info(sip2ItemStatusUpdateResponse.getData());
-            } else {
-                logger.info(ReCAPConstants.ITEM_STATUS_REQUEST_FAILED);
-            }
-        } catch (InvalidSIP2ResponseException e) {
-            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE, e);
-        } catch (InvalidSIP2ResponseValueException e) {
-            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE_VALUE, e);
-        } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR, e);
-        } finally {
-            connection.close();
-        }
-        return itemResponse;
-    }
-
     public SIP2PatronStatusResponse lookupUser(String institutionId, String patronIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2PatronStatusResponse patronStatusResponse = null;
