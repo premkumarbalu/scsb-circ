@@ -85,7 +85,6 @@ public class ItemRequestServiceUT extends BaseTestCase{
 
     }
 
-
     public ItemRequestInformation getItemRequestInformation(){
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         itemRequestInformation.setItemBarcodes(Arrays.asList("123"));
@@ -179,8 +178,6 @@ public class ItemRequestServiceUT extends BaseTestCase{
         entityManager.refresh(savedBibliographicEntity);
         return savedBibliographicEntity;
     }
-
-
 
     public RequestItemEntity createRequestItem() throws Exception {
         InstitutionEntity institutionEntity = new InstitutionEntity();

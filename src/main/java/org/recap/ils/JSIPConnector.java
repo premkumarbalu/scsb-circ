@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 
 /**
  * Created by sudhishk on 9/11/16.
+ * Common Connector for SIP2 protocol, using jsip2 library
  */
 public abstract class JSIPConnector implements IJSIPConnector {
     private static final Logger logger = LoggerFactory.getLogger(JSIPConnector.class);
@@ -26,12 +27,12 @@ public abstract class JSIPConnector implements IJSIPConnector {
         try {
             connection.connect();
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR, e);
         }
         return connection;
     }
 
-    public boolean jSIPLogin(SIP2SocketConnection connection, String patronIdentifier) throws InvalidSIP2ResponseException, InvalidSIP2ResponseValueException {
+    public boolean jSIPLogin(SIP2SocketConnection connection, String patronIdentifier) {
         SIP2LoginRequest login;
         boolean loginPatronStatus = false;
         try {
@@ -43,17 +44,14 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
                 SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(patronIdentifier);
                 SIP2PatronInformationResponse response = (SIP2PatronInformationResponse) connection.send(request);
-                loginPatronStatus = false;
-                if (loginResponse.isOk() && response.isValidPatron() && response.isValidPatronPassword()) {
-                    loginPatronStatus = true;
-                }
+                loginPatronStatus = loginResponse.isOk() && response.isValidPatron() && response.isValidPatronPassword();
             }
         } catch (InvalidSIP2ResponseException e) {
-            logger.error("InvalidSIP2Response ",e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE, e);
         } catch (InvalidSIP2ResponseValueException e) {
-            logger.error("InvalidSIP2ResponseValue ", e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE_VALUE, e);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR, e);
         }
         return loginPatronStatus;
     }
@@ -67,37 +65,20 @@ public abstract class JSIPConnector implements IJSIPConnector {
             SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
             SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(institutionId, patronIdentifier, getOperatorPassword());
             SIP2PatronInformationResponse response = (SIP2PatronInformationResponse) connection.send(request);
-            loginPatronStatus = false;
-            if (loginResponse.isOk() && response.isValidPatron() && response.isValidPatronPassword()) {
-                loginPatronStatus = true;
-            }
+            loginPatronStatus = loginResponse.isOk() && response.isValidPatron() && response.isValidPatronPassword();
         } catch (Exception ex) {
-            logger.error(ReCAPConstants.LOG_ERROR,ex);
+            logger.error(ReCAPConstants.LOG_ERROR, ex);
         } finally {
             connection.close();
         }
-
         return loginPatronStatus;
     }
 
-
-    @Override
-    public abstract String getHost();
-
-    @Override
-    public abstract String getOperatorUserId();
-
-    @Override
-    public abstract String getOperatorPassword();
-
-    @Override
-    public abstract String getOperatorLocation();
-
     @Override
     public AbstractResponseItem lookupItem(String itemIdentifier) {
-        SIP2LoginRequest login = null;
+        SIP2LoginRequest login;
         SIP2SocketConnection connection = getSocketConnection();
-        SIP2ItemInformationResponse sip2ItemInformationResponse = null;
+        SIP2ItemInformationResponse sip2ItemInformationResponse;
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
         try {
             login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
@@ -136,19 +117,21 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 itemInformationResponse.setCurrencyType((sip2ItemInformationResponse.getCurrencyType() != null) ? sip2ItemInformationResponse.getCurrencyType().name() : "");
                 itemInformationResponse.setBibID(sip2ItemInformationResponse.getBibId());
             } else {
-                logger.info("Login Failed");
-                itemInformationResponse.setScreenMessage("Login to ILS failed");
+                itemInformationResponse.setScreenMessage(ReCAPConstants.LOGIN_FAILED);
                 itemInformationResponse.setSuccess(false);
+                logger.info(itemInformationResponse.getScreenMessage());
             }
         } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = " , e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE, e);
+            itemInformationResponse.setSuccess(false);
+            itemInformationResponse.setScreenMessage(ReCAPConstants.INVALID_NO_RESPONSE_FROM_ILS);
         } catch (InvalidSIP2ResponseValueException e) {
-            logger.error("Invalid SIP2 Value = ", e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE_VALUE, e);
             itemInformationResponse.setSuccess(false);
             itemInformationResponse.setScreenMessage("Item barcode not found");
             itemInformationResponse.setCirculationStatus("ITEM_BARCODE_NOT_FOUND");
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR, e);
         } finally {
             connection.close();
         }
@@ -158,36 +141,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
     private void sendAcsStatus(SIP2SocketConnection connection) throws InvalidSIP2ResponseException, InvalidSIP2ResponseValueException {
         SIP2SCStatusRequest sip2SCStatusRequest = new SIP2SCStatusRequest();
         logger.info(sip2SCStatusRequest.getData());
-        SIP2ACSStatusResponse sip2ACSStatusResponse = (SIP2ACSStatusResponse) connection.send(sip2SCStatusRequest);
-    }
-
-    public SIP2ItemInformationResponse lookupItemStatus(String itemIdentifier, String itemProperties, String patronIdentifier) {
-        SIP2SocketConnection connection = getSocketConnection();
-        SIP2ItemInformationResponse itemResponse = null;
-        try {
-            if (connection.connect() && jSIPLogin(connection, patronIdentifier)) {
-                sendAcsStatus(connection);
-                SIP2ItemInformationRequest itemRequest = new SIP2ItemInformationRequest(itemIdentifier);
-                logger.info(itemRequest.getData());
-                itemResponse = (SIP2ItemInformationResponse) connection.send(itemRequest);
-
-                SIP2ItemStatusUpdateRequest sip2ItemStatusUpdateRequest = new SIP2ItemStatusUpdateRequest(itemIdentifier, "");
-                SIP2ItemStatusUpdateResponse sip2ItemStatusUpdateResponse = (SIP2ItemStatusUpdateResponse) connection.send(sip2ItemStatusUpdateRequest);
-                logger.info(sip2ItemStatusUpdateResponse.getData());
-            } else {
-                logger.info("Item Status Request Failed");
-            }
-        } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = ", e);
-        } catch (InvalidSIP2ResponseValueException e) {
-            logger.error("Invalid SIP2 Value = " , e);
-        } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
-
-        } finally {
-            connection.close();
-        }
-        return itemResponse;
+        connection.send(sip2SCStatusRequest);
     }
 
     public SIP2PatronStatusResponse lookupUser(String institutionId, String patronIdentifier) {
@@ -202,11 +156,11 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 logger.info("Item Request Failed");
             }
         } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = " , e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE, e);
         } catch (InvalidSIP2ResponseValueException e) {
-            logger.error("Connection Invalid SIP2 Value = " ,e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE_VALUE, e);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR, e);
         } finally {
             connection.close();
         }
@@ -250,21 +204,21 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
                     }
                 } else {
-                    logger.info("Login Failed");
-                    itemCheckoutResponse.setScreenMessage("Login to ILS failed");
+                    itemCheckoutResponse.setScreenMessage(ReCAPConstants.LOGIN_FAILED);
                     itemCheckoutResponse.setSuccess(false);
+                    logger.info(itemCheckoutResponse.getScreenMessage());
                 }
             }
         } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = " , e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE, e);
             itemCheckoutResponse.setScreenMessage(e.getMessage());
             itemCheckoutResponse.setSuccess(false);
         } catch (InvalidSIP2ResponseValueException e) {
-            logger.error("Connection Invalid SIP2 Value = " , e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE_VALUE, e);
             itemCheckoutResponse.setScreenMessage(e.getMessage());
             itemCheckoutResponse.setSuccess(false);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR, e);
             itemCheckoutResponse.setScreenMessage(e.getMessage());
             itemCheckoutResponse.setSuccess(false);
         } finally {
@@ -325,9 +279,9 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 }
             }
         } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = " ,e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE, e);
         } catch (InvalidSIP2ResponseValueException e) {
-            logger.error("Connection Invalid SIP2 Value = " , e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE_VALUE, e);
         } finally {
             connection.close();
         }
@@ -336,15 +290,15 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
     @Override
     public Object placeHold(String itemIdentifier, String patronIdentifier, String callInstitutionId, String itemInstitutionId, String expirationDate, String bibId, String pickupLocation, String trackingId, String title, String author, String callNumber) {
-        return hold(HoldMode.ADD, itemIdentifier, patronIdentifier, callInstitutionId, expirationDate, bibId, pickupLocation);
+        return hold(HoldMode.ADD, itemIdentifier, patronIdentifier, callInstitutionId, bibId, pickupLocation);
     }
 
     @Override
     public Object cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId) {
-        return hold(HoldMode.DELETE, itemIdentifier, patronIdentifier, institutionId, expirationDate, bibId, pickupLocation);
+        return hold(HoldMode.DELETE, itemIdentifier, patronIdentifier, institutionId, bibId, pickupLocation);
     }
 
-    private AbstractResponseItem hold(HoldMode holdMode, String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
+    private AbstractResponseItem hold(HoldMode holdMode, String itemIdentifier, String patronIdentifier, String institutionId, String bibId, String pickupLocation) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2HoldResponse holdResponse = null;
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
@@ -391,21 +345,22 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         itemHoldResponse.setAvailable(holdResponse.isAvailable());
                     } else {
                         itemHoldResponse.setSuccess(false);
-                        itemHoldResponse.setScreenMessage("Patron Validation Failed");
+                        itemHoldResponse.setScreenMessage(ReCAPConstants.PATRON_VALIDATION_FAILED);
                     }
                 } else {
-                    logger.info("Login Failed");
                     itemHoldResponse.setSuccess(false);
-                    itemHoldResponse.setScreenMessage("Login Failed");
+                    itemHoldResponse.setScreenMessage(ReCAPConstants.LOGIN_FAILED);
+                    logger.info(itemHoldResponse.getScreenMessage());
                 }
             }
         } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = " , e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE, e);
             holdResponse = new SIP2HoldResponse("");
-            holdResponse.setScreenMessage(java.util.Arrays.asList("Invaild Response from ILS"));
+            holdResponse.setScreenMessage(java.util.Arrays.asList(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE));
         } catch (InvalidSIP2ResponseValueException e) {
-            logger.error("Connection Invalid SIP2 Value = " , e);
-            holdResponse.setScreenMessage(java.util.Arrays.asList("Invaild Response Values from ILS"));
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE_VALUE, e);
+            holdResponse = new SIP2HoldResponse("");
+            holdResponse.setScreenMessage(java.util.Arrays.asList(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE_VALUE));
         } finally {
             connection.close();
         }
@@ -429,7 +384,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 if (loginResponse.isOk()) {
                     /* Send SCStatusRequest */
                     SIP2SCStatusRequest status = new SIP2SCStatusRequest();
-                    SIP2ACSStatusResponse statusResponse = (SIP2ACSStatusResponse) connection.send(status);
+                    connection.send(status);
 
                     /* The patron must be validated before placing a hold */
                     SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(institutionId, patronIdentifier, getOperatorPassword());
@@ -460,11 +415,11 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 }
             }
         } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = " , e);
+            logger.error("Connection Invalid SIP2 Response = ", e);
             itemCreateBibResponse.setSuccess(false);
             itemCreateBibResponse.setScreenMessage(e.getMessage());
         } catch (Exception e) {
-            logger.error("Connection Invalid SIP2 Value = " , e);
+            logger.error("Connection Invalid SIP2 Value = ", e);
             itemCreateBibResponse.setSuccess(false);
             itemCreateBibResponse.setScreenMessage(e.getMessage());
         } finally {
@@ -477,55 +432,61 @@ public abstract class JSIPConnector implements IJSIPConnector {
     @Override
     public AbstractResponseItem lookupPatron(String patronIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
-        SIP2PatronInformationRequest sip2PatronInformationRequest = null;
-        SIP2PatronInformationResponse sip2PatronInformationResponse = null;
+        SIP2PatronInformationRequest sip2PatronInformationRequest;
+        SIP2PatronInformationResponse sip2PatronInformationResponse;
         PatronInformationResponse patronInformationResponse = new PatronInformationResponse();
         try {
-            SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
-            SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
+            if (jSIPLogin(connection, patronIdentifier)) {
+                sip2PatronInformationRequest = new SIP2PatronInformationRequest(patronIdentifier);
+                logger.info(sip2PatronInformationRequest.getData());
+                patronInformationResponse.setEsipDataIn(sip2PatronInformationRequest.getData());
+                sip2PatronInformationResponse = (SIP2PatronInformationResponse) connection.send(sip2PatronInformationRequest);
+                patronInformationResponse.setEsipDataOut(sip2PatronInformationResponse.getData());
+                logger.info(sip2PatronInformationResponse.getData());
+                patronInformationResponse.setSuccess(true);
 
+                patronInformationResponse.setScreenMessage(sip2PatronInformationResponse.getStatus().isChargePrivilegesDenied()
+                            + ""+sip2PatronInformationResponse.getStatus().isRenewalPrivilegesDenied()
+                            + ""+sip2PatronInformationResponse.getStatus().isRecallPrivilegesDenied()
+                            + ""+sip2PatronInformationResponse.getStatus().isHoldPrivilegesDenied()
+                            + " - "
+                            + ((sip2PatronInformationResponse.getScreenMessage() != null) ? sip2PatronInformationResponse.getScreenMessage().get(0) : ""));
+                patronInformationResponse.setPatronName(sip2PatronInformationResponse.getPersonalName());
+                patronInformationResponse.setPatronIdentifier(sip2PatronInformationResponse.getPatronIdentifier());
+                patronInformationResponse.setEmail(sip2PatronInformationResponse.getEmail());
+                patronInformationResponse.setBirthDate(sip2PatronInformationResponse.getBirthDate());
+                patronInformationResponse.setPhone(sip2PatronInformationResponse.getPhone());
+                patronInformationResponse.setPermanentLocation(sip2PatronInformationResponse.getPermanentLocation());
+                patronInformationResponse.setPickupLocation(sip2PatronInformationResponse.getPickupLocation());
 
-            sip2PatronInformationRequest = new SIP2PatronInformationRequest(patronIdentifier);
+                patronInformationResponse.setChargedItemsCount(sip2PatronInformationResponse.getChargedItemsCount());
+                patronInformationResponse.setChargedItemsLimit(sip2PatronInformationResponse.getChargedItemsLimit());
 
-            patronInformationResponse.setEsipDataIn(sip2PatronInformationRequest.getData());
-            sip2PatronInformationResponse = (SIP2PatronInformationResponse) connection.send(sip2PatronInformationRequest);
-            patronInformationResponse.setEsipDataOut(sip2PatronInformationResponse.getData());
+                patronInformationResponse.setFeeLimit(sip2PatronInformationResponse.getFeeLimit());
+                patronInformationResponse.setFeeType((sip2PatronInformationResponse.getFeeType() != null) ? sip2PatronInformationResponse.getFeeType().name() : "");
 
-            patronInformationResponse.setSuccess(true);
-            patronInformationResponse.setScreenMessage((sip2PatronInformationResponse.getScreenMessage() != null) ? sip2PatronInformationResponse.getScreenMessage().get(0) : "");
-            patronInformationResponse.setPatronName(sip2PatronInformationResponse.getPersonalName());
-            patronInformationResponse.setPatronIdentifier(sip2PatronInformationResponse.getPatronIdentifier());
-            patronInformationResponse.setEmail(sip2PatronInformationResponse.getEmail());
-            patronInformationResponse.setBirthDate(sip2PatronInformationResponse.getBirthDate());
-            patronInformationResponse.setPhone(sip2PatronInformationResponse.getPhone());
-            patronInformationResponse.setPermanentLocation(sip2PatronInformationResponse.getPermanentLocation());
-            patronInformationResponse.setPickupLocation(sip2PatronInformationResponse.getPickupLocation());
+                patronInformationResponse.setHoldItemsCount(sip2PatronInformationResponse.getHoldItemsCount());
+                patronInformationResponse.setHoldItemsLimit(sip2PatronInformationResponse.getHoldItemsLimit());
+                patronInformationResponse.setUnavailableHoldsCount(sip2PatronInformationResponse.getUnavailableHoldsCount());
 
-            patronInformationResponse.setChargedItemsCount(sip2PatronInformationResponse.getChargedItemsCount());
-            patronInformationResponse.setChargedItemsLimit(sip2PatronInformationResponse.getChargedItemsLimit());
+                patronInformationResponse.setFineItemsCount(sip2PatronInformationResponse.getFineItemsCount());
+                patronInformationResponse.setFeeAmount(sip2PatronInformationResponse.getFeeAmount());
+                patronInformationResponse.setHomeAddress(sip2PatronInformationResponse.getHomeAddress());
+                patronInformationResponse.setItems(sip2PatronInformationResponse.getItems());
+                patronInformationResponse.setItemType((sip2PatronInformationResponse.getItemType() != null) ? sip2PatronInformationResponse.getItemType().name() : "");
 
-            patronInformationResponse.setFeeLimit(sip2PatronInformationResponse.getFeeLimit());
-            patronInformationResponse.setFeeType((sip2PatronInformationResponse.getFeeType() != null) ? sip2PatronInformationResponse.getFeeType().name() : "");
-
-            patronInformationResponse.setHoldItemsCount(sip2PatronInformationResponse.getHoldItemsCount());
-            patronInformationResponse.setHoldItemsLimit(sip2PatronInformationResponse.getHoldItemsLimit());
-            patronInformationResponse.setUnavailableHoldsCount(sip2PatronInformationResponse.getUnavailableHoldsCount());
-
-            patronInformationResponse.setFineItemsCount(sip2PatronInformationResponse.getFineItemsCount());
-            patronInformationResponse.setFeeAmount(sip2PatronInformationResponse.getFeeAmount());
-            patronInformationResponse.setHomeAddress(sip2PatronInformationResponse.getHomeAddress());
-            patronInformationResponse.setItems(sip2PatronInformationResponse.getItems());
-            patronInformationResponse.setItemType((sip2PatronInformationResponse.getItemType() != null) ? sip2PatronInformationResponse.getItemType().name() : "");
-
-            patronInformationResponse.setOverdueItemsCount(sip2PatronInformationResponse.getOverdueItemsCount());
-            patronInformationResponse.setOverdueItemsLimit(sip2PatronInformationResponse.getOverdueItemsLimit());
-            patronInformationResponse.setPacAccessType(sip2PatronInformationResponse.getPacAccessType());
-            patronInformationResponse.setPatronGroup(sip2PatronInformationResponse.getPatronGroup());
-            patronInformationResponse.setPatronType(sip2PatronInformationResponse.getPatronType());
-            patronInformationResponse.setDueDate(sip2PatronInformationResponse.getDueDate());
-            patronInformationResponse.setExpirationDate(sip2PatronInformationResponse.getExpirationDate());
-            patronInformationResponse.setStatus(sip2PatronInformationResponse.getStatus().toString());
-
+                patronInformationResponse.setOverdueItemsCount(sip2PatronInformationResponse.getOverdueItemsCount());
+                patronInformationResponse.setOverdueItemsLimit(sip2PatronInformationResponse.getOverdueItemsLimit());
+                patronInformationResponse.setPacAccessType(sip2PatronInformationResponse.getPacAccessType());
+                patronInformationResponse.setPatronGroup(sip2PatronInformationResponse.getPatronGroup());
+                patronInformationResponse.setPatronType(sip2PatronInformationResponse.getPatronType());
+                patronInformationResponse.setDueDate(sip2PatronInformationResponse.getDueDate());
+                patronInformationResponse.setExpirationDate(sip2PatronInformationResponse.getExpirationDate());
+                patronInformationResponse.setStatus(sip2PatronInformationResponse.getStatus().toString());
+            } else {
+                patronInformationResponse.setSuccess(true);
+                patronInformationResponse.setScreenMessage("ILS Login Failed");
+            }
         } catch (Exception ex) {
             logger.error("", ex);
         } finally {
@@ -551,7 +512,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 if (loginResponse.isOk()) {
                     /* Send SCStatusRequest */
                     SIP2SCStatusRequest status = new SIP2SCStatusRequest();
-                    SIP2ACSStatusResponse statusResponse = (SIP2ACSStatusResponse) connection.send(status);
+                    connection.send(status);
 
                     /* The patron must be validated before placing a hold */
                     SIP2PatronInformationRequest request = new SIP2PatronInformationRequest(institutionId, patronIdentifier, getOperatorPassword());
@@ -592,9 +553,9 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 }
             }
         } catch (InvalidSIP2ResponseException e) {
-            logger.error("Connection Invalid SIP2 Response = ",e);
+            logger.error(ReCAPConstants.REQUEST_INVALID_SIP2_RESPONSE, e);
         } catch (InvalidSIP2ResponseValueException e) {
-            logger.error("Connection Invalid SIP2 Value = ",e);
+            logger.error("Connection Invalid SIP2 Value = ", e);
         } finally {
             connection.close();
         }

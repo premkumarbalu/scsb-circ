@@ -82,7 +82,7 @@ public class RequestItemValidatorControllerUT extends BaseTestCase {
         itemRequestInformation.setItemBarcodes(Arrays.asList(bibliographicEntity.getItemEntities().get(0).getBarcode()));
         ResponseEntity responseEntity = requestItemValidatorController.validateItemRequest(itemRequestInformation);
         assertNotNull(responseEntity);
-        assertEquals(responseEntity.getBody(), ReCAPConstants.INVALID_PATRON);
+        assertEquals("Request Parameter ","All request parameters are valid.Patron is eligible to raise a request",responseEntity.getBody());
     }
     private BibliographicEntity saveBibSingleHoldingsMultipleItem() throws Exception {
         Random random = new Random();

@@ -3,17 +3,15 @@ package org.recap.request;
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
-import org.recap.controller.RequestItemValidatorController;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemEntity;
 import org.recap.model.ItemRequestInformation;
+import org.recap.model.SearchResultRow;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.RequestTypeDetailsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
@@ -48,17 +46,17 @@ public class ItemEDDRequestService {
         return itemRequestService;
     }
 
-    public ItemInformationResponse getItemInformationResponse(){
+    public ItemInformationResponse getItemInformationResponse() {
         return new ItemInformationResponse();
     }
 
     public ItemInformationResponse eddRequestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
-        String messagePublish;
-        boolean bsuccess;
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
         ItemInformationResponse itemResponseInformation = getItemInformationResponse();
+        Integer requestId;
+        String userNotes = "";
         try {
             itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
 
@@ -68,30 +66,31 @@ public class ItemEDDRequestService {
                 if (itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId().trim().length() <= 0) {
                     itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 }
+                SearchResultRow searchResultRow = getItemRequestService().searchRecords(itemEntity);
+
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
-                itemRequestInfo.setTitleIdentifier(getItemRequestService().getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity));
+                itemRequestInfo.setTitleIdentifier(searchResultRow.getTitle().replaceAll("[^\\x00-\\x7F]", "?"));
+                itemRequestInfo.setItemAuthor(searchResultRow.getAuthor());
                 itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
+                userNotes = itemRequestInfo.getRequestNotes();
+                itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
                 itemResponseInformation.setItemId(itemEntity.getItemId());
                 itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
-                itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
 
-                Integer requestId;
                 if (getItemRequestService().getGfaService().isUseQueueLasCall()) {
                     requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
                 } else {
                     requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_EDD);
                 }
                 itemResponseInformation.setRequestId(requestId);
+                itemRequestInfo.setRequestNotes(userNotes);
                 itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
-                bsuccess = true;
-                messagePublish = "EDD requests is successfull";
+                itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
             } else {
-                messagePublish = ReCAPConstants.WRONG_ITEM_BARCODE;
-                bsuccess = false;
+                itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
+                itemResponseInformation.setSuccess(false);
             }
             logger.info("Finish Processing");
-            itemResponseInformation.setScreenMessage(messagePublish);
-            itemResponseInformation.setSuccess(bsuccess);
             itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
             itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
             itemResponseInformation.setRequestingInstitution(itemRequestInfo.getRequestingInstitution());
@@ -101,7 +100,8 @@ public class ItemEDDRequestService {
             itemResponseInformation.setRequestType(itemRequestInfo.getRequestType());
             itemResponseInformation.setEmailAddress(itemRequestInfo.getEmailAddress());
             itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
-            itemResponseInformation.setRequestNotes(getItemRequestService().getNotes(bsuccess, messagePublish, itemRequestInfo.getRequestNotes()));
+            itemResponseInformation.setRequestNotes(getItemRequestService().getNotes(itemResponseInformation.isSuccess(), itemResponseInformation.getScreenMessage(), itemRequestInfo.getRequestNotes()));
+            itemResponseInformation.setUsername(itemRequestInfo.getUsername());
             // Update Topics
             getItemRequestService().sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {

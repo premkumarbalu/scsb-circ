@@ -46,6 +46,12 @@ public class ItemEDDRequestServiceUT extends BaseTestCase{
     @Autowired
     InstitutionDetailsRepository institutionDetailRepository;
 
+    @Autowired
+    private ItemRequestService irs;
+
+    @Autowired
+    private GFAService gfaser;
+
     @Mock
     ItemDetailsRepository itemDetailsRepository;
 
@@ -58,11 +64,11 @@ public class ItemEDDRequestServiceUT extends BaseTestCase{
     @Mock
     private ItemRequestService itemRequestService;
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-
     @Mock
     private GFAService gfaService;
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     @Before
     public void setup() throws Exception {
@@ -101,7 +107,7 @@ public class ItemEDDRequestServiceUT extends BaseTestCase{
         Mockito.when(itemEDDRequestService.getItemRequestService().getGfaService().isUseQueueLasCall()).thenReturn(false);
         Mockito.when(itemEDDRequestService.getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_EDD)).thenReturn(1);
         Mockito.when(itemEDDRequestService.getItemRequestService().searchRecords(itemEntity)).thenReturn(getSearchResultRowList());
-        Mockito.when(itemEDDRequestService.getItemRequestService().getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity)).thenCallRealMethod();
+        Mockito.when(itemEDDRequestService.getItemRequestService().getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity,getSearchResultRowList())).thenCallRealMethod();
         Mockito.when(itemEDDRequestService.getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes())).thenReturn(bibliographicEntity.getItemEntities());
         Mockito.when(itemEDDRequestService.getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation)).thenReturn(itemResponseInformation);
         Mockito.when(itemEDDRequestService.eddRequestItem(itemRequestInfo,exchange)).thenCallRealMethod();
@@ -150,6 +156,7 @@ public class ItemEDDRequestServiceUT extends BaseTestCase{
         itemEntity.setLastUpdatedBy("tst");
         itemEntity.setItemAvailabilityStatusId(1);
         itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity.setCatalogingStatus("Completed");
 
         bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
@@ -160,29 +167,16 @@ public class ItemEDDRequestServiceUT extends BaseTestCase{
 
     }
 
-    public List<SearchResultRow> getSearchResultRowList(){
-        List<SearchItemResultRow> searchItemResultRowList = new ArrayList<>();
-        SearchItemResultRow searchItemResultRow = new SearchItemResultRow();
-        searchItemResultRow.setCallNumber("x");
-        searchItemResultRow.setChronologyAndEnum("test");
+    public SearchResultRow getSearchResultRowList(){
+        SearchResultRow searchItemResultRow = new SearchResultRow();
+        searchItemResultRow.setTitle("Title Of the Book");
+        searchItemResultRow.setAuthor("AuthorBook");
         searchItemResultRow.setCustomerCode("PB");
         searchItemResultRow.setBarcode("123");
         searchItemResultRow.setAvailability("Available");
         searchItemResultRow.setCollectionGroupDesignation("Shared");
         searchItemResultRow.setItemId(1);
-        searchItemResultRow.setSelectedItem(true);
-        searchItemResultRowList.add(searchItemResultRow);
-        List<SearchResultRow> searchResultRowList = new ArrayList<>();
-        SearchResultRow searchResultRow = new SearchResultRow();
-        searchResultRow.setItemId(1);
-        searchResultRow.setBarcode("123");
-        searchResultRow.setTitle("test");
-        searchResultRow.setSearchItemResultRows(searchItemResultRowList);
-        searchResultRowList.add(searchResultRow);
-        return searchResultRowList;
-
+        return searchItemResultRow;
     }
-
-
 
 }

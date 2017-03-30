@@ -45,62 +45,6 @@ public class ItemValidatorService {
     @Autowired
     CustomerCodeDetailsRepository customerCodeDetailsRepository;
 
-    public ResponseEntity itemValidation002(ItemRequestInformation itemRequestInformation) {
-        String availabilityStatus = "";
-        List<Integer> bibliographicIds = new ArrayList<>();
-        List<BibliographicEntity> bibliographicList = new ArrayList<>();
-        List<ItemEntity> itemEntityList = new ArrayList<>();
-        String itemBarcodes = "";
-        if (CollectionUtils.isNotEmpty(itemRequestInformation.getItemBarcodes())) {
-            itemBarcodes = itemRequestInformation.getItemBarcodes().toString();
-        } else {
-            return new ResponseEntity(ReCAPConstants.ITEM_BARCODE_IS_REQUIRED, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-        }
-        itemEntityList = itemController.findByBarcodeIn(itemBarcodes);
-        if (itemEntityList != null && !itemEntityList.isEmpty()) { // barcode does not exist in database
-            if (splitStringAndGetList(itemBarcodes).size() == itemEntityList.size()) { // Check if the no. of barcode from input and database is same.
-                ItemEntity itemEntity = itemEntityList.get(0);
-                // Item availability Status from SCSB Item table
-                availabilityStatus = getItemStatus(itemEntity.getItemAvailabilityStatusId());
-                if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.NOT_AVAILABLE)
-                        && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)
-                        || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)
-                        || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
-                    return new ResponseEntity(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-                } else if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
-                    return new ResponseEntity(ReCAPConstants.RECALL_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-                } else {
-                    ResponseEntity responseEntity1 = null;
-                    if (itemEntityList.size() == 1) {
-                        if (!(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
-                            int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation);
-                            if (validateCustomerCode == 1) {
-                                responseEntity1 = new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
-                            } else if (validateCustomerCode == 0) {
-                                responseEntity1 = new ResponseEntity(ReCAPConstants.INVALID_CUSTOMER_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-                            } else if (validateCustomerCode == -1) {
-                                responseEntity1 = new ResponseEntity(ReCAPConstants.INVALID_DELIVERY_CODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-                            }
-                        } else {
-                            responseEntity1 = new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
-                        }
-                    } else if (itemEntityList.size() > 1) {
-                        bibliographicList = itemEntity.getBibliographicEntities();
-                        for (BibliographicEntity bibliographicEntityDetails : bibliographicList) {
-                            bibliographicIds.add(bibliographicEntityDetails.getBibliographicId());
-                        }
-                        responseEntity1 = multipleRequestItemValidation(itemEntityList, itemEntity.getItemAvailabilityStatusId(), bibliographicIds, itemRequestInformation);
-                    }
-                    return responseEntity1;
-                }
-            } else {
-                return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-            }
-        } else {
-            return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
-        }
-    }
-
     public ResponseEntity itemValidation(ItemRequestInformation itemRequestInformation) {
         List<ItemEntity> itemEntityList = getItemEntities(itemRequestInformation.getItemBarcodes());
 
@@ -146,7 +90,7 @@ public class ItemValidatorService {
                 }
                 itemEntity1 = itemEntity;
             }
-            return multipleRequestItemValidation(itemEntityList, itemEntity1.getItemAvailabilityStatusId(), bibliographicIds, itemRequestInformation);
+            return multipleRequestItemValidation(itemEntityList, bibliographicIds, itemRequestInformation);
         }
         return new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
     }
@@ -157,12 +101,6 @@ public class ItemValidatorService {
             itemEntityList = itemController.findByBarcodeIn(itemBarcodes.toString());
         }
         return itemEntityList;
-    }
-
-    private List<String> splitStringAndGetList(String inputString) {
-        String[] splittedString = inputString.split(",");
-        List<String> stringList = Arrays.asList(splittedString);
-        return stringList;
     }
 
     private HttpHeaders getHttpHeaders() {
@@ -181,7 +119,7 @@ public class ItemValidatorService {
         return status;
     }
 
-    public ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, Integer itemAvailabilityStatusId, List<Integer> bibliographicIds, ItemRequestInformation itemRequestInformation) {
+    private ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, List<Integer> bibliographicIds, ItemRequestInformation itemRequestInformation) {
         String status = "";
         List<BibliographicEntity> bibliographicList = null;
 

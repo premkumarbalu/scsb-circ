@@ -31,7 +31,6 @@ public class JSIPConnectorFactory {
         return nyplAPIConnector;
     }
 
-
     public IJSIPConnector getJSIPConnector(String institutionId) {
         IJSIPConnector ijsipConnector = null;
         if (institutionId.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {

@@ -164,6 +164,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_ITEM_HOLD_FAILURE = "RequestItem - Hold Request Failed";
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "RequestItem AvailabilityStatus Change";
     public static final String REQUEST_ITEM_GFA_FAILURE = "RequestItem - LAS Request Failed";
+    public static final String REQUEST_ITEM_ITEM_CHANGE_LOG_EXCEPTION = "RequestItem - Exception";
     public static final String REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS = "RequestItemCancel AvailabilityStatus Change";
     public static final String REQUEST_ITEM_INSERT = "Request Item Insert";
     public static final String RETRIVAL_ORDER_NOT_REQUIRED_FOR_RECALL = "Retrival order not required for recall";
@@ -212,6 +213,8 @@ public final class ReCAPConstants {
     public static final String REQUEST_EXCEPTION_REST = "RestClient : ";
     public static final String REQUEST_EXCEPTION = "Exception : ";
     public static final String REQUEST_PARSE_EXCEPTION = "ParseException : ";
+    public static final String REQUEST_INVALID_SIP2_RESPONSE = "InvalidSIP2Response ";
+    public static final String REQUEST_INVALID_SIP2_RESPONSE_VALUE = "InvalidSIP2ResponseValue ";
 
     public static final String GFA_SERVICE_PARAM = "filter";
     public static final String GFA_STATUS_INCOMING_ON_WORK_ORDER = "INC ON WO:";
@@ -233,6 +236,7 @@ public final class ReCAPConstants {
     public static final String GFA_STATUS_VER_ON_WORK_ORDER = "VER ON WO:";
 
 
+
     protected static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER,GFA_STATUS_SCH_ON_WORK_ORDER, GFA_STATUS_VER_ON_EDD_WORK_ORDER, GFA_STATUS_IN);
     protected static final List<String> GFA_STATUS_NOT_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_NOT_ON_FILE,GFA_STATUS_OUT_ON_RETRIVAL_WORK_ORDER,GFA_STATUS_PW_INDIRECT_WORK_ORDER,GFA_STATUS_PW_DIRECT_WORK_ORDER,
             GFA_STATUS_SCH_ON_RET_WORK_ORDER,GFA_STATUS_VER_ON_PW_INDIRECT_WORK_ORDER,GFA_STATUS_VER_ON_PW_DIRECT_WORK_ORDER,GFA_STATUS_VER_ON_RET_WORK_ORDER,GFA_STATUS_VER_ON_WORK_ORDER);
@@ -248,8 +252,8 @@ public final class ReCAPConstants {
     public static final String REQUEST_CANCELLATION_NOT_ACTIVE = "RequestId is not active status to be canceled";
     public static final String REQUEST_CANCELLATION_DOES_NOT_EXIST = "RequestId does not exist";
 
-    public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Retrieval order successfully created in GFA.";
-    public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "Item not available in GFA";
+    public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Retrieval order successfully created in LAS.";
+    public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "Item not available in LAS";
     public static final String GFA_ITEM_STATUS_CHECK_FAILED = "Item status check failed to return valid response.";
     public static final String REQUEST_CANCELLED_NO_REFILED = "SCSB doesn't expect a re-file to happen on this item.";
     public static final String REQUEST_CANCELLED_REFILE_REQUIRED = "SCSB expects a re-file to happen on this item. Only on re-file will the item status in SCSB be updated.";
@@ -279,6 +283,11 @@ public final class ReCAPConstants {
     //Logger
     public static final String LOG_ERROR="error-->";
     public static final String GFA_ITEM_STATUS_MISMATCH = "There is a mismatch in item status between SCSB and LAS. Please contact ReCAP staff ({0}) for further assistance.";
+    public static final String CREATING_A_BIB_RECORD_FAILED_IN_ILS = "Creating a Bib record failed in ILS";
+    public static final String INVALID_NO_RESPONSE_FROM_ILS = "Invalid/No Response from ILS";
+    public static final String LOGIN_FAILED = "Login Failed";
+    public static final String PATRON_VALIDATION_FAILED = "Patron Validation Failed";
+    public static final String ITEM_STATUS_REQUEST_FAILED = "Item Status Request Failed";
 
     private ReCAPConstants() {}
 

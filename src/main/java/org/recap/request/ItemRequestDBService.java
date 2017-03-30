@@ -93,6 +93,7 @@ public class ItemRequestDBService {
             if (itemInformationResponse.getRequestId() != null && itemInformationResponse.getRequestId() > 0) {
                 requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
                 requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+                requestItemEntity.setNotes(itemInformationResponse.getRequestNotes());
             } else {
                 requestItemEntity = new RequestItemEntity();
                 RequestTypeEntity requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemInformationResponse.getRequestType());
