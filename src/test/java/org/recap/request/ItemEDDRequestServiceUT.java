@@ -113,7 +113,7 @@ public class ItemEDDRequestServiceUT extends BaseTestCase{
         Mockito.when(itemEDDRequestService.eddRequestItem(itemRequestInfo,exchange)).thenCallRealMethod();
         ItemInformationResponse itemInfoResponse = itemEDDRequestService.eddRequestItem(itemRequestInfo,exchange);
         assertNotNull(itemInfoResponse);
-        assertEquals(itemInfoResponse.getScreenMessage(),"EDD requests is successfull");
+        assertEquals(itemInfoResponse.getTitleIdentifier(),"Title Of the Book");
     }
 
     public BibliographicEntity saveBibSingleHoldingsSingleItem() throws Exception {
