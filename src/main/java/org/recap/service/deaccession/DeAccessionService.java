@@ -73,8 +73,8 @@ public class DeAccessionService {
     @Value("${gfa.item.permanent.withdrawl.indirect}")
     private String gfaItemPermanentWithdrawlInDirect;
 
-    @Value("${request.cancel.email.recap.to}")
-    private String gfaAssistanceEmailTo;
+    @Value("${recap.assist.email.to}")
+    private String recapAssistanceEmailTo;
 
 
     public Map<String, String> deAccession(DeAccessionRequest deAccessionRequest) {
@@ -136,7 +136,7 @@ public class DeAccessionService {
                                 if (StringUtils.isNotBlank(gfaItemStatus) && ReCAPConstants.getGFAStatusNotAvailableList().contains(gfaItemStatus) && !ReCAPConstants.GFA_STATUS_NOT_ON_FILE.equalsIgnoreCase(gfaItemStatus)) {
                                     barcodeAndStopCodeMap.put(itemBarcode.trim(), deAccessionItem.getDeliveryLocation());
                                 } else {
-                                    deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), MessageFormat.format(ReCAPConstants.GFA_ITEM_STATUS_MISMATCH, gfaAssistanceEmailTo), itemEntity));
+                                    deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), MessageFormat.format(ReCAPConstants.GFA_ITEM_STATUS_MISMATCH, recapAssistanceEmailTo, recapAssistanceEmailTo), itemEntity));
                                 }
                             } else {
                                 barcodeAndStopCodeMap.put(itemBarcode.trim(), deAccessionItem.getDeliveryLocation());

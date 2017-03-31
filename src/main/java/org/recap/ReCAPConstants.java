@@ -282,7 +282,7 @@ public final class ReCAPConstants {
 
     //Logger
     public static final String LOG_ERROR="error-->";
-    public static final String GFA_ITEM_STATUS_MISMATCH = "There is a mismatch in item status between SCSB and LAS. Please contact ReCAP staff ({0}) for further assistance.";
+    public static final String GFA_ITEM_STATUS_MISMATCH = "There is a mismatch in item status between SCSB and LAS. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
     public static final String CREATING_A_BIB_RECORD_FAILED_IN_ILS = "Creating a Bib record failed in ILS";
     public static final String INVALID_NO_RESPONSE_FROM_ILS = "Invalid/No Response from ILS";
     public static final String LOGIN_FAILED = "Login Failed";
