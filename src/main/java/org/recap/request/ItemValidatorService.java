@@ -14,10 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -81,7 +78,7 @@ public class ItemValidatorService {
                 return new ResponseEntity(ReCAPConstants.WRONG_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
             }
         } else if (itemRequestInformation.getItemBarcodes().size() > 1) {
-            List<Integer> bibliographicIds = new ArrayList<>();
+            Set<Integer> bibliographicIds = new HashSet<>();
             ItemEntity itemEntity1 = null;
             for (ItemEntity itemEntity : itemEntityList) {
                 List<BibliographicEntity> bibliographicList = itemEntity.getBibliographicEntities();
@@ -119,7 +116,7 @@ public class ItemValidatorService {
         return status;
     }
 
-    private ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, List<Integer> bibliographicIds, ItemRequestInformation itemRequestInformation) {
+    private ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, Set<Integer> bibliographicIds, ItemRequestInformation itemRequestInformation) {
         String status = "";
         List<BibliographicEntity> bibliographicList = null;
 
