@@ -15,7 +15,7 @@ plugins {
 }
 
 apply plugin: 'java'
-apply plugin: 'eclipse'
+
 apply plugin: 'org.springframework.boot'
 apply plugin: 'jacoco'
 
@@ -52,14 +52,12 @@ dependencies {
 	compile('org.apache.camel:camel-bindy:2.18.0')
 	compile('org.apache.camel:camel-mail:2.18.0')
 	compile('org.apache.activemq:activemq-camel:5.14.1')
-	compile('org.apache.activemq:activemq-pool:5.14.1')
-	compile('org.apache.activemq:activemq-broker:5.14.1')
-	compile('org.apache.activemq:activemq-client:5.14.1')
 	compile('info.freelibrary:freelib-marc4j:2.6.12')
-	testCompile('org.springframework.boot:spring-boot-starter-test')
 
 	runtime('mysql:mysql-connector-java:6.0.3')
 	runtime("org.springframework.boot:spring-boot-starter-actuator")
+
+	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
 jacocoTestReport {
