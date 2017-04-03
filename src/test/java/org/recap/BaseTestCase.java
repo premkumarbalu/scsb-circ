@@ -1,5 +1,6 @@
 package org.recap;
 
+import org.apache.camel.CamelContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +41,9 @@ public class BaseTestCase {
 
 	@Autowired
 	public BibliographicDetailsRepository bibliographicDetailsRepository;
+
+	@Autowired
+	public CamelContext camelContext;
 
 	@Autowired
 	public void setConverters(HttpMessageConverter<?>[] converters) {

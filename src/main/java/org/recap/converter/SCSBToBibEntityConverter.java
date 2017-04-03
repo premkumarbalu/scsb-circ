@@ -133,8 +133,6 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
     }
 
     private Map<String, Object> processAndValidateBibliographicEntity(Record bibRecord, Integer owningInstitutionId, String institutionName,String owningInstitutionBibId,Date currentDate) {
-        int failedBibCount = 0;
-        int successBibCount = 0;
         Map<String, Object> map = new HashMap<>();
 
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
@@ -262,13 +260,12 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         String customerCode = marcUtil.getDataFieldValue(itemRecord, "900", 'b');
         if (StringUtils.isNotBlank(customerCode)) {
             itemEntity.setCustomerCode(customerCode);
-        } else {
+        } /*else {
             errorMessage.append("\n");
             errorMessage.append("Customer Code cannot be null");
-        }
+        }*/
         itemEntity.setCallNumber(holdingsCallNumber);
         itemEntity.setCallNumberType(String.valueOf(holdingsCallNumberType));
-        itemEntity.setItemAvailabilityStatusId((Integer) getItemStatusMap().get("Available"));//TODO need to change
         String copyNumber = marcUtil.getDataFieldValue(itemRecord, "876", 't');
         if (StringUtils.isNotBlank(copyNumber) && org.apache.commons.lang3.math.NumberUtils.isNumber(copyNumber)) {
             itemEntity.setCopyNumber(Integer.valueOf(copyNumber));

@@ -13,11 +13,12 @@ public class EmailPayLoad implements Serializable{
     private String patronBarcode;
     private String customerCode;
     private String messageDisplay;
+    private String location;
 
     /**
      * Gets to.
      *
-     * @return to
+     * @return to to
      */
     public String getTo() {
         return to;
@@ -120,5 +121,23 @@ public class EmailPayLoad implements Serializable{
      */
     public void setSubject(String subject) {
         this.subject = subject;
+    }
+
+    /**
+     * Gets location.
+     *
+     * @return the location
+     */
+    public String getLocation() {
+        return location;
+    }
+
+    /**
+     * Sets location.
+     *
+     * @param location the location
+     */
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

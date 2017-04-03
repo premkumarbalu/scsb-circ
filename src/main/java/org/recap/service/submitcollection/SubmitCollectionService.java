@@ -81,24 +81,25 @@ public class SubmitCollectionService {
     private Integer inputLimit;
 
     @Transactional
-    public String process(String inputRecords, List<Integer> processedBibIdList,Map<String,String> idMapToRemoveIndex) {
+    public String process(String inputRecords, List<Integer> processedBibIdList,Map<String,String> idMapToRemoveIndex,String xmlFileName) {
         String reponse = null;
-        List<SubmitCollectionReportInfo> submitCollectionRejectionInfos = new ArrayList<>();
-        List<SubmitCollectionReportInfo> submitCollectionExceptionInfos = new ArrayList<>();
+        Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
         try{
-            if(!inputRecords.equals("")) {
+            if(!"".equals(inputRecords)) {
                 if (inputRecords.contains(ReCAPConstants.BIBRECORD_TAG)) {
-                    reponse = processSCSB(inputRecords, processedBibIdList, submitCollectionRejectionInfos,submitCollectionExceptionInfos,idMapToRemoveIndex);
+                    reponse = processSCSB(inputRecords, processedBibIdList, submitCollectionReportInfoMap,idMapToRemoveIndex);
                     if (reponse != null)
                         return reponse;
                 } else {
-                    reponse = processMarc(inputRecords, processedBibIdList, submitCollectionRejectionInfos, submitCollectionExceptionInfos,idMapToRemoveIndex);
+                    reponse = processMarc(inputRecords, processedBibIdList, submitCollectionReportInfoMap,idMapToRemoveIndex);
                     if (reponse != null)
                         return reponse;
                 }
-                generateSubmitCollectionReport(submitCollectionRejectionInfos,ReCAPConstants.SUBMIT_COLLECTION_REPORT,ReCAPConstants.SUBMIT_COLLECTION_REJECTION_REPORT);
-                generateSubmitCollectionReport(submitCollectionExceptionInfos,ReCAPConstants.SUBMIT_COLLECTION_REPORT,ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_REPORT);
-                reponse = getResponseMessage(submitCollectionRejectionInfos,submitCollectionExceptionInfos,processedBibIdList);
+                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST),ReCAPConstants.SUBMIT_COLLECTION_REPORT,ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_REPORT,xmlFileName);
+                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),ReCAPConstants.SUBMIT_COLLECTION_REPORT,ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT,xmlFileName);
+                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST),ReCAPConstants.SUBMIT_COLLECTION_REPORT,ReCAPConstants.SUBMIT_COLLECTION_REJECTION_REPORT,xmlFileName);
+                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST),ReCAPConstants.SUBMIT_COLLECTION_REPORT,ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_REPORT,xmlFileName);
+                reponse = getResponseMessage(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST),processedBibIdList);
             }
         }catch (Exception e){
             logger.error(ReCAPConstants.LOG_ERROR,e);
@@ -109,7 +110,7 @@ public class SubmitCollectionService {
 
     private String getResponseMessage(List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,List<SubmitCollectionReportInfo> submitCollectionExceptionInfos,
                                       List<Integer> processedBibIdList){
-        String responseMessage = null;
+        String responseMessage;
         if(!processedBibIdList.isEmpty()){
             responseMessage = ReCAPConstants.SUCCESS+", "+ReCAPConstants.SUMBIT_COLLECTION_UPDATE_MESSAGE;
         } else{
@@ -132,8 +133,7 @@ public class SubmitCollectionService {
         return responseMessage;
     }
 
-    private String processMarc(String inputRecords, List<Integer> processedBibIdList, List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,
-                               List<SubmitCollectionReportInfo> submitCollectionExceptionInfos,Map<String,String> idMapToRemoveIndex) {
+    private String processMarc(String inputRecords, List<Integer> processedBibIdList,Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,Map<String,String> idMapToRemoveIndex) {
         String format;
         format = ReCAPConstants.FORMAT_MARC;
         List<Record> records = null;
@@ -149,8 +149,8 @@ public class SubmitCollectionService {
         }
         if (CollectionUtils.isNotEmpty(records)) {
             for (Record record : records) {
-                BibliographicEntity bibliographicEntity = loadData(record, format,submitCollectionRejectionInfos,submitCollectionExceptionInfos,idMapToRemoveIndex);
-                if (null != bibliographicEntity.getBibliographicId()) {
+                BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndex);
+                if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIdList.add(bibliographicEntity.getBibliographicId());
                 }
             }
@@ -158,24 +158,24 @@ public class SubmitCollectionService {
         return null;
     }
 
-    private String processSCSB(String inputRecords, List<Integer> processedBibIdList, List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,
-                               List<SubmitCollectionReportInfo> submitCollectionExceptionInfos,Map<String,String> idMapToRemoveIndex) {
+    private String processSCSB(String inputRecords, List<Integer> processedBibIdList, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String, String> idMapToRemoveIndex) {
         String format;
         format = ReCAPConstants.FORMAT_SCSB;
         BibRecords bibRecords = null;
         try {
             bibRecords = (BibRecords) JAXBHandler.getInstance().unmarshal(inputRecords, BibRecords.class);
-            if(bibRecords.getBibRecords().size() > inputLimit){
-                return ReCAPConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE + " " +inputLimit;
+            logger.info("bibrecord size {}", bibRecords.getBibRecords().size());
+            if (bibRecords.getBibRecords().size() > inputLimit) {
+                return ReCAPConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE + " " + inputLimit;
             }
         } catch (JAXBException e) {
             logger.info(String.valueOf(e.getCause()));
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+            logger.error(ReCAPConstants.LOG_ERROR, e);
             return ReCAPConstants.INVALID_SCSB_XML_FORMAT_MESSAGE;
         }
         for (BibRecord bibRecord : bibRecords.getBibRecords()) {
-            BibliographicEntity bibliographicEntity = loadData(bibRecord, format,submitCollectionRejectionInfos,submitCollectionExceptionInfos,idMapToRemoveIndex);
-            if (null != bibliographicEntity.getBibliographicId()) {
+            BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndex);
+            if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                 processedBibIdList.add(bibliographicEntity.getBibliographicId());
             }
         }
@@ -183,8 +183,7 @@ public class SubmitCollectionService {
     }
 
 
-    private BibliographicEntity loadData(Object record, String format, List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,
-                                         List<SubmitCollectionReportInfo> submitCollectionExceptionInfos,Map<String,String> idMapToRemoveIndex){
+    private BibliographicEntity loadData(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,Map<String,String> idMapToRemoveIndex){
         BibliographicEntity savedBibliographicEntity = null;
         Map responseMap = getConverter(format).convert(record);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) responseMap.get("bibliographicEntity");
@@ -193,7 +192,7 @@ public class SubmitCollectionService {
             reportDetailRepository.save(reportEntityList);
         }
         if (bibliographicEntity != null) {
-            savedBibliographicEntity = updateBibliographicEntity(bibliographicEntity,submitCollectionRejectionInfos,submitCollectionExceptionInfos,idMapToRemoveIndex);
+            savedBibliographicEntity = updateBibliographicEntity(bibliographicEntity, submitCollectionReportInfoMap,idMapToRemoveIndex);
         }
         return savedBibliographicEntity;
     }
@@ -206,17 +205,19 @@ public class SubmitCollectionService {
                 submitCollectionRejectionInfo.setItemBarcode(itemEntity.getBarcode());
                 submitCollectionRejectionInfo.setCustomerCode(itemEntity.getCustomerCode());
                 submitCollectionRejectionInfo.setOwningInstitution((String) getInstitutionEntityMap().get(itemEntity.getOwningInstitutionId()));
+                submitCollectionRejectionInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_RECORD);
                 submitCollectionRejectionInfos.add(submitCollectionRejectionInfo);
             }
         }
     }
 
-    private void setSubmitCollectionExceptionInfo(BibliographicEntity bibliographicEntity,List<SubmitCollectionReportInfo> submitCollectionExceptionInfos) {
+    private void setSubmitCollectionReportInfo(BibliographicEntity bibliographicEntity, List<SubmitCollectionReportInfo> submitCollectionExceptionInfos, String message) {
         for (ItemEntity itemEntity : bibliographicEntity.getItemEntities()) {
             SubmitCollectionReportInfo submitCollectionExceptionInfo = new SubmitCollectionReportInfo();
             submitCollectionExceptionInfo.setItemBarcode(itemEntity.getBarcode());
             submitCollectionExceptionInfo.setCustomerCode(itemEntity.getCustomerCode());
             submitCollectionExceptionInfo.setOwningInstitution((String) getInstitutionEntityMap().get(itemEntity.getOwningInstitutionId()));
+            submitCollectionExceptionInfo.setMessage(message);
             submitCollectionExceptionInfos.add(submitCollectionExceptionInfo);
         }
     }
@@ -229,14 +230,13 @@ public class SubmitCollectionService {
         return getRestTemplate().postForObject(serverProtocol + scsbSolrClientUrl + "solrIndexer/deleteByBibHoldingItemId", idMapToRemoveIndex, String.class);
     }
 
-    public BibliographicEntity updateBibliographicEntity(BibliographicEntity bibliographicEntity,List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,
-                                                         List<SubmitCollectionReportInfo> submitCollectionExceptionInfos,Map<String,String> idMapToRemoveIndex) {
+    public BibliographicEntity updateBibliographicEntity(BibliographicEntity bibliographicEntity,Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,Map<String,String> idMapToRemoveIndex) {
         BibliographicEntity savedBibliographicEntity;
         BibliographicEntity fetchBibliographicEntity = getBibEntityUsingBarcode(bibliographicEntity);
         if(fetchBibliographicEntity != null ){//update exisiting complete record
             if(fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId())){
-                savedBibliographicEntity = updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionRejectionInfos);
-            } else{//update existing incomplete record if any
+                savedBibliographicEntity = updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
+            } else {//update existing incomplete record if any
                 idMapToRemoveIndex.put(ReCAPConstants.BIB_ID,String.valueOf(fetchBibliographicEntity.getBibliographicId()));
                 idMapToRemoveIndex.put(ReCAPConstants.HOLDING_ID,String.valueOf(fetchBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId()));
                 idMapToRemoveIndex.put(ReCAPConstants.ITEM_ID,String.valueOf(fetchBibliographicEntity.getItemEntities().get(0).getItemId()));
@@ -245,17 +245,19 @@ public class SubmitCollectionService {
                 savedBibliographicEntity = getBibliographicDetailsRepository().saveAndFlush(bibliographicEntity);
                 entityManager.refresh(savedBibliographicEntity);
             }
-        } else{//if no record found to update, generated exception info
+        } else {//if no record found to update, generated exception info
             savedBibliographicEntity = bibliographicEntity;
-            setSubmitCollectionExceptionInfo(bibliographicEntity,submitCollectionExceptionInfos);
+            setSubmitCollectionReportInfo(bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST),ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
         }
         return savedBibliographicEntity;
     }
 
-    private BibliographicEntity getBibEntityUsingBarcode(BibliographicEntity bibliographicEntity){
-        String itemBarcode = bibliographicEntity.getItemEntities().get(0).getBarcode();
+    private BibliographicEntity getBibEntityUsingBarcode(BibliographicEntity bibliographicEntity) {
+        //String itemBarcode = bibliographicEntity.getItemEntities().get(0).getBarcode();
         List<String> itemBarcodeList = new ArrayList<>();
-        itemBarcodeList.add(itemBarcode);
+        for(ItemEntity itemEntity: bibliographicEntity.getItemEntities()){
+            itemBarcodeList.add(itemEntity.getBarcode());
+        }
         List<ItemEntity> itemEntityList = getItemDetailsRepository().findByBarcodeIn(itemBarcodeList);
         BibliographicEntity fetchedBibliographicEntity = null;
         if(itemEntityList != null && !itemEntityList.isEmpty() && itemEntityList.get(0).getBibliographicEntities() != null){
@@ -264,18 +266,18 @@ public class SubmitCollectionService {
         return fetchedBibliographicEntity;
     }
 
-    private BibliographicEntity updateCompleteRecord(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity,List<SubmitCollectionReportInfo> submitCollectionRejectionInfos) {
+    private BibliographicEntity updateCompleteRecord(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity,
+                                                     Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
         BibliographicEntity savedOrUnsavedBibliographicEntity;
-        setSubmitCollectionRejectionInfo(fetchBibliographicEntity, submitCollectionRejectionInfos);
-        Date currentDate = new Date();
-        copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity,currentDate);
+        setSubmitCollectionRejectionInfo(fetchBibliographicEntity, submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST));
+        copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity);
         List<HoldingsEntity> fetchHoldingsEntities = fetchBibliographicEntity.getHoldingsEntities();
         List<HoldingsEntity> holdingsEntities = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
         for (Iterator iholdings = holdingsEntities.iterator(); iholdings.hasNext(); ) {
             HoldingsEntity holdingsEntity = (HoldingsEntity) iholdings.next();
             for (int j = 0; j < fetchHoldingsEntities.size(); j++) {
                 HoldingsEntity fetchHolding = fetchHoldingsEntities.get(j);
-                if (fetchHolding.getOwningInstitutionHoldingsId().equalsIgnoreCase(holdingsEntity.getOwningInstitutionHoldingsId()) && fetchHolding.getOwningInstitutionId().equals(holdingsEntity.getOwningInstitutionId())) {
+                if (fetchHolding.getOwningInstitutionHoldingsId().equalsIgnoreCase(holdingsEntity.getOwningInstitutionHoldingsId())) {
                     copyHoldingsEntity(fetchHolding, holdingsEntity);
                     iholdings.remove();
                 } else {
@@ -300,7 +302,7 @@ public class SubmitCollectionService {
             ItemEntity itemEntity = (ItemEntity) iItems.next();
             for (Iterator ifetchItems = fetchItemsEntities.iterator(); ifetchItems.hasNext(); ) {
                 ItemEntity fetchItem = (ItemEntity) ifetchItems.next();
-                if (fetchItem.getOwningInstitutionItemId().equalsIgnoreCase(itemEntity.getOwningInstitutionItemId()) && fetchItem.getOwningInstitutionId().equals(itemEntity.getOwningInstitutionId())) {
+                if (fetchItem.getOwningInstitutionItemId().equalsIgnoreCase(itemEntity.getOwningInstitutionItemId())) {
                     copyItemEntity(fetchItem, itemEntity);
                     iItems.remove();
                 }
@@ -309,54 +311,18 @@ public class SubmitCollectionService {
         fetchItemsEntities.addAll(itemsEntities);
         fetchBibliographicEntity.setHoldingsEntities(fetchHoldingsEntities);
         fetchBibliographicEntity.setItemEntities(fetchItemsEntities);
-        savedOrUnsavedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(fetchBibliographicEntity);
-        return savedOrUnsavedBibliographicEntity;
+        try {
+            savedOrUnsavedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(fetchBibliographicEntity);
+            setSubmitCollectionReportInfo(fetchBibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST),ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD);
+            return savedOrUnsavedBibliographicEntity;
+        } catch (Exception e) {
+            setSubmitCollectionReportInfo(fetchBibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
+            return null;
+        }
     }
 
-    private BibliographicEntity updateIncompleteRecord(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity) {
-        BibliographicEntity savedBibliographicEntity;
-        Date currentDate = new Date();
-        copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity,currentDate);
-        List<HoldingsEntity> fetchHoldingsEntities = fetchBibliographicEntity.getHoldingsEntities();
-        List<HoldingsEntity> holdingsEntities = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
-        for (Iterator iholdings = holdingsEntities.iterator(); iholdings.hasNext(); ) {
-            HoldingsEntity holdingsEntity = (HoldingsEntity) iholdings.next();
-            for (int j = 0; j < fetchHoldingsEntities.size(); j++) {
-                HoldingsEntity fetchHolding = fetchHoldingsEntities.get(j);
-                List<ItemEntity> fetchedItemEntityList = fetchHolding.getItemEntities();
-                List<ItemEntity> itemEntityList = holdingsEntity.getItemEntities();
-                for (ItemEntity fetchedItemEntity : fetchedItemEntityList) {
-                    for (ItemEntity itemEntity : itemEntityList) {
-                        if (fetchedItemEntity.getBarcode().equals(itemEntity.getBarcode())) {
-                            copyHoldingsEntity(fetchHolding, holdingsEntity);
-                            iholdings.remove();
-                        }
-                    }
-                }
-            }
-        }
-        fetchHoldingsEntities.addAll(holdingsEntities);
-        // Item
-        List<ItemEntity> fetchItemsEntities = fetchBibliographicEntity.getItemEntities();
-        List<ItemEntity> itemsEntities = new ArrayList<>(bibliographicEntity.getItemEntities());
-        for (Iterator iItems = itemsEntities.iterator(); iItems.hasNext(); ) {
-            ItemEntity itemEntity = (ItemEntity) iItems.next();
-            for (Iterator ifetchItems = fetchItemsEntities.iterator(); ifetchItems.hasNext(); ) {
-                ItemEntity fetchItem = (ItemEntity) ifetchItems.next();
-                if (fetchItem.getBarcode().equalsIgnoreCase(itemEntity.getBarcode()) && fetchItem.getOwningInstitutionId().equals(itemEntity.getOwningInstitutionId())) {
-                    copyItemEntity(fetchItem, itemEntity);
-                    iItems.remove();
-                }
-            }
-        }
-        fetchItemsEntities.addAll(itemsEntities);
-        fetchBibliographicEntity.setHoldingsEntities(fetchHoldingsEntities);
-        fetchBibliographicEntity.setItemEntities(fetchItemsEntities);
-        savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(fetchBibliographicEntity);
-        return savedBibliographicEntity;
-    }
-
-    private BibliographicEntity copyBibliographicEntity(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity,Date currentDate){
+    private BibliographicEntity copyBibliographicEntity(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity){
         fetchBibliographicEntity.setContent(bibliographicEntity.getContent());
         fetchBibliographicEntity.setDeleted(bibliographicEntity.isDeleted());
         fetchBibliographicEntity.setLastUpdatedBy(bibliographicEntity.getLastUpdatedBy());
@@ -373,13 +339,12 @@ public class SubmitCollectionService {
         return fetchHoldingsEntity;
     }
 
-    private ItemEntity copyItemEntity(ItemEntity fetchItemEntity, ItemEntity itemEntity){
+    private ItemEntity copyItemEntity(ItemEntity fetchItemEntity, ItemEntity itemEntity) {
         fetchItemEntity.setBarcode(itemEntity.getBarcode());
         fetchItemEntity.setDeleted(itemEntity.isDeleted());
         fetchItemEntity.setLastUpdatedBy(itemEntity.getLastUpdatedBy());
         fetchItemEntity.setLastUpdatedDate(itemEntity.getLastUpdatedDate());
         fetchItemEntity.setCallNumber(itemEntity.getCallNumber());
-        fetchItemEntity.setCustomerCode(itemEntity.getCustomerCode());
         fetchItemEntity.setCallNumberType(itemEntity.getCallNumberType());
         if (isAvailableItem(fetchItemEntity.getItemAvailabilityStatusId())) {
             fetchItemEntity.setCollectionGroupId(itemEntity.getCollectionGroupId());
@@ -408,28 +373,29 @@ public class SubmitCollectionService {
         return null;
     }
 
-    public void generateSubmitCollectionReport(List<SubmitCollectionReportInfo> submitCollectionRequestList,String fileName, String reportType){
-        if(submitCollectionRequestList != null && !submitCollectionRequestList.isEmpty()){
+    public void generateSubmitCollectionReport(List<SubmitCollectionReportInfo> submitCollectionReportList,String fileName, String reportType,String xmlFileName){
+        if(submitCollectionReportList != null && !submitCollectionReportList.isEmpty()){
             try {
-                for(SubmitCollectionReportInfo submitCollectionRejectionInfo : submitCollectionRequestList){
-                    if(!StringUtils.isEmpty(submitCollectionRejectionInfo.getItemBarcode()) && !StringUtils.isEmpty(submitCollectionRejectionInfo.getCustomerCode())){
-                        List<ReportDataEntity> reportDataEntities = new ArrayList<>();
-                        List<ReportEntity> reportEntityList = new ArrayList<>();
-                        ReportEntity reportEntity = new ReportEntity();
-                        reportEntity.setFileName(fileName);
-                        reportEntity.setType(reportType);
-                        reportEntity.setCreatedDate(new Date());
-                        String owningInstitution = submitCollectionRejectionInfo.getOwningInstitution();
-                        reportEntity.setInstitutionName(owningInstitution);
+                ReportEntity reportEntity = new ReportEntity();
+                List<ReportDataEntity> reportDataEntities = new ArrayList<>();
+                String owningInstitution = submitCollectionReportList.get(0).getOwningInstitution();
+                if(!submitCollectionReportList.isEmpty()){
+                    reportEntity.setFileName(fileName+"-"+xmlFileName);
+                    reportEntity.setType(reportType);
+                    reportEntity.setCreatedDate(new Date());
+                    reportEntity.setInstitutionName(owningInstitution);
+                }
+                for(SubmitCollectionReportInfo submitCollectionReportInfo : submitCollectionReportList){
+                    if(!StringUtils.isEmpty(submitCollectionReportInfo.getItemBarcode()) && !StringUtils.isEmpty(submitCollectionReportInfo.getCustomerCode())){
 
                         ReportDataEntity itemBarcodeReportDataEntity = new ReportDataEntity();
                         itemBarcodeReportDataEntity.setHeaderName(ReCAPConstants.SUBMIT_COLLECTION_ITEM_BARCODE);
-                        itemBarcodeReportDataEntity.setHeaderValue(submitCollectionRejectionInfo.getItemBarcode());
+                        itemBarcodeReportDataEntity.setHeaderValue(submitCollectionReportInfo.getItemBarcode());
                         reportDataEntities.add(itemBarcodeReportDataEntity);
 
                         ReportDataEntity customerCodeReportDataEntity = new ReportDataEntity();
                         customerCodeReportDataEntity.setHeaderName(ReCAPConstants.SUBMIT_COLLECTION_CUSTOMER_CODE);
-                        customerCodeReportDataEntity.setHeaderValue(submitCollectionRejectionInfo.getCustomerCode());
+                        customerCodeReportDataEntity.setHeaderValue(submitCollectionReportInfo.getCustomerCode());
                         reportDataEntities.add(customerCodeReportDataEntity);
 
                         ReportDataEntity owningInstitutionReportDataEntity = new ReportDataEntity();
@@ -437,9 +403,13 @@ public class SubmitCollectionService {
                         owningInstitutionReportDataEntity.setHeaderValue(owningInstitution);
                         reportDataEntities.add(owningInstitutionReportDataEntity);
 
+                        ReportDataEntity messageReportDataEntity = new ReportDataEntity();
+                        messageReportDataEntity.setHeaderName(ReCAPConstants.MESSAGE);
+                        messageReportDataEntity.setHeaderValue(submitCollectionReportInfo.getMessage());
+                        reportDataEntities.add(messageReportDataEntity);
+
                         reportEntity.setReportDataEntities(reportDataEntities);
-                        reportEntityList.add(reportEntity);
-                        reportDetailRepository.save(reportEntityList);
+                        reportDetailRepository.save(reportEntity);
 
                     }
                 }
@@ -545,5 +515,18 @@ public class SubmitCollectionService {
             }
         }
         return institutionEntityMap;
+    }
+
+    private Map getSubmitCollectionReportMap(){
+        List<SubmitCollectionReportInfo> submitCollectionSuccessInfoList = new ArrayList<>();
+        List<SubmitCollectionReportInfo> submitCollectionFailureInfoList = new ArrayList<>();
+        List<SubmitCollectionReportInfo> submitCollectionRejectionInfoList = new ArrayList<>();
+        List<SubmitCollectionReportInfo> submitCollectionExceptionInfoList = new ArrayList<>();
+        Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();
+        submitCollectionReportInfoMap.put(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST,submitCollectionSuccessInfoList);
+        submitCollectionReportInfoMap.put(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST,submitCollectionFailureInfoList);
+        submitCollectionReportInfoMap.put(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST,submitCollectionRejectionInfoList);
+        submitCollectionReportInfoMap.put(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST,submitCollectionExceptionInfoList);
+        return submitCollectionReportInfoMap;
     }
 }

@@ -38,7 +38,7 @@ public class SharedCollectionRestController {
         List<Integer> processedBibIdList = new ArrayList<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         try {
-            response = submitCollectionService.process(inputRecords,processedBibIdList,idMapToRemoveIndex);
+            response = submitCollectionService.process(inputRecords,processedBibIdList,idMapToRemoveIndex,ReCAPConstants.REST);
             if (response.contains(ReCAPConstants.SUMBIT_COLLECTION_UPDATE_MESSAGE)) {
                 String indexResponse = submitCollectionService.indexData(processedBibIdList);
                 if (idMapToRemoveIndex.size()>0) {//remove the incomplete record from solr index
