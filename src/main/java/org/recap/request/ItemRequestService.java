@@ -175,7 +175,7 @@ public class ItemRequestService {
             itemResponseInformation = setItemResponseInformation(itemRequestInfo, itemResponseInformation);
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
-            logger.info("Finish Processing");
+            logger.info(ReCAPConstants.FINISH_PROCESSING);
         } catch (RestClientException ex) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION_REST, ex);
         } catch (Exception ex) {
@@ -202,7 +202,7 @@ public class ItemRequestService {
                 itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
                 itemResponseInformation.setSuccess(false);
             }
-            logger.info("Finish Processing");
+            logger.info(ReCAPConstants.FINISH_PROCESSING);
             itemResponseInformation = setItemResponseInformation(itemRequestInfo, itemResponseInformation);
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
@@ -224,7 +224,7 @@ public class ItemRequestService {
 
         for (RequestItemEntity requestItemEntity : requestEntities) {
             itemEntity = requestItemEntity.getItemEntity();
-            if (itemEntity.getItemAvailabilityStatusId().intValue() == 1) { // Only Item availability status is processed
+            if (itemEntity.getItemAvailabilityStatusId().intValue() == 2) { // Only Item Not Availability Status is Processed
                 itemBarcode = itemEntity.getBarcode();
                 RequestStatusEntity requestStatusEntity = getRequestItemStatusDetailsRepository().findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_REFILED);
                 if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
@@ -383,7 +383,7 @@ public class ItemRequestService {
             }
         } catch (Exception e) {
             itemResponseInformation.setSuccess(false);
-            itemResponseInformation.setScreenMessage(e.getMessage());
+            itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_SCSB_EXCEPTION + e.getMessage());
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemResponseInformation;
@@ -405,7 +405,7 @@ public class ItemRequestService {
                     itemRequestInfo.setBibId(createBibResponse.getBibId());
                     itemResponseInformation = hodlItem(itemRequestInfo.getRequestingInstitution(), itemRequestInfo, itemResponseInformation, itemEntity);
                 } else {
-                    itemResponseInformation.setScreenMessage(ReCAPConstants.CREATING_A_BIB_RECORD_FAILED_IN_ILS);
+                    itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_ILS_EXCEPTION + ReCAPConstants.CREATING_A_BIB_RECORD_FAILED_IN_ILS);
                     itemResponseInformation.setSuccess(createBibResponse.isSuccess());
                     rollbackUpdateItemAvailabilutyStatus(itemEntity, itemRequestInfo.getUsername());
                     saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, createBibResponse.getBibId() + " - " + createBibResponse.getScreenMessage());
@@ -413,7 +413,7 @@ public class ItemRequestService {
             }
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
-            itemResponseInformation.setScreenMessage(e.getMessage());
+            itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_SCSB_EXCEPTION + e.getMessage());
             itemResponseInformation.setSuccess(false);
             saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), ReCAPConstants.REQUEST_ITEM_ITEM_CHANGE_LOG_EXCEPTION, itemRequestInfo.getItemBarcodes() + " - " + e.getMessage());
         }
@@ -445,7 +445,7 @@ public class ItemRequestService {
             itemRequestInfo.setExpirationDate(itemHoldResponse.getExpirationDate());
             itemResponseInformation = checkInstAfterPlacingRequest(itemRequestInfo, itemResponseInformation, itemEntity);
         } else { // If Hold command Failure
-            itemResponseInformation.setScreenMessage(itemHoldResponse.getScreenMessage());
+            itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_ILS_EXCEPTION + itemHoldResponse.getScreenMessage());
             itemResponseInformation.setSuccess(itemHoldResponse.isSuccess());
             rollbackUpdateItemAvailabilutyStatus(itemEntity, itemRequestInfo.getUsername());
             saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, itemHoldResponse.getPatronIdentifier() + " - " + itemHoldResponse.getScreenMessage());
@@ -487,11 +487,7 @@ public class ItemRequestService {
                     messagePublish = ReCAPConstants.SUCCESSFULLY_PROCESSED_REQUEST_ITEM;
                     bsuccess = true;
                 } else {
-                    if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
-                        messagePublish = itemRecallResponse.getScreenMessage();
-                    } else {
-                        messagePublish = "Recall failed from ILS";
-                    }
+                    messagePublish = recallError(itemRecallResponse);
                     bsuccess = false;
                 }
             } else {
@@ -506,11 +502,7 @@ public class ItemRequestService {
                         messagePublish = ReCAPConstants.SUCCESSFULLY_PROCESSED_REQUEST_ITEM;
                         bsuccess = true;
                     } else {
-                        if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
-                            messagePublish = itemRecallResponse.getScreenMessage();
-                        } else {
-                            messagePublish = "Recall failed from ILS";
-                        }
+                        messagePublish = recallError(itemRecallResponse);
                         bsuccess = false;
                     }
                 } else { // If Hold command Failure
@@ -520,12 +512,20 @@ public class ItemRequestService {
                 }
             }
         } else {
-            messagePublish = "Recall Cannot be processed, the item is not checked out in ILS";
+            messagePublish = ReCAPConstants.REQUEST_SCSB_EXCEPTION + ReCAPConstants.RECALL_CANNOT_BE_PROCESSED_THE_ITEM_IS_NOT_CHECKED_OUT_IN_ILS;
             bsuccess = false;
         }
         itemResponseInformation.setScreenMessage(messagePublish);
         itemResponseInformation.setSuccess(bsuccess);
         return itemResponseInformation;
+    }
+
+    private String recallError(ItemRecallResponse itemRecallResponse) {
+        if (itemRecallResponse.getScreenMessage() != null && itemRecallResponse.getScreenMessage().trim().length() > 0) {
+            return ReCAPConstants.REQUEST_SCSB_EXCEPTION + itemRecallResponse.getScreenMessage();
+        } else {
+            return ReCAPConstants.REQUEST_SCSB_EXCEPTION + ReCAPConstants.RECALL_FAILED_NO_MESSAGE_RETURNED;
+        }
     }
 
     private String getPatronIdBorrwingInsttution(String requestingInstitution, String owningInstitution) {
@@ -641,7 +641,7 @@ public class ItemRequestService {
             if (!StringUtils.isBlank(notes)) {
                 notes += "\n";
             }
-            notes += String.format("Exception : %s", screenMessage);
+            notes += screenMessage;
         }
         return notes;
     }

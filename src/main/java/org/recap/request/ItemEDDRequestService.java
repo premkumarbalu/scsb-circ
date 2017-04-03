@@ -117,7 +117,7 @@ public class ItemEDDRequestService {
         if (!StringUtils.isBlank(itemRequestInfo.getRequestNotes())) {
             notes = String.format("User: %s", itemRequestInfo.getRequestNotes());
         }
-        notes += String.format("\nStart Page: %s ;End Page: %s ;Volume Number: %s ;Issue: %s ;Article Author: %s ;Article/Chapter Title: %s ", itemRequestInfo.getStartPage(), itemRequestInfo.getEndPage(), itemRequestInfo.getVolume(), itemRequestInfo.getIssue(), itemRequestInfo.getAuthor(), itemRequestInfo.getChapterTitle());
+        notes += String.format("\n\nStart Page: %s \nEnd Page: %s \nVolume Number: %s \nIssue: %s \nArticle Author: %s \nArticle/Chapter Title: %s ", itemRequestInfo.getStartPage(), itemRequestInfo.getEndPage(), itemRequestInfo.getVolume(), itemRequestInfo.getIssue(), itemRequestInfo.getAuthor(), itemRequestInfo.getChapterTitle());
         return notes;
     }
 }

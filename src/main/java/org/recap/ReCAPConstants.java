@@ -215,6 +215,9 @@ public final class ReCAPConstants {
     public static final String REQUEST_PARSE_EXCEPTION = "ParseException : ";
     public static final String REQUEST_INVALID_SIP2_RESPONSE = "InvalidSIP2Response ";
     public static final String REQUEST_INVALID_SIP2_RESPONSE_VALUE = "InvalidSIP2ResponseValue ";
+    public static final String REQUEST_ILS_EXCEPTION = "ILS Exception : ";
+    public static final String REQUEST_LAS_EXCEPTION = "LAS Exception : ";
+    public static final String REQUEST_SCSB_EXCEPTION = "SCSB Exception : ";
 
     public static final String GFA_SERVICE_PARAM = "filter";
     public static final String GFA_STATUS_INCOMING_ON_WORK_ORDER = "INC ON WO:";
@@ -236,12 +239,11 @@ public final class ReCAPConstants {
     public static final String GFA_STATUS_VER_ON_WORK_ORDER = "VER ON WO:";
 
 
+    protected static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER, GFA_STATUS_SCH_ON_WORK_ORDER, GFA_STATUS_VER_ON_EDD_WORK_ORDER, GFA_STATUS_IN);
+    protected static final List<String> GFA_STATUS_NOT_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_NOT_ON_FILE, GFA_STATUS_OUT_ON_RETRIVAL_WORK_ORDER, GFA_STATUS_PW_INDIRECT_WORK_ORDER, GFA_STATUS_PW_DIRECT_WORK_ORDER,
+            GFA_STATUS_SCH_ON_RET_WORK_ORDER, GFA_STATUS_VER_ON_PW_INDIRECT_WORK_ORDER, GFA_STATUS_VER_ON_PW_DIRECT_WORK_ORDER, GFA_STATUS_VER_ON_RET_WORK_ORDER, GFA_STATUS_VER_ON_WORK_ORDER);
 
-    protected static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER,GFA_STATUS_SCH_ON_WORK_ORDER, GFA_STATUS_VER_ON_EDD_WORK_ORDER, GFA_STATUS_IN);
-    protected static final List<String> GFA_STATUS_NOT_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_NOT_ON_FILE,GFA_STATUS_OUT_ON_RETRIVAL_WORK_ORDER,GFA_STATUS_PW_INDIRECT_WORK_ORDER,GFA_STATUS_PW_DIRECT_WORK_ORDER,
-            GFA_STATUS_SCH_ON_RET_WORK_ORDER,GFA_STATUS_VER_ON_PW_INDIRECT_WORK_ORDER,GFA_STATUS_VER_ON_PW_DIRECT_WORK_ORDER,GFA_STATUS_VER_ON_RET_WORK_ORDER,GFA_STATUS_VER_ON_WORK_ORDER);
-
-    protected static final List<String> REQUEST_TYPE_LIST = Arrays.asList(ReCAPConstants.RETRIEVAL,ReCAPConstants.REQUEST_TYPE_EDD,ReCAPConstants.BORROW_DIRECT,ReCAPConstants.REQUEST_TYPE_RECALL);
+    protected static final List<String> REQUEST_TYPE_LIST = Arrays.asList(ReCAPConstants.RETRIEVAL, ReCAPConstants.REQUEST_TYPE_EDD, ReCAPConstants.BORROW_DIRECT, ReCAPConstants.REQUEST_TYPE_RECALL);
 
     public static final String SUCCESSFULLY_PROCESSED_REQUEST_ITEM = "Successfully Processed Request Item";
     public static final String REQUEST_ITEM_BARCODE_NOT_FOUND = "ITEM BARCODE NOT FOUND.";
@@ -288,18 +290,22 @@ public final class ReCAPConstants {
     public static final String LOGIN_FAILED = "Login Failed";
     public static final String PATRON_VALIDATION_FAILED = "Patron Validation Failed";
     public static final String ITEM_STATUS_REQUEST_FAILED = "Item Status Request Failed";
+    public static final String RECALL_FAILED_NO_MESSAGE_RETURNED = "Recall failed, no message returned";
+    public static final String RECALL_CANNOT_BE_PROCESSED_THE_ITEM_IS_NOT_CHECKED_OUT_IN_ILS = "Recall Cannot be processed, the item is not checked out in ILS";
+    public static final String FINISH_PROCESSING = "Finish Processing";
 
-    private ReCAPConstants() {}
+    private ReCAPConstants() {
+    }
 
-    public static final List getGFAStatusAvailableList(){
+    public static final List getGFAStatusAvailableList() {
         return GFA_STATUS_AVAILABLE_LIST;
     }
 
-    public static final List getGFAStatusNotAvailableList(){
+    public static final List getGFAStatusNotAvailableList() {
         return GFA_STATUS_NOT_AVAILABLE_LIST;
     }
 
-    public static final List getRequestTypeList(){
+    public static final List getRequestTypeList() {
         return REQUEST_TYPE_LIST;
     }
 
