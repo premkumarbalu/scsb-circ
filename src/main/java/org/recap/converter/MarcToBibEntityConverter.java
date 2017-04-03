@@ -9,10 +9,7 @@ import org.recap.model.*;
 import org.recap.model.marc.BibMarcRecord;
 import org.recap.model.marc.HoldingsMarcRecord;
 import org.recap.model.marc.ItemMarcRecord;
-import org.recap.repository.CollectionGroupDetailsRepository;
-import org.recap.repository.CustomerCodeDetailsRepository;
-import org.recap.repository.InstitutionDetailsRepository;
-import org.recap.repository.ItemStatusDetailsRepository;
+import org.recap.repository.*;
 import org.recap.util.DBReportUtil;
 import org.recap.util.MarcUtil;
 import org.slf4j.Logger;
@@ -48,9 +45,13 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
     @Autowired
     private CustomerCodeDetailsRepository customerCodeDetailsRepository;
 
+    @Autowired
+    private ItemDetailsRepository itemDetailsRepository;
+
     private Map itemStatusMap;
     private Map collectionGroupMap;
     private Map institutionEntityMap;
+    
     @Override
     public Map convert(Object marcRecord) {
         Map<String, Object> map = new HashMap<>();
@@ -66,11 +67,11 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
 
         BibMarcRecord bibMarcRecord = marcUtil.buildBibMarcRecord(record);
         Record bibRecord = bibMarcRecord.getBibRecord();
-        Integer owningInstitutionId = getOwningInstitutionId(bibMarcRecord.getHoldingsMarcRecords().get(0).getItemMarcRecordList().get(0).getItemRecord());
+        Integer owningInstitutionId = getOwningInstitutionId(bibMarcRecord);
         InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionId(owningInstitutionId);
-        String institutionName = institutionEntity.getInstitutionName();
+        String institutionCode = institutionEntity.getInstitutionCode();
         Date currentDate = new Date();
-        Map<String, Object> bibMap = processAndValidateBibliographicEntity(bibRecord, owningInstitutionId, institutionName,currentDate);
+        Map<String, Object> bibMap = processAndValidateBibliographicEntity(bibRecord, owningInstitutionId, institutionCode,currentDate);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) bibMap.get(ReCAPConstants.BIBLIOGRAPHIC_ENTITY);
         ReportEntity bibReportEntity = (ReportEntity) bibMap.get("bibReportEntity");
         if (bibReportEntity != null) {
@@ -84,7 +85,7 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
             for (HoldingsMarcRecord holdingsMarcRecord : holdingsMarcRecords) {
                 boolean processHoldings = false;
                 Record holdingsRecord = holdingsMarcRecord.getHoldingsRecord();
-                Map<String, Object> holdingsMap = processAndValidateHoldingsEntity(bibliographicEntity, institutionName, holdingsRecord, bibRecord,currentDate);
+                Map<String, Object> holdingsMap = processAndValidateHoldingsEntity(bibliographicEntity, institutionCode, holdingsRecord, bibRecord,currentDate);
                 HoldingsEntity holdingsEntity = (HoldingsEntity) holdingsMap.get("holdingsEntity");
                 ReportEntity holdingsReportEntity = (ReportEntity) holdingsMap.get("holdingsReportEntity");
                 if (holdingsReportEntity != null) {
@@ -100,7 +101,7 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
                 if (CollectionUtils.isNotEmpty(itemMarcRecordList)) {
                     for (ItemMarcRecord itemMarcRecord : itemMarcRecordList) {
                         Record itemRecord = itemMarcRecord.getItemRecord();
-                        Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, holdingsEntity, owningInstitutionId, holdingsCallNumber, holdingsCallNumberType, itemRecord, institutionName, bibRecord,currentDate);
+                        Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, holdingsEntity, owningInstitutionId, holdingsCallNumber, holdingsCallNumberType, itemRecord, institutionCode, bibRecord,currentDate);
                         ItemEntity itemEntity = (ItemEntity) itemMap.get("itemEntity");
                         ReportEntity itemReportEntity = (ReportEntity) itemMap.get("itemReportEntity");
                         if (itemReportEntity != null) {
@@ -182,12 +183,11 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
             errorReportDataEntity.setHeaderName(ReCAPConstants.ERROR_DESCRIPTION);
             errorReportDataEntity.setHeaderValue(errorMessage.toString());
             reportDataEntities.add(errorReportDataEntity);
-        }
-        if (!CollectionUtils.isEmpty(reportDataEntities)) {
+
             ReportEntity reportEntity = new ReportEntity();
-            reportEntity.setFileName(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT);
+            reportEntity.setFileName(ReCAPConstants.SUBMIT_COLLECTION);
             reportEntity.setInstitutionName(institutionName);
-            reportEntity.setType(org.recap.ReCAPConstants.FAILURE);
+            reportEntity.setType(org.recap.ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT);
             reportEntity.setCreatedDate(new Date());
             reportEntity.addAll(reportDataEntities);
             map.put("bibReportEntity", reportEntity);
@@ -256,13 +256,9 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         String customerCode = marcUtil.getDataFieldValue(itemRecord, "876", 'z');
         if (StringUtils.isNotBlank(customerCode)) {
             itemEntity.setCustomerCode(customerCode);
-        } else {
-            errorMessage.append("\n");
-            errorMessage.append("Customer Code cannot be null");
         }
         itemEntity.setCallNumber(holdingsCallNumber);
         itemEntity.setCallNumberType(String.valueOf(holdingsCallNumberType));
-        itemEntity.setItemAvailabilityStatusId((Integer) getItemStatusMap().get("Available"));//TODO need to change
         String copyNumber = marcUtil.getDataFieldValue(itemRecord, "876", 't');
         if (StringUtils.isNotBlank(copyNumber) && org.apache.commons.lang3.math.NumberUtils.isNumber(copyNumber)) {
             itemEntity.setCopyNumber(Integer.valueOf(copyNumber));
@@ -313,10 +309,18 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return map;
     }
 
-    private Integer getOwningInstitutionId(Record itemRecord){
+    private Integer getOwningInstitutionId(BibMarcRecord bibMarcRecord) {
+        Record itemRecord = bibMarcRecord.getHoldingsMarcRecords().get(0).getItemMarcRecordList().get(0).getItemRecord();
         String customerCode = marcUtil.getDataFieldValue(itemRecord, "876", 'z');
-        CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(customerCode);
-        return customerCodeEntity.getOwningInstitutionId();
+        CustomerCodeEntity customerCodeEntity;
+        if(null != customerCode) {
+            customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(customerCode);
+            return customerCodeEntity.getOwningInstitutionId();
+        } else {
+            String barcode = marcUtil.getDataFieldValue(bibMarcRecord.getHoldingsMarcRecords().get(0).getItemMarcRecordList().get(0).getItemRecord(), "876",'p');
+            List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcode(barcode);
+            return itemEntityList.get(0).getOwningInstitutionId();
+        }
     }
 
     public Map getItemStatusMap() {

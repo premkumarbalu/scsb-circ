@@ -131,6 +131,7 @@ public final class ReCAPConstants {
     public static final String LAST_UPDATED_DATE_ITEM = "LastUpdatedDateItem";
     public static final String ERROR_DESCRIPTION = "ErrorDescription";
     public static final String COLLECTION_GROUP_DESIGNATION = "CollectionGroupDesignation";
+    public static final String FILE_NAME = "FileName";
 
     public static final String FORMAT_MARC = "marc";
     public static final String FORMAT_SCSB = "scsb";
@@ -138,6 +139,7 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_REPORT = "Submit_Collection_Report";
     public static final String SUBMIT_COLLECTION_REJECTION_REPORT = "Submit_Collection_Rejection_Report";
     public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT = "Submit_Collection_Exception_Report";
+    public static final String SUBMIT_COLLECTION_SUCCESS_REPORT = "Submit_Collection_Success_Report";
     public static final String SUBMIT_COLLECTION_ITEM_BARCODE = "ItemBarcode";
     public static final String SUBMIT_COLLECTION_CUSTOMER_CODE = "CustomerCode";
     public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT_MESSAGE = "Exception report generated";
@@ -154,6 +156,7 @@ public final class ReCAPConstants {
     public static final String INCOMPLETE_STATUS = "Incomplete";
     public static final String BIBRECORD_TAG = "<bibRecords>";
     public static final String SUBMIT_COLLECTION = "submitCollection";
+    public static final String MESSAGE = "Message";
 
     public static final String BIB_ID = "BibId";
     public static final String HOLDING_ID = "HoldingId";
@@ -294,8 +297,28 @@ public final class ReCAPConstants {
     public static final String RECALL_CANNOT_BE_PROCESSED_THE_ITEM_IS_NOT_CHECKED_OUT_IN_ILS = "Recall Cannot be processed, the item is not checked out in ILS";
     public static final String FINISH_PROCESSING = "Finish Processing";
 
-    private ReCAPConstants() {
-    }
+    public static final String EMAIL_BODY_FOR = "emailBodyFor";
+    public static final String SUBMIT_COLLECTION_SUCCESS_LIST = "submitCollectionSuccessList";
+    public static final String SUBMIT_COLLECTION_FAILURE_LIST = "submitCollectionFailureList";
+    public static final String SUBMIT_COLLECTION_REJECTION_LIST = "submitCollectionRejectionList";
+    public static final String SUBMIT_COLLECTION_EXCEPTION_LIST = "submitCollectionExceptionList";
+    public static final String SUBMIT_COLLECTION_EXCEPTION_RECORD = "ExceptionRecord";
+    public static final String SUBMIT_COLLECTION_REJECTION_RECORD = "RejectionRecord";
+    public static final String SUBMIT_COLLECTION_SUCCESS_RECORD = "SuccessRecord";
+    public static final String SUBMIT_COLLECTION_FAILED_RECORD = "FailedRecord";
+    public static final String ALL_INST = "ALL";
+    public static final String FTP = "FTP";
+    public static final String SUBMIT_COLLECTION_SUMMARY = "SubmitCollectionSummary";
+    public static final String REST = "rest-api";
+    public static final String SUBMIT_COLLECTION_EMAIL_BODY_VM = "submit_collection_email_body.vm";
+    public static final String SFTP = "sftp://";
+    public static final String AT = "@";
+    public static final String PRIVATE_KEY_FILE = "?privateKeyFile=";
+    public static final String KNOWN_HOST_FILE = "&knownHostsFile=";
+    public static final String PROCESS_INPUT = "processInput";
+    public static final String SUBMIT_COLLECTION_SFTP_OPTIONS = "&move=.done&delay=5s&localWorkDirectory=";
+
+    private ReCAPConstants() {}
 
     public static final List getGFAStatusAvailableList() {
         return GFA_STATUS_AVAILABLE_LIST;

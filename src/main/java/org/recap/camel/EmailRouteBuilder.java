@@ -22,6 +22,7 @@ public class EmailRouteBuilder {
 
     private String emailBody;
     private String emailPassword;
+    private String emailBodyForSubmitCollection;
 
     /**
      * Instantiates a new Email route builder.
@@ -34,8 +35,8 @@ public class EmailRouteBuilder {
      * @param smtpServer        the smtp server
      */
     @Autowired
-    public EmailRouteBuilder(CamelContext context, @Value("${request.recall.email.username}") String username, @Value("${request.recall.email.password.file}") String passwordDirectory,
-                             @Value("${request.recall.email.from}") String from, @Value("${request.recall.email.subject}") String subject,
+    public EmailRouteBuilder(CamelContext context, @Value("${scsb.email.username}") String username, @Value("${scsb.email.password.file}") String passwordDirectory,
+                             @Value("${scsb.email.from}") String from, @Value("${request.recall.email.subject}") String subject,
                              @Value("${smtpServer}") String smtpServer) {
         try {
             context.addRoutes(new RouteBuilder() {
@@ -43,6 +44,7 @@ public class EmailRouteBuilder {
                 public void configure() throws Exception {
                     loadEmailBodyTemplate();
                     loadEmailPassword();
+                    loadEmailBodyTemplateForNoData();
 
                     from(ReCAPConstants.EMAIL_Q)
                             .routeId(ReCAPConstants.EMAIL_ROUTE_ID)
@@ -56,6 +58,13 @@ public class EmailRouteBuilder {
                                     .setHeader("from", simple(from))
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
                                     .log("email body for data available")
+                                    .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.SUBMIT_COLLECTION))
+                                    .setHeader("subject", simple("${header.emailPayLoad.subject}"))
+                                    .setBody(simple(emailBodyForSubmitCollection))
+                                    .setHeader("from", simple(from))
+                                    .setHeader("to", simple("${header.emailPayLoad.to}"))
+                                    .log("email body for submit collection")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
                     ;
                 }
@@ -78,6 +87,26 @@ public class EmailRouteBuilder {
                         logger.error(ReCAPConstants.LOG_ERROR,e);
                     }
                     emailBody = out.toString();
+                }
+
+                private void loadEmailBodyTemplateForNoData() {
+                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.SUBMIT_COLLECTION_EMAIL_BODY_VM);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    StringBuilder out = new StringBuilder();
+                    String line;
+                    try {
+                        while ((line = reader.readLine()) != null) {
+                            if (line.isEmpty()) {
+                                out.append("\n");
+                            } else {
+                                out.append(line);
+                                out.append("\n");
+                            }
+                        }
+                    } catch (IOException e) {
+                        logger.error(ReCAPConstants.LOG_ERROR,e);
+                    }
+                    emailBodyForSubmitCollection = out.toString();
                 }
 
                 private void loadEmailPassword() {
