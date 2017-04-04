@@ -25,16 +25,8 @@ public class SubmitCollectionReportGenerator {
         return serverProtocol;
     }
 
-    public void setServerProtocol(String serverProtocol) {
-        this.serverProtocol = serverProtocol;
-    }
-
     public String getSolrClientUrl() {
         return solrClientUrl;
-    }
-
-    public void setSolrClientUrl(String solrClientUrl) {
-        this.solrClientUrl = solrClientUrl;
     }
 
     public String generateReport(ReportDataRequest reportDataRequest){

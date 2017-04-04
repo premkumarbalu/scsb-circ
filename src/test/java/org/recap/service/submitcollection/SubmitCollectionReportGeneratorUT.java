@@ -1,26 +1,54 @@
 package org.recap.service.submitcollection;
 
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.recap.BaseTestCase;
 import org.recap.model.ReportDataRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.client.RestTemplate;
+
+import static junit.framework.TestCase.assertNotNull;
 
 /**
  * Created by premkb on 23/3/17.
  */
 public class SubmitCollectionReportGeneratorUT extends BaseTestCase{
 
-    @Autowired
+    @Mock
     private SubmitCollectionReportGenerator submitCollectionReportGenerator;
+
+    @Value("${server.protocol}")
+    private String serverProtocol;
+
+    @Value("${scsb.solr.client.url}")
+    private String solrClientUrl;
+
+    @Mock
+    RestTemplate restTemplate;
+
+    public String getServerProtocol() {
+        return serverProtocol;
+    }
+
+    public String getSolrClientUrl() {
+        return solrClientUrl;
+    }
 
     @Test
     public void generateReport(){
-        ReportDataRequest reportRequest = new ReportDataRequest();
-        reportRequest.setFileName("Submit_Collection_Report");
-        reportRequest.setInstitutionCode("PUL");
-        reportRequest.setReportType("Submit_Collection_Exception_Report");
-        reportRequest.setTransmissionType("FTP");
-        String response = submitCollectionReportGenerator.generateReport(reportRequest);
-        System.out.println("");
+        ReportDataRequest reportDataRequest = new ReportDataRequest();
+        reportDataRequest.setFileName("Submit_Collection_Report");
+        reportDataRequest.setInstitutionCode("PUL");
+        reportDataRequest.setReportType("Submit_Collection_Exception_Report");
+        reportDataRequest.setTransmissionType("FTP");
+        Mockito.when(submitCollectionReportGenerator.getSolrClientUrl()).thenReturn(solrClientUrl);
+        Mockito.when(submitCollectionReportGenerator.getServerProtocol()).thenReturn(serverProtocol);
+        Mockito.when(submitCollectionReportGenerator.getRestTemplate()).thenReturn(restTemplate);
+        Mockito.when(submitCollectionReportGenerator.getRestTemplate().postForObject(getServerProtocol() + getSolrClientUrl() + "/reportsService/generateCsvReport", reportDataRequest, String.class)).thenReturn("Submit_Collection_Report");
+        Mockito.when(submitCollectionReportGenerator.generateReport(reportDataRequest)).thenCallRealMethod();
+        String response = submitCollectionReportGenerator.generateReport(reportDataRequest);
+        assertNotNull(response);
     }
 }
