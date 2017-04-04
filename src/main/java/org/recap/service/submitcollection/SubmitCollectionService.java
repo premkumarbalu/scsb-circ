@@ -366,6 +366,9 @@ public class SubmitCollectionService {
         fetchItemEntity.setLastUpdatedDate(itemEntity.getLastUpdatedDate());
         fetchItemEntity.setCallNumber(itemEntity.getCallNumber());
         fetchItemEntity.setCallNumberType(itemEntity.getCallNumberType());
+        if(null != itemEntity.getCustomerCode()){
+            fetchItemEntity.setCustomerCode(itemEntity.getCustomerCode());
+        }
         if (isAvailableItem(fetchItemEntity.getItemAvailabilityStatusId())) {
             fetchItemEntity.setCollectionGroupId(itemEntity.getCollectionGroupId());
             fetchItemEntity.setUseRestrictions(itemEntity.getUseRestrictions());
