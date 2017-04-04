@@ -69,8 +69,24 @@ public class GFAService {
         return gfaItemPermanentWithdrawlInDirect;
     }
 
+    public GFARetrieveEDDItemRequest getGFARetrieveEDDItemRequest(){
+        return new GFARetrieveEDDItemRequest();
+    }
+
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
+    }
+
+    public static Logger getLogger() {
+        return logger;
+    }
+
+    public ProducerTemplate getProducer() {
+        return producer;
+    }
+
+    public ObjectMapper getObjectMapper(){
+        return new ObjectMapper();
     }
 
     public boolean isUseQueueLasCall() {
@@ -301,7 +317,7 @@ public class GFAService {
     }
 
     public ItemInformationResponse callItemEDDRetrivate(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
-        GFARetrieveEDDItemRequest gfaRetrieveEDDItemRequest = new GFARetrieveEDDItemRequest();
+        GFARetrieveEDDItemRequest gfaRetrieveEDDItemRequest = getGFARetrieveEDDItemRequest();
         GFARetrieveItemResponse gfaRetrieveItemResponse;
         TtitemEDDRequest ttitem001 = new TtitemEDDRequest();
         try {
@@ -332,9 +348,9 @@ public class GFAService {
             retrieveItemEDDRequest.setTtitem(ttitems);
             gfaRetrieveEDDItemRequest.setRetrieveEDD(retrieveItemEDDRequest);
             if (isUseQueueLasCall()) { // Queue
-                ObjectMapper objectMapper = new ObjectMapper();
+                ObjectMapper objectMapper = getObjectMapper();
                 String json = objectMapper.writeValueAsString(gfaRetrieveEDDItemRequest);
-                producer.sendBodyAndHeader(ReCAPConstants.SCSB_OUTGOING_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
+                getProducer().sendBodyAndHeader(ReCAPConstants.SCSB_OUTGOING_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
                 itemResponseInformation.setSuccess(true);
                 itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
             } else {

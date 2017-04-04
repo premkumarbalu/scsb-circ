@@ -266,8 +266,12 @@ public class RequestItemControllerUT extends BaseTestCase {
         Mockito.when(requestItemController.createBibliogrphicItem(itemRequestInformation,callInstitition)).thenCallRealMethod();
         AbstractResponseItem abstractResponseItem = requestItemController.createBibliogrphicItem(itemRequestInformation,callInstitition);
         assertNotNull(abstractResponseItem);
+        abstractResponseItem.setEsipDataIn("test");
+        abstractResponseItem.setItemOwningInstitution("PUL");
         assertTrue(abstractResponseItem.isSuccess());
         assertEquals(abstractResponseItem.getScreenMessage(),"Item Barcode already Exist");
+        assertNotNull(abstractResponseItem.getEsipDataIn());
+        assertNotNull(abstractResponseItem.getItemOwningInstitution());
     }
 
     @Test
