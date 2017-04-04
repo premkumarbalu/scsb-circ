@@ -1,6 +1,9 @@
 package org.recap.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.camel.ProducerTemplate;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -37,6 +40,15 @@ public class GFAServiceUT extends BaseTestCase{
 
     @Mock
     RestTemplate restTemplate;
+
+    @Mock
+    private ProducerTemplate producer;
+
+    @Mock
+    GFARetrieveEDDItemRequest gfaRetrieveEDDItemRequest;
+
+    @Mock
+    ObjectMapper objectMapper;
 
     @Value("${gfa.item.status}")
     private String gfaItemStatus;
@@ -118,12 +130,19 @@ public class GFAServiceUT extends BaseTestCase{
     }
 
     @Test
-    public void testcallItemEDDRetrivate(){
+    public void testcallItemEDDRetrivate() throws JsonProcessingException {
         ItemRequestInformation itemRequestInformation = getItemRequestInformation();
         ItemInformationResponse itemInformationResponse = getItemInformationResponse();
-        ItemInformationResponse response = getGfaService.callItemEDDRetrivate(itemRequestInformation,itemInformationResponse);
+        Mockito.when(gfaService.isUseQueueLasCall()).thenReturn(true);
+        Mockito.when(gfaService.getObjectMapper()).thenReturn(objectMapper);
+        Mockito.when(gfaService.getObjectMapper().writeValueAsString(gfaRetrieveEDDItemRequest)).thenReturn("test");
+        Mockito.when(gfaService.getGFARetrieveEDDItemRequest()).thenReturn(gfaRetrieveEDDItemRequest);
+        Mockito.when(gfaService.getProducer()).thenReturn(producer);
+        Mockito.when(gfaService.callItemEDDRetrivate(itemRequestInformation,itemInformationResponse)).thenCallRealMethod();
+        ItemInformationResponse response = gfaService.callItemEDDRetrivate(itemRequestInformation,itemInformationResponse);
         assertNotNull(response);
         assertEquals(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL,response.getScreenMessage());
+
     }
 
     @Test
