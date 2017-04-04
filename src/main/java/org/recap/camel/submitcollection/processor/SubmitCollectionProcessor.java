@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,6 +72,9 @@ public class SubmitCollectionProcessor {
      * @throws Exception the exception
      */
     public void processInput(Exchange exchange) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        logger.info("Route started and started processing the records from ftp for submitcollection");
         String inputXml = exchange.getIn().getBody(String.class);
         String xmlFileName = exchange.getIn().toString();
         List<Integer> processedBibIdList = new ArrayList<>();
@@ -87,6 +91,8 @@ public class SubmitCollectionProcessor {
             ReportDataRequest reportRequest = getReportDataRequest(xmlFileName);
             submitCollectionReportGenerator.generateReport(reportRequest);
             producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION);
+            stopWatch.stop();
+            logger.info("Total time taken for processing through ftp---> {}",stopWatch.getTotalTimeSeconds());
         } catch (Exception e) {
             logger.error(ReCAPConstants.LOG_ERROR,e);
         }
