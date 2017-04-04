@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -82,29 +83,34 @@ public class SubmitCollectionService {
 
     @Transactional
     public String process(String inputRecords, List<Integer> processedBibIdList,Map<String,String> idMapToRemoveIndex,String xmlFileName) {
+        logger.info("Input record processing started");
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         String reponse = null;
-        Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
-        try{
-            if(!"".equals(inputRecords)) {
+        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
+        try {
+            if (!"".equals(inputRecords)) {
                 if (inputRecords.contains(ReCAPConstants.BIBRECORD_TAG)) {
-                    reponse = processSCSB(inputRecords, processedBibIdList, submitCollectionReportInfoMap,idMapToRemoveIndex);
+                    reponse = processSCSB(inputRecords, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
                     if (reponse != null)
                         return reponse;
                 } else {
-                    reponse = processMarc(inputRecords, processedBibIdList, submitCollectionReportInfoMap,idMapToRemoveIndex);
+                    reponse = processMarc(inputRecords, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
                     if (reponse != null)
                         return reponse;
                 }
-                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST),ReCAPConstants.SUBMIT_COLLECTION_REPORT,ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_REPORT,xmlFileName);
-                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),ReCAPConstants.SUBMIT_COLLECTION_REPORT,ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT,xmlFileName);
-                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST),ReCAPConstants.SUBMIT_COLLECTION_REPORT,ReCAPConstants.SUBMIT_COLLECTION_REJECTION_REPORT,xmlFileName);
-                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST),ReCAPConstants.SUBMIT_COLLECTION_REPORT,ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_REPORT,xmlFileName);
-                reponse = getResponseMessage(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST),processedBibIdList);
+                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_REPORT, xmlFileName);
+                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT, xmlFileName);
+                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_REJECTION_REPORT, xmlFileName);
+                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_REPORT, xmlFileName);
+                reponse = getResponseMessage(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST), submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), processedBibIdList);
             }
-        }catch (Exception e){
-            logger.error(ReCAPConstants.LOG_ERROR,e);
+        } catch (Exception e) {
+            logger.error(ReCAPConstants.LOG_ERROR, e);
             reponse = ReCAPConstants.SUBMIT_COLLECTION_INTERNAL_ERROR;
         }
+        stopWatch.stop();
+        logger.info("total time take for processing input record {}", stopWatch.getTotalTimeSeconds());
         return reponse;
     }
 
@@ -134,6 +140,8 @@ public class SubmitCollectionService {
     }
 
     private String processMarc(String inputRecords, List<Integer> processedBibIdList,Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,Map<String,String> idMapToRemoveIndex) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         String format;
         format = ReCAPConstants.FORMAT_MARC;
         List<Record> records = null;
@@ -148,17 +156,25 @@ public class SubmitCollectionService {
             return ReCAPConstants.INVALID_MARC_XML_FORMAT_MESSAGE;
         }
         if (CollectionUtils.isNotEmpty(records)) {
+            int count = 1;
             for (Record record : records) {
+                logger.info("Process record no: {}",count);
                 BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndex);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIdList.add(bibliographicEntity.getBibliographicId());
                 }
+                logger.info("Process completed for record no: {}",count);
+                count ++;
             }
         }
+        stopWatch.stop();
+        logger.info("Total time take {}",stopWatch.getTotalTimeSeconds());
         return null;
     }
 
     private String processSCSB(String inputRecords, List<Integer> processedBibIdList, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String, String> idMapToRemoveIndex) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         String format;
         format = ReCAPConstants.FORMAT_SCSB;
         BibRecords bibRecords = null;
@@ -173,12 +189,17 @@ public class SubmitCollectionService {
             logger.error(ReCAPConstants.LOG_ERROR, e);
             return ReCAPConstants.INVALID_SCSB_XML_FORMAT_MESSAGE;
         }
+        int count = 1;
         for (BibRecord bibRecord : bibRecords.getBibRecords()) {
+            logger.info("Process record no: {}",count);
             BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndex);
             if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                 processedBibIdList.add(bibliographicEntity.getBibliographicId());
             }
+            logger.info("Process completed for record no: {}",count);
+            count ++;
         }
+        logger.info("Total time take {}",stopWatch.getTotalTimeSeconds());
         return null;
     }
 
@@ -253,7 +274,6 @@ public class SubmitCollectionService {
     }
 
     private BibliographicEntity getBibEntityUsingBarcode(BibliographicEntity bibliographicEntity) {
-        //String itemBarcode = bibliographicEntity.getItemEntities().get(0).getBarcode();
         List<String> itemBarcodeList = new ArrayList<>();
         for(ItemEntity itemEntity: bibliographicEntity.getItemEntities()){
             itemBarcodeList.add(itemEntity.getBarcode());
@@ -374,6 +394,7 @@ public class SubmitCollectionService {
     }
 
     public void generateSubmitCollectionReport(List<SubmitCollectionReportInfo> submitCollectionReportList,String fileName, String reportType,String xmlFileName){
+        logger.info("Preparing report entities");
         if(submitCollectionReportList != null && !submitCollectionReportList.isEmpty()){
             try {
                 ReportEntity reportEntity = new ReportEntity();
@@ -385,7 +406,9 @@ public class SubmitCollectionService {
                     reportEntity.setCreatedDate(new Date());
                     reportEntity.setInstitutionName(owningInstitution);
                 }
+                int count = 1;
                 for(SubmitCollectionReportInfo submitCollectionReportInfo : submitCollectionReportList){
+                    logger.info("Processing report for record {}",count);
                     if(!StringUtils.isEmpty(submitCollectionReportInfo.getItemBarcode()) && !StringUtils.isEmpty(submitCollectionReportInfo.getCustomerCode())){
 
                         ReportDataEntity itemBarcodeReportDataEntity = new ReportDataEntity();
@@ -410,8 +433,10 @@ public class SubmitCollectionService {
 
                         reportEntity.setReportDataEntities(reportDataEntities);
                         reportDetailRepository.save(reportEntity);
+                        count ++;
 
                     }
+                    logger.info("Processed completed report for record {}",count);
                 }
             } catch (Exception e) {
                 logger.error(ReCAPConstants.LOG_ERROR,e);
