@@ -412,7 +412,7 @@ public class SubmitCollectionService {
                 int count = 1;
                 for(SubmitCollectionReportInfo submitCollectionReportInfo : submitCollectionReportList){
                     logger.info("Processing report for record {}",count);
-                    if(!StringUtils.isEmpty(submitCollectionReportInfo.getItemBarcode()) && !StringUtils.isEmpty(submitCollectionReportInfo.getCustomerCode())){
+                    if(!StringUtils.isEmpty(submitCollectionReportInfo.getItemBarcode())){
 
                         ReportDataEntity itemBarcodeReportDataEntity = new ReportDataEntity();
                         itemBarcodeReportDataEntity.setHeaderName(ReCAPConstants.SUBMIT_COLLECTION_ITEM_BARCODE);
@@ -421,7 +421,7 @@ public class SubmitCollectionService {
 
                         ReportDataEntity customerCodeReportDataEntity = new ReportDataEntity();
                         customerCodeReportDataEntity.setHeaderName(ReCAPConstants.SUBMIT_COLLECTION_CUSTOMER_CODE);
-                        customerCodeReportDataEntity.setHeaderValue(submitCollectionReportInfo.getCustomerCode());
+                        customerCodeReportDataEntity.setHeaderValue(submitCollectionReportInfo.getCustomerCode()!=null?submitCollectionReportInfo.getCustomerCode():"");
                         reportDataEntities.add(customerCodeReportDataEntity);
 
                         ReportDataEntity owningInstitutionReportDataEntity = new ReportDataEntity();
