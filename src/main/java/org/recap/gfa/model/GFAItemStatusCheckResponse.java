@@ -7,10 +7,20 @@ public class GFAItemStatusCheckResponse
 {
     private Dsitem dsitem;
 
+    /**
+     * Gets dsitem.
+     *
+     * @return the dsitem
+     */
     public Dsitem getDsitem() {
         return dsitem;
     }
 
+    /**
+     * Sets dsitem.
+     *
+     * @param dsitem the dsitem
+     */
     public void setDsitem(Dsitem dsitem) {
         this.dsitem = dsitem;
     }

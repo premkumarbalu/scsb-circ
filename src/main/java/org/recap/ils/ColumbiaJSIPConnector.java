@@ -24,6 +24,9 @@ public class ColumbiaJSIPConnector extends JSIPConnector {
 
     private static SIP2SocketConnection thread;
 
+    /**
+     * Instantiates a new Columbia jsip connector.
+     */
     public ColumbiaJSIPConnector() {
         ColumbiaJSIPConnector.thread= new SIP2SocketConnection(columbiaILS, 7031);
     }

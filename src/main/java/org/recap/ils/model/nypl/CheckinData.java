@@ -35,9 +35,9 @@ public class CheckinData {
     private String itemBarcode;
 
     /**
+     * Gets id.
      *
-     * @return
-     * The id
+     * @return The  id
      */
     @JsonProperty("id")
     public Integer getId() {
@@ -45,9 +45,9 @@ public class CheckinData {
     }
 
     /**
+     * Sets id.
      *
-     * @param id
-     * The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(Integer id) {
@@ -55,9 +55,9 @@ public class CheckinData {
     }
 
     /**
+     * Gets job id.
      *
-     * @return
-     * The jobId
+     * @return The  jobId
      */
     @JsonProperty("jobId")
     public String getJobId() {
@@ -65,9 +65,9 @@ public class CheckinData {
     }
 
     /**
+     * Sets job id.
      *
-     * @param jobId
-     * The jobId
+     * @param jobId The jobId
      */
     @JsonProperty("jobId")
     public void setJobId(String jobId) {
@@ -75,9 +75,9 @@ public class CheckinData {
     }
 
     /**
+     * Gets processed.
      *
-     * @return
-     * The processed
+     * @return The  processed
      */
     @JsonProperty("processed")
     public Boolean getProcessed() {
@@ -85,9 +85,9 @@ public class CheckinData {
     }
 
     /**
+     * Sets processed.
      *
-     * @param processed
-     * The processed
+     * @param processed The processed
      */
     @JsonProperty("processed")
     public void setProcessed(Boolean processed) {
@@ -95,9 +95,9 @@ public class CheckinData {
     }
 
     /**
+     * Gets success.
      *
-     * @return
-     * The success
+     * @return The  success
      */
     @JsonProperty("success")
     public Boolean getSuccess() {
@@ -105,9 +105,9 @@ public class CheckinData {
     }
 
     /**
+     * Sets success.
      *
-     * @param success
-     * The success
+     * @param success The success
      */
     @JsonProperty("success")
     public void setSuccess(Boolean success) {
@@ -115,9 +115,9 @@ public class CheckinData {
     }
 
     /**
+     * Gets updated date.
      *
-     * @return
-     * The updatedDate
+     * @return The  updatedDate
      */
     @JsonProperty("updatedDate")
     public Object getUpdatedDate() {
@@ -125,9 +125,9 @@ public class CheckinData {
     }
 
     /**
+     * Sets updated date.
      *
-     * @param updatedDate
-     * The updatedDate
+     * @param updatedDate The updatedDate
      */
     @JsonProperty("updatedDate")
     public void setUpdatedDate(Object updatedDate) {
@@ -135,9 +135,9 @@ public class CheckinData {
     }
 
     /**
+     * Gets created date.
      *
-     * @return
-     * The createdDate
+     * @return The  createdDate
      */
     @JsonProperty("createdDate")
     public String getCreatedDate() {
@@ -145,9 +145,9 @@ public class CheckinData {
     }
 
     /**
+     * Sets created date.
      *
-     * @param createdDate
-     * The createdDate
+     * @param createdDate The createdDate
      */
     @JsonProperty("createdDate")
     public void setCreatedDate(String createdDate) {
@@ -155,9 +155,9 @@ public class CheckinData {
     }
 
     /**
+     * Gets item barcode.
      *
-     * @return
-     * The itemBarcode
+     * @return The  itemBarcode
      */
     @JsonProperty("itemBarcode")
     public String getItemBarcode() {
@@ -165,9 +165,9 @@ public class CheckinData {
     }
 
     /**
+     * Sets item barcode.
      *
-     * @param itemBarcode
-     * The itemBarcode
+     * @param itemBarcode The itemBarcode
      */
     @JsonProperty("itemBarcode")
     public void setItemBarcode(String itemBarcode) {

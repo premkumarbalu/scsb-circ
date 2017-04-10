@@ -9,10 +9,20 @@ public class RetrieveItemEDDRequest {
 
     private List<TtitemEDDRequest> ttitem;
 
+    /**
+     * Gets ttitem.
+     *
+     * @return the ttitem
+     */
     public List<TtitemEDDRequest> getTtitem() {
         return ttitem;
     }
 
+    /**
+     * Sets ttitem.
+     *
+     * @param ttitem the ttitem
+     */
     public void setTtitem(List<TtitemEDDRequest> ttitem) {
         this.ttitem = ttitem;
     }

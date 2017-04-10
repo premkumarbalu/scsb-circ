@@ -24,15 +24,30 @@ import org.springframework.web.bind.annotation.RestController;
 public class RequestItemValidatorController {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestItemValidatorController.class);
+    /**
+     * The Request paramater validator service.
+     */
     @Autowired
     RequestParamaterValidatorService requestParamaterValidatorService;
 
+    /**
+     * The Jsip connector factory.
+     */
     @Autowired
     JSIPConnectorFactory jsipConnectorFactory;
 
+    /**
+     * The Item validator service.
+     */
     @Autowired
     ItemValidatorService itemValidatorService;
 
+    /**
+     * Validate item request informations response entity.
+     *
+     * @param itemRequestInformation the item request information
+     * @return the response entity
+     */
     @RequestMapping(value = "/validateItemRequestInformations", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity validateItemRequestInformations(@RequestBody ItemRequestInformation itemRequestInformation) {
         ResponseEntity responseEntity;
@@ -47,9 +62,16 @@ public class RequestItemValidatorController {
         return responseEntity;
     }
 
+    /**
+     * Validate item request response entity.
+     *
+     * @param itemRequestInformation the item request information
+     * @return the response entity
+     */
     @RequestMapping(value = "/validateItemRequest", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity validateItemRequest(@RequestBody ItemRequestInformation itemRequestInformation) {
         ResponseEntity responseEntity;
+        logger.info("Request Validation: Start");
         responseEntity = requestParamaterValidatorService.validateItemRequestParameters(itemRequestInformation);
         if (responseEntity == null) {
             responseEntity = itemValidatorService.itemValidation(itemRequestInformation);

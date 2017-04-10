@@ -9,5 +9,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface ItemChangeLogDetailsRepository extends JpaRepository<ItemChangeLogEntity, Integer> {
 
+     /**
+      * Find by record id and operation type item change log entity.
+      *
+      * @param recordId      the record id
+      * @param operationType the operation type
+      * @return the item change log entity
+      */
      ItemChangeLogEntity findByRecordIdAndOperationType(Integer recordId, String operationType);
 }

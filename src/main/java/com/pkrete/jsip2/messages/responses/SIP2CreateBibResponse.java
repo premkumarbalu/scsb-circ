@@ -10,6 +10,11 @@ import java.util.Iterator;
  */
 public class SIP2CreateBibResponse  extends SIP2CirculationTransactionResponse {
 
+    /**
+     * Instantiates a new Sip 2 create bib response.
+     *
+     * @param data the data
+     */
     public SIP2CreateBibResponse(String data) {
         super("82", data);
     }

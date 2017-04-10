@@ -18,19 +18,34 @@ import java.util.List;
  */
 public interface BibliographicDetailsRepository extends JpaRepository<BibliographicEntity, BibliographicPK> {
 
-    Long countByOwningInstitutionId(Integer owningInstitutionId);
-
-    Page<BibliographicEntity> findByOwningInstitutionId(Pageable pageable, Integer owningInstitutionId);
-
-    BibliographicEntity findByOwningInstitutionIdAndOwningInstitutionBibId(Integer owningInstitutionId, String owningInstitutionBibId);
-
+    /**
+     * Find by owning institution bib id list.
+     *
+     * @param owningInstitutionBibId the owning institution bib id
+     * @return the list
+     */
     List<BibliographicEntity> findByOwningInstitutionBibId(String owningInstitutionBibId);
 
+    /**
+     * Gets non deleted items count.
+     *
+     * @param owningInstitutionId    the owning institution id
+     * @param owningInstitutionBibId the owning institution bib id
+     * @return the non deleted items count
+     */
     @Query(value = "SELECT COUNT(*) FROM ITEM_T, BIBLIOGRAPHIC_ITEM_T WHERE BIBLIOGRAPHIC_ITEM_T.ITEM_INST_ID = ITEM_T.OWNING_INST_ID " +
             "AND BIBLIOGRAPHIC_ITEM_T.OWNING_INST_ITEM_ID = ITEM_T.OWNING_INST_ITEM_ID AND ITEM_T.IS_DELETED = 0 AND " +
             "BIBLIOGRAPHIC_ITEM_T.OWNING_INST_BIB_ID = :owningInstitutionBibId AND BIBLIOGRAPHIC_ITEM_T.BIB_INST_ID = :owningInstitutionId", nativeQuery = true)
     Long getNonDeletedItemsCount(@Param("owningInstitutionId") Integer owningInstitutionId, @Param("owningInstitutionBibId") String owningInstitutionBibId);
 
+    /**
+     * Mark bibs as deleted int.
+     *
+     * @param bibliographicIds the bibliographic ids
+     * @param lastUpdatedBy    the last updated by
+     * @param lastUpdatedDate  the last updated date
+     * @return the int
+     */
     @Modifying(clearAutomatically = true)
     @Transactional
     @Query("UPDATE BibliographicEntity bib SET bib.isDeleted = true, bib.lastUpdatedBy = :lastUpdatedBy, bib.lastUpdatedDate = :lastUpdatedDate WHERE bib.bibliographicId IN :bibliographicIds")

@@ -23,22 +23,49 @@ public class DBReportUtil {
     private Map<String, Integer> institutionEntitiesMap;
     private Map<String, Integer> collectionGroupMap;
 
+    /**
+     * Gets institution entities map.
+     *
+     * @return the institution entities map
+     */
     public Map<String, Integer> getInstitutionEntitiesMap() {
         return institutionEntitiesMap;
     }
 
+    /**
+     * Sets institution entities map.
+     *
+     * @param institutionEntitiesMap the institution entities map
+     */
     public void setInstitutionEntitiesMap(Map<String, Integer> institutionEntitiesMap) {
         this.institutionEntitiesMap = institutionEntitiesMap;
     }
 
+    /**
+     * Gets collection group map.
+     *
+     * @return the collection group map
+     */
     public Map<String, Integer> getCollectionGroupMap() {
         return collectionGroupMap;
     }
 
+    /**
+     * Sets collection group map.
+     *
+     * @param collectionGroupMap the collection group map
+     */
     public void setCollectionGroupMap(Map<String, Integer> collectionGroupMap) {
         this.collectionGroupMap = collectionGroupMap;
     }
 
+    /**
+     * Generate bib failure report entity list.
+     *
+     * @param bibliographicEntity the bibliographic entity
+     * @param record              the record
+     * @return the list
+     */
     public List<ReportDataEntity> generateBibFailureReportEntity(BibliographicEntity bibliographicEntity, Record record) {
         List<ReportDataEntity> reportDataEntities = new ArrayList<>();
         ReportDataEntity owningInstitutionReportDataEntity = new ReportDataEntity();
@@ -71,6 +98,15 @@ public class DBReportUtil {
         return reportDataEntities;
     }
 
+    /**
+     * Generate bib holdings failure report entity list.
+     *
+     * @param bibliographicEntity the bibliographic entity
+     * @param holdingsEntity      the holdings entity
+     * @param institutionName     the institution name
+     * @param bibRecord           the bib record
+     * @return the list
+     */
     public List<ReportDataEntity> generateBibHoldingsFailureReportEntity(BibliographicEntity bibliographicEntity, HoldingsEntity holdingsEntity, String institutionName, Record bibRecord) {
         List<ReportDataEntity> reportDataEntities = new ArrayList<>();
         reportDataEntities.addAll(generateBibFailureReportEntity(bibliographicEntity, bibRecord));
@@ -83,6 +119,16 @@ public class DBReportUtil {
         return reportDataEntities;
     }
 
+    /**
+     * Generate bib holdings and items failure report entities list.
+     *
+     * @param bibliographicEntity the bibliographic entity
+     * @param holdingsEntity      the holdings entity
+     * @param itemEntity          the item entity
+     * @param institutionName     the institution name
+     * @param bibRecord           the bib record
+     * @return the list
+     */
     public List<ReportDataEntity> generateBibHoldingsAndItemsFailureReportEntities(BibliographicEntity bibliographicEntity, HoldingsEntity holdingsEntity, ItemEntity itemEntity, String institutionName, Record bibRecord) {
         List<ReportDataEntity> reportEntities = new ArrayList<>();
         reportEntities.addAll(generateBibHoldingsFailureReportEntity(bibliographicEntity, holdingsEntity, institutionName, bibRecord));

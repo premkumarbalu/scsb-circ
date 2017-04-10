@@ -35,14 +35,31 @@ public class RequestItemController {
     @Autowired
     private ItemRequestService itemRequestService;
 
+    /**
+     * Gets jsip conector factory.
+     *
+     * @return the jsip conector factory
+     */
     public JSIPConnectorFactory getJsipConectorFactory() {
         return jsipConectorFactory;
     }
 
+    /**
+     * Gets item request service.
+     *
+     * @return the item request service
+     */
     public ItemRequestService getItemRequestService() {
         return itemRequestService;
     }
 
+    /**
+     * Checkout item abstract response item.
+     *
+     * @param itemRequestInformation the item request information
+     * @param callInstitition        the call institition
+     * @return the abstract response item
+     */
     @RequestMapping(value = "/checkoutItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem checkoutItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemCheckoutResponse itemCheckoutResponse = new ItemCheckoutResponse();
@@ -64,6 +81,13 @@ public class RequestItemController {
         return itemCheckoutResponse;
     }
 
+    /**
+     * Checkin item abstract response item.
+     *
+     * @param itemRequestInformation the item request information
+     * @param callInstitition        the call institition
+     * @return the abstract response item
+     */
     @RequestMapping(value = "/checkinItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem checkinItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemCheckinResponse itemCheckinResponse;
@@ -87,6 +111,13 @@ public class RequestItemController {
         return itemCheckinResponse;
     }
 
+    /**
+     * Hold item abstract response item.
+     *
+     * @param itemRequestInformation the item request information
+     * @param callInstitition        the call institition
+     * @return the abstract response item
+     */
     @RequestMapping(value = "/holdItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem holdItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
@@ -112,6 +143,13 @@ public class RequestItemController {
         return itemHoldResponse;
     }
 
+    /**
+     * Cancel hold item abstract response item.
+     *
+     * @param itemRequestInformation the item request information
+     * @param callInstitition        the call institition
+     * @return the abstract response item
+     */
     @RequestMapping(value = "/cancelHoldItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem cancelHoldItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemHoldResponse itemHoldCancelResponse;
@@ -128,6 +166,13 @@ public class RequestItemController {
         return itemHoldCancelResponse;
     }
 
+    /**
+     * Create bibliogrphic item abstract response item.
+     *
+     * @param itemRequestInformation the item request information
+     * @param callInstitition        the call institition
+     * @return the abstract response item
+     */
     @RequestMapping(value = "/createBib", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemCreateBibResponse itemCreateBibResponse;
@@ -151,6 +196,13 @@ public class RequestItemController {
         return itemCreateBibResponse;
     }
 
+    /**
+     * Item information abstract response item.
+     *
+     * @param itemRequestInformation the item request information
+     * @param callInstitition        the call institition
+     * @return the abstract response item
+     */
     @RequestMapping(value = "/itemInformation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem itemInformation(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         AbstractResponseItem itemInformationResponse;
@@ -160,6 +212,13 @@ public class RequestItemController {
         return itemInformationResponse;
     }
 
+    /**
+     * Recall item abstract response item.
+     *
+     * @param itemRequestInformation the item request information
+     * @param callInstitition        the call institition
+     * @return the abstract response item
+     */
     @RequestMapping(value = "/recallItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem recallItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemRecallResponse itemRecallResponse;
@@ -174,6 +233,13 @@ public class RequestItemController {
         return itemRecallResponse;
     }
 
+    /**
+     * Patron information abstract response item.
+     *
+     * @param itemRequestInformation the item request information
+     * @param callInstitition        the call institition
+     * @return the abstract response item
+     */
     @RequestMapping(value = "/patronInformation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem patronInformation(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         PatronInformationResponse patronInformationResponse;
@@ -182,6 +248,12 @@ public class RequestItemController {
         return patronInformationResponse;
     }
 
+    /**
+     * Refile item item refile response.
+     *
+     * @param itemRefileRequest the item refile request
+     * @return the item refile response
+     */
     @RequestMapping(value = "/refile", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ItemRefileResponse refileItem(@RequestBody ItemRefileRequest itemRefileRequest) {
         boolean bSuccess = getItemRequestService().reFileItem(itemRefileRequest);
@@ -196,6 +268,12 @@ public class RequestItemController {
         return itemRefileResponse;
     }
 
+    /**
+     * Gets loacation.
+     *
+     * @param institution the institution
+     * @return the loacation
+     */
     public String getpickupLoacation(String institution) {
         String pickUpLocation = "";
         if (institution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
@@ -208,6 +286,12 @@ public class RequestItemController {
         return pickUpLocation;
     }
 
+    /**
+     * Log messages.
+     *
+     * @param logger    the logger
+     * @param clsObject the cls object
+     */
     public void logMessages(Logger logger, Object clsObject) {
         try {
             for (Field field : clsObject.getClass().getDeclaredFields()) {

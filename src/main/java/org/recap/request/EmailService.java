@@ -28,6 +28,15 @@ public class EmailService {
     @Autowired
     private ProducerTemplate producer;
 
+    /**
+     * Send email.
+     *
+     * @param customerCode   the customer code
+     * @param itemBarcode    the item barcode
+     * @param messageDisplay the message display
+     * @param patronBarcode  the patron barcode
+     * @param toInstitution  the to institution
+     */
     public void sendEmail(String customerCode, String itemBarcode, String messageDisplay, String patronBarcode, String toInstitution) {
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setTo(emailIdTo(toInstitution));
@@ -39,6 +48,11 @@ public class EmailService {
         producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, emailPayLoad, ReCAPConstants.REQUEST_RECALL_EMAILBODY_FOR, ReCAPConstants.REQUEST_RECALL_MAIL_QUEUE);
     }
 
+    /**
+     *
+     * @param institution
+     * @return
+     */
     private String emailIdTo(String institution) {
         if (institution.equalsIgnoreCase(ReCAPConstants.NYPL)) {
             return nyplMailTo;

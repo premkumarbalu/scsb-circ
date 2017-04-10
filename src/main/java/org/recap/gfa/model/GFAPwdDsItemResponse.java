@@ -23,31 +23,61 @@ public class GFAPwdDsItemResponse {
     @JsonProperty("prods:before")
     private ProdsBefore prodsBefore;
 
+    /**
+     * Gets prods has changes.
+     *
+     * @return the prods has changes
+     */
     @JsonProperty("prods:hasChanges")
     public Boolean getProdsHasChanges() {
         return prodsHasChanges;
     }
 
+    /**
+     * Sets prods has changes.
+     *
+     * @param prodsHasChanges the prods has changes
+     */
     @JsonProperty("prods:hasChanges")
     public void setProdsHasChanges(Boolean prodsHasChanges) {
         this.prodsHasChanges = prodsHasChanges;
     }
 
+    /**
+     * Gets ttitem.
+     *
+     * @return the ttitem
+     */
     @JsonProperty("ttitem")
     public List<GFAPwdTtItemResponse> getTtitem() {
         return ttitem;
     }
 
+    /**
+     * Sets ttitem.
+     *
+     * @param ttitem the ttitem
+     */
     @JsonProperty("ttitem")
     public void setTtitem(List<GFAPwdTtItemResponse> ttitem) {
         this.ttitem = ttitem;
     }
 
+    /**
+     * Gets prods before.
+     *
+     * @return the prods before
+     */
     @JsonProperty("prods:before")
     public ProdsBefore getProdsBefore() {
         return prodsBefore;
     }
 
+    /**
+     * Sets prods before.
+     *
+     * @param prodsBefore the prods before
+     */
     @JsonProperty("prods:before")
     public void setProdsBefore(ProdsBefore prodsBefore) {
         this.prodsBefore = prodsBefore;

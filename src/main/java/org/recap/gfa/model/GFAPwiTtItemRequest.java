@@ -19,21 +19,41 @@ public class GFAPwiTtItemRequest {
     @JsonProperty("itemBarcode")
     private String itemBarcode;
 
+    /**
+     * Gets customer code.
+     *
+     * @return the customer code
+     */
     @JsonProperty("CustomerCode")
     public String getCustomerCode() {
         return customerCode;
     }
 
+    /**
+     * Sets customer code.
+     *
+     * @param customerCode the customer code
+     */
     @JsonProperty("CustomerCode")
     public void setCustomerCode(String customerCode) {
         this.customerCode = customerCode;
     }
 
+    /**
+     * Gets item barcode.
+     *
+     * @return the item barcode
+     */
     @JsonProperty("itemBarcode")
     public String getItemBarcode() {
         return itemBarcode;
     }
 
+    /**
+     * Sets item barcode.
+     *
+     * @param itemBarcode the item barcode
+     */
     @JsonProperty("itemBarcode")
     public void setItemBarcode(String itemBarcode) {
         this.itemBarcode = itemBarcode;

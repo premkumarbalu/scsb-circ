@@ -7,10 +7,20 @@ public class GFARetrieveEDDItemRequest {
 
     private RetrieveItemEDDRequest retrieveEDD;
 
+    /**
+     * Gets retrieve edd.
+     *
+     * @return the retrieve edd
+     */
     public RetrieveItemEDDRequest getRetrieveEDD() {
         return retrieveEDD;
     }
 
+    /**
+     * Sets retrieve edd.
+     *
+     * @param retrieveEDD the retrieve edd
+     */
     public void setRetrieveEDD(RetrieveItemEDDRequest retrieveEDD) {
         this.retrieveEDD = retrieveEDD;
     }

@@ -34,22 +34,49 @@ public class ItemEDDRequestService {
     @Autowired
     private ItemRequestService itemRequestService;
 
+    /**
+     * Gets item details repository.
+     *
+     * @return the item details repository
+     */
     public ItemDetailsRepository getItemDetailsRepository() {
         return itemDetailsRepository;
     }
 
+    /**
+     * Gets request type details repository.
+     *
+     * @return the request type details repository
+     */
     public RequestTypeDetailsRepository getRequestTypeDetailsRepository() {
         return requestTypeDetailsRepository;
     }
 
+    /**
+     * Gets item request service.
+     *
+     * @return the item request service
+     */
     public ItemRequestService getItemRequestService() {
         return itemRequestService;
     }
 
+    /**
+     * Gets item information response.
+     *
+     * @return the item information response
+     */
     public ItemInformationResponse getItemInformationResponse() {
         return new ItemInformationResponse();
     }
 
+    /**
+     * Edd request item item information response.
+     *
+     * @param itemRequestInfo the item request info
+     * @param exchange        the exchange
+     * @return the item information response
+     */
     public ItemInformationResponse eddRequestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
         List<ItemEntity> itemEntities;

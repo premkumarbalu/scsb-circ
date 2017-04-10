@@ -30,9 +30,9 @@ public class ItemResponse {
     private List<DebugInfo> debugInfo = null;
 
     /**
+     * Gets item data.
      *
-     * @return
-     * The itemData
+     * @return The  itemData
      */
     @JsonProperty("data")
     public ItemData getItemData() {
@@ -40,9 +40,9 @@ public class ItemResponse {
     }
 
     /**
+     * Sets item data.
      *
-     * @param itemData
-     * The itemData
+     * @param itemData The itemData
      */
     @JsonProperty("data")
     public void setItemData(ItemData itemData) {
@@ -50,9 +50,9 @@ public class ItemResponse {
     }
 
     /**
+     * Gets count.
      *
-     * @return
-     * The count
+     * @return The  count
      */
     @JsonProperty("count")
     public Integer getCount() {
@@ -60,9 +60,9 @@ public class ItemResponse {
     }
 
     /**
+     * Sets count.
      *
-     * @param count
-     * The count
+     * @param count The count
      */
     @JsonProperty("count")
     public void setCount(Integer count) {
@@ -70,9 +70,9 @@ public class ItemResponse {
     }
 
     /**
+     * Gets status code.
      *
-     * @return
-     * The statusCode
+     * @return The  statusCode
      */
     @JsonProperty("statusCode")
     public Integer getStatusCode() {
@@ -80,9 +80,9 @@ public class ItemResponse {
     }
 
     /**
+     * Sets status code.
      *
-     * @param statusCode
-     * The statusCode
+     * @param statusCode The statusCode
      */
     @JsonProperty("statusCode")
     public void setStatusCode(Integer statusCode) {
@@ -90,9 +90,9 @@ public class ItemResponse {
     }
 
     /**
+     * Gets debug info.
      *
-     * @return
-     * The debugInfo
+     * @return The  debugInfo
      */
     @JsonProperty("debugInfo")
     public List<DebugInfo> getDebugInfo() {
@@ -100,9 +100,9 @@ public class ItemResponse {
     }
 
     /**
+     * Sets debug info.
      *
-     * @param debugInfo
-     * The debugInfo
+     * @param debugInfo The debugInfo
      */
     @JsonProperty("debugInfo")
     public void setDebugInfo(List<DebugInfo> debugInfo) {

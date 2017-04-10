@@ -17,9 +17,9 @@ public class CheckOutItemResponse {
     private Problem problem;
 
     /**
+     * Gets problem.
      *
-     * @return
-     * The problem
+     * @return The  problem
      */
     @JsonProperty("Problem")
     public Problem getProblem() {
@@ -27,9 +27,9 @@ public class CheckOutItemResponse {
     }
 
     /**
+     * Sets problem.
      *
-     * @param problem
-     * The Problem
+     * @param problem The Problem
      */
     @JsonProperty("Problem")
     public void setProblem(Problem problem) {

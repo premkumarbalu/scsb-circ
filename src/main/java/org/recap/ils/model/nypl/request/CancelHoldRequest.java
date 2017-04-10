@@ -26,9 +26,9 @@ public class CancelHoldRequest {
     private String patronBarcode;
 
     /**
+     * Gets tracking id.
      *
-     * @return
-     * The trackingId
+     * @return The  trackingId
      */
     @JsonProperty("trackingId")
     public String getTrackingId() {
@@ -36,9 +36,9 @@ public class CancelHoldRequest {
     }
 
     /**
+     * Sets tracking id.
      *
-     * @param trackingId
-     * The trackingId
+     * @param trackingId The trackingId
      */
     @JsonProperty("trackingId")
     public void setTrackingId(String trackingId) {
@@ -46,9 +46,9 @@ public class CancelHoldRequest {
     }
 
     /**
+     * Gets owning institution id.
      *
-     * @return
-     * The owningInstitutionId
+     * @return The  owningInstitutionId
      */
     @JsonProperty("owningInstitutionId")
     public String getOwningInstitutionId() {
@@ -56,9 +56,9 @@ public class CancelHoldRequest {
     }
 
     /**
+     * Sets owning institution id.
      *
-     * @param owningInstitutionId
-     * The owningInstitutionId
+     * @param owningInstitutionId The owningInstitutionId
      */
     @JsonProperty("owningInstitutionId")
     public void setOwningInstitutionId(String owningInstitutionId) {
@@ -66,9 +66,9 @@ public class CancelHoldRequest {
     }
 
     /**
+     * Gets item barcode.
      *
-     * @return
-     * The itemBarcode
+     * @return The  itemBarcode
      */
     @JsonProperty("itemBarcode")
     public String getItemBarcode() {
@@ -76,9 +76,9 @@ public class CancelHoldRequest {
     }
 
     /**
+     * Sets item barcode.
      *
-     * @param itemBarcode
-     * The itemBarcode
+     * @param itemBarcode The itemBarcode
      */
     @JsonProperty("itemBarcode")
     public void setItemBarcode(String itemBarcode) {
@@ -86,9 +86,9 @@ public class CancelHoldRequest {
     }
 
     /**
+     * Gets patron barcode.
      *
-     * @return
-     * The patronBarcode
+     * @return The  patronBarcode
      */
     @JsonProperty("patronBarcode")
     public String getPatronBarcode() {
@@ -96,9 +96,9 @@ public class CancelHoldRequest {
     }
 
     /**
+     * Sets patron barcode.
      *
-     * @param patronBarcode
-     * The patronBarcode
+     * @param patronBarcode The patronBarcode
      */
     @JsonProperty("patronBarcode")
     public void setPatronBarcode(String patronBarcode) {

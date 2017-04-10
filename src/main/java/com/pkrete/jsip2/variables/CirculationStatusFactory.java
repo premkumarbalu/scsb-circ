@@ -8,12 +8,20 @@ package com.pkrete.jsip2.variables;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.variables.CirculationStatus;
 
+/**
+ * The type Circulation status factory.
+ */
 public class CirculationStatusFactory {
     private static CirculationStatusFactory ref;
 
     private CirculationStatusFactory() {
     }
 
+    /**
+     * Gets instance.
+     *
+     * @return the instance
+     */
     public static CirculationStatusFactory getInstance() {
         if(ref == null) {
             ref = new CirculationStatusFactory();
@@ -22,6 +30,13 @@ public class CirculationStatusFactory {
         return ref;
     }
 
+    /**
+     * Gets circulation status.
+     *
+     * @param code the code
+     * @return the circulation status
+     * @throws InvalidSIP2ResponseValueException the invalid sip 2 response value exception
+     */
     public CirculationStatus getCirculationStatus(String code) throws InvalidSIP2ResponseValueException {
         if("00".equals(code)) {
             return CirculationStatus.ITEM_BARCODE_NOT_FOUND;

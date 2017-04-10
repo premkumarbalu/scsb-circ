@@ -20,9 +20,9 @@ public class SubField {
     private String content;
 
     /**
+     * Gets tag.
      *
-     * @return
-     * The tag
+     * @return The  tag
      */
     @JsonProperty("tag")
     public String getTag() {
@@ -30,9 +30,9 @@ public class SubField {
     }
 
     /**
+     * Sets tag.
      *
-     * @param tag
-     * The tag
+     * @param tag The tag
      */
     @JsonProperty("tag")
     public void setTag(String tag) {
@@ -40,9 +40,9 @@ public class SubField {
     }
 
     /**
+     * Gets content.
      *
-     * @return
-     * The content
+     * @return The  content
      */
     @JsonProperty("content")
     public String getContent() {
@@ -50,9 +50,9 @@ public class SubField {
     }
 
     /**
+     * Sets content.
      *
-     * @param content
-     * The content
+     * @param content The content
      */
     @JsonProperty("content")
     public void setContent(String content) {

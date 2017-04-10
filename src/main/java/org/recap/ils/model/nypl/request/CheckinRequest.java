@@ -17,9 +17,9 @@ public class CheckinRequest {
     private String itemBarcode;
 
     /**
+     * Gets item barcode.
      *
-     * @return
-     * The itemBarcode
+     * @return The  itemBarcode
      */
     @JsonProperty("itemBarcode")
     public String getItemBarcode() {
@@ -27,9 +27,9 @@ public class CheckinRequest {
     }
 
     /**
+     * Sets item barcode.
      *
-     * @param itemBarcode
-     * The itemBarcode
+     * @param itemBarcode The itemBarcode
      */
     @JsonProperty("itemBarcode")
     public void setItemBarcode(String itemBarcode) {

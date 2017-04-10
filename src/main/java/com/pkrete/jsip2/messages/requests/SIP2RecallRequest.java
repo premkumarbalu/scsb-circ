@@ -22,12 +22,26 @@ public class SIP2RecallRequest extends SIP2CirculationTransactionRequest {
         this.terminalPassword = "";
     }
 
+    /**
+     * Instantiates a new Sip 2 recall request.
+     *
+     * @param staffIdentifier  the staff identifier
+     * @param itemIdIdentifier the item id identifier
+     */
     public SIP2RecallRequest(String staffIdentifier,  String itemIdIdentifier) {
         this();
         this.itemIdentifier = itemIdIdentifier;
         this.patronIdentifier=staffIdentifier;
     }
 
+    /**
+     * Instantiates a new Sip 2 recall request.
+     *
+     * @param staffIdentifier   the staff identifier
+     * @param titleIdentififier the title identififier
+     * @param itemIdIdentifier  the item id identifier
+     * @param bibId             the bib id
+     */
     public SIP2RecallRequest(String staffIdentifier, String titleIdentififier, String itemIdIdentifier, String bibId) {
         this();
         this.itemIdentifier = itemIdIdentifier;
@@ -36,22 +50,46 @@ public class SIP2RecallRequest extends SIP2CirculationTransactionRequest {
         this.bibId=bibId;
     }
 
+    /**
+     * Gets hold mode.
+     *
+     * @return the hold mode
+     */
     public HoldMode getHoldMode() {
         return this.holdMode;
     }
 
+    /**
+     * Sets hold mode.
+     *
+     * @param holdMode the hold mode
+     */
     public void setHoldMode(HoldMode holdMode) {
         this.holdMode = holdMode;
     }
 
+    /**
+     * Gets hold type.
+     *
+     * @return the hold type
+     */
     public HoldType getHoldType() {
         return this.holdType;
     }
 
+    /**
+     * Sets hold type.
+     *
+     * @param holdType the hold type
+     */
     public void setHoldType(HoldType holdType) {
         this.holdType = holdType;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String getData() {
         StringBuilder builder = new StringBuilder();

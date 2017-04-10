@@ -9,10 +9,20 @@ public class RetrieveItemRequest {
 
     private List<TtitemRequest> ttitem;
 
+    /**
+     * Gets ttitem.
+     *
+     * @return the ttitem
+     */
     public List<TtitemRequest> getTtitem() {
         return ttitem;
     }
 
+    /**
+     * Sets ttitem.
+     *
+     * @param ttitem the ttitem
+     */
     public void setTtitem(List<TtitemRequest> ttitem) {
         this.ttitem = ttitem;
     }

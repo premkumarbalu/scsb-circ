@@ -30,9 +30,9 @@ public class CheckinResponse {
     private List<DebugInfo> debugInfo = null;
 
     /**
+     * Gets data.
      *
-     * @return
-     * The data
+     * @return The  data
      */
     @JsonProperty("data")
     public CheckinData getData() {
@@ -40,9 +40,9 @@ public class CheckinResponse {
     }
 
     /**
+     * Sets data.
      *
-     * @param data
-     * The data
+     * @param data The data
      */
     @JsonProperty("data")
     public void setData(CheckinData data) {
@@ -50,9 +50,9 @@ public class CheckinResponse {
     }
 
     /**
+     * Gets count.
      *
-     * @return
-     * The count
+     * @return The  count
      */
     @JsonProperty("count")
     public Integer getCount() {
@@ -60,9 +60,9 @@ public class CheckinResponse {
     }
 
     /**
+     * Sets count.
      *
-     * @param count
-     * The count
+     * @param count The count
      */
     @JsonProperty("count")
     public void setCount(Integer count) {
@@ -70,9 +70,9 @@ public class CheckinResponse {
     }
 
     /**
+     * Gets status code.
      *
-     * @return
-     * The statusCode
+     * @return The  statusCode
      */
     @JsonProperty("statusCode")
     public Integer getStatusCode() {
@@ -80,9 +80,9 @@ public class CheckinResponse {
     }
 
     /**
+     * Sets status code.
      *
-     * @param statusCode
-     * The statusCode
+     * @param statusCode The statusCode
      */
     @JsonProperty("statusCode")
     public void setStatusCode(Integer statusCode) {
@@ -90,9 +90,9 @@ public class CheckinResponse {
     }
 
     /**
+     * Gets debug info.
      *
-     * @return
-     * The debugInfo
+     * @return The  debugInfo
      */
     @JsonProperty("debugInfo")
     public List<DebugInfo> getDebugInfo() {
@@ -100,9 +100,9 @@ public class CheckinResponse {
     }
 
     /**
+     * Sets debug info.
      *
-     * @param debugInfo
-     * The debugInfo
+     * @param debugInfo The debugInfo
      */
     @JsonProperty("debugInfo")
     public void setDebugInfo(List<DebugInfo> debugInfo) {

@@ -8,12 +8,20 @@ package com.pkrete.jsip2.variables;
 import com.pkrete.jsip2.exceptions.InvalidSIP2ResponseValueException;
 import com.pkrete.jsip2.variables.FeeType;
 
+/**
+ * The type Fee type factory.
+ */
 public class FeeTypeFactory {
     private static FeeTypeFactory ref;
 
     private FeeTypeFactory() {
     }
 
+    /**
+     * Gets instance.
+     *
+     * @return the instance
+     */
     public static FeeTypeFactory getInstance() {
         if (ref == null) {
             ref = new FeeTypeFactory();
@@ -22,6 +30,13 @@ public class FeeTypeFactory {
         return ref;
     }
 
+    /**
+     * Gets fee type.
+     *
+     * @param code the code
+     * @return the fee type
+     * @throws InvalidSIP2ResponseValueException the invalid sip 2 response value exception
+     */
     public FeeType getFeeType(String code) throws InvalidSIP2ResponseValueException {
 
         if ("00".equals(code)) {

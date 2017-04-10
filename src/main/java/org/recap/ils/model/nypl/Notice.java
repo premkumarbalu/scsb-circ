@@ -23,9 +23,9 @@ public class Notice {
     private Object data;
 
     /**
+     * Gets created date.
      *
-     * @return
-     * The createdDate
+     * @return The  createdDate
      */
     @JsonProperty("createdDate")
     public String getCreatedDate() {
@@ -33,9 +33,9 @@ public class Notice {
     }
 
     /**
+     * Sets created date.
      *
-     * @param createdDate
-     * The createdDate
+     * @param createdDate The createdDate
      */
     @JsonProperty("createdDate")
     public void setCreatedDate(String createdDate) {
@@ -43,9 +43,9 @@ public class Notice {
     }
 
     /**
+     * Gets text.
      *
-     * @return
-     * The text
+     * @return The  text
      */
     @JsonProperty("text")
     public String getText() {
@@ -53,9 +53,9 @@ public class Notice {
     }
 
     /**
+     * Sets text.
      *
-     * @param text
-     * The text
+     * @param text The text
      */
     @JsonProperty("text")
     public void setText(String text) {
@@ -63,9 +63,9 @@ public class Notice {
     }
 
     /**
+     * Gets data.
      *
-     * @return
-     * The data
+     * @return The  data
      */
     @JsonProperty("data")
     public Object getData() {
@@ -73,9 +73,9 @@ public class Notice {
     }
 
     /**
+     * Sets data.
      *
-     * @param data
-     * The data
+     * @param data The data
      */
     @JsonProperty("data")
     public void setData(Object data) {

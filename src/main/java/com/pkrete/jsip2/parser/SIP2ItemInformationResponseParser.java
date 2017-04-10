@@ -13,6 +13,9 @@ import org.recap.ReCAPConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The type Sip 2 item information response parser.
+ */
 public class SIP2ItemInformationResponseParser extends SIP2ResponseParser {
 
     private static final Logger logger = LoggerFactory.getLogger(SIP2ItemInformationResponseParser.class);

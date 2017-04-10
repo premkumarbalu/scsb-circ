@@ -28,12 +28,24 @@ public class NyplJobResponsePollingProcessor {
     @Value("${nypl.polling.time.interval}")
     private Integer pollingTimeInterval;
 
+    /**
+     * The Nypl api service connector.
+     */
     @Autowired
     NyplApiServiceConnector nyplApiServiceConnector;
 
+    /**
+     * The Nypl api response util.
+     */
     @Autowired
     NyplApiResponseUtil nyplApiResponseUtil;
 
+    /**
+     * Poll nypl request item job response job response.
+     *
+     * @param jobId the job id
+     * @return the job response
+     */
     public JobResponse pollNyplRequestItemJobResponse(String jobId) {
         JobResponse jobResponse = new JobResponse();
         ExecutorService executor = Executors.newSingleThreadExecutor();

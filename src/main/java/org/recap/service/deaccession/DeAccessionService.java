@@ -34,36 +34,69 @@ public class DeAccessionService {
 
     private static final Logger logger = Logger.getLogger(DeAccessionService.class);
 
+    /**
+     * The Bibliographic details repository.
+     */
     @Autowired
     BibliographicDetailsRepository bibliographicDetailsRepository;
 
+    /**
+     * The Holdings details repository.
+     */
     @Autowired
     HoldingsDetailsRepository holdingsDetailsRepository;
 
+    /**
+     * The Item details repository.
+     */
     @Autowired
     ItemDetailsRepository itemDetailsRepository;
 
+    /**
+     * The Report detail repository.
+     */
     @Autowired
     ReportDetailRepository reportDetailRepository;
 
+    /**
+     * The Request item details repository.
+     */
     @Autowired
     RequestItemDetailsRepository requestItemDetailsRepository;
 
+    /**
+     * The Request item status details repository.
+     */
     @Autowired
     RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
 
+    /**
+     * The Item change log details repository.
+     */
     @Autowired
     ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
 
+    /**
+     * The Request item controller.
+     */
     @Autowired
     RequestItemController requestItemController;
 
+    /**
+     * The Gfa service.
+     */
     @Autowired
     GFAService gfaService;
 
+    /**
+     * The Server protocol.
+     */
     @Value("${server.protocol}")
     String serverProtocol;
 
+    /**
+     * The Scsb solr client url.
+     */
     @Value("${scsb.solr.client.url}")
     String scsbSolrClientUrl;
 
@@ -77,6 +110,12 @@ public class DeAccessionService {
     private String recapAssistanceEmailTo;
 
 
+    /**
+     * De accession map.
+     *
+     * @param deAccessionRequest the de accession request
+     * @return the map
+     */
     public Map<String, String> deAccession(DeAccessionRequest deAccessionRequest) {
         Map<String, String> resultMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(deAccessionRequest.getDeAccessionItems())) {
@@ -199,6 +238,13 @@ public class DeAccessionService {
         }
     }
 
+    /**
+     * Check and cancel holds.
+     *
+     * @param barcodeAndStopCodeMap         the barcode and stop code map
+     * @param deAccessionDBResponseEntities the de accession db response entities
+     * @param username                      the username
+     */
     public void checkAndCancelHolds(Map<String, String> barcodeAndStopCodeMap, List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, String username) {
         Set<String> itemBarcodeList = barcodeAndStopCodeMap.keySet();
         if (CollectionUtils.isNotEmpty(itemBarcodeList)) {
@@ -286,6 +332,13 @@ public class DeAccessionService {
         return (ItemInformationResponse) requestItemController.itemInformation(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
     }
 
+    /**
+     * Cancel request item hold response.
+     *
+     * @param requestItemEntity the request item entity
+     * @param username          the username
+     * @return the item hold response
+     */
     public ItemHoldResponse cancelRequest(RequestItemEntity requestItemEntity, String username) {
         ItemEntity itemEntity = requestItemEntity.getItemEntity();
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
@@ -326,6 +379,13 @@ public class DeAccessionService {
         return iholdQueue;
     }
 
+    /**
+     * De accession items in db.
+     *
+     * @param barcodeAndStopCodeMap         the barcode and stop code map
+     * @param deAccessionDBResponseEntities the de accession db response entities
+     * @param username                      the username
+     */
     public void deAccessionItemsInDB(Map<String, String> barcodeAndStopCodeMap, List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, String username) {
         DeAccessionDBResponseEntity deAccessionDBResponseEntity;
         Date currentDate = new Date();
@@ -357,6 +417,12 @@ public class DeAccessionService {
         }
     }
 
+    /**
+     * Process and save list.
+     *
+     * @param deAccessionDBResponseEntities the de accession db response entities
+     * @return the list
+     */
     public List<ReportEntity> processAndSave(List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities) {
         List<ReportEntity> reportEntities = new ArrayList<>();
         ReportEntity reportEntity = null;
@@ -524,6 +590,13 @@ public class DeAccessionService {
         return holdingIds;
     }
 
+    /**
+     * De accession items in solr.
+     *
+     * @param bibIds      the bib ids
+     * @param holdingsIds the holdings ids
+     * @param itemIds     the item ids
+     */
     public void deAccessionItemsInSolr(List<Integer> bibIds, List<Integer> holdingsIds, List<Integer> itemIds) {
         try {
             if (CollectionUtils.isNotEmpty(bibIds) || CollectionUtils.isNotEmpty(holdingsIds) || CollectionUtils.isNotEmpty(itemIds)) {
@@ -543,6 +616,13 @@ public class DeAccessionService {
         }
     }
 
+    /**
+     * Update bibliographic with last updated date.
+     *
+     * @param itemId          the item id
+     * @param userName        the user name
+     * @param lastUpdatedDate the last updated date
+     */
     public void updateBibliographicWithLastUpdatedDate(Integer itemId,String userName,Date lastUpdatedDate){
         ItemEntity itemEntity = itemDetailsRepository.findByItemId(itemId);
         List<BibliographicEntity> bibliographicEntityList = itemEntity.getBibliographicEntities();

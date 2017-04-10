@@ -33,66 +33,146 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
 
     private static final Logger logger = LoggerFactory.getLogger(NyplApiServiceConnector.class);
 
+    /**
+     * The Nypl data api url.
+     */
     @Value("${ils.nypl.data.api}")
     public String nyplDataApiUrl;
 
+    /**
+     * The Nypl oauth token api service.
+     */
     @Autowired
     NyplOauthTokenApiService nyplOauthTokenApiService;
 
+    /**
+     * The Nypl api response util.
+     */
     @Autowired
     NyplApiResponseUtil nyplApiResponseUtil;
 
+    /**
+     * The Nypl job response polling processor.
+     */
     @Autowired
     NyplJobResponsePollingProcessor nyplJobResponsePollingProcessor;
 
+    /**
+     * Gets nypl api response util.
+     *
+     * @return the nypl api response util
+     */
     public NyplApiResponseUtil getNyplApiResponseUtil() {
         return nyplApiResponseUtil;
     }
 
+    /**
+     * Gets nypl oauth token api service.
+     *
+     * @return the nypl oauth token api service
+     */
     public NyplOauthTokenApiService getNyplOauthTokenApiService() {
         return nyplOauthTokenApiService;
     }
 
+    /**
+     * Gets nypl job response polling processor.
+     *
+     * @return the nypl job response polling processor
+     */
     public NyplJobResponsePollingProcessor getNyplJobResponsePollingProcessor() {
         return nyplJobResponsePollingProcessor;
     }
 
+    /**
+     * Gets nypl data api url.
+     *
+     * @return the nypl data api url
+     */
     public String getNyplDataApiUrl() {
         return nyplDataApiUrl;
     }
 
+    /**
+     * Get rest template rest template.
+     *
+     * @return the rest template
+     */
     public RestTemplate getRestTemplate(){
         return new RestTemplate();
     }
 
+    /**
+     * Get http header http headers.
+     *
+     * @return the http headers
+     */
     public HttpHeaders getHttpHeader(){
         return new HttpHeaders();
     }
 
+    /**
+     * Get http entity http entity.
+     *
+     * @param headers the headers
+     * @return the http entity
+     */
     public HttpEntity getHttpEntity(HttpHeaders headers){
         return new HttpEntity(headers);
     }
 
+    /**
+     * Get api url string.
+     *
+     * @param source         the source
+     * @param itemIdentifier the item identifier
+     * @return the string
+     */
     public String getApiUrl(String source,String itemIdentifier){
         return getNyplDataApiUrl() + "/items/" + source + "/" + itemIdentifier;
     }
 
+    /**
+     * Get check out request checkout request.
+     *
+     * @return the checkout request
+     */
     public CheckoutRequest getCheckOutRequest(){
         return new CheckoutRequest();
     }
 
+    /**
+     * Gets logger.
+     *
+     * @return the logger
+     */
     public Logger getLogger() {
         return logger;
     }
 
+    /**
+     * Get check in request checkin request.
+     *
+     * @return the checkin request
+     */
     public CheckinRequest getCheckInRequest(){
         return new CheckinRequest();
     }
 
+    /**
+     * Get create hold request create hold request.
+     *
+     * @return the create hold request
+     */
     public CreateHoldRequest getCreateHoldRequest(){
         return new CreateHoldRequest();
     }
 
+    /**
+     * Get cancel hold request cancel hold request.
+     *
+     * @return the cancel hold request
+     */
     public CancelHoldRequest getCancelHoldRequest(){
         return new CancelHoldRequest();
     }
@@ -351,6 +431,13 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return itemHoldResponse;
     }
 
+    /**
+     * Query for job job response.
+     *
+     * @param jobId the job id
+     * @return the job response
+     * @throws Exception the exception
+     */
     public JobResponse queryForJob(String jobId) throws Exception {
         String apiUrl = nyplDataApiUrl + "/jobs/" + jobId;
         RestTemplate restTemplate = new RestTemplate();

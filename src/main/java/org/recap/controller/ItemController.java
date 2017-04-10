@@ -13,17 +13,31 @@ import java.util.Iterator;
 import java.util.List;
 
 
+/**
+ * The type Item controller.
+ */
 @RestController
 @RequestMapping("/item")
 public class ItemController {
     private final ItemDetailsRepository itemDetailsRepository;
 
 
+    /**
+     * Instantiates a new Item controller.
+     *
+     * @param itemDetailsRepository the item details repository
+     */
     @Autowired
     public ItemController(ItemDetailsRepository itemDetailsRepository) {
         this.itemDetailsRepository = itemDetailsRepository;
     }
 
+    /**
+     * Find by barcode in list.
+     *
+     * @param barcodes the barcodes
+     * @return the list
+     */
     @RequestMapping(method = RequestMethod.GET, value ="/findByBarcodeIn")
     public List<ItemEntity> findByBarcodeIn(String barcodes){
 
@@ -39,6 +53,12 @@ public class ItemController {
         return itemEntityList;
     }
 
+    /**
+     * Split string and get list list.
+     *
+     * @param itemBarcodes the item barcodes
+     * @return the list
+     */
     public List<String> splitStringAndGetList(String itemBarcodes){
         itemBarcodes = itemBarcodes.replaceAll("\\[","").replaceAll("\\]","");
         String[] splittedString = itemBarcodes.split(",");
