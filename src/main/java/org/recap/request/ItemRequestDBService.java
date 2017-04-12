@@ -33,6 +33,9 @@ public class ItemRequestDBService {
     @Autowired
     private RequestItemDetailsRepository requestItemDetailsRepository;
 
+    /**
+     * The Item change log details repository.
+     */
     @Autowired
     ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
 
@@ -46,6 +49,14 @@ public class ItemRequestDBService {
     private RequestTypeDetailsRepository requestTypeDetailsRepository;
 
 
+    /**
+     * Update recap request item integer.
+     *
+     * @param itemRequestInformation the item request information
+     * @param itemEntity             the item entity
+     * @param requestStatusCode      the request status code
+     * @return the integer
+     */
     public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, String requestStatusCode) {
 
         RequestItemEntity requestItemEntity = new RequestItemEntity();
@@ -83,6 +94,12 @@ public class ItemRequestDBService {
         return requestId;
     }
 
+    /**
+     * Update recap request item item information response.
+     *
+     * @param itemInformationResponse the item information response
+     * @return the item information response
+     */
     public ItemInformationResponse updateRecapRequestItem(ItemInformationResponse itemInformationResponse) {
 
         RequestItemEntity requestItemEntity;
@@ -128,6 +145,12 @@ public class ItemRequestDBService {
         return itemInformationResponse;
     }
 
+    /**
+     * Update recap request status item information response.
+     *
+     * @param itemInformationResponse the item information response
+     * @return the item information response
+     */
     public ItemInformationResponse updateRecapRequestStatus(ItemInformationResponse itemInformationResponse) {
         RequestStatusEntity requestStatusEntity;
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
@@ -141,6 +164,12 @@ public class ItemRequestDBService {
         return itemInformationResponse;
     }
 
+    /**
+     * Update item availabiluty status.
+     *
+     * @param itemEntities the item entities
+     * @param userName     the user name
+     */
     public void updateItemAvailabilutyStatus(List<ItemEntity> itemEntities, String userName) {
         for (ItemEntity itemEntity : itemEntities) {
             itemEntity.setItemAvailabilityStatusId(2); // Not Available
@@ -154,6 +183,12 @@ public class ItemRequestDBService {
 
     }
 
+    /**
+     * Rollback update item availabiluty status.
+     *
+     * @param itemEntity the item entity
+     * @param userName   the user name
+     */
     public void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity, String userName) {
         itemEntity.setItemAvailabilityStatusId(1); // Available
         itemEntity.setLastUpdatedBy(getUser(userName));
@@ -162,6 +197,14 @@ public class ItemRequestDBService {
         saveItemChangeLogEntity(itemEntity.getItemId(), getUser(userName), ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK);
     }
 
+    /**
+     * Save item change log entity.
+     *
+     * @param recordId      the record id
+     * @param userName      the user name
+     * @param operationType the operation type
+     * @param notes         the notes
+     */
     public void saveItemChangeLogEntity(Integer recordId, String userName, String operationType, String notes) {
         ItemChangeLogEntity itemChangeLogEntity = new ItemChangeLogEntity();
         itemChangeLogEntity.setUpdatedBy(userName);
@@ -172,6 +215,12 @@ public class ItemRequestDBService {
         itemChangeLogDetailsRepository.save(itemChangeLogEntity);
     }
 
+    /**
+     * Gets user.
+     *
+     * @param userId the user id
+     * @return the user
+     */
     public String getUser(String userId) {
         if (StringUtils.isBlank(userId)) {
             return "Discovery";
@@ -192,6 +241,12 @@ public class ItemRequestDBService {
         return null;
     }
 
+    /**
+     * Rollback after gfa item request information.
+     *
+     * @param itemInformationResponse the item information response
+     * @return the item request information
+     */
     public ItemRequestInformation rollbackAfterGFA(ItemInformationResponse itemInformationResponse) {
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());

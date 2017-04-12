@@ -38,9 +38,9 @@ public class CancelHoldData {
     private String patronBarcode;
 
     /**
+     * Gets id.
      *
-     * @return
-     * The id
+     * @return The  id
      */
     @JsonProperty("id")
     public Integer getId() {
@@ -48,9 +48,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Sets id.
      *
-     * @param id
-     * The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(Integer id) {
@@ -58,9 +58,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Gets updated date.
      *
-     * @return
-     * The updatedDate
+     * @return The  updatedDate
      */
     @JsonProperty("updatedDate")
     public Object getUpdatedDate() {
@@ -68,9 +68,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Sets updated date.
      *
-     * @param updatedDate
-     * The updatedDate
+     * @param updatedDate The updatedDate
      */
     @JsonProperty("updatedDate")
     public void setUpdatedDate(Object updatedDate) {
@@ -78,9 +78,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Gets created date.
      *
-     * @return
-     * The createdDate
+     * @return The  createdDate
      */
     @JsonProperty("createdDate")
     public String getCreatedDate() {
@@ -88,9 +88,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Sets created date.
      *
-     * @param createdDate
-     * The createdDate
+     * @param createdDate The createdDate
      */
     @JsonProperty("createdDate")
     public void setCreatedDate(String createdDate) {
@@ -98,9 +98,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Gets job id.
      *
-     * @return
-     * The jobId
+     * @return The  jobId
      */
     @JsonProperty("jobId")
     public String getJobId() {
@@ -108,9 +108,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Sets job id.
      *
-     * @param jobId
-     * The jobId
+     * @param jobId The jobId
      */
     @JsonProperty("jobId")
     public void setJobId(String jobId) {
@@ -118,9 +118,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Gets tracking id.
      *
-     * @return
-     * The trackingId
+     * @return The  trackingId
      */
     @JsonProperty("trackingId")
     public String getTrackingId() {
@@ -128,9 +128,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Sets tracking id.
      *
-     * @param trackingId
-     * The trackingId
+     * @param trackingId The trackingId
      */
     @JsonProperty("trackingId")
     public void setTrackingId(String trackingId) {
@@ -138,9 +138,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Gets owning institution id.
      *
-     * @return
-     * The owningInstitutionId
+     * @return The  owningInstitutionId
      */
     @JsonProperty("owningInstitutionId")
     public String getOwningInstitutionId() {
@@ -148,9 +148,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Sets owning institution id.
      *
-     * @param owningInstitutionId
-     * The owningInstitutionId
+     * @param owningInstitutionId The owningInstitutionId
      */
     @JsonProperty("owningInstitutionId")
     public void setOwningInstitutionId(String owningInstitutionId) {
@@ -158,9 +158,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Gets item barcode.
      *
-     * @return
-     * The itemBarcode
+     * @return The  itemBarcode
      */
     @JsonProperty("itemBarcode")
     public String getItemBarcode() {
@@ -168,9 +168,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Sets item barcode.
      *
-     * @param itemBarcode
-     * The itemBarcode
+     * @param itemBarcode The itemBarcode
      */
     @JsonProperty("itemBarcode")
     public void setItemBarcode(String itemBarcode) {
@@ -178,9 +178,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Gets patron barcode.
      *
-     * @return
-     * The patronBarcode
+     * @return The  patronBarcode
      */
     @JsonProperty("patronBarcode")
     public String getPatronBarcode() {
@@ -188,9 +188,9 @@ public class CancelHoldData {
     }
 
     /**
+     * Sets patron barcode.
      *
-     * @param patronBarcode
-     * The patronBarcode
+     * @param patronBarcode The patronBarcode
      */
     @JsonProperty("patronBarcode")
     public void setPatronBarcode(String patronBarcode) {

@@ -38,9 +38,9 @@ public class NoticesData {
     private CheckOutItemResponse checkOutItemResponse;
 
     /**
+     * Gets id.
      *
-     * @return
-     * The id
+     * @return The  id
      */
     @JsonProperty("id")
     public Integer getId() {
@@ -48,9 +48,9 @@ public class NoticesData {
     }
 
     /**
+     * Sets id.
      *
-     * @param id
-     * The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(Integer id) {
@@ -58,9 +58,9 @@ public class NoticesData {
     }
 
     /**
+     * Gets item barcode.
      *
-     * @return
-     * The itemBarcode
+     * @return The  itemBarcode
      */
     @JsonProperty("itemBarcode")
     public String getItemBarcode() {
@@ -68,9 +68,9 @@ public class NoticesData {
     }
 
     /**
+     * Sets item barcode.
      *
-     * @param itemBarcode
-     * The itemBarcode
+     * @param itemBarcode The itemBarcode
      */
     @JsonProperty("itemBarcode")
     public void setItemBarcode(String itemBarcode) {
@@ -78,9 +78,9 @@ public class NoticesData {
     }
 
     /**
+     * Gets patron barcode.
      *
-     * @return
-     * The patronBarcode
+     * @return The  patronBarcode
      */
     @JsonProperty("patronBarcode")
     public String getPatronBarcode() {
@@ -88,9 +88,9 @@ public class NoticesData {
     }
 
     /**
+     * Sets patron barcode.
      *
-     * @param patronBarcode
-     * The patronBarcode
+     * @param patronBarcode The patronBarcode
      */
     @JsonProperty("patronBarcode")
     public void setPatronBarcode(String patronBarcode) {
@@ -98,9 +98,9 @@ public class NoticesData {
     }
 
     /**
+     * Gets processed.
      *
-     * @return
-     * The processed
+     * @return The  processed
      */
     @JsonProperty("processed")
     public Boolean getProcessed() {
@@ -108,9 +108,9 @@ public class NoticesData {
     }
 
     /**
+     * Sets processed.
      *
-     * @param processed
-     * The processed
+     * @param processed The processed
      */
     @JsonProperty("processed")
     public void setProcessed(Boolean processed) {
@@ -118,9 +118,9 @@ public class NoticesData {
     }
 
     /**
+     * Gets patron.
      *
-     * @return
-     * The patron
+     * @return The  patron
      */
     @JsonProperty("patron")
     public Object getPatron() {
@@ -128,9 +128,9 @@ public class NoticesData {
     }
 
     /**
+     * Sets patron.
      *
-     * @param patron
-     * The patron
+     * @param patron The patron
      */
     @JsonProperty("patron")
     public void setPatron(Object patron) {
@@ -138,9 +138,9 @@ public class NoticesData {
     }
 
     /**
+     * Gets desired date due.
      *
-     * @return
-     * The desiredDateDue
+     * @return The  desiredDateDue
      */
     @JsonProperty("desiredDateDue")
     public String getDesiredDateDue() {
@@ -148,9 +148,9 @@ public class NoticesData {
     }
 
     /**
+     * Sets desired date due.
      *
-     * @param desiredDateDue
-     * The desiredDateDue
+     * @param desiredDateDue The desiredDateDue
      */
     @JsonProperty("desiredDateDue")
     public void setDesiredDateDue(String desiredDateDue) {
@@ -158,9 +158,9 @@ public class NoticesData {
     }
 
     /**
+     * Gets attributes.
      *
-     * @return
-     * The attributes
+     * @return The  attributes
      */
     @JsonProperty("@attributes")
     public Attributes getAttributes() {
@@ -168,9 +168,9 @@ public class NoticesData {
     }
 
     /**
+     * Sets attributes.
      *
-     * @param attributes
-     * The @attributes
+     * @param attributes The @attributes
      */
     @JsonProperty("@attributes")
     public void setAttributes(Attributes attributes) {
@@ -178,9 +178,9 @@ public class NoticesData {
     }
 
     /**
+     * Gets check out item response.
      *
-     * @return
-     * The checkOutItemResponse
+     * @return The  checkOutItemResponse
      */
     @JsonProperty("CheckOutItemResponse")
     public CheckOutItemResponse getCheckOutItemResponse() {
@@ -188,9 +188,9 @@ public class NoticesData {
     }
 
     /**
+     * Sets check out item response.
      *
-     * @param checkOutItemResponse
-     * The CheckOutItemResponse
+     * @param checkOutItemResponse The CheckOutItemResponse
      */
     @JsonProperty("CheckOutItemResponse")
     public void setCheckOutItemResponse(CheckOutItemResponse checkOutItemResponse) {

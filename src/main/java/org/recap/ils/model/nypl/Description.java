@@ -23,9 +23,9 @@ public class Description {
     private String callNumber;
 
     /**
+     * Gets title.
      *
-     * @return
-     * The title
+     * @return The  title
      */
     @JsonProperty("title")
     public String getTitle() {
@@ -33,9 +33,9 @@ public class Description {
     }
 
     /**
+     * Sets title.
      *
-     * @param title
-     * The title
+     * @param title The title
      */
     @JsonProperty("title")
     public void setTitle(String title) {
@@ -43,9 +43,9 @@ public class Description {
     }
 
     /**
+     * Gets author.
      *
-     * @return
-     * The author
+     * @return The  author
      */
     @JsonProperty("author")
     public String getAuthor() {
@@ -53,9 +53,9 @@ public class Description {
     }
 
     /**
+     * Sets author.
      *
-     * @param author
-     * The author
+     * @param author The author
      */
     @JsonProperty("author")
     public void setAuthor(String author) {
@@ -63,9 +63,9 @@ public class Description {
     }
 
     /**
+     * Gets call number.
      *
-     * @return
-     * The callNumber
+     * @return The  callNumber
      */
     @JsonProperty("callNumber")
     public String getCallNumber() {
@@ -73,9 +73,9 @@ public class Description {
     }
 
     /**
+     * Sets call number.
      *
-     * @param callNumber
-     * The callNumber
+     * @param callNumber The callNumber
      */
     @JsonProperty("callNumber")
     public void setCallNumber(String callNumber) {

@@ -61,6 +61,8 @@ public class ItemData {
     private List<VarField> varFields = null;
 
     /**
+     * Gets nypl source.
+     *
      * @return The nyplSource
      */
     @JsonProperty("nyplSource")
@@ -69,6 +71,8 @@ public class ItemData {
     }
 
     /**
+     * Sets nypl source.
+     *
      * @param nyplSource The nyplSource
      */
     @JsonProperty("nyplSource")
@@ -77,6 +81,8 @@ public class ItemData {
     }
 
     /**
+     * Gets bib ids.
+     *
      * @return The bibIds
      */
     @JsonProperty("bibIds")
@@ -85,6 +91,8 @@ public class ItemData {
     }
 
     /**
+     * Sets bib ids.
+     *
      * @param bibIds The bibIds
      */
     @JsonProperty("bibIds")
@@ -93,6 +101,8 @@ public class ItemData {
     }
 
     /**
+     * Gets id.
+     *
      * @return The id
      */
     @JsonProperty("id")
@@ -101,6 +111,8 @@ public class ItemData {
     }
 
     /**
+     * Sets id.
+     *
      * @param id The id
      */
     @JsonProperty("id")
@@ -109,6 +121,8 @@ public class ItemData {
     }
 
     /**
+     * Gets nypl type.
+     *
      * @return The nyplType
      */
     @JsonProperty("nyplType")
@@ -117,6 +131,8 @@ public class ItemData {
     }
 
     /**
+     * Sets nypl type.
+     *
      * @param nyplType The nyplType
      */
     @JsonProperty("nyplType")
@@ -125,6 +141,8 @@ public class ItemData {
     }
 
     /**
+     * Gets updated date.
+     *
      * @return The updatedDate
      */
     @JsonProperty("updatedDate")
@@ -133,6 +151,8 @@ public class ItemData {
     }
 
     /**
+     * Sets updated date.
+     *
      * @param updatedDate The updatedDate
      */
     @JsonProperty("updatedDate")
@@ -141,6 +161,8 @@ public class ItemData {
     }
 
     /**
+     * Gets created date.
+     *
      * @return The createdDate
      */
     @JsonProperty("createdDate")
@@ -149,6 +171,8 @@ public class ItemData {
     }
 
     /**
+     * Sets created date.
+     *
      * @param createdDate The createdDate
      */
     @JsonProperty("createdDate")
@@ -157,6 +181,8 @@ public class ItemData {
     }
 
     /**
+     * Gets deleted date.
+     *
      * @return The deletedDate
      */
     @JsonProperty("deletedDate")
@@ -165,6 +191,8 @@ public class ItemData {
     }
 
     /**
+     * Sets deleted date.
+     *
      * @param deletedDate The deletedDate
      */
     @JsonProperty("deletedDate")
@@ -173,6 +201,8 @@ public class ItemData {
     }
 
     /**
+     * Gets deleted.
+     *
      * @return The deleted
      */
     @JsonProperty("deleted")
@@ -181,6 +211,8 @@ public class ItemData {
     }
 
     /**
+     * Sets deleted.
+     *
      * @param deleted The deleted
      */
     @JsonProperty("deleted")
@@ -189,6 +221,8 @@ public class ItemData {
     }
 
     /**
+     * Gets location.
+     *
      * @return The location
      */
     @JsonProperty("location")
@@ -197,6 +231,8 @@ public class ItemData {
     }
 
     /**
+     * Sets location.
+     *
      * @param location The location
      */
     @JsonProperty("location")
@@ -205,6 +241,8 @@ public class ItemData {
     }
 
     /**
+     * Gets status.
+     *
      * @return The status
      */
     @JsonProperty("status")
@@ -213,6 +251,8 @@ public class ItemData {
     }
 
     /**
+     * Sets status.
+     *
      * @param status The status
      */
     @JsonProperty("status")
@@ -221,6 +261,8 @@ public class ItemData {
     }
 
     /**
+     * Gets barcode.
+     *
      * @return The barcode
      */
     @JsonProperty("barcode")
@@ -229,6 +271,8 @@ public class ItemData {
     }
 
     /**
+     * Sets barcode.
+     *
      * @param barcode The barcode
      */
     @JsonProperty("barcode")
@@ -237,6 +281,8 @@ public class ItemData {
     }
 
     /**
+     * Gets call number.
+     *
      * @return The callNumber
      */
     @JsonProperty("callNumber")
@@ -245,6 +291,8 @@ public class ItemData {
     }
 
     /**
+     * Sets call number.
+     *
      * @param callNumber The callNumber
      */
     @JsonProperty("callNumber")
@@ -253,6 +301,8 @@ public class ItemData {
     }
 
     /**
+     * Gets item type.
+     *
      * @return The itemType
      */
     @JsonProperty("itemType")
@@ -261,6 +311,8 @@ public class ItemData {
     }
 
     /**
+     * Sets item type.
+     *
      * @param itemType The itemType
      */
     @JsonProperty("itemType")
@@ -269,6 +321,8 @@ public class ItemData {
     }
 
     /**
+     * Gets fixed fields.
+     *
      * @return The fixedFields
      */
     @JsonProperty("fixedFields")
@@ -277,6 +331,8 @@ public class ItemData {
     }
 
     /**
+     * Sets fixed fields.
+     *
      * @param fixedFields The fixedFields
      */
     @JsonProperty("fixedFields")
@@ -285,6 +341,8 @@ public class ItemData {
     }
 
     /**
+     * Gets var fields.
+     *
      * @return The varFields
      */
     @JsonProperty("varFields")
@@ -293,6 +351,8 @@ public class ItemData {
     }
 
     /**
+     * Sets var fields.
+     *
      * @param varFields The varFields
      */
     @JsonProperty("varFields")

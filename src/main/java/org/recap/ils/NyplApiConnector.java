@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 /**
  * Created by rajeshbabuk on 19/12/16.
  */
-
 @Service
 public class NyplApiConnector extends NyplApiServiceConnector {
 

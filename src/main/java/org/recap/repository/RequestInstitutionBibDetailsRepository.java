@@ -10,6 +10,13 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  */
 public interface RequestInstitutionBibDetailsRepository extends PagingAndSortingRepository<RequestInstitutionBibEntity, RequestInstitutionBibPK> {
 
+    /**
+     * Find by item id and owning institution id request institution bib entity.
+     *
+     * @param itemId              the item id
+     * @param owningInstitutionId the owning institution id
+     * @return the request institution bib entity
+     */
     RequestInstitutionBibEntity findByItemIdAndOwningInstitutionId(Integer itemId,Integer owningInstitutionId);
 
 }

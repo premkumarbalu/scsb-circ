@@ -17,6 +17,11 @@ public class JAXBContextHandler {
     private JAXBContextHandler() {
     }
 
+    /**
+     * Gets instance.
+     *
+     * @return the instance
+     */
     public static JAXBContextHandler getInstance() {
         if(null == jaxbContextHandler){
             jaxbContextHandler = new JAXBContextHandler();
@@ -25,6 +30,13 @@ public class JAXBContextHandler {
         return jaxbContextHandler;
     }
 
+    /**
+     * Gets jaxb context for class.
+     *
+     * @param cl the cl
+     * @return the jaxb context for class
+     * @throws JAXBException the jaxb exception
+     */
     public JAXBContext getJAXBContextForClass(Class cl) throws JAXBException {
         if(getContextMap().containsKey(cl.getName())){
             return getContextMap().get(cl.getName());
@@ -36,6 +48,11 @@ public class JAXBContextHandler {
         return getContextMap().get(cl.getName());
     }
 
+    /**
+     * Gets context map.
+     *
+     * @return the context map
+     */
     public Map<String, JAXBContext> getContextMap() {
         if (null == contextMap) {
             contextMap = new HashMap<>();
@@ -43,6 +60,11 @@ public class JAXBContextHandler {
         return contextMap;
     }
 
+    /**
+     * Sets context map.
+     *
+     * @param contextMap the context map
+     */
     public void setContextMap(Map<String, JAXBContext> contextMap) {
         this.contextMap = contextMap;
     }

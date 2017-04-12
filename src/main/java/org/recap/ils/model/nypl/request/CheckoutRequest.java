@@ -23,9 +23,9 @@ public class CheckoutRequest {
     private String desiredDateDue;
 
     /**
+     * Gets patron barcode.
      *
-     * @return
-     * The patronBarcode
+     * @return The  patronBarcode
      */
     @JsonProperty("patronBarcode")
     public String getPatronBarcode() {
@@ -33,9 +33,9 @@ public class CheckoutRequest {
     }
 
     /**
+     * Sets patron barcode.
      *
-     * @param patronBarcode
-     * The patronBarcode
+     * @param patronBarcode The patronBarcode
      */
     @JsonProperty("patronBarcode")
     public void setPatronBarcode(String patronBarcode) {
@@ -43,9 +43,9 @@ public class CheckoutRequest {
     }
 
     /**
+     * Gets item barcode.
      *
-     * @return
-     * The itemBarcode
+     * @return The  itemBarcode
      */
     @JsonProperty("itemBarcode")
     public String getItemBarcode() {
@@ -53,9 +53,9 @@ public class CheckoutRequest {
     }
 
     /**
+     * Sets item barcode.
      *
-     * @param itemBarcode
-     * The itemBarcode
+     * @param itemBarcode The itemBarcode
      */
     @JsonProperty("itemBarcode")
     public void setItemBarcode(String itemBarcode) {
@@ -63,9 +63,9 @@ public class CheckoutRequest {
     }
 
     /**
+     * Gets desired date due.
      *
-     * @return
-     * The desiredDateDue
+     * @return The  desiredDateDue
      */
     @JsonProperty("desiredDateDue")
     public String getDesiredDateDue() {
@@ -73,9 +73,9 @@ public class CheckoutRequest {
     }
 
     /**
+     * Sets desired date due.
      *
-     * @param desiredDateDue
-     * The desiredDateDue
+     * @param desiredDateDue The desiredDateDue
      */
     @JsonProperty("desiredDateDue")
     public void setDesiredDateDue(String desiredDateDue) {

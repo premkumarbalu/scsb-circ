@@ -27,9 +27,18 @@ public class SharedCollectionRestController {
     @Autowired
     private SubmitCollectionService submitCollectionService;
 
+    /**
+     * The De accession service.
+     */
     @Autowired
     DeAccessionService deAccessionService;
 
+    /**
+     * Submit collection response entity.
+     *
+     * @param inputRecords the input records
+     * @return the response entity
+     */
     @RequestMapping(value = "/submitCollection", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity submitCollection(@RequestBody String inputRecords){
@@ -57,6 +66,12 @@ public class SharedCollectionRestController {
         return responseEntity;
     }
 
+    /**
+     * De accession response entity.
+     *
+     * @param deAccessionRequest the de accession request
+     * @return the response entity
+     */
     @RequestMapping(value = "/deAccession", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity deAccession(@RequestBody DeAccessionRequest deAccessionRequest) {

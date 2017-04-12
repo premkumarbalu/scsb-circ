@@ -34,9 +34,9 @@ public class VarField {
     private List<SubField> subFields = null;
 
     /**
+     * Gets field tag.
      *
-     * @return
-     * The fieldTag
+     * @return The  fieldTag
      */
     @JsonProperty("fieldTag")
     public Object getFieldTag() {
@@ -44,9 +44,9 @@ public class VarField {
     }
 
     /**
+     * Sets field tag.
      *
-     * @param fieldTag
-     * The fieldTag
+     * @param fieldTag The fieldTag
      */
     @JsonProperty("fieldTag")
     public void setFieldTag(Object fieldTag) {
@@ -54,9 +54,9 @@ public class VarField {
     }
 
     /**
+     * Gets marc tag.
      *
-     * @return
-     * The marcTag
+     * @return The  marcTag
      */
     @JsonProperty("marcTag")
     public String getMarcTag() {
@@ -64,9 +64,9 @@ public class VarField {
     }
 
     /**
+     * Sets marc tag.
      *
-     * @param marcTag
-     * The marcTag
+     * @param marcTag The marcTag
      */
     @JsonProperty("marcTag")
     public void setMarcTag(String marcTag) {
@@ -74,9 +74,9 @@ public class VarField {
     }
 
     /**
+     * Gets ind 1.
      *
-     * @return
-     * The ind1
+     * @return The  ind1
      */
     @JsonProperty("ind1")
     public String getInd1() {
@@ -84,9 +84,9 @@ public class VarField {
     }
 
     /**
+     * Sets ind 1.
      *
-     * @param ind1
-     * The ind1
+     * @param ind1 The ind1
      */
     @JsonProperty("ind1")
     public void setInd1(String ind1) {
@@ -94,9 +94,9 @@ public class VarField {
     }
 
     /**
+     * Gets ind 2.
      *
-     * @return
-     * The ind2
+     * @return The  ind2
      */
     @JsonProperty("ind2")
     public String getInd2() {
@@ -104,9 +104,9 @@ public class VarField {
     }
 
     /**
+     * Sets ind 2.
      *
-     * @param ind2
-     * The ind2
+     * @param ind2 The ind2
      */
     @JsonProperty("ind2")
     public void setInd2(String ind2) {
@@ -114,9 +114,9 @@ public class VarField {
     }
 
     /**
+     * Gets content.
      *
-     * @return
-     * The content
+     * @return The  content
      */
     @JsonProperty("content")
     public Object getContent() {
@@ -124,9 +124,9 @@ public class VarField {
     }
 
     /**
+     * Sets content.
      *
-     * @param content
-     * The content
+     * @param content The content
      */
     @JsonProperty("content")
     public void setContent(Object content) {
@@ -134,9 +134,9 @@ public class VarField {
     }
 
     /**
+     * Gets sub fields.
      *
-     * @return
-     * The subFields
+     * @return The  subFields
      */
     @JsonProperty("subFields")
     public List<SubField> getSubFields() {
@@ -144,9 +144,9 @@ public class VarField {
     }
 
     /**
+     * Sets sub fields.
      *
-     * @param subFields
-     * The subFields
+     * @param subFields The subFields
      */
     @JsonProperty("subFields")
     public void setSubFields(List<SubField> subFields) {

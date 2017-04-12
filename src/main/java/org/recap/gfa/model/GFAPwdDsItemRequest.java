@@ -17,11 +17,21 @@ public class GFAPwdDsItemRequest {
     @JsonProperty("ttitem")
     private List<GFAPwdTtItemRequest> ttitem = null;
 
+    /**
+     * Gets ttitem.
+     *
+     * @return the ttitem
+     */
     @JsonProperty("ttitem")
     public List<GFAPwdTtItemRequest> getTtitem() {
         return ttitem;
     }
 
+    /**
+     * Sets ttitem.
+     *
+     * @param ttitem the ttitem
+     */
     @JsonProperty("ttitem")
     public void setTtitem(List<GFAPwdTtItemRequest> ttitem) {
         this.ttitem = ttitem;

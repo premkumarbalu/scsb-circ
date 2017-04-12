@@ -10,6 +10,11 @@ import java.util.Iterator;
  */
 public class SIP2RecallResponse extends SIP2CirculationTransactionResponse {
 
+    /**
+     * Instantiates a new Sip 2 recall response.
+     *
+     * @param data the data
+     */
     public SIP2RecallResponse(String data) {
         super("88", data);
     }

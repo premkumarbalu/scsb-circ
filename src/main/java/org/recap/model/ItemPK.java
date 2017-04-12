@@ -10,27 +10,56 @@ public class ItemPK implements Serializable {
     private String owningInstitutionItemId;
 
 
+    /**
+     * Instantiates a new Item pk.
+     */
     public ItemPK(){
         //Do nothing
     }
 
+    /**
+     * Instantiates a new Item pk.
+     *
+     * @param owningInstitutionId     the owning institution id
+     * @param owningInstitutionItemId the owning institution item id
+     */
     public ItemPK(Integer owningInstitutionId, String owningInstitutionItemId) {
         this.owningInstitutionId = owningInstitutionId;
         this.owningInstitutionItemId = owningInstitutionItemId;
     }
 
+    /**
+     * Gets owning institution id.
+     *
+     * @return the owning institution id
+     */
     public Integer getOwningInstitutionId() {
         return owningInstitutionId;
     }
 
+    /**
+     * Sets owning institution id.
+     *
+     * @param owningInstitutionId the owning institution id
+     */
     public void setOwningInstitutionId(Integer owningInstitutionId) {
         this.owningInstitutionId = owningInstitutionId;
     }
 
+    /**
+     * Gets owning institution item id.
+     *
+     * @return the owning institution item id
+     */
     public String getOwningInstitutionItemId() {
         return owningInstitutionItemId;
     }
 
+    /**
+     * Sets owning institution item id.
+     *
+     * @param owningInstitutionItemId the owning institution item id
+     */
     public void setOwningInstitutionItemId(String owningInstitutionItemId) {
         this.owningInstitutionItemId = owningInstitutionItemId;
     }

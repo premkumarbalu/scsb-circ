@@ -20,9 +20,9 @@ public class Problem {
     private String problemDetail;
 
     /**
+     * Gets problem type.
      *
-     * @return
-     * The problemType
+     * @return The  problemType
      */
     @JsonProperty("ProblemType")
     public String getProblemType() {
@@ -30,9 +30,9 @@ public class Problem {
     }
 
     /**
+     * Sets problem type.
      *
-     * @param problemType
-     * The ProblemType
+     * @param problemType The ProblemType
      */
     @JsonProperty("ProblemType")
     public void setProblemType(String problemType) {
@@ -40,9 +40,9 @@ public class Problem {
     }
 
     /**
+     * Gets problem detail.
      *
-     * @return
-     * The problemDetail
+     * @return The  problemDetail
      */
     @JsonProperty("ProblemDetail")
     public String getProblemDetail() {
@@ -50,9 +50,9 @@ public class Problem {
     }
 
     /**
+     * Sets problem detail.
      *
-     * @param problemDetail
-     * The ProblemDetail
+     * @param problemDetail The ProblemDetail
      */
     @JsonProperty("ProblemDetail")
     public void setProblemDetail(String problemDetail) {

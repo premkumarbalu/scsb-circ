@@ -20,28 +20,51 @@ import java.util.*;
 /**
  * Created by hemalathas on 11/11/16.
  */
-
 @Component
 public class ItemValidatorService {
 
+    /**
+     * The Server protocol.
+     */
     @Value("${server.protocol}")
     String serverProtocol;
 
+    /**
+     * The Scsb solr client url.
+     */
     @Value("${scsb.solr.client.url}")
     String scsbSolrClientUrl;
 
+    /**
+     * The Item status details repository.
+     */
     @Autowired
     ItemStatusDetailsRepository itemStatusDetailsRepository;
 
+    /**
+     * The Item details repository.
+     */
     @Autowired
     ItemDetailsRepository itemDetailsRepository;
 
+    /**
+     * The Item controller.
+     */
     @Autowired
     ItemController itemController;
 
+    /**
+     * The Customer code details repository.
+     */
     @Autowired
     CustomerCodeDetailsRepository customerCodeDetailsRepository;
 
+    /**
+     * Item validation response entity.
+     *
+     * @param itemRequestInformation the item request information
+     * @return the response entity
+     */
     public ResponseEntity itemValidation(ItemRequestInformation itemRequestInformation) {
         List<ItemEntity> itemEntityList = getItemEntities(itemRequestInformation.getItemBarcodes());
 
@@ -79,13 +102,11 @@ public class ItemValidatorService {
             }
         } else if (itemRequestInformation.getItemBarcodes().size() > 1) {
             Set<Integer> bibliographicIds = new HashSet<>();
-            ItemEntity itemEntity1 = null;
             for (ItemEntity itemEntity : itemEntityList) {
                 List<BibliographicEntity> bibliographicList = itemEntity.getBibliographicEntities();
                 for (BibliographicEntity bibliographicEntityDetails : bibliographicList) {
                     bibliographicIds.add(bibliographicEntityDetails.getBibliographicId());
                 }
-                itemEntity1 = itemEntity;
             }
             return multipleRequestItemValidation(itemEntityList, bibliographicIds, itemRequestInformation);
         }
@@ -106,9 +127,15 @@ public class ItemValidatorService {
         return responseHeaders;
     }
 
+    /**
+     * Gets item status.
+     *
+     * @param itemAvailabilityStatusId the item availability status id
+     * @return the item status
+     */
     public String getItemStatus(Integer itemAvailabilityStatusId) {
         String status = "";
-        ItemStatusEntity itemStatusEntity = new ItemStatusEntity();
+        ItemStatusEntity itemStatusEntity;
         itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(itemAvailabilityStatusId);
         if (itemStatusEntity != null) {
             status = itemStatusEntity.getStatusCode();
@@ -118,7 +145,7 @@ public class ItemValidatorService {
 
     private ResponseEntity multipleRequestItemValidation(List<ItemEntity> itemEntityList, Set<Integer> bibliographicIds, ItemRequestInformation itemRequestInformation) {
         String status = "";
-        List<BibliographicEntity> bibliographicList = null;
+        List<BibliographicEntity> bibliographicList;
 
         for (ItemEntity itemEntity : itemEntityList) {
             if (itemEntity.getItemAvailabilityStatusId() == 2 && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)
@@ -156,6 +183,13 @@ public class ItemValidatorService {
         return new ResponseEntity(status, getHttpHeaders(), HttpStatus.OK);
     }
 
+    /**
+     * Check delivery location int.
+     *
+     * @param customerCode           the customer code
+     * @param itemRequestInformation the item request information
+     * @return the int
+     */
     public int checkDeliveryLocation(String customerCode, ItemRequestInformation itemRequestInformation) {
         int bSuccess = 0;
         CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(itemRequestInformation.getDeliveryLocation());
@@ -175,8 +209,6 @@ public class ItemValidatorService {
             } else {
                 bSuccess = 1;
             }
-        } else {
-            bSuccess = 0;
         }
         return bSuccess;
     }

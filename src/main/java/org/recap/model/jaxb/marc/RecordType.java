@@ -38,11 +38,26 @@ import java.util.List;
 })
 public class RecordType implements Serializable {
 
+    /**
+     * The Leader.
+     */
     protected LeaderFieldType leader;
+    /**
+     * The Controlfield.
+     */
     protected List<ControlFieldType> controlfield;
+    /**
+     * The Datafield.
+     */
     protected List<DataFieldType> datafield;
+    /**
+     * The Type.
+     */
     @XmlAttribute(name = "type")
     protected RecordTypeType type;
+    /**
+     * The Id.
+     */
     @XmlAttribute(name = "id")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlID
@@ -51,8 +66,7 @@ public class RecordType implements Serializable {
     /**
      * Gets the value of the leader property.
      *
-     * @return possible object is
-     * {@link LeaderFieldType }
+     * @return possible object is {@link LeaderFieldType }
      */
     public LeaderFieldType getLeader() {
         return leader;
@@ -61,8 +75,7 @@ public class RecordType implements Serializable {
     /**
      * Sets the value of the leader property.
      *
-     * @param value allowed object is
-     *              {@link LeaderFieldType }
+     * @param value allowed object is              {@link LeaderFieldType }
      */
     public void setLeader(LeaderFieldType value) {
         this.leader = value;
@@ -87,6 +100,8 @@ public class RecordType implements Serializable {
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link ControlFieldType }
+     *
+     * @return the controlfield
      */
     public List<ControlFieldType> getControlfield() {
         if (controlfield == null) {
@@ -114,6 +129,8 @@ public class RecordType implements Serializable {
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link DataFieldType }
+     *
+     * @return the datafield
      */
     public List<DataFieldType> getDatafield() {
         if (datafield == null) {
@@ -122,6 +139,11 @@ public class RecordType implements Serializable {
         return this.datafield;
     }
 
+    /**
+     * Sets datafield.
+     *
+     * @param datafield the datafield
+     */
     public void setDatafield(List<DataFieldType> datafield) {
         this.datafield = datafield;
     }
@@ -129,8 +151,7 @@ public class RecordType implements Serializable {
     /**
      * Gets the value of the type property.
      *
-     * @return possible object is
-     * {@link RecordTypeType }
+     * @return possible object is {@link RecordTypeType }
      */
     public RecordTypeType getType() {
         return type;
@@ -139,8 +160,7 @@ public class RecordType implements Serializable {
     /**
      * Sets the value of the type property.
      *
-     * @param value allowed object is
-     *              {@link RecordTypeType }
+     * @param value allowed object is              {@link RecordTypeType }
      */
     public void setType(RecordTypeType value) {
         this.type = value;
@@ -149,8 +169,7 @@ public class RecordType implements Serializable {
     /**
      * Gets the value of the id property.
      *
-     * @return possible object is
-     * {@link String }
+     * @return possible object is {@link String }
      */
     public String getId() {
         return id;
@@ -159,8 +178,7 @@ public class RecordType implements Serializable {
     /**
      * Sets the value of the id property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is              {@link String }
      */
     public void setId(String value) {
         this.id = value;

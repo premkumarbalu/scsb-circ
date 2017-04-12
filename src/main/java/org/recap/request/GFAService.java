@@ -49,50 +49,111 @@ public class GFAService {
     @Autowired
     private ProducerTemplate producer;
 
+    /**
+     * Gets gfa item status.
+     *
+     * @return the gfa item status
+     */
     public String getGfaItemStatus() {
         return gfaItemStatus;
     }
 
+    /**
+     * Gets gfa item retrival.
+     *
+     * @return the gfa item retrival
+     */
     public String getGfaItemRetrival() {
         return gfaItemRetrival;
     }
 
+    /**
+     * Gets gfa item edd retrival.
+     *
+     * @return the gfa item edd retrival
+     */
     public String getGfaItemEDDRetrival() {
         return gfaItemEDDRetrival;
     }
 
+    /**
+     * Gets gfa item permanent withdrawl direct.
+     *
+     * @return the gfa item permanent withdrawl direct
+     */
     public String getGfaItemPermanentWithdrawlDirect() {
         return gfaItemPermanentWithdrawlDirect;
     }
 
+    /**
+     * Gets gfa item permanent withdrawl in direct.
+     *
+     * @return the gfa item permanent withdrawl in direct
+     */
     public String getGfaItemPermanentWithdrawlInDirect() {
         return gfaItemPermanentWithdrawlInDirect;
     }
 
+    /**
+     * Get gfa retrieve edd item request gfa retrieve edd item request.
+     *
+     * @return the gfa retrieve edd item request
+     */
     public GFARetrieveEDDItemRequest getGFARetrieveEDDItemRequest(){
         return new GFARetrieveEDDItemRequest();
     }
 
+    /**
+     * Gets rest template.
+     *
+     * @return the rest template
+     */
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
     }
 
+    /**
+     * Gets logger.
+     *
+     * @return the logger
+     */
     public static Logger getLogger() {
         return logger;
     }
 
+    /**
+     * Gets producer.
+     *
+     * @return the producer
+     */
     public ProducerTemplate getProducer() {
         return producer;
     }
 
+    /**
+     * Get object mapper object mapper.
+     *
+     * @return the object mapper
+     */
     public ObjectMapper getObjectMapper(){
         return new ObjectMapper();
     }
 
+    /**
+     * Is use queue las call boolean.
+     *
+     * @return the boolean
+     */
     public boolean isUseQueueLasCall() {
         return useQueueLasCall;
     }
 
+    /**
+     * Item status check gfa item status check response.
+     *
+     * @param gfaItemStatusCheckRequest the gfa item status check request
+     * @return the gfa item status check response
+     */
     public GFAItemStatusCheckResponse itemStatusCheck(GFAItemStatusCheckRequest gfaItemStatusCheckRequest) {
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -120,6 +181,12 @@ public class GFAService {
         return gfaItemStatusCheckResponse;
     }
 
+    /**
+     * Item retrival gfa retrieve item response.
+     *
+     * @param gfaRetrieveItemRequest the gfa retrieve item request
+     * @return the gfa retrieve item response
+     */
     public GFARetrieveItemResponse itemRetrival(GFARetrieveItemRequest gfaRetrieveItemRequest) {
         GFARetrieveItemResponse gfaRetrieveItemResponse = null;
         try {
@@ -139,6 +206,11 @@ public class GFAService {
         return gfaRetrieveItemResponse;
     }
 
+    /**
+     *
+     * @param gfaRetrieveItemResponseParam
+     * @return
+     */
     private GFARetrieveItemResponse getLASRetrieveResponse(GFARetrieveItemResponse gfaRetrieveItemResponseParam) {
         GFARetrieveItemResponse gfaRetrieveItemResponse = gfaRetrieveItemResponseParam;
         if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
@@ -158,6 +230,12 @@ public class GFAService {
         return gfaRetrieveItemResponse;
     }
 
+    /**
+     * Item edd retrival gfa retrieve item response.
+     *
+     * @param gfaRetrieveEDDItemRequest the gfa retrieve edd item request
+     * @return the gfa retrieve item response
+     */
     public GFARetrieveItemResponse itemEDDRetrival(GFARetrieveEDDItemRequest gfaRetrieveEDDItemRequest) {
         GFARetrieveItemResponse gfaRetrieveItemResponse = null;
         try {
@@ -194,6 +272,13 @@ public class GFAService {
         return headers;
     }
 
+    /**
+     * Execute retrive order item information response.
+     *
+     * @param itemRequestInfo         the item request info
+     * @param itemResponseInformation the item response information
+     * @return the item information response
+     */
     public ItemInformationResponse executeRetriveOrder(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
 
@@ -242,6 +327,12 @@ public class GFAService {
         return itemResponseInformation;
     }
 
+    /**
+     * Gets gfa status.
+     *
+     * @param barcode the barcode
+     * @return the gfa status
+     */
     public boolean getGFAStatus(String barcode) {
         GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
 
@@ -279,6 +370,12 @@ public class GFAService {
         return bSuccess;
     }
 
+    /**
+     *
+     * @param itemRequestInfo
+     * @param itemResponseInformation
+     * @return
+     */
     private ItemInformationResponse callItemRetrivate(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFARetrieveItemRequest gfaRetrieveItemRequest = new GFARetrieveItemRequest();
         TtitemRequest ttitem001 = new TtitemRequest();
@@ -316,6 +413,13 @@ public class GFAService {
         return itemResponseInformation;
     }
 
+    /**
+     * Call item edd retrivate item information response.
+     *
+     * @param itemRequestInfo         the item request info
+     * @param itemResponseInformation the item response information
+     * @return the item information response
+     */
     public ItemInformationResponse callItemEDDRetrivate(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFARetrieveEDDItemRequest gfaRetrieveEDDItemRequest = getGFARetrieveEDDItemRequest();
         GFARetrieveItemResponse gfaRetrieveItemResponse;
@@ -371,6 +475,12 @@ public class GFAService {
         return itemResponseInformation;
     }
 
+    /**
+     * Gfa permanent withdrawl direct gfa pwd response.
+     *
+     * @param gfaPwdRequest the gfa pwd request
+     * @return the gfa pwd response
+     */
     public GFAPwdResponse gfaPermanentWithdrawlDirect(GFAPwdRequest gfaPwdRequest) {
         GFAPwdResponse gfaPwdResponse = null;
         try {
@@ -385,6 +495,12 @@ public class GFAService {
         return gfaPwdResponse;
     }
 
+    /**
+     * Gfa permanent withdrawl in direct gfa pwi response.
+     *
+     * @param gfaPwiRequest the gfa pwi request
+     * @return the gfa pwi response
+     */
     public GFAPwiResponse gfaPermanentWithdrawlInDirect(GFAPwiRequest gfaPwiRequest) {
         GFAPwiResponse gfaPwiResponse = null;
         try {
@@ -399,6 +515,12 @@ public class GFAService {
         return gfaPwiResponse;
     }
 
+    /**
+     * Process las retrieve response item information response.
+     *
+     * @param body the body
+     * @return the item information response
+     */
     public ItemInformationResponse processLASRetrieveResponse(String body) {
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
         ObjectMapper om = new ObjectMapper();

@@ -17,9 +17,9 @@ public class Attributes {
     private String version;
 
     /**
+     * Gets version.
      *
-     * @return
-     * The version
+     * @return The  version
      */
     @JsonProperty("version")
     public String getVersion() {
@@ -27,9 +27,9 @@ public class Attributes {
     }
 
     /**
+     * Sets version.
      *
-     * @param version
-     * The version
+     * @param version The version
      */
     @JsonProperty("version")
     public void setVersion(String version) {

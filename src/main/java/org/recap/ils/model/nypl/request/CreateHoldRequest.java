@@ -30,9 +30,9 @@ public class CreateHoldRequest {
     private Description description;
 
     /**
+     * Gets tracking id.
      *
-     * @return
-     * The trackingId
+     * @return The  trackingId
      */
     @JsonProperty("trackingId")
     public String getTrackingId() {
@@ -40,9 +40,9 @@ public class CreateHoldRequest {
     }
 
     /**
+     * Sets tracking id.
      *
-     * @param trackingId
-     * The trackingId
+     * @param trackingId The trackingId
      */
     @JsonProperty("trackingId")
     public void setTrackingId(String trackingId) {
@@ -50,9 +50,9 @@ public class CreateHoldRequest {
     }
 
     /**
+     * Gets owning institution id.
      *
-     * @return
-     * The owningInstitutionId
+     * @return The  owningInstitutionId
      */
     @JsonProperty("owningInstitutionId")
     public String getOwningInstitutionId() {
@@ -60,9 +60,9 @@ public class CreateHoldRequest {
     }
 
     /**
+     * Sets owning institution id.
      *
-     * @param owningInstitutionId
-     * The owningInstitutionId
+     * @param owningInstitutionId The owningInstitutionId
      */
     @JsonProperty("owningInstitutionId")
     public void setOwningInstitutionId(String owningInstitutionId) {
@@ -70,9 +70,9 @@ public class CreateHoldRequest {
     }
 
     /**
+     * Gets item barcode.
      *
-     * @return
-     * The itemBarcode
+     * @return The  itemBarcode
      */
     @JsonProperty("itemBarcode")
     public String getItemBarcode() {
@@ -80,9 +80,9 @@ public class CreateHoldRequest {
     }
 
     /**
+     * Sets item barcode.
      *
-     * @param itemBarcode
-     * The itemBarcode
+     * @param itemBarcode The itemBarcode
      */
     @JsonProperty("itemBarcode")
     public void setItemBarcode(String itemBarcode) {
@@ -90,9 +90,9 @@ public class CreateHoldRequest {
     }
 
     /**
+     * Gets patron barcode.
      *
-     * @return
-     * The patronBarcode
+     * @return The  patronBarcode
      */
     @JsonProperty("patronBarcode")
     public String getPatronBarcode() {
@@ -100,9 +100,9 @@ public class CreateHoldRequest {
     }
 
     /**
+     * Sets patron barcode.
      *
-     * @param patronBarcode
-     * The patronBarcode
+     * @param patronBarcode The patronBarcode
      */
     @JsonProperty("patronBarcode")
     public void setPatronBarcode(String patronBarcode) {
@@ -110,9 +110,9 @@ public class CreateHoldRequest {
     }
 
     /**
+     * Gets description.
      *
-     * @return
-     * The description
+     * @return The  description
      */
     @JsonProperty("description")
     public Description getDescription() {
@@ -120,9 +120,9 @@ public class CreateHoldRequest {
     }
 
     /**
+     * Sets description.
      *
-     * @param description
-     * The description
+     * @param description The description
      */
     @JsonProperty("description")
     public void setDescription(Description description) {

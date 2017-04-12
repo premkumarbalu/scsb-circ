@@ -33,6 +33,21 @@ public class SubmitCollectionPollingFtpRouteBuilder {
     @Value("${ftp.privateKey}")
     private String ftpPrivateKey;
 
+    /**
+     * Instantiates a new Submit collection polling ftp route builder.
+     *
+     * @param camelContext       the camel context
+     * @param applicationContext the application context
+     * @param ftpUserName        the ftp user name
+     * @param pulFtpFolder       the pul ftp folder
+     * @param culFtpFolder       the cul ftp folder
+     * @param nyplFtpFolder      the nypl ftp folder
+     * @param ftpKnownHost       the ftp known host
+     * @param ftpPrivateKey      the ftp private key
+     * @param pulWorkDir         the pul work dir
+     * @param culWorkDir         the cul work dir
+     * @param nyplWorkDir        the nypl work dir
+     */
     public SubmitCollectionPollingFtpRouteBuilder(CamelContext camelContext,ApplicationContext applicationContext,
                                                   @Value("${ftp.userName}") String ftpUserName, @Value("${ftp.submitcollection.pul}") String pulFtpFolder,
                                                   @Value("${ftp.submitcollection.cul}") String culFtpFolder, @Value("${ftp.submitcollection.nypl}") String nyplFtpFolder,

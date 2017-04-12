@@ -24,6 +24,9 @@ public class PrincetonJSIPConnector extends JSIPConnector {
 
     private static SIP2SocketConnection thread;
 
+    /**
+     * Instantiates a new Princeton jsip connector.
+     */
     public PrincetonJSIPConnector() {
         PrincetonJSIPConnector.thread= new SIP2SocketConnection(princetonILS, 7031);
     }

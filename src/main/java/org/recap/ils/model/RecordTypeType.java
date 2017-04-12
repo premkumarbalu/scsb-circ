@@ -28,14 +28,29 @@ import java.io.Serializable;
 @XmlEnum
 public enum RecordTypeType implements Serializable {
 
+    /**
+     * Bibliographic record type type.
+     */
     @XmlEnumValue("Bibliographic")
     BIBLIOGRAPHIC("Bibliographic"),
+    /**
+     * Authority record type type.
+     */
     @XmlEnumValue("Authority")
     AUTHORITY("Authority"),
+    /**
+     * Holdings record type type.
+     */
     @XmlEnumValue("Holdings")
     HOLDINGS("Holdings"),
+    /**
+     * Classification record type type.
+     */
     @XmlEnumValue("Classification")
     CLASSIFICATION("Classification"),
+    /**
+     * Community record type type.
+     */
     @XmlEnumValue("Community")
     COMMUNITY("Community");
     private final String value;
@@ -44,10 +59,21 @@ public enum RecordTypeType implements Serializable {
         value = v;
     }
 
+    /**
+     * Value string.
+     *
+     * @return the string
+     */
     public String value() {
         return value;
     }
 
+    /**
+     * From value record type type.
+     *
+     * @param v the v
+     * @return the record type type
+     */
     public static RecordTypeType fromValue(String v) {
         for (RecordTypeType c : RecordTypeType.values()) {
             if (c.value.equals(v)) {

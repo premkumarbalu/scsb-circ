@@ -46,12 +46,20 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
     @Autowired
     private MarcUtil marcUtil;
 
+    /**
+     * The Bibliographic details repository.
+     */
     @Autowired
     BibliographicDetailsRepository bibliographicDetailsRepository;
     private Map itemStatusMap;
     private Map collectionGroupMap;
     private Map institutionEntityMap;
 
+    /**
+     *
+     * @param scsbRecord
+     * @return
+     */
     @Override
     public Map convert(Object scsbRecord) {
         Map<String, Object> map = new HashMap<>();
@@ -132,6 +140,15 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return map;
     }
 
+    /**
+     *
+     * @param bibRecord
+     * @param owningInstitutionId
+     * @param institutionName
+     * @param owningInstitutionBibId
+     * @param currentDate
+     * @return
+     */
     private Map<String, Object> processAndValidateBibliographicEntity(Record bibRecord, Integer owningInstitutionId, String institutionName,String owningInstitutionBibId,Date currentDate) {
         Map<String, Object> map = new HashMap<>();
 
@@ -200,6 +217,16 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return map;
     }
 
+    /**
+     *
+     * @param bibliographicEntity
+     * @param institutionName
+     * @param holdingsRecord
+     * @param bibRecord
+     * @param bibRecordObject
+     * @param currentDate
+     * @return
+     */
     private Map<String, Object> processAndValidateHoldingsEntity(BibliographicEntity bibliographicEntity, String institutionName, Record holdingsRecord, BibRecord bibRecord , Record bibRecordObject,Date currentDate) {
         StringBuilder errorMessage = new StringBuilder();
         Map<String, Object> map = new HashMap<>();
@@ -246,6 +273,20 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return map;
     }
 
+    /**
+     *
+     * @param bibliographicEntity
+     * @param holdingsEntity
+     * @param owningInstitutionId
+     * @param holdingsCallNumber
+     * @param holdingsCallNumberType
+     * @param itemRecord
+     * @param institutionName
+     * @param bibRecord
+     * @param bibRecordObject
+     * @param currentDate
+     * @return
+     */
     private Map<String, Object> processAndValidateItemEntity(BibliographicEntity bibliographicEntity, HoldingsEntity holdingsEntity, Integer owningInstitutionId, String holdingsCallNumber, Character holdingsCallNumberType, Record itemRecord, String institutionName, BibRecord bibRecord, Record bibRecordObject,Date currentDate) {
         StringBuffer errorMessage = new StringBuffer();
         Map<String, Object> map = new HashMap<>();
@@ -323,6 +364,11 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return map;
     }
 
+    /**
+     * Gets item status map.
+     *
+     * @return the item status map
+     */
     public Map getItemStatusMap() {
         if (null == itemStatusMap) {
             itemStatusMap = new HashMap();
@@ -339,6 +385,11 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return itemStatusMap;
     }
 
+    /**
+     * Gets collection group map.
+     *
+     * @return the collection group map
+     */
     public Map getCollectionGroupMap() {
         if (null == collectionGroupMap) {
             collectionGroupMap = new HashMap();
@@ -355,6 +406,11 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return collectionGroupMap;
     }
 
+    /**
+     * Gets institution entity map.
+     *
+     * @return the institution entity map
+     */
     public Map getInstitutionEntityMap() {
         if (null == institutionEntityMap) {
             institutionEntityMap = new HashMap();
@@ -371,10 +427,20 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return institutionEntityMap;
     }
 
+    /**
+     * Gets db report util.
+     *
+     * @return the db report util
+     */
     public DBReportUtil getDbReportUtil() {
         return dbReportUtil;
     }
 
+    /**
+     * Sets db report util.
+     *
+     * @param dbReportUtil the db report util
+     */
     public void setDbReportUtil(DBReportUtil dbReportUtil) {
         this.dbReportUtil = dbReportUtil;
     }

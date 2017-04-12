@@ -30,9 +30,9 @@ public class ItemsResponse {
     private List<DebugInfo> debugInfo = null;
 
     /**
+     * Gets items data.
      *
-     * @return
-     * The itemData
+     * @return The  itemData
      */
     @JsonProperty("data")
     public List<ItemData> getItemsData() {
@@ -40,9 +40,9 @@ public class ItemsResponse {
     }
 
     /**
+     * Sets items data.
      *
-     * @param itemsData
-     * The itemData
+     * @param itemsData The itemData
      */
     @JsonProperty("data")
     public void setItemsData(List<ItemData> itemsData) {
@@ -50,9 +50,9 @@ public class ItemsResponse {
     }
 
     /**
+     * Gets count.
      *
-     * @return
-     * The count
+     * @return The  count
      */
     @JsonProperty("count")
     public Integer getCount() {
@@ -60,9 +60,9 @@ public class ItemsResponse {
     }
 
     /**
+     * Sets count.
      *
-     * @param count
-     * The count
+     * @param count The count
      */
     @JsonProperty("count")
     public void setCount(Integer count) {
@@ -70,9 +70,9 @@ public class ItemsResponse {
     }
 
     /**
+     * Gets status code.
      *
-     * @return
-     * The statusCode
+     * @return The  statusCode
      */
     @JsonProperty("statusCode")
     public Integer getStatusCode() {
@@ -80,9 +80,9 @@ public class ItemsResponse {
     }
 
     /**
+     * Sets status code.
      *
-     * @param statusCode
-     * The statusCode
+     * @param statusCode The statusCode
      */
     @JsonProperty("statusCode")
     public void setStatusCode(Integer statusCode) {
@@ -90,9 +90,9 @@ public class ItemsResponse {
     }
 
     /**
+     * Gets debug info.
      *
-     * @return
-     * The debugInfo
+     * @return The  debugInfo
      */
     @JsonProperty("debugInfo")
     public List<DebugInfo> getDebugInfo() {
@@ -100,9 +100,9 @@ public class ItemsResponse {
     }
 
     /**
+     * Sets debug info.
      *
-     * @param debugInfo
-     * The debugInfo
+     * @param debugInfo The debugInfo
      */
     @JsonProperty("debugInfo")
     public void setDebugInfo(List<DebugInfo> debugInfo) {

@@ -19,6 +19,13 @@ public class RequestItemRouteBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestItemRouteBuilder.class);
 
+    /**
+     * Instantiates a new Request item route builder.
+     *
+     * @param camelContext          the camel context
+     * @param itemRequestService    the item request service
+     * @param itemEDDRequestService the item edd request service
+     */
     @Autowired
     public RequestItemRouteBuilder(CamelContext camelContext, ItemRequestService itemRequestService,ItemEDDRequestService itemEDDRequestService ) {
         try {

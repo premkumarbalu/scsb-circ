@@ -81,6 +81,15 @@ public class SubmitCollectionService {
     @Value("${submit.collection.input.limit}")
     private Integer inputLimit;
 
+    /**
+     * Process string.
+     *
+     * @param inputRecords       the input records
+     * @param processedBibIdList the processed bib id list
+     * @param idMapToRemoveIndex the id map to remove index
+     * @param xmlFileName        the xml file name
+     * @return the string
+     */
     @Transactional
     public String process(String inputRecords, List<Integer> processedBibIdList,Map<String,String> idMapToRemoveIndex,String xmlFileName) {
         logger.info("Input record processing started");
@@ -218,6 +227,12 @@ public class SubmitCollectionService {
         return savedBibliographicEntity;
     }
 
+    /**
+     * Set submit collection rejection info.
+     *
+     * @param bibliographicEntity            the bibliographic entity
+     * @param submitCollectionRejectionInfos the submit collection rejection infos
+     */
     public void setSubmitCollectionRejectionInfo(BibliographicEntity bibliographicEntity,List<SubmitCollectionReportInfo> submitCollectionRejectionInfos){
         for(ItemEntity itemEntity : bibliographicEntity.getItemEntities()){
             ItemStatusEntity itemStatusEntity = getItemStatusDetailsRepository().findByItemStatusId(itemEntity.getItemAvailabilityStatusId());
@@ -243,14 +258,34 @@ public class SubmitCollectionService {
         }
     }
 
+    /**
+     * Index data string.
+     *
+     * @param bibliographicIdList the bibliographic id list
+     * @return the string
+     */
     public String indexData(List<Integer> bibliographicIdList){
         return getRestTemplate().postForObject(serverProtocol + scsbSolrClientUrl + "solrIndexer/indexByBibliographicId", bibliographicIdList, String.class);
     }
 
+    /**
+     * Remove solr index string.
+     *
+     * @param idMapToRemoveIndex the id map to remove index
+     * @return the string
+     */
     public String removeSolrIndex(Map idMapToRemoveIndex){
         return getRestTemplate().postForObject(serverProtocol + scsbSolrClientUrl + "solrIndexer/deleteByBibHoldingItemId", idMapToRemoveIndex, String.class);
     }
 
+    /**
+     * Update bibliographic entity bibliographic entity.
+     *
+     * @param bibliographicEntity           the bibliographic entity
+     * @param submitCollectionReportInfoMap the submit collection report info map
+     * @param idMapToRemoveIndex            the id map to remove index
+     * @return the bibliographic entity
+     */
     public BibliographicEntity updateBibliographicEntity(BibliographicEntity bibliographicEntity,Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,Map<String,String> idMapToRemoveIndex) {
         BibliographicEntity savedBibliographicEntity;
         BibliographicEntity fetchBibliographicEntity = getBibEntityUsingBarcode(bibliographicEntity);
@@ -379,6 +414,12 @@ public class SubmitCollectionService {
         return fetchItemEntity;
     }
 
+    /**
+     * Is available item boolean.
+     *
+     * @param itemAvailabilityStatusId the item availability status id
+     * @return the boolean
+     */
     public boolean isAvailableItem(Integer itemAvailabilityStatusId){
         String itemStatusCode = (String) getItemStatusMap().get(itemAvailabilityStatusId);
         if (itemStatusCode.equalsIgnoreCase(ReCAPConstants.ITEM_STATUS_AVAILABLE)) {
@@ -396,6 +437,14 @@ public class SubmitCollectionService {
         return null;
     }
 
+    /**
+     * Generate submit collection report.
+     *
+     * @param submitCollectionReportList the submit collection report list
+     * @param fileName                   the file name
+     * @param reportType                 the report type
+     * @param xmlFileName                the xml file name
+     */
     public void generateSubmitCollectionReport(List<SubmitCollectionReportInfo> submitCollectionReportList,String fileName, String reportType,String xmlFileName){
         logger.info("Preparing report entities");
         if(submitCollectionReportList != null && !submitCollectionReportList.isEmpty()){
@@ -447,62 +496,137 @@ public class SubmitCollectionService {
         }
     }
 
+    /**
+     * Gets bibliographic details repository.
+     *
+     * @return the bibliographic details repository
+     */
     public BibliographicDetailsRepository getBibliographicDetailsRepository() {
         return bibliographicDetailsRepository;
     }
 
+    /**
+     * Sets bibliographic details repository.
+     *
+     * @param bibliographicDetailsRepository the bibliographic details repository
+     */
     public void setBibliographicDetailsRepository(BibliographicDetailsRepository bibliographicDetailsRepository) {
         this.bibliographicDetailsRepository = bibliographicDetailsRepository;
     }
 
+    /**
+     * Gets customer code details repository.
+     *
+     * @return the customer code details repository
+     */
     public CustomerCodeDetailsRepository getCustomerCodeDetailsRepository() {
         return customerCodeDetailsRepository;
     }
 
+    /**
+     * Sets customer code details repository.
+     *
+     * @param customerCodeDetailsRepository the customer code details repository
+     */
     public void setCustomerCodeDetailsRepository(CustomerCodeDetailsRepository customerCodeDetailsRepository) {
         this.customerCodeDetailsRepository = customerCodeDetailsRepository;
     }
 
+    /**
+     * Gets marc util.
+     *
+     * @return the marc util
+     */
     public MarcUtil getMarcUtil() {
         return marcUtil;
     }
 
+    /**
+     * Sets marc util.
+     *
+     * @param marcUtil the marc util
+     */
     public void setMarcUtil(MarcUtil marcUtil) {
         this.marcUtil = marcUtil;
     }
 
+    /**
+     * Gets item details repository.
+     *
+     * @return the item details repository
+     */
     public ItemDetailsRepository getItemDetailsRepository() {
         return itemDetailsRepository;
     }
 
+    /**
+     * Sets item details repository.
+     *
+     * @param itemDetailsRepository the item details repository
+     */
     public void setItemDetailsRepository(ItemDetailsRepository itemDetailsRepository) {
         this.itemDetailsRepository = itemDetailsRepository;
     }
 
+    /**
+     * Gets item status details repository.
+     *
+     * @return the item status details repository
+     */
     public ItemStatusDetailsRepository getItemStatusDetailsRepository() {
         return itemStatusDetailsRepository;
     }
 
+    /**
+     * Sets item status details repository.
+     *
+     * @param itemStatusDetailsRepository the item status details repository
+     */
     public void setItemStatusDetailsRepository(ItemStatusDetailsRepository itemStatusDetailsRepository) {
         this.itemStatusDetailsRepository = itemStatusDetailsRepository;
     }
 
+    /**
+     * Gets institution details repository.
+     *
+     * @return the institution details repository
+     */
     public InstitutionDetailsRepository getInstitutionDetailsRepository() {
         return institutionDetailsRepository;
     }
 
+    /**
+     * Sets institution details repository.
+     *
+     * @param institutionDetailsRepository the institution details repository
+     */
     public void setInstitutionDetailsRepository(InstitutionDetailsRepository institutionDetailsRepository) {
         this.institutionDetailsRepository = institutionDetailsRepository;
     }
 
+    /**
+     * Gets entity manager.
+     *
+     * @return the entity manager
+     */
     public EntityManager getEntityManager() {
         return entityManager;
     }
 
+    /**
+     * Sets entity manager.
+     *
+     * @param entityManager the entity manager
+     */
     public void setEntityManager(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
+    /**
+     * Gets rest template.
+     *
+     * @return the rest template
+     */
     public RestTemplate getRestTemplate() {
         if(restTemplate == null){
             restTemplate = new RestTemplate();
@@ -510,10 +634,20 @@ public class SubmitCollectionService {
         return restTemplate;
     }
 
+    /**
+     * Sets rest template.
+     *
+     * @param restTemplate the rest template
+     */
     public void setRestTemplate(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
+    /**
+     * Gets item status map.
+     *
+     * @return the item status map
+     */
     public Map getItemStatusMap() {
         if (null == itemStatusMap) {
             itemStatusMap = new HashMap();
@@ -529,6 +663,11 @@ public class SubmitCollectionService {
         return itemStatusMap;
     }
 
+    /**
+     * Gets institution entity map.
+     *
+     * @return the institution entity map
+     */
     public Map getInstitutionEntityMap() {
         if (null == institutionEntityMap) {
             institutionEntityMap = new HashMap();

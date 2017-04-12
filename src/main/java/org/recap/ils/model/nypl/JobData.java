@@ -46,9 +46,9 @@ public class JobData {
     private String updateCallbackUrl;
 
     /**
+     * Gets id.
      *
-     * @return
-     * The id
+     * @return The  id
      */
     @JsonProperty("id")
     public String getId() {
@@ -56,9 +56,9 @@ public class JobData {
     }
 
     /**
+     * Sets id.
      *
-     * @param id
-     * The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {
@@ -66,9 +66,9 @@ public class JobData {
     }
 
     /**
+     * Gets started.
      *
-     * @return
-     * The started
+     * @return The  started
      */
     @JsonProperty("started")
     public Boolean getStarted() {
@@ -76,9 +76,9 @@ public class JobData {
     }
 
     /**
+     * Sets started.
      *
-     * @param started
-     * The started
+     * @param started The started
      */
     @JsonProperty("started")
     public void setStarted(Boolean started) {
@@ -86,9 +86,9 @@ public class JobData {
     }
 
     /**
+     * Gets finished.
      *
-     * @return
-     * The finished
+     * @return The  finished
      */
     @JsonProperty("finished")
     public Boolean getFinished() {
@@ -96,9 +96,9 @@ public class JobData {
     }
 
     /**
+     * Sets finished.
      *
-     * @param finished
-     * The finished
+     * @param finished The finished
      */
     @JsonProperty("finished")
     public void setFinished(Boolean finished) {
@@ -106,9 +106,9 @@ public class JobData {
     }
 
     /**
+     * Gets success.
      *
-     * @return
-     * The success
+     * @return The  success
      */
     @JsonProperty("success")
     public Boolean getSuccess() {
@@ -116,9 +116,9 @@ public class JobData {
     }
 
     /**
+     * Sets success.
      *
-     * @param success
-     * The success
+     * @param success The success
      */
     @JsonProperty("success")
     public void setSuccess(Boolean success) {
@@ -126,9 +126,9 @@ public class JobData {
     }
 
     /**
+     * Gets notices.
      *
-     * @return
-     * The notices
+     * @return The  notices
      */
     @JsonProperty("notices")
     public List<Notice> getNotices() {
@@ -136,9 +136,9 @@ public class JobData {
     }
 
     /**
+     * Sets notices.
      *
-     * @param notices
-     * The notices
+     * @param notices The notices
      */
     @JsonProperty("notices")
     public void setNotices(List<Notice> notices) {
@@ -146,9 +146,9 @@ public class JobData {
     }
 
     /**
+     * Gets success redirect url.
      *
-     * @return
-     * The successRedirectUrl
+     * @return The  successRedirectUrl
      */
     @JsonProperty("successRedirectUrl")
     public String getSuccessRedirectUrl() {
@@ -156,9 +156,9 @@ public class JobData {
     }
 
     /**
+     * Sets success redirect url.
      *
-     * @param successRedirectUrl
-     * The successRedirectUrl
+     * @param successRedirectUrl The successRedirectUrl
      */
     @JsonProperty("successRedirectUrl")
     public void setSuccessRedirectUrl(String successRedirectUrl) {
@@ -166,9 +166,9 @@ public class JobData {
     }
 
     /**
+     * Gets start callback url.
      *
-     * @return
-     * The startCallbackUrl
+     * @return The  startCallbackUrl
      */
     @JsonProperty("startCallbackUrl")
     public String getStartCallbackUrl() {
@@ -176,9 +176,9 @@ public class JobData {
     }
 
     /**
+     * Sets start callback url.
      *
-     * @param startCallbackUrl
-     * The startCallbackUrl
+     * @param startCallbackUrl The startCallbackUrl
      */
     @JsonProperty("startCallbackUrl")
     public void setStartCallbackUrl(String startCallbackUrl) {
@@ -186,9 +186,9 @@ public class JobData {
     }
 
     /**
+     * Gets success callback url.
      *
-     * @return
-     * The successCallbackUrl
+     * @return The  successCallbackUrl
      */
     @JsonProperty("successCallbackUrl")
     public String getSuccessCallbackUrl() {
@@ -196,9 +196,9 @@ public class JobData {
     }
 
     /**
+     * Sets success callback url.
      *
-     * @param successCallbackUrl
-     * The successCallbackUrl
+     * @param successCallbackUrl The successCallbackUrl
      */
     @JsonProperty("successCallbackUrl")
     public void setSuccessCallbackUrl(String successCallbackUrl) {
@@ -206,9 +206,9 @@ public class JobData {
     }
 
     /**
+     * Gets failure callback url.
      *
-     * @return
-     * The failureCallbackUrl
+     * @return The  failureCallbackUrl
      */
     @JsonProperty("failureCallbackUrl")
     public String getFailureCallbackUrl() {
@@ -216,9 +216,9 @@ public class JobData {
     }
 
     /**
+     * Sets failure callback url.
      *
-     * @param failureCallbackUrl
-     * The failureCallbackUrl
+     * @param failureCallbackUrl The failureCallbackUrl
      */
     @JsonProperty("failureCallbackUrl")
     public void setFailureCallbackUrl(String failureCallbackUrl) {
@@ -226,9 +226,9 @@ public class JobData {
     }
 
     /**
+     * Gets update callback url.
      *
-     * @return
-     * The updateCallbackUrl
+     * @return The  updateCallbackUrl
      */
     @JsonProperty("updateCallbackUrl")
     public String getUpdateCallbackUrl() {
@@ -236,9 +236,9 @@ public class JobData {
     }
 
     /**
+     * Sets update callback url.
      *
-     * @param updateCallbackUrl
-     * The updateCallbackUrl
+     * @param updateCallbackUrl The updateCallbackUrl
      */
     @JsonProperty("updateCallbackUrl")
     public void setUpdateCallbackUrl(String updateCallbackUrl) {

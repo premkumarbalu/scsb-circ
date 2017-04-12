@@ -16,6 +16,14 @@ import java.util.Arrays;
 public class SIP2CreateBibResponseParser extends  SIP2ResponseParser{
 
     private static final Logger logger = LoggerFactory.getLogger(SIP2CreateBibResponseParser.class);
+
+    /**
+     *
+     * @param data
+     * @return
+     * @throws InvalidSIP2ResponseValueException
+     * @throws InvalidSIP2ResponseException
+     */
     @Override
     public SIP2MessageResponse parse(String data) throws InvalidSIP2ResponseValueException, InvalidSIP2ResponseException {
         SIP2CreateBibResponse response = new SIP2CreateBibResponse(data);

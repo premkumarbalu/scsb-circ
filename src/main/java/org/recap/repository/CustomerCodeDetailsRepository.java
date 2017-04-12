@@ -8,9 +8,24 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 
+/**
+ * The interface Customer code details repository.
+ */
 public interface CustomerCodeDetailsRepository extends JpaRepository<CustomerCodeEntity, Integer> {
 
+    /**
+     * Find by customer code customer code entity.
+     *
+     * @param customerCode the customer code
+     * @return the customer code entity
+     */
     CustomerCodeEntity findByCustomerCode(@Param("customerCode") String customerCode);
 
+    /**
+     * Find by customer code in list.
+     *
+     * @param customerCodes the customer codes
+     * @return the list
+     */
     List<CustomerCodeEntity> findByCustomerCodeIn(List<String> customerCodes);
 }

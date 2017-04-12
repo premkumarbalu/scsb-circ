@@ -30,9 +30,9 @@ public class CheckoutResponse {
     private List<DebugInfo> debugInfo = null;
 
     /**
+     * Gets data.
      *
-     * @return
-     * The data
+     * @return The  data
      */
     @JsonProperty("data")
     public CheckoutData getData() {
@@ -40,9 +40,9 @@ public class CheckoutResponse {
     }
 
     /**
+     * Sets data.
      *
-     * @param data
-     * The data
+     * @param data The data
      */
     @JsonProperty("data")
     public void setData(CheckoutData data) {
@@ -50,9 +50,9 @@ public class CheckoutResponse {
     }
 
     /**
+     * Gets count.
      *
-     * @return
-     * The count
+     * @return The  count
      */
     @JsonProperty("count")
     public Integer getCount() {
@@ -60,9 +60,9 @@ public class CheckoutResponse {
     }
 
     /**
+     * Sets count.
      *
-     * @param count
-     * The count
+     * @param count The count
      */
     @JsonProperty("count")
     public void setCount(Integer count) {
@@ -70,9 +70,9 @@ public class CheckoutResponse {
     }
 
     /**
+     * Gets status code.
      *
-     * @return
-     * The statusCode
+     * @return The  statusCode
      */
     @JsonProperty("statusCode")
     public Integer getStatusCode() {
@@ -80,9 +80,9 @@ public class CheckoutResponse {
     }
 
     /**
+     * Sets status code.
      *
-     * @param statusCode
-     * The statusCode
+     * @param statusCode The statusCode
      */
     @JsonProperty("statusCode")
     public void setStatusCode(Integer statusCode) {
@@ -90,9 +90,9 @@ public class CheckoutResponse {
     }
 
     /**
+     * Gets debug info.
      *
-     * @return
-     * The debugInfo
+     * @return The  debugInfo
      */
     @JsonProperty("debugInfo")
     public List<DebugInfo> getDebugInfo() {
@@ -100,9 +100,9 @@ public class CheckoutResponse {
     }
 
     /**
+     * Sets debug info.
      *
-     * @param debugInfo
-     * The debugInfo
+     * @param debugInfo The debugInfo
      */
     @JsonProperty("debugInfo")
     public void setDebugInfo(List<DebugInfo> debugInfo) {

@@ -9,27 +9,56 @@ public class BibliographicPK implements Serializable {
     private Integer owningInstitutionId;
     private String owningInstitutionBibId;
 
+    /**
+     * Instantiates a new Bibliographic pk.
+     */
     public BibliographicPK() {
         //Do nothing
     }
 
+    /**
+     * Instantiates a new Bibliographic pk.
+     *
+     * @param owningInstitutionId    the owning institution id
+     * @param owningInstitutionBibId the owning institution bib id
+     */
     public BibliographicPK(Integer owningInstitutionId, String owningInstitutionBibId) {
         this.owningInstitutionId = owningInstitutionId;
         this.owningInstitutionBibId = owningInstitutionBibId;
     }
 
+    /**
+     * Gets owning institution id.
+     *
+     * @return the owning institution id
+     */
     public Integer getOwningInstitutionId() {
         return owningInstitutionId;
     }
 
+    /**
+     * Sets owning institution id.
+     *
+     * @param owningInstitutionId the owning institution id
+     */
     public void setOwningInstitutionId(Integer owningInstitutionId) {
         this.owningInstitutionId = owningInstitutionId;
     }
 
+    /**
+     * Gets owning institution bib id.
+     *
+     * @return the owning institution bib id
+     */
     public String getOwningInstitutionBibId() {
         return owningInstitutionBibId;
     }
 
+    /**
+     * Sets owning institution bib id.
+     *
+     * @param owningInstitutionBibId the owning institution bib id
+     */
     public void setOwningInstitutionBibId(String owningInstitutionBibId) {
         this.owningInstitutionBibId = owningInstitutionBibId;
     }

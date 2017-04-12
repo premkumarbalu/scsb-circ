@@ -30,15 +30,30 @@ public class RequestParamaterValidatorService {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestParamaterValidatorService.class);
 
+    /**
+     * The Server protocol.
+     */
     @Value("${server.protocol}")
     String serverProtocol;
 
+    /**
+     * The Scsb solr client url.
+     */
     @Value("${scsb.solr.client.url}")
     String scsbSolrClientUrl;
 
+    /**
+     * The Item controller.
+     */
     @Autowired
     ItemController itemController;
 
+    /**
+     * Validate item request parameters response entity.
+     *
+     * @param itemRequestInformation the item request information
+     * @return the response entity
+     */
     public ResponseEntity validateItemRequestParameters(ItemRequestInformation itemRequestInformation) {
         ResponseEntity responseEntity = null;
         Map<Integer, String> errorMessageMap = new HashMap<>();
@@ -111,6 +126,11 @@ public class RequestParamaterValidatorService {
         return bSuccess;
     }
 
+    /**
+     * Gets http headers.
+     *
+     * @return the http headers
+     */
     public HttpHeaders getHttpHeaders() {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(ReCAPConstants.RESPONSE_DATE, new Date().toString());

@@ -18,6 +18,13 @@ public class SIP2CreateBibRequest extends SIP2CirculationTransactionRequest {
         this.terminalPassword = "";
     }
 
+    /**
+     * Instantiates a new Sip 2 create bib request.
+     *
+     * @param staffIdentifier   the staff identifier
+     * @param titleIdentififier the title identififier
+     * @param itemIdIdentifier  the item id identifier
+     */
     public SIP2CreateBibRequest(String staffIdentifier,String titleIdentififier, String itemIdIdentifier) {
         this();
         this.itemIdentifier = itemIdIdentifier;
@@ -25,6 +32,14 @@ public class SIP2CreateBibRequest extends SIP2CirculationTransactionRequest {
         this.patronIdentifier=staffIdentifier;
     }
 
+    /**
+     * Instantiates a new Sip 2 create bib request.
+     *
+     * @param staffIdentifier   the staff identifier
+     * @param titleIdentififier the title identififier
+     * @param itemIdIdentifier  the item id identifier
+     * @param bibId             the bib id
+     */
     public SIP2CreateBibRequest(String staffIdentifier,String titleIdentififier, String itemIdIdentifier,String bibId) {
         this();
         this.itemIdentifier = itemIdIdentifier;
@@ -33,6 +48,10 @@ public class SIP2CreateBibRequest extends SIP2CirculationTransactionRequest {
         this.bibId=bibId;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String getData() {
         StringBuilder builder = new StringBuilder();

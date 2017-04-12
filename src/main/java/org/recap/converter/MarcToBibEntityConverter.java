@@ -323,6 +323,11 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         }
     }
 
+    /**
+     * Gets item status map.
+     *
+     * @return the item status map
+     */
     public Map getItemStatusMap() {
         if (null == itemStatusMap) {
             itemStatusMap = new HashMap();
@@ -339,6 +344,11 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return itemStatusMap;
     }
 
+    /**
+     * Gets collection group map.
+     *
+     * @return the collection group map
+     */
     public Map getCollectionGroupMap() {
         if (null == collectionGroupMap) {
             collectionGroupMap = new HashMap();
@@ -355,6 +365,11 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return collectionGroupMap;
     }
 
+    /**
+     * Gets institution entity map.
+     *
+     * @return the institution entity map
+     */
     public Map getInstitutionEntityMap() {
         if (null == institutionEntityMap) {
             institutionEntityMap = new HashMap();
@@ -371,10 +386,20 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         return institutionEntityMap;
     }
 
+    /**
+     * Gets db report util.
+     *
+     * @return the db report util
+     */
     public DBReportUtil getDbReportUtil() {
         return dbReportUtil;
     }
 
+    /**
+     * Sets db report util.
+     *
+     * @param dbReportUtil the db report util
+     */
     public void setDbReportUtil(DBReportUtil dbReportUtil) {
         this.dbReportUtil = dbReportUtil;
     }

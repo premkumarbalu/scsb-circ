@@ -8,5 +8,11 @@ import java.util.Map;
 @FunctionalInterface
 public interface XmlToBibEntityConverterInterface {
 
+    /**
+     * Convert map.
+     *
+     * @param record the record
+     * @return the map
+     */
     public Map convert(Object record);
 }

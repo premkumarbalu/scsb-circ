@@ -13,6 +13,9 @@ import org.recap.ils.model.nypl.JobData;
 
 import java.util.List;
 
+/**
+ * The type Job response.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
         "data",
@@ -34,9 +37,9 @@ public class JobResponse {
     private String statusMessage;
 
     /**
+     * Gets data.
      *
-     * @return
-     * The data
+     * @return The  data
      */
     @JsonProperty("data")
     public JobData getData() {
@@ -44,9 +47,9 @@ public class JobResponse {
     }
 
     /**
+     * Sets data.
      *
-     * @param data
-     * The data
+     * @param data The data
      */
     @JsonProperty("data")
     public void setData(JobData data) {
@@ -54,9 +57,9 @@ public class JobResponse {
     }
 
     /**
+     * Gets count.
      *
-     * @return
-     * The count
+     * @return The  count
      */
     @JsonProperty("count")
     public Integer getCount() {
@@ -64,9 +67,9 @@ public class JobResponse {
     }
 
     /**
+     * Sets count.
      *
-     * @param count
-     * The count
+     * @param count The count
      */
     @JsonProperty("count")
     public void setCount(Integer count) {
@@ -74,9 +77,9 @@ public class JobResponse {
     }
 
     /**
+     * Gets status code.
      *
-     * @return
-     * The statusCode
+     * @return The  statusCode
      */
     @JsonProperty("statusCode")
     public Integer getStatusCode() {
@@ -84,9 +87,9 @@ public class JobResponse {
     }
 
     /**
+     * Sets status code.
      *
-     * @param statusCode
-     * The statusCode
+     * @param statusCode The statusCode
      */
     @JsonProperty("statusCode")
     public void setStatusCode(Integer statusCode) {
@@ -94,9 +97,9 @@ public class JobResponse {
     }
 
     /**
+     * Gets debug info.
      *
-     * @return
-     * The debugInfo
+     * @return The  debugInfo
      */
     @JsonProperty("debugInfo")
     public List<DebugInfo> getDebugInfo() {
@@ -104,19 +107,29 @@ public class JobResponse {
     }
 
     /**
+     * Sets debug info.
      *
-     * @param debugInfo
-     * The debugInfo
+     * @param debugInfo The debugInfo
      */
     @JsonProperty("debugInfo")
     public void setDebugInfo(List<DebugInfo> debugInfo) {
         this.debugInfo = debugInfo;
     }
 
+    /**
+     * Gets status message.
+     *
+     * @return the status message
+     */
     public String getStatusMessage() {
         return statusMessage;
     }
 
+    /**
+     * Sets status message.
+     *
+     * @param statusMessage the status message
+     */
     public void setStatusMessage(String statusMessage) {
         this.statusMessage = statusMessage;
     }

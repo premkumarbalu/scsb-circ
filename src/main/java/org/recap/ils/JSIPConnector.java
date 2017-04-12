@@ -32,6 +32,13 @@ public abstract class JSIPConnector implements IJSIPConnector {
         return connection;
     }
 
+    /**
+     * J sip login boolean.
+     *
+     * @param connection       the connection
+     * @param patronIdentifier the patron identifier
+     * @return the boolean
+     */
     public boolean jSIPLogin(SIP2SocketConnection connection, String patronIdentifier) {
         SIP2LoginRequest login;
         boolean loginPatronStatus = false;
@@ -144,6 +151,13 @@ public abstract class JSIPConnector implements IJSIPConnector {
         connection.send(sip2SCStatusRequest);
     }
 
+    /**
+     * Lookup user sip 2 patron status response.
+     *
+     * @param institutionId    the institution id
+     * @param patronIdentifier the patron identifier
+     * @return the sip 2 patron status response
+     */
     public SIP2PatronStatusResponse lookupUser(String institutionId, String patronIdentifier) {
         SIP2SocketConnection connection = getSocketConnection();
         SIP2PatronStatusResponse patronStatusResponse = null;

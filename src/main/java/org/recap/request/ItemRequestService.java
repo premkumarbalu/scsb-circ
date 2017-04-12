@@ -121,6 +121,11 @@ public class ItemRequestService {
         return scsbSolrClientUrl;
     }
 
+    /**
+     * Gets item details repository.
+     *
+     * @return the item details repository
+     */
     public ItemDetailsRepository getItemDetailsRepository() {
         return itemDetailsRepository;
     }
@@ -133,6 +138,11 @@ public class ItemRequestService {
         return requestItemDetailsRepository;
     }
 
+    /**
+     * Gets email service.
+     *
+     * @return the email service
+     */
     public EmailService getEmailService() {
         return emailService;
     }
@@ -141,10 +151,22 @@ public class ItemRequestService {
         return requestItemStatusDetailsRepository;
     }
 
+    /**
+     * Gets gfa service.
+     *
+     * @return the gfa service
+     */
     public GFAService getGfaService() {
         return gfaService;
     }
 
+    /**
+     * Request item item information response.
+     *
+     * @param itemRequestInfo the item request info
+     * @param exchange        the exchange
+     * @return the item information response
+     */
     public ItemInformationResponse requestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
         List<ItemEntity> itemEntities;
@@ -159,7 +181,7 @@ public class ItemRequestService {
                     itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 }
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
-                SearchResultRow searchResultRow = searchRecords(itemEntity);
+                SearchResultRow searchResultRow = searchRecords(itemEntity); //Solr
 
                 itemRequestInfo.setTitleIdentifier(getTitle(itemRequestInfo.getTitleIdentifier(), itemEntity, searchResultRow));
                 itemRequestInfo.setAuthor(searchResultRow.getAuthor());
@@ -167,6 +189,7 @@ public class ItemRequestService {
                 itemResponseInformation.setItemId(itemEntity.getItemId());
                 // Change Item Availablity
                 updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
+                // Process
                 itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity);
             } else {
                 itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
@@ -184,6 +207,13 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
+    /**
+     * Recall item item information response.
+     *
+     * @param itemRequestInfo the item request info
+     * @param exchange        the exchange
+     * @return the item information response
+     */
     public ItemInformationResponse recallItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
         List<ItemEntity> itemEntities;
@@ -214,6 +244,12 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
+    /**
+     * Re file item boolean.
+     *
+     * @param itemRefileRequest the item refile request
+     * @return the boolean
+     */
     public boolean reFileItem(ItemRefileRequest itemRefileRequest) {
 
         // Change Response for this Method
@@ -286,6 +322,14 @@ public class ItemRequestService {
         return bSuccess;
     }
 
+    /**
+     * Send message to topic.
+     *
+     * @param owningInstituteId the owning institute id
+     * @param requestType       the request type
+     * @param itemResponseInfo  the item response info
+     * @param exchange          the exchange
+     */
     public void sendMessageToTopic(String owningInstituteId, String requestType, ItemInformationResponse itemResponseInfo, Exchange exchange) {
         String selectTopic = ReCAPConstants.PUL_REQUEST_TOPIC;
         if (owningInstituteId.equalsIgnoreCase(ReCAPConstants.PRINCETON) && requestType.equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
@@ -344,14 +388,34 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
+    /**
+     * Update recap request item integer.
+     *
+     * @param itemRequestInformation the item request information
+     * @param itemEntity             the item entity
+     * @param requestStatusCode      the request status code
+     * @return the integer
+     */
     public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, String requestStatusCode) {
         return getItemRequestDBService().updateRecapRequestItem(itemRequestInformation, itemEntity, requestStatusCode);
     }
 
+    /**
+     * Update recap request item item information response.
+     *
+     * @param itemInformationResponse the item information response
+     * @return the item information response
+     */
     public ItemInformationResponse updateRecapRequestItem(ItemInformationResponse itemInformationResponse) {
         return getItemRequestDBService().updateRecapRequestItem(itemInformationResponse);
     }
 
+    /**
+     * Update recap request status item information response.
+     *
+     * @param itemInformationResponse the item information response
+     * @return the item information response
+     */
     public ItemInformationResponse updateRecapRequestStatus(ItemInformationResponse itemInformationResponse) {
         return getItemRequestDBService().updateRecapRequestStatus(itemInformationResponse);
     }
@@ -364,14 +428,35 @@ public class ItemRequestService {
         getItemRequestDBService().rollbackUpdateItemAvailabilutyStatus(itemEntity, username);
     }
 
+    /**
+     * Save item change log entity.
+     *
+     * @param recordId      the record id
+     * @param userName      the user name
+     * @param operationType the operation type
+     * @param notes         the notes
+     */
     public void saveItemChangeLogEntity(Integer recordId, String userName, String operationType, String notes) {
         getItemRequestDBService().saveItemChangeLogEntity(recordId, userName, operationType, notes);
     }
 
+    /**
+     * Gets user.
+     *
+     * @param userId the user id
+     * @return the user
+     */
     public String getUser(String userId) {
         return getItemRequestDBService().getUser(userId);
     }
 
+    /**
+     * Update gfa item information response.
+     *
+     * @param itemRequestInfo         the item request info
+     * @param itemResponseInformation the item response information
+     * @return the item information response
+     */
     protected ItemInformationResponse updateGFA(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
 
         try {
@@ -553,6 +638,11 @@ public class ItemRequestService {
         return patronId;
     }
 
+    /**
+     * Update solr index.
+     *
+     * @param itemEntity the item entity
+     */
     public void updateSolrIndex(ItemEntity itemEntity) {
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -565,6 +655,12 @@ public class ItemRequestService {
         }
     }
 
+    /**
+     * Search records search result row.
+     *
+     * @param itemEntity the item entity
+     * @return the search result row
+     */
     protected SearchResultRow searchRecords(ItemEntity itemEntity) {
         List<SearchResultRow> statusResponse = null;
         SearchResultRow searchResultRow = null;
@@ -586,6 +682,14 @@ public class ItemRequestService {
         return searchResultRow;
     }
 
+    /**
+     * Gets title.
+     *
+     * @param title           the title
+     * @param itemEntity      the item entity
+     * @param searchResultRow the search result row
+     * @return the title
+     */
     protected String getTitle(String title, ItemEntity itemEntity, SearchResultRow searchResultRow) {
         String titleIdentifier = "";
         String useRestrictions = ReCAPConstants.REQUEST_USE_RESTRICTIONS;
@@ -632,6 +736,14 @@ public class ItemRequestService {
         getRequestItemController().cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
     }
 
+    /**
+     * Gets notes.
+     *
+     * @param success       the success
+     * @param screenMessage the screen message
+     * @param userNotes     the user notes
+     * @return the notes
+     */
     protected String getNotes(boolean success, String screenMessage, String userNotes) {
         String notes = "";
         if (!StringUtils.isBlank(userNotes)) {
@@ -653,6 +765,11 @@ public class ItemRequestService {
         return headers;
     }
 
+    /**
+     * Process las retrieve response.
+     *
+     * @param body the body
+     */
     public void processLASRetrieveResponse(String body) {
         ItemInformationResponse itemInformationResponse = getGfaService().processLASRetrieveResponse(body);
         if (itemInformationResponse.isSuccess()) {

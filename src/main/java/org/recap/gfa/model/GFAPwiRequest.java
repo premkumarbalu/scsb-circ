@@ -16,11 +16,21 @@ public class GFAPwiRequest {
     @JsonProperty("dsitem")
     private GFAPwiDsItemRequest dsitem;
 
+    /**
+     * Gets dsitem.
+     *
+     * @return the dsitem
+     */
     @JsonProperty("dsitem")
     public GFAPwiDsItemRequest getDsitem() {
         return dsitem;
     }
 
+    /**
+     * Sets dsitem.
+     *
+     * @param dsitem the dsitem
+     */
     @JsonProperty("dsitem")
     public void setDsitem(GFAPwiDsItemRequest dsitem) {
         this.dsitem = dsitem;

@@ -9,11 +9,17 @@ import com.pkrete.jsip2.messages.SIP2MessageRequest;
 import com.pkrete.jsip2.util.MessageUtil;
 import com.pkrete.jsip2.variables.StatusCode;
 
+/**
+ * The type Sip 2 sc status request.
+ */
 public class SIP2SCStatusRequest extends SIP2MessageRequest {
     private StatusCode statusCode;
     private String maxPrintWidth;
     private String protocolVersion;
 
+    /**
+     * Instantiates a new Sip 2 sc status request.
+     */
     public SIP2SCStatusRequest() {
         super("99");
         this.protocolVersion = "2.00";
@@ -22,32 +28,67 @@ public class SIP2SCStatusRequest extends SIP2MessageRequest {
 
     }
 
+    /**
+     * Instantiates a new Sip 2 sc status request.
+     *
+     * @param status the status
+     */
     public SIP2SCStatusRequest(StatusCode status) {
         this();
         this.statusCode = status;
     }
 
+    /**
+     * Instantiates a new Sip 2 sc status request.
+     *
+     * @param status        the status
+     * @param maxPrintWidth the max print width
+     */
     public SIP2SCStatusRequest(StatusCode status, String maxPrintWidth) {
         this(status);
         this.maxPrintWidth = maxPrintWidth;
     }
 
+    /**
+     * Gets status code.
+     *
+     * @return the status code
+     */
     public StatusCode getStatusCode() {
         return this.statusCode;
     }
 
+    /**
+     * Sets status code.
+     *
+     * @param statusCode the status code
+     */
     public void setStatusCode(StatusCode statusCode) {
         this.statusCode = statusCode;
     }
 
+    /**
+     * Gets max print width.
+     *
+     * @return the max print width
+     */
     public String getMaxPrintWidth() {
         return this.maxPrintWidth;
     }
 
+    /**
+     * Sets max print width.
+     *
+     * @param maxPrintWidth the max print width
+     */
     public void setMaxPrintWidth(String maxPrintWidth) {
         this.maxPrintWidth = maxPrintWidth;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String getData() {
         StringBuilder builder = new StringBuilder();
