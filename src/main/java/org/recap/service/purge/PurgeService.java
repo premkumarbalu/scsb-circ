@@ -16,11 +16,11 @@ import java.util.*;
 @Service
 public class PurgeService {
 
-    @Value("${purge.email.address.edd.request.date.limit}")
-    private Integer purgeEmailEddRequestDateLimit;
+    @Value("${purge.email.address.edd.request.day.limit}")
+    private Integer purgeEmailEddRequestDayLimit;
 
-    @Value("${purge.email.address.physical.request.date.limit}")
-    private Integer purgeEmailPhysicalRequestDateLimit;
+    @Value("${purge.email.address.physical.request.day.limit}")
+    private Integer purgeEmailPhysicalRequestDayLimit;
 
     @Autowired
     private RequestItemDetailsRepository requestItemDetailsRepository;
@@ -39,8 +39,8 @@ public class PurgeService {
                 physicalRequestTypeIdList.add(requestTypeEntity.getRequestTypeId());
             }
         }
-        int noOfUpdatedRecordsForEddRequest = requestItemDetailsRepository.purgeEmailId(eddRequestTypeIdList,new Date(), purgeEmailEddRequestDateLimit);
-        int noOfUpdatedRecordsForPhysicalRequest = requestItemDetailsRepository.purgeEmailId(physicalRequestTypeIdList,new Date(), purgeEmailPhysicalRequestDateLimit);
+        int noOfUpdatedRecordsForEddRequest = requestItemDetailsRepository.purgeEmailId(eddRequestTypeIdList,new Date(), purgeEmailEddRequestDayLimit);
+        int noOfUpdatedRecordsForPhysicalRequest = requestItemDetailsRepository.purgeEmailId(physicalRequestTypeIdList,new Date(), purgeEmailPhysicalRequestDayLimit);
         Map<String,Integer> responseMap = new HashMap<>();
         responseMap.put(ReCAPConstants.PURGE_EDD_REQUEST , noOfUpdatedRecordsForEddRequest);
         responseMap.put(ReCAPConstants.PURGE_PHYSICAL_REQUEST , noOfUpdatedRecordsForPhysicalRequest);
