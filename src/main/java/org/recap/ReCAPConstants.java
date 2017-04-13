@@ -318,6 +318,11 @@ public final class ReCAPConstants {
     public static final String PROCESS_INPUT = "processInput";
     public static final String SUBMIT_COLLECTION_SFTP_OPTIONS = "&move=.done&delay=5s&localWorkDirectory=";
 
+    public static final String PURGE_EDD_REQUEST = "noOfUpdatedRecordsForEddRequest";
+    public static final String PURGE_PHYSICAL_REQUEST = "noOfUpdatedRecordsForPhysicalRequest";
+
+
+
     private ReCAPConstants() {}
 
     public static final List getGFAStatusAvailableList() {

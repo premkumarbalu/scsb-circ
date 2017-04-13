@@ -7,9 +7,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -62,4 +65,14 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
      */
     @Query(value = "select request from RequestItemEntity request where request.itemId = (select item.itemId from ItemEntity item where item.barcode = :itemBarcode)")
     List<RequestItemEntity> findByItemBarcode(@Param("itemBarcode") String itemBarcode);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE recap.request_item_t SET EMAIL_ID ='' where REQUEST_TYPE_ID in (?1) AND DATEDIFF(?2,CREATED_DATE)=?3", nativeQuery = true)
+     int purgeEmailId(@Param("requestTypeIdList") List<Integer> requestTypeIdList, @Param("createdDate") Date createdDate, @Param("dateDifference") Integer dateDifference);
+
+
+
+
+
 }
