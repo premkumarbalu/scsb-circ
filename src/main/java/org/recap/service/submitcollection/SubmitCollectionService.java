@@ -310,13 +310,17 @@ public class SubmitCollectionService {
 
     private BibliographicEntity getBibEntityUsingBarcode(BibliographicEntity bibliographicEntity) {
         List<String> itemBarcodeList = new ArrayList<>();
-        for(ItemEntity itemEntity: bibliographicEntity.getItemEntities()){
+        for (ItemEntity itemEntity : bibliographicEntity.getItemEntities()) {
             itemBarcodeList.add(itemEntity.getBarcode());
         }
         List<ItemEntity> itemEntityList = getItemDetailsRepository().findByBarcodeIn(itemBarcodeList);
         BibliographicEntity fetchedBibliographicEntity = null;
-        if(itemEntityList != null && !itemEntityList.isEmpty() && itemEntityList.get(0).getBibliographicEntities() != null){
-            fetchedBibliographicEntity = itemEntityList.get(0).getBibliographicEntities().get(0);
+        if (itemEntityList != null && !itemEntityList.isEmpty() && itemEntityList.get(0).getBibliographicEntities() != null) {
+            for (BibliographicEntity resultBibliographicEntity : itemEntityList.get(0).getBibliographicEntities()) {
+                if (bibliographicEntity.getOwningInstitutionBibId().equals(resultBibliographicEntity.getOwningInstitutionBibId())) {//To handle boundwith item
+                    fetchedBibliographicEntity = resultBibliographicEntity;
+                }
+            }
         }
         return fetchedBibliographicEntity;
     }
