@@ -1,8 +1,10 @@
 package org.recap.service.purge;
 
 import org.recap.ReCAPConstants;
+import org.recap.model.RequestStatusEntity;
 import org.recap.model.RequestTypeEntity;
 import org.recap.repository.RequestItemDetailsRepository;
+import org.recap.repository.RequestItemStatusDetailsRepository;
 import org.recap.repository.RequestTypeDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +28,9 @@ public class PurgeService {
     private RequestItemDetailsRepository requestItemDetailsRepository;
 
     @Autowired
+    private RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
+
+    @Autowired
     private RequestTypeDetailsRepository requestTypeDetailsRepository;
 
     public Map<String,Integer> purgeEmailAddress(){
@@ -45,5 +50,11 @@ public class PurgeService {
         responseMap.put(ReCAPConstants.PURGE_EDD_REQUEST , noOfUpdatedRecordsForEddRequest);
         responseMap.put(ReCAPConstants.PURGE_PHYSICAL_REQUEST , noOfUpdatedRecordsForPhysicalRequest);
         return responseMap;
+    }
+
+    public String purgeExceptionRequests() {
+        RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
+        requestItemDetailsRepository.deleteByRequestStatusId(requestStatusEntity.getRequestStatusId());
+        return ReCAPConstants.SUCCESS;
     }
 }

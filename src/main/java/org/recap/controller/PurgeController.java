@@ -23,4 +23,10 @@ public class PurgeController {
         Map<String,Integer> responseMap = purgeService.purgeEmailAddress();
         return new ResponseEntity(responseMap, HttpStatus.OK);
     }
+
+    @RequestMapping(value = "/purgeExceptionRequests", method = RequestMethod.GET)
+    public ResponseEntity purgeExceptionRequests(){
+        String status = purgeService.purgeExceptionRequests();
+        return new ResponseEntity(status, HttpStatus.OK);
+    }
 }
