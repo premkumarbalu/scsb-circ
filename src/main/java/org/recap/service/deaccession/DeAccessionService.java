@@ -122,33 +122,47 @@ public class DeAccessionService {
             Map<String, String> barcodeAndStopCodeMap = new HashMap<>();
             List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities = new ArrayList<>();
             String username = StringUtils.isNotBlank(deAccessionRequest.getUsername()) ? deAccessionRequest.getUsername() : ReCAPConstants.DISCOVERY;
+
             checkGfaItemStatusForPWI(deAccessionRequest.getDeAccessionItems(), deAccessionDBResponseEntities, barcodeAndStopCodeMap);
             checkAndCancelHolds(barcodeAndStopCodeMap, deAccessionDBResponseEntities, username);
             deAccessionItemsInDB(barcodeAndStopCodeMap, deAccessionDBResponseEntities, username);
-            processAndSave(deAccessionDBResponseEntities);
-            if (CollectionUtils.isNotEmpty(deAccessionDBResponseEntities)) {
-                List<Integer> bibIds = new ArrayList<>();
-                List<Integer> holdingsIds = new ArrayList<>();
-                List<Integer> itemIds = new ArrayList<>();
-                for (DeAccessionDBResponseEntity deAccessionDBResponseEntity : deAccessionDBResponseEntities) {
-                    if (deAccessionDBResponseEntity.getStatus().equalsIgnoreCase(ReCAPConstants.FAILURE)) {
-                        resultMap.put(deAccessionDBResponseEntity.getBarcode(), deAccessionDBResponseEntity.getStatus() + " - " + deAccessionDBResponseEntity.getReasonForFailure());
-                    } else if (deAccessionDBResponseEntity.getStatus().equalsIgnoreCase(ReCAPConstants.SUCCESS)) {
-                        resultMap.put(deAccessionDBResponseEntity.getBarcode(), deAccessionDBResponseEntity.getStatus());
-                        bibIds.addAll(deAccessionDBResponseEntity.getBibliographicIds());
-                        holdingsIds.addAll(deAccessionDBResponseEntity.getHoldingIds());
-                        itemIds.add(deAccessionDBResponseEntity.getItemId());
-                    }
-                }
-                deAccessionItemsInSolr(bibIds, holdingsIds, itemIds);
-                callGfaDeaccessionService(deAccessionDBResponseEntities, username);
-                return resultMap;
-            }
+            callGfaDeaccessionService(deAccessionDBResponseEntities, username);
+            rollbackLASRejectedItems(deAccessionDBResponseEntities, username);
+            deAccessionItemsInSolr(deAccessionDBResponseEntities, resultMap);
+            processAndSaveReportEntities(deAccessionDBResponseEntities);
         } else {
             resultMap.put("", ReCAPConstants.DEACCESSION_NO_BARCODE_ERROR);
             return resultMap;
         }
         return resultMap;
+    }
+
+    private void rollbackLASRejectedItems(List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, String username) {
+        if (CollectionUtils.isNotEmpty(deAccessionDBResponseEntities)) {
+            Map<Integer, String> itemIdAndMessageMap = new HashMap<>();
+            List<Integer> bibIds = new ArrayList<>();
+            List<Integer> holdingsIds = new ArrayList<>();
+            List<Integer> itemIds = new ArrayList<>();
+            for (DeAccessionDBResponseEntity deAccessionDBResponseEntity : deAccessionDBResponseEntities) {
+                if (deAccessionDBResponseEntity.getStatus().equalsIgnoreCase(ReCAPConstants.FAILURE) && deAccessionDBResponseEntity.getReasonForFailure().contains(ReCAPConstants.LAS_REJECTED)) {
+                    bibIds.addAll(deAccessionDBResponseEntity.getBibliographicIds());
+                    holdingsIds.addAll(deAccessionDBResponseEntity.getHoldingIds());
+                    itemIds.add(deAccessionDBResponseEntity.getItemId());
+                    itemIdAndMessageMap.put(deAccessionDBResponseEntity.getItemId(), deAccessionDBResponseEntity.getReasonForFailure());
+                }
+            }
+            Date currentDate = new Date();
+            if (CollectionUtils.isNotEmpty(bibIds)) {
+                bibliographicDetailsRepository.markBibsAsNotDeleted(bibIds, username, currentDate);
+            }
+            if (CollectionUtils.isNotEmpty(holdingsIds)) {
+                holdingsDetailsRepository.markHoldingsAsNotDeleted(holdingsIds, username, currentDate);
+            }
+            if (CollectionUtils.isNotEmpty(itemIds)) {
+                itemDetailsRepository.markItemsAsNotDeleted(itemIds, username, currentDate);
+                saveItemChangeLogEntities(itemIds, username, ReCAPConstants.DEACCESSION_ROLLBACK, currentDate, ReCAPConstants.DEACCESSION_ROLLBACK_NOTES, itemIdAndMessageMap);
+            }
+        }
     }
 
     private void checkGfaItemStatusForPWI(List<DeAccessionItem> deAccessionItems, List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, Map<String, String> barcodeAndStopCodeMap) {
@@ -223,7 +237,22 @@ public class DeAccessionService {
                     gfaPwdTtItemRequest.setRequestor(username);
                     gfaPwdDsItemRequest.setTtitem(Arrays.asList(gfaPwdTtItemRequest));
                     gfaPwdRequest.setDsitem(gfaPwdDsItemRequest);
-                    gfaService.gfaPermanentWithdrawlDirect(gfaPwdRequest);
+                    GFAPwdResponse gfaPwdResponse = gfaService.gfaPermanentWithdrawlDirect(gfaPwdRequest);
+                    if (null != gfaPwdResponse) {
+                        GFAPwdDsItemResponse gfaPwdDsItemResponse = gfaPwdResponse.getDsitem();
+                        if (null != gfaPwdDsItemResponse) {
+                            List<GFAPwdTtItemResponse> gfaPwdTtItemResponses = gfaPwdDsItemResponse.getTtitem();
+                            if (CollectionUtils.isNotEmpty(gfaPwdTtItemResponses)) {
+                                GFAPwdTtItemResponse gfaPwdTtItemResponse = gfaPwdTtItemResponses.get(0);
+                                String errorCode = (String) gfaPwdTtItemResponse.getErrorCode();
+                                String errorNote = (String) gfaPwdTtItemResponse.getErrorNote();
+                                if (StringUtils.isNotBlank(errorCode) && StringUtils.isNotBlank(errorNote)) {
+                                    deAccessionDBResponseEntity.setStatus(ReCAPConstants.FAILURE);
+                                    deAccessionDBResponseEntity.setReasonForFailure(MessageFormat.format(ReCAPConstants.LAS_DEACCESSION_REJECT_ERROR, ReCAPConstants.REQUEST_TYPE_PW_DIRECT, errorCode, errorNote));
+                                }
+                            }
+                        }
+                    }
                 } else if (ReCAPConstants.SUCCESS.equalsIgnoreCase(deAccessionDBResponseEntity.getStatus()) && ReCAPConstants.NOT_AVAILABLE.equalsIgnoreCase(deAccessionDBResponseEntity.getItemStatus())) {
                     GFAPwiRequest gfaPwiRequest = new GFAPwiRequest();
                     GFAPwiDsItemRequest gfaPwiDsItemRequest = new GFAPwiDsItemRequest();
@@ -232,7 +261,22 @@ public class DeAccessionService {
                     gfaPwiTtItemRequest.setItemBarcode(deAccessionDBResponseEntity.getBarcode());
                     gfaPwiDsItemRequest.setTtitem(Arrays.asList(gfaPwiTtItemRequest));
                     gfaPwiRequest.setDsitem(gfaPwiDsItemRequest);
-                    gfaService.gfaPermanentWithdrawlInDirect(gfaPwiRequest);
+                    GFAPwiResponse gfaPwiResponse = gfaService.gfaPermanentWithdrawlInDirect(gfaPwiRequest);
+                    if (null != gfaPwiResponse) {
+                        GFAPwiDsItemResponse gfaPwiDsItemResponse = gfaPwiResponse.getDsitem();
+                        if (null != gfaPwiDsItemResponse) {
+                            List<GFAPwiTtItemResponse> gfaPwiTtItemResponses = gfaPwiDsItemResponse.getTtitem();
+                            if (CollectionUtils.isNotEmpty(gfaPwiTtItemResponses)) {
+                                GFAPwiTtItemResponse gfaPwiTtItemResponse = gfaPwiTtItemResponses.get(0);
+                                String errorCode = gfaPwiTtItemResponse.getErrorCode();
+                                String errorNote = gfaPwiTtItemResponse.getErrorNote();
+                                if (StringUtils.isNotBlank(errorCode) && StringUtils.isNotBlank(errorNote)) {
+                                    deAccessionDBResponseEntity.setStatus(ReCAPConstants.FAILURE);
+                                    deAccessionDBResponseEntity.setReasonForFailure(MessageFormat.format(ReCAPConstants.LAS_DEACCESSION_REJECT_ERROR, ReCAPConstants.REQUEST_TYPE_PW_INDIRECT, errorCode, errorNote));
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -371,6 +415,20 @@ public class DeAccessionService {
         itemChangeLogDetailsRepository.save(itemChangeLogEntity);
     }
 
+    private void saveItemChangeLogEntities(List<Integer> itemIds, String deaccessionUser, String operationType, Date updatedDate, String notes, Map<Integer, String> itemIdAndMessageMap) {
+        List<ItemChangeLogEntity> itemChangeLogEntities = new ArrayList<>();
+        for (Integer itemId : itemIds) {
+            ItemChangeLogEntity itemChangeLogEntity = new ItemChangeLogEntity();
+            itemChangeLogEntity.setUpdatedBy(deaccessionUser);
+            itemChangeLogEntity.setUpdatedDate(updatedDate);
+            itemChangeLogEntity.setOperationType(operationType);
+            itemChangeLogEntity.setRecordId(itemId);
+            itemChangeLogEntity.setNotes(itemIdAndMessageMap.get(itemId) + notes);
+            itemChangeLogEntities.add(itemChangeLogEntity);
+        }
+        itemChangeLogDetailsRepository.save(itemChangeLogEntities);
+    }
+
     private int getHoldQueueLength(ItemInformationResponse itemInformationResponse) {
         int iholdQueue = 0;
         if (StringUtils.isNotBlank(itemInformationResponse.getHoldQueueLength())) {
@@ -404,10 +462,10 @@ public class DeAccessionService {
                     List<Integer> holdingsIds = processHoldings(holdingsEntities, username);
                     List<Integer> bibliographicIds = processBibs(bibliographicEntities, username);
                     itemDetailsRepository.markItemAsDeleted(itemId, username, currentDate);
-                    updateBibliographicWithLastUpdatedDate(itemId, username,currentDate);
                     deAccessionDBResponseEntity = prepareSuccessResponse(barcode, deliveryLocation, itemEntity, holdingsIds, bibliographicIds);
                     deAccessionDBResponseEntities.add(deAccessionDBResponseEntity);
                 } catch (Exception ex) {
+                    logger.error(ReCAPConstants.LOG_ERROR, ex);
                     deAccessionDBResponseEntity = prepareFailureResponse(barcode, deliveryLocation, "Exception" + ex, null);
                     deAccessionDBResponseEntities.add(deAccessionDBResponseEntity);
                 }
@@ -423,7 +481,7 @@ public class DeAccessionService {
      * @param deAccessionDBResponseEntities the de accession db response entities
      * @return the list
      */
-    public List<ReportEntity> processAndSave(List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities) {
+    public List<ReportEntity> processAndSaveReportEntities(List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities) {
         List<ReportEntity> reportEntities = new ArrayList<>();
         ReportEntity reportEntity = null;
         if (CollectionUtils.isNotEmpty(deAccessionDBResponseEntities)) {
@@ -591,44 +649,41 @@ public class DeAccessionService {
     }
 
     /**
-     * De accession items in solr.
-     *
-     * @param bibIds      the bib ids
-     * @param holdingsIds the holdings ids
-     * @param itemIds     the item ids
+     * De accession items in solr
+     * @param deAccessionDBResponseEntities
+     * @param resultMap
      */
-    public void deAccessionItemsInSolr(List<Integer> bibIds, List<Integer> holdingsIds, List<Integer> itemIds) {
+    public void deAccessionItemsInSolr(List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, Map<String, String> resultMap) {
         try {
-            if (CollectionUtils.isNotEmpty(bibIds) || CollectionUtils.isNotEmpty(holdingsIds) || CollectionUtils.isNotEmpty(itemIds)) {
-                String deAccessionSolrClientUrl = serverProtocol + scsbSolrClientUrl + ReCAPConstants.DEACCESSION_IN_SOLR_URL;
-                DeAccessionSolrRequest deAccessionSolrRequest = new DeAccessionSolrRequest();
-                deAccessionSolrRequest.setBibIds(bibIds);
-                deAccessionSolrRequest.setHoldingsIds(holdingsIds);
-                deAccessionSolrRequest.setItemIds(itemIds);
+            if (CollectionUtils.isNotEmpty(deAccessionDBResponseEntities)) {
+                List<Integer> bibIds = new ArrayList<>();
+                List<Integer> holdingsIds = new ArrayList<>();
+                List<Integer> itemIds = new ArrayList<>();
+                for (DeAccessionDBResponseEntity deAccessionDBResponseEntity : deAccessionDBResponseEntities) {
+                    if (deAccessionDBResponseEntity.getStatus().equalsIgnoreCase(ReCAPConstants.FAILURE)) {
+                        resultMap.put(deAccessionDBResponseEntity.getBarcode(), deAccessionDBResponseEntity.getStatus() + " - " + deAccessionDBResponseEntity.getReasonForFailure());
+                    } else if (deAccessionDBResponseEntity.getStatus().equalsIgnoreCase(ReCAPConstants.SUCCESS)) {
+                        resultMap.put(deAccessionDBResponseEntity.getBarcode(), deAccessionDBResponseEntity.getStatus());
+                        bibIds.addAll(deAccessionDBResponseEntity.getBibliographicIds());
+                        holdingsIds.addAll(deAccessionDBResponseEntity.getHoldingIds());
+                        itemIds.add(deAccessionDBResponseEntity.getItemId());
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(bibIds) || CollectionUtils.isNotEmpty(holdingsIds) || CollectionUtils.isNotEmpty(itemIds)) {
+                    String deAccessionSolrClientUrl = serverProtocol + scsbSolrClientUrl + ReCAPConstants.DEACCESSION_IN_SOLR_URL;
+                    DeAccessionSolrRequest deAccessionSolrRequest = new DeAccessionSolrRequest();
+                    deAccessionSolrRequest.setBibIds(bibIds);
+                    deAccessionSolrRequest.setHoldingsIds(holdingsIds);
+                    deAccessionSolrRequest.setItemIds(itemIds);
 
-                RestTemplate restTemplate = new RestTemplate();
-                HttpEntity<DeAccessionSolrRequest> requestEntity = new HttpEntity(deAccessionSolrRequest, getHttpHeaders());
-                ResponseEntity<String> responseEntity = restTemplate.exchange(deAccessionSolrClientUrl, HttpMethod.POST, requestEntity, String.class);
-                logger.info(responseEntity.getBody());
+                    RestTemplate restTemplate = new RestTemplate();
+                    HttpEntity<DeAccessionSolrRequest> requestEntity = new HttpEntity(deAccessionSolrRequest, getHttpHeaders());
+                    ResponseEntity<String> responseEntity = restTemplate.exchange(deAccessionSolrClientUrl, HttpMethod.POST, requestEntity, String.class);
+                    logger.info("Deaccession Item Solr update status : " + responseEntity.getBody());
+                }
             }
         } catch (Exception e) {
             logger.error("Exception : ", e);
-        }
-    }
-
-    /**
-     * Update bibliographic with last updated date.
-     *
-     * @param itemId          the item id
-     * @param userName        the user name
-     * @param lastUpdatedDate the last updated date
-     */
-    public void updateBibliographicWithLastUpdatedDate(Integer itemId,String userName,Date lastUpdatedDate){
-        ItemEntity itemEntity = itemDetailsRepository.findByItemId(itemId);
-        List<BibliographicEntity> bibliographicEntityList = itemEntity.getBibliographicEntities();
-        List<Integer> bibliographicIdList = new ArrayList<>();
-        for(BibliographicEntity bibliographicEntity : bibliographicEntityList){
-            bibliographicIdList.add(bibliographicEntity.getBibliographicId());
         }
     }
 

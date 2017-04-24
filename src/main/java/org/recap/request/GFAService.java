@@ -485,9 +485,11 @@ public class GFAService {
         GFAPwdResponse gfaPwdResponse = null;
         try {
             HttpEntity<GFAPwdRequest> requestEntity = new HttpEntity(gfaPwdRequest, getHttpHeaders());
+            logger.info("GFA PWD Request : {}", convertJsontoString(requestEntity.getBody()));
             ResponseEntity<GFAPwdResponse> responseEntity = getRestTemplate().exchange(getGfaItemPermanentWithdrawlDirect(), HttpMethod.POST, requestEntity, GFAPwdResponse.class);
             gfaPwdResponse = responseEntity.getBody();
-            logger.info(responseEntity.getStatusCode().toString());
+            logger.info("GFA PWD Response Status Code : {}", responseEntity.getStatusCode().toString());
+            logger.info("GFA PWD Response : {}", convertJsontoString(responseEntity.getBody()));
             logger.info("GFA PWD item status processed");
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
@@ -505,9 +507,11 @@ public class GFAService {
         GFAPwiResponse gfaPwiResponse = null;
         try {
             HttpEntity<GFAPwiRequest> requestEntity = new HttpEntity(gfaPwiRequest, getHttpHeaders());
+            logger.info("GFA PWI Request : {}", convertJsontoString(requestEntity.getBody()));
             ResponseEntity<GFAPwiResponse> responseEntity = getRestTemplate().exchange(getGfaItemPermanentWithdrawlInDirect(), HttpMethod.POST, requestEntity, GFAPwiResponse.class);
             gfaPwiResponse = responseEntity.getBody();
-            logger.info(responseEntity.getStatusCode().toString());
+            logger.info("GFA PWI Response Status Code : {}", responseEntity.getStatusCode().toString());
+            logger.info("GFA PWI Response : {}", convertJsontoString(responseEntity.getBody()));
             logger.info("GFA PWI item status processed");
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);

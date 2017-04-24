@@ -288,6 +288,8 @@ public final class ReCAPConstants {
     //Logger
     public static final String LOG_ERROR="error-->";
     public static final String GFA_ITEM_STATUS_MISMATCH = "There is a mismatch in item status between SCSB and LAS. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
+    public static final String LAS_DEACCESSION_REJECT_ERROR = "LAS has rejected the {0} request with Error code : \"{1}\" and Error note : \"{2}\".";
+    public static final String LAS_REJECTED = "LAS has rejected";
     public static final String CREATING_A_BIB_RECORD_FAILED_IN_ILS = "Creating a Bib record failed in ILS";
     public static final String INVALID_NO_RESPONSE_FROM_ILS = "Invalid/No Response from ILS";
     public static final String LOGIN_FAILED = "Login Failed";
@@ -321,6 +323,8 @@ public final class ReCAPConstants {
     public static final String PURGE_EDD_REQUEST = "noOfUpdatedRecordsForEddRequest";
     public static final String PURGE_PHYSICAL_REQUEST = "noOfUpdatedRecordsForPhysicalRequest";
 
+    public static final String DEACCESSION_ROLLBACK = "Deaccession Rollback";
+    public static final String DEACCESSION_ROLLBACK_NOTES = " Hence, the transaction of deaccessioning item is rolled back.";
 
 
     private ReCAPConstants() {}

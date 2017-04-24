@@ -57,4 +57,17 @@ public interface HoldingsDetailsRepository extends JpaRepository<HoldingsEntity,
     @Query("UPDATE HoldingsEntity holdings SET holdings.isDeleted = true, holdings.lastUpdatedBy = :lastUpdatedBy, holdings.lastUpdatedDate = :lastUpdatedDate WHERE holdings.holdingsId IN :holdingIds")
     int markHoldingsAsDeleted(@Param("holdingIds") List<Integer> holdingIds, @Param("lastUpdatedBy") String lastUpdatedBy, @Param("lastUpdatedDate") Date lastUpdatedDate);
 
+    /**
+     * Mark holdings as not deleted int.
+     *
+     * @param holdingIds      the holding ids
+     * @param lastUpdatedBy   the last updated by
+     * @param lastUpdatedDate the last updated date
+     * @return the int
+     */
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("UPDATE HoldingsEntity holdings SET holdings.isDeleted = false, holdings.lastUpdatedBy = :lastUpdatedBy, holdings.lastUpdatedDate = :lastUpdatedDate WHERE holdings.holdingsId IN :holdingIds")
+    int markHoldingsAsNotDeleted(@Param("holdingIds") List<Integer> holdingIds, @Param("lastUpdatedBy") String lastUpdatedBy, @Param("lastUpdatedDate") Date lastUpdatedDate);
+
 }
