@@ -99,7 +99,7 @@ public class DeAccessionServiceUT extends BaseTestCase {
         deAccessionDBResponseEntity.setStatus(ReCAPConstants.FAILURE);
         deAccessionDBResponseEntity.setReasonForFailure(ReCAPConstants.ITEM_BARCDE_DOESNOT_EXIST);
 
-        List<ReportEntity> reportEntities = deAccessionService.processAndSave(Arrays.asList(deAccessionDBResponseEntity));
+        List<ReportEntity> reportEntities = deAccessionService.processAndSaveReportEntities(Arrays.asList(deAccessionDBResponseEntity));
         assertNotNull(reportEntities);
         assertTrue(reportEntities.size()==1);
         ReportEntity reportEntity = reportEntities.get(0);
