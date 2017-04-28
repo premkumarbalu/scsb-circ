@@ -61,6 +61,9 @@ public class SubmitCollectionService {
     private InstitutionDetailsRepository institutionDetailsRepository;
 
     @Autowired
+    private ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
+
+    @Autowired
     private MarcUtil marcUtil;
 
     @PersistenceContext
@@ -227,6 +230,20 @@ public class SubmitCollectionService {
         return savedBibliographicEntity;
     }
 
+    private void saveItemChangeLogEntity(String operationType, String message, List<ItemEntity> itemEntityList) {
+        List<ItemChangeLogEntity> itemChangeLogEntityList = new ArrayList<>();
+        for (ItemEntity itemEntity:itemEntityList) {
+            ItemChangeLogEntity itemChangeLogEntity = new ItemChangeLogEntity();
+            itemChangeLogEntity.setOperationType(ReCAPConstants.SUBMIT_COLLECTION);
+            itemChangeLogEntity.setUpdatedBy(operationType);
+            itemChangeLogEntity.setUpdatedDate(new Date());
+            itemChangeLogEntity.setRecordId(itemEntity.getItemId());
+            itemChangeLogEntity.setNotes(message);
+            itemChangeLogEntityList.add(itemChangeLogEntity);
+        }
+        itemChangeLogDetailsRepository.save(itemChangeLogEntityList);
+    }
+
     /**
      * Set submit collection rejection info.
      *
@@ -292,6 +309,7 @@ public class SubmitCollectionService {
         if(fetchBibliographicEntity != null ){//update exisiting complete record
             if(fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId())){
                 savedBibliographicEntity = updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
+                saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION,ReCAPConstants.SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE,bibliographicEntity.getItemEntities());
             } else {//update existing incomplete record if any
                 idMapToRemoveIndex.put(ReCAPConstants.BIB_ID,String.valueOf(fetchBibliographicEntity.getBibliographicId()));
                 idMapToRemoveIndex.put(ReCAPConstants.HOLDING_ID,String.valueOf(fetchBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId()));
@@ -299,6 +317,7 @@ public class SubmitCollectionService {
                 getBibliographicDetailsRepository().delete(fetchBibliographicEntity);
                 getBibliographicDetailsRepository().flush();
                 savedBibliographicEntity = getBibliographicDetailsRepository().saveAndFlush(bibliographicEntity);
+                saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION,ReCAPConstants.SUBMIT_COLLECTION_INCOMPLETE_RECORD_UPDATE,bibliographicEntity.getItemEntities());
                 entityManager.refresh(savedBibliographicEntity);
             }
         } else {//if no record found to update, generated exception info

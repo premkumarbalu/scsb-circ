@@ -317,6 +317,8 @@ public final class ReCAPConstants {
     public static final String KNOWN_HOST_FILE = "&knownHostsFile=";
     public static final String PROCESS_INPUT = "processInput";
     public static final String SUBMIT_COLLECTION_SFTP_OPTIONS = "&move=.done&delay=5s&localWorkDirectory=";
+    public static final String SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE = "Complete item record info updated through submit collection";
+    public static final String SUBMIT_COLLECTION_INCOMPLETE_RECORD_UPDATE = "Incomplete item record info updated through submit collection";
 
     public static final String PURGE_EDD_REQUEST = "noOfUpdatedRecordsForEddRequest";
     public static final String PURGE_PHYSICAL_REQUEST = "noOfUpdatedRecordsForPhysicalRequest";
