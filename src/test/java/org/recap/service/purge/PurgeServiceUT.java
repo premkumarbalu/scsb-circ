@@ -27,9 +27,9 @@ public class PurgeServiceUT extends BaseTestCase{
 
     @Test
     public void testPurgeExceptionRequests(){
-        String status = purgeService.purgeExceptionRequests();
-        assertNotNull(status);
-        assertEquals(status, ReCAPConstants.SUCCESS);
+        Map<String, String> responseMap = purgeService.purgeExceptionRequests();
+        assertNotNull(responseMap);
+        assertNotNull(responseMap.get(ReCAPConstants.STATUS));
     }
 
 }
