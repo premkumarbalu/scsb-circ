@@ -118,7 +118,7 @@ public class CancelItemController {
                 itemCanceHoldResponse.setSuccess(true);
                 itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_SUCCCESS);
                 logger.info("Send Mail");
-                sendEmail(requestItemEntity.getItemEntity().getCustomerCode(),requestItemEntity.getItemEntity().getBarcode(),requestItemEntity.getPatronId());
+                sendEmail(requestItemEntity.getItemEntity().getCustomerCode(), requestItemEntity.getItemEntity().getBarcode(), requestItemEntity.getPatronId());
                 logger.info("Send Mail Done");
             } else {
                 itemCanceHoldResponse.setSuccess(false);
@@ -166,7 +166,7 @@ public class CancelItemController {
         itemRequestService.saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS, ReCAPConstants.REQUEST_STATUS_CANCELED + savedRequestItemEntity.getItemId());
         itemCanceHoldResponse.setSuccess(true);
         itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_EDD_SUCCCESS);
-        sendEmail(requestItemEntity.getItemEntity().getCustomerCode(),requestItemEntity.getItemEntity().getBarcode(),requestItemEntity.getPatronId());
+        sendEmail(requestItemEntity.getItemEntity().getCustomerCode(), requestItemEntity.getItemEntity().getBarcode(), requestItemEntity.getPatronId());
         return itemCanceHoldResponse;
     }
 
@@ -179,14 +179,7 @@ public class CancelItemController {
     }
 
     private void sendEmail(String customerCode, String itemBarcode, String patronBarcode) {
-        logger.info("Check GFA Status");
-        if (itemRequestService.getGfaService().getGFAStatus(itemBarcode)) {
-            logger.info("Check GFA Status In");
-            itemRequestService.getEmailService().sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_CANCELLED_NO_REFILED, patronBarcode, ReCAPConstants.GFA);
-        } else {
-            logger.info("Check GFA Status Out");
-            itemRequestService.getEmailService().sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_CANCELLED_REFILE_REQUIRED, patronBarcode, ReCAPConstants.GFA);
-        }
+        itemRequestService.getEmailService().sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_CANCELLED_NO_REFILED, patronBarcode, ReCAPConstants.GFA,ReCAPConstants.REQUEST_CANCELLED_SUBJECT);
     }
 
 }

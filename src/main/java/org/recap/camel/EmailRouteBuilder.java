@@ -42,7 +42,7 @@ public class EmailRouteBuilder {
             context.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    loadEmailBodyTemplate();
+                    loadEmailTemplateCancelRequest();
                     loadEmailPassword();
                     loadEmailBodyTemplateForNoData();
 
@@ -59,7 +59,7 @@ public class EmailRouteBuilder {
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
                                     .log("email body for data available")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
-                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.SUBMIT_COLLECTION))
+                                        .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.SUBMIT_COLLECTION))
                                     .setHeader("subject", simple("${header.emailPayLoad.subject}"))
                                     .setBody(simple(emailBodyForSubmitCollection))
                                     .setHeader("from", simple(from))
@@ -69,8 +69,28 @@ public class EmailRouteBuilder {
                     ;
                 }
 
-                private void loadEmailBodyTemplate() {
-                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.REQUEST_RECALL_EMAIL_TEMPLATE);
+                private void loadEmailTemplateCancelRequest() {
+                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.REQUEST_CANCEL_EMAIL_TEMPLATE);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    StringBuilder out = new StringBuilder();
+                    String line;
+                    try {
+                        while ((line = reader.readLine()) != null) {
+                            if (line.isEmpty()) {
+                                out.append("\n");
+                            } else {
+                                out.append(line);
+                                out.append("\n");
+                            }
+                        }
+                    } catch (IOException e) {
+                        logger.error(ReCAPConstants.LOG_ERROR,e);
+                    }
+                    emailBody = out.toString();
+                }
+
+                private void loadEmailBody() {
+                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.REQUEST_CANCEL_EMAIL_TEMPLATE);
                     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                     StringBuilder out = new StringBuilder();
                     String line;

@@ -37,14 +37,14 @@ public class EmailService {
      * @param patronBarcode  the patron barcode
      * @param toInstitution  the to institution
      */
-    public void sendEmail(String customerCode, String itemBarcode, String messageDisplay, String patronBarcode, String toInstitution) {
+    public void sendEmail(String customerCode, String itemBarcode, String messageDisplay, String patronBarcode, String toInstitution,String subject) {
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setTo(emailIdTo(toInstitution));
         emailPayLoad.setCustomerCode(customerCode);
         emailPayLoad.setItemBarcode(itemBarcode);
         emailPayLoad.setMessageDisplay(messageDisplay);
         emailPayLoad.setPatronBarcode(patronBarcode);
-        emailPayLoad.setSubject(ReCAPConstants.CANCEL_REQUEST_PROCESSED_SCSB +itemBarcode);
+        emailPayLoad.setSubject(subject +itemBarcode);
         producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, emailPayLoad, ReCAPConstants.REQUEST_RECALL_EMAILBODY_FOR, ReCAPConstants.REQUEST_RECALL_MAIL_QUEUE);
     }
 
