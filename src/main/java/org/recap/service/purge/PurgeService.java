@@ -57,7 +57,7 @@ public class PurgeService {
     public Map<String, String> purgeExceptionRequests() {
         Map<String, String> responseMap = new HashMap<>();
         try {
-            Integer countOfPurgedExceptionRequests = requestItemDetailsRepository.deleteByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION, new Date(), purgeExceptionRequestDayLimit);
+            Integer countOfPurgedExceptionRequests = requestItemDetailsRepository.purgeExceptionRequests(ReCAPConstants.REQUEST_STATUS_EXCEPTION, new Date(), purgeExceptionRequestDayLimit);
             logger.info("Total number of exception requests purged : {}", countOfPurgedExceptionRequests);
             responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.SUCCESS);
             responseMap.put(ReCAPConstants.COUNT_OF_PURGED_EXCEPTION_REQUESTS, String.valueOf(countOfPurgedExceptionRequests));
