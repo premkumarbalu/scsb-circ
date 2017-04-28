@@ -1,7 +1,5 @@
-The following item request has been cancelled.
+The following item request has been ${header.emailPayLoad.messageDisplay}.
 
 Item Barcode 	: ${header.emailPayLoad.itemBarcode}
 Customer Code   : ${header.emailPayLoad.customerCode}
 Patron Barcode 	: ${header.emailPayLoad.patronBarcode}
-
-${header.emailPayLoad.messageDisplay}

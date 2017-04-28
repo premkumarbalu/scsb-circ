@@ -46,7 +46,7 @@ public final class ReCAPConstants {
     // Email
     public static final String REQUEST_RECALL_EMAILBODY_FOR = "emailBodyFor";
     public static final String REQUEST_RECALL_MAIL_QUEUE = "requestRecallMailSendQueue";
-    public static final String REQUEST_RECALL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
+    public static final String REQUEST_CANCEL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
 
     // Retrieval,EDD, Hold, Recall, Borrow Direct
     public static final String REQUEST_TYPE_RETRIEVAL = "RETRIEVAL";
@@ -201,7 +201,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_STATUS_CANCELED = "CANCELED";
     public static final String REQUEST_STATUS_EXCEPTION = "EXCEPTION";
     public static final String REQUEST_STATUS_PENDING = "PENDING";
-
+    public static final String REQUEST_STATUS_PROCESSING = "PROCESSING";
 
     public static final String NYPL_SOURCE_NYPL = "nypl-sierra";
     public static final String NYPL_SOURCE_PUL = "recap-PUL";
@@ -260,9 +260,12 @@ public final class ReCAPConstants {
     public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Retrieval order successfully created in LAS.";
     public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "Item not available in LAS";
     public static final String GFA_ITEM_STATUS_CHECK_FAILED = "Item status check failed to return valid response.";
-    public static final String REQUEST_CANCELLED_NO_REFILED = "SCSB doesn't expect a re-file to happen on this item.";
-    public static final String REQUEST_CANCELLED_REFILE_REQUIRED = "SCSB expects a re-file to happen on this item. Only on re-file will the item status in SCSB be updated.";
-    public static final String CANCEL_REQUEST_PROCESSED_SCSB = "Cancel Request - ";
+    public static final String REQUEST_CANCELLED_NO_REFILED = "canceled";
+    public static final String REQUEST_CANCELLED_SUBJECT = "Cancel Request - ";
+
+    public static final String REQUEST_RECALL_TO_BORRWER = "recalled";
+    public static final String REQUEST_RECALL_SUBJECT = "Recall - ";
+
     public static final String SUBMIT_COLLECTION_FAILURE_REPORT = "SubmitCollection_Failure_Report";
 
 

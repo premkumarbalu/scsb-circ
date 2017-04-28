@@ -36,6 +36,8 @@ public class ItemRequestInformation {
     private String volume;
     private String itemAuthor;
     private String itemVolume;
+    private Integer requestId;
+
 
     /**
      * Gets bib id.
@@ -449,6 +451,24 @@ public class ItemRequestInformation {
      */
     public void setItemVolume(String itemVolume) {
         this.itemVolume = itemVolume;
+    }
+
+    /**
+     * Sets Request Id
+     *
+     * @return
+     */
+    public Integer getRequestId() {
+        return requestId;
+    }
+
+    /**
+     * Gets Request Id
+     *
+     * @param requestId
+     */
+    public void setRequestId(Integer requestId) {
+        this.requestId = requestId;
     }
 
     /**

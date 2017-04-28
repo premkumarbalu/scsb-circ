@@ -67,19 +67,26 @@ public class ItemRequestDBService {
             InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode(itemRequestInformation.getRequestingInstitution());
             RequestTypeEntity requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemRequestInformation.getRequestType());
             //Request Item
-            requestItemEntity.setItemId(itemEntity.getItemId());
-            requestItemEntity.setRequestingInstitutionId(institutionEntity.getInstitutionId());
-            requestItemEntity.setRequestTypeId(requestTypeEntity.getRequestTypeId());
-            requestItemEntity.setRequestExpirationDate(getExpirationDate(itemRequestInformation.getExpirationDate(), itemRequestInformation.getRequestingInstitution()));
-            requestItemEntity.setCreatedBy(getUser(itemRequestInformation.getUsername()));
-            requestItemEntity.setCreatedDate(new Date());
-            requestItemEntity.setLastUpdatedDate(new Date());
-            requestItemEntity.setPatronId(itemRequestInformation.getPatronBarcode());
-            requestItemEntity.setStopCode(itemRequestInformation.getDeliveryLocation());
-            requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-            requestItemEntity.setEmailId(itemRequestInformation.getEmailAddress());
-            requestItemEntity.setNotes(itemRequestInformation.getRequestNotes());
-
+            if (itemRequestInformation.getRequestId() != null && itemRequestInformation.getRequestId() > 0) {
+                requestItemEntity = requestItemDetailsRepository.findByRequestId(itemRequestInformation.getRequestId());
+                requestItemEntity.setRequestExpirationDate(getExpirationDate(itemRequestInformation.getExpirationDate(), itemRequestInformation.getRequestingInstitution()));
+                requestItemEntity.setLastUpdatedDate(new Date());
+                requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+                requestItemEntity.setNotes(itemRequestInformation.getRequestNotes());
+            } else {
+                requestItemEntity.setItemId(itemEntity.getItemId());
+                requestItemEntity.setRequestingInstitutionId(institutionEntity.getInstitutionId());
+                requestItemEntity.setRequestTypeId(requestTypeEntity.getRequestTypeId());
+                requestItemEntity.setRequestExpirationDate(getExpirationDate(itemRequestInformation.getExpirationDate(), itemRequestInformation.getRequestingInstitution()));
+                requestItemEntity.setCreatedBy(getUser(itemRequestInformation.getUsername()));
+                requestItemEntity.setCreatedDate(new Date());
+                requestItemEntity.setLastUpdatedDate(new Date());
+                requestItemEntity.setPatronId(itemRequestInformation.getPatronBarcode());
+                requestItemEntity.setStopCode(itemRequestInformation.getDeliveryLocation());
+                requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+                requestItemEntity.setEmailId(itemRequestInformation.getEmailAddress());
+                requestItemEntity.setNotes(itemRequestInformation.getRequestNotes());
+            }
             savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
             if (savedItemRequest != null) {
                 requestId = savedItemRequest.getRequestId();
@@ -104,13 +111,27 @@ public class ItemRequestDBService {
 
         RequestItemEntity requestItemEntity;
         RequestItemEntity savedItemRequest;
+        RequestStatusEntity requestStatusEntity=null;
         Integer requestId = 0;
         try {
-            RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
+            if (!itemInformationResponse.isSuccess()) {
+                requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
+            }else {
+                if (itemInformationResponse.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)){
+                    requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+                }else if (itemInformationResponse.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)){
+                    requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EDD);
+                }else if (itemInformationResponse.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)){
+                    requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RECALLED);
+                }
+            }
+
             if (itemInformationResponse.getRequestId() != null && itemInformationResponse.getRequestId() > 0) {
                 requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
                 requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+                requestItemEntity.setRequestExpirationDate(getExpirationDate(itemInformationResponse.getExpirationDate(), itemInformationResponse.getRequestingInstitution()));
                 requestItemEntity.setNotes(itemInformationResponse.getRequestNotes());
+                requestItemEntity.setLastUpdatedDate(new Date());
             } else {
                 requestItemEntity = new RequestItemEntity();
                 RequestTypeEntity requestTypeEntity = requestTypeDetailsRepository.findByrequestTypeCode(itemInformationResponse.getRequestType());

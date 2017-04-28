@@ -189,6 +189,8 @@ public class ItemRequestService {
                 itemResponseInformation.setItemId(itemEntity.getItemId());
                 // Change Item Availablity
                 updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
+                Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
+                itemRequestInfo.setRequestId(requestId);
                 // Process
                 itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity);
             } else {
@@ -227,6 +229,8 @@ public class ItemRequestService {
                 itemRequestInfo.setBibId(itemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
                 itemResponseInformation.setItemId(itemEntity.getItemId());
+                Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
+                itemRequestInfo.setRequestId(requestId);
                 itemResponseInformation = checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity);
             } else {
                 itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
@@ -373,6 +377,7 @@ public class ItemRequestService {
 
     private ItemInformationResponse setItemResponseInformation(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInfo) {
         ItemInformationResponse itemResponseInformation = itemResponseInfo;
+        itemResponseInformation.setRequestId(itemRequestInfo.getRequestId());
         itemResponseInformation.setDueDate(itemRequestInfo.getExpirationDate());
         itemResponseInformation.setBibID(itemRequestInfo.getBibId());
         itemResponseInformation.setItemOwningInstitution(itemRequestInfo.getItemOwningInstitution());
@@ -384,6 +389,7 @@ public class ItemRequestService {
         itemResponseInformation.setRequestNotes(getNotes(itemResponseInformation.isSuccess(), itemResponseInformation.getScreenMessage(), itemRequestInfo.getRequestNotes()));
         itemResponseInformation.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
         itemResponseInformation.setTitleIdentifier(itemRequestInfo.getTitleIdentifier());
+        itemResponseInformation.setExpirationDate(itemRequestInfo.getExpirationDate());
         itemResponseInformation.setUsername(itemRequestInfo.getUsername());
         return itemResponseInformation;
     }
@@ -539,11 +545,11 @@ public class ItemRequestService {
     }
 
     private ItemInformationResponse updateScsbAndGfa(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
-        Integer requestId;
+        Integer requestId=0;
         if (getGfaService().isUseQueueLasCall()) {
             requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
         } else {
-            requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+//            requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
         }
         itemResponseInformation.setRequestId(requestId);
         itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);
@@ -559,16 +565,17 @@ public class ItemRequestService {
         String messagePublish;
         boolean bsuccess;
         RequestItemEntity requestItemEntity = getRequestItemDetailsRepository().findByItemBarcodeAndRequestStaCode(itemRequestInfo.getItemBarcodes().get(0), ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+        logger.info("Owning     Inst = "+requestItemEntity.getInstitutionEntity().getInstitutionCode());
+        logger.info("Borrowed   Inst = "+requestItemEntity.getRequestingInstitutionId());
+        logger.info("Requesting   Inst = "+itemRequestInfo.getRequestingInstitution());
         ItemInformationResponse itemInformation = (ItemInformationResponse) getRequestItemController().itemInformation(itemRequestInfo, requestItemEntity.getInstitutionEntity().getInstitutionCode());
         if (itemInformation.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_CHARGED)) {
             if (requestItemEntity.getInstitutionEntity().getInstitutionCode().equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
                 ItemRecallResponse itemRecallResponse = (ItemRecallResponse) getRequestItemController().recallItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
                 if (itemRecallResponse.isSuccess()) {
                     // Update Recap DB
-                    itemResponseInformation.setExpirationDate(itemRecallResponse.getExpirationDate());
                     itemRequestInfo.setExpirationDate(itemRecallResponse.getExpirationDate());
-                    Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
-                    itemResponseInformation.setRequestId(requestId);
+                    sendEmail(requestItemEntity.getItemEntity().getCustomerCode(),itemRequestInfo.getItemBarcodes().get(0),itemRequestInfo.getPatronBarcode());
                     messagePublish = ReCAPConstants.SUCCESSFULLY_PROCESSED_REQUEST_ITEM;
                     bsuccess = true;
                 } else {
@@ -578,12 +585,13 @@ public class ItemRequestService {
             } else {
                 ItemHoldResponse itemHoldResponse = (ItemHoldResponse) getRequestItemController().holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                 if (itemHoldResponse.isSuccess()) { // IF Hold command is successfully
-                    itemResponseInformation.setExpirationDate(itemHoldResponse.getExpirationDate());
                     itemRequestInfo.setExpirationDate(itemHoldResponse.getExpirationDate());
+                    String requestingPatron = itemRequestInfo.getPatronBarcode();
+                    itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(),requestItemEntity.getInstitutionEntity().getInstitutionCode()));
                     ItemRecallResponse itemRecallResponse = (ItemRecallResponse) getRequestItemController().recallItem(itemRequestInfo, requestItemEntity.getInstitutionEntity().getInstitutionCode());
+                    itemRequestInfo.setPatronBarcode(requestingPatron);
                     if (itemRecallResponse.isSuccess()) {
-                        Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_RECALLED);
-                        itemResponseInformation.setRequestId(requestId);
+                        sendEmail(requestItemEntity.getItemEntity().getCustomerCode(),itemRequestInfo.getItemBarcodes().get(0),itemRequestInfo.getPatronBarcode());
                         messagePublish = ReCAPConstants.SUCCESSFULLY_PROCESSED_REQUEST_ITEM;
                         bsuccess = true;
                     } else {
@@ -782,5 +790,9 @@ public class ItemRequestService {
 
     private static String removeDiacritical(String text) {
         return text == null ? null : Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+    }
+
+    private void sendEmail(String customerCode, String itemBarcode, String patronBarcode) {
+        getEmailService().sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_RECALL_TO_BORRWER, patronBarcode, ReCAPConstants.GFA,ReCAPConstants.REQUEST_RECALL_SUBJECT);
     }
 }

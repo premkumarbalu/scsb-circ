@@ -330,9 +330,7 @@ public class RequestItemQueueConsumer {
                 intRecordId = itemInformationResponse.getRequestId();
             }
             itemRequestService.saveItemChangeLogEntity(intRecordId, itemRequestService.getUser(itemInformationResponse.getUsername()), operationType, body);
-            if (!itemInformationResponse.isSuccess()) {
-                itemRequestService.updateRecapRequestItem(itemInformationResponse);
-            }
+            itemRequestService.updateRecapRequestItem(itemInformationResponse);
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }

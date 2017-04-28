@@ -15,9 +15,9 @@ public class EmailServiceUT extends BaseTestCase {
 
     @Test
     public void testRecalEmail() {
-        emailService.sendEmail(ReCAPConstants.NYPL, "NYPLTST67891", "A history of the Burmah Oil Company", "NoPatron", ReCAPConstants.NYPL);
-        emailService.sendEmail(ReCAPConstants.COLUMBIA, "CULTST42345", "Changing contours of Asian agriculture", "RECAPTST01", ReCAPConstants.COLUMBIA);
-        emailService.sendEmail(ReCAPConstants.PRINCETON, "PULTST54323", "1863 laws of war", "45678912", ReCAPConstants.PRINCETON);
-        emailService.sendEmail(ReCAPConstants.PRINCETON, "PULTST54323", "Message", "45678912", ReCAPConstants.GFA);
+        emailService.sendEmail(ReCAPConstants.NYPL, "NYPLTST67891", "A history of the Burmah Oil Company", "NoPatron", ReCAPConstants.NYPL,"");
+        emailService.sendEmail(ReCAPConstants.COLUMBIA, "CULTST42345", "Changing contours of Asian agriculture", "RECAPTST01", ReCAPConstants.COLUMBIA,"");
+        emailService.sendEmail(ReCAPConstants.PRINCETON, "PULTST54323", "1863 laws of war", "45678912", ReCAPConstants.PRINCETON,"");
+        emailService.sendEmail(ReCAPConstants.PRINCETON, "PULTST54323", "Message", "45678912", ReCAPConstants.GFA,"");
     }
 }

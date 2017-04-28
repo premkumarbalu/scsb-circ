@@ -558,7 +558,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                     } else {
                         logger.info("Invalid Patron");
                         itemRecallResponse.setScreenMessage("Invalid Patron");
-                        itemRecallResponse.setSuccess(true);
+                        itemRecallResponse.setSuccess(false);
                     }
                 } else {
                     logger.info("Login Failed");
