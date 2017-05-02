@@ -73,8 +73,8 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
 
     @Transactional
     @Modifying(clearAutomatically = true)
-    @Query(value = "DELETE from recap.request_item_t where REQUEST_STATUS_ID = ?1", nativeQuery = true)
-    void deleteByRequestStatusId(@Param("requestStatusId") Integer requestStatusId);
+    @Query(value = "DELETE requestItem from recap.request_item_t requestItem inner join recap.request_item_status_t requestItemStatus where requestItemStatus.REQUEST_STATUS_CODE = ?1 AND DATEDIFF(?2,requestItem.CREATED_DATE)=?3", nativeQuery = true)
+    int purgeExceptionRequests(@Param("requestStatusCode") String requestStatusCode, @Param("createdDate") Date createdDate, @Param("dateDifference") Integer dateDifference);
 
 
 

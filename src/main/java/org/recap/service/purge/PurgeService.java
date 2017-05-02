@@ -1,11 +1,11 @@
 package org.recap.service.purge;
 
 import org.recap.ReCAPConstants;
-import org.recap.model.RequestStatusEntity;
 import org.recap.model.RequestTypeEntity;
 import org.recap.repository.RequestItemDetailsRepository;
-import org.recap.repository.RequestItemStatusDetailsRepository;
 import org.recap.repository.RequestTypeDetailsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,17 +18,19 @@ import java.util.*;
 @Service
 public class PurgeService {
 
+    private static final Logger logger = LoggerFactory.getLogger(PurgeService.class);
+
     @Value("${purge.email.address.edd.request.day.limit}")
     private Integer purgeEmailEddRequestDayLimit;
 
     @Value("${purge.email.address.physical.request.day.limit}")
     private Integer purgeEmailPhysicalRequestDayLimit;
 
-    @Autowired
-    private RequestItemDetailsRepository requestItemDetailsRepository;
+    @Value("${purge.exception.request.day.limit}")
+    private Integer purgeExceptionRequestDayLimit;
 
     @Autowired
-    private RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
+    private RequestItemDetailsRepository requestItemDetailsRepository;
 
     @Autowired
     private RequestTypeDetailsRepository requestTypeDetailsRepository;
@@ -52,9 +54,18 @@ public class PurgeService {
         return responseMap;
     }
 
-    public String purgeExceptionRequests() {
-        RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
-        requestItemDetailsRepository.deleteByRequestStatusId(requestStatusEntity.getRequestStatusId());
-        return ReCAPConstants.SUCCESS;
+    public Map<String, String> purgeExceptionRequests() {
+        Map<String, String> responseMap = new HashMap<>();
+        try {
+            Integer countOfPurgedExceptionRequests = requestItemDetailsRepository.purgeExceptionRequests(ReCAPConstants.REQUEST_STATUS_EXCEPTION, new Date(), purgeExceptionRequestDayLimit);
+            logger.info("Total number of exception requests purged : {}", countOfPurgedExceptionRequests);
+            responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.SUCCESS);
+            responseMap.put(ReCAPConstants.COUNT_OF_PURGED_EXCEPTION_REQUESTS, String.valueOf(countOfPurgedExceptionRequests));
+        } catch (Exception exception) {
+            logger.error(ReCAPConstants.LOG_ERROR, exception);
+            responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.FAILURE);
+            responseMap.put(ReCAPConstants.MESSAGE, exception.getMessage());
+        }
+        return responseMap;
     }
 }

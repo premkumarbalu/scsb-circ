@@ -26,7 +26,7 @@ public class PurgeController {
 
     @RequestMapping(value = "/purgeExceptionRequests", method = RequestMethod.GET)
     public ResponseEntity purgeExceptionRequests(){
-        String status = purgeService.purgeExceptionRequests();
-        return new ResponseEntity(status, HttpStatus.OK);
+        Map<String, String> responseMap = purgeService.purgeExceptionRequests();
+        return new ResponseEntity(responseMap, HttpStatus.OK);
     }
 }

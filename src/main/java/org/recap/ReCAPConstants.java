@@ -331,6 +331,8 @@ public final class ReCAPConstants {
     public static final String DEACCESSION_ROLLBACK = "Deaccession Rollback";
     public static final String DEACCESSION_ROLLBACK_NOTES = " Hence, the transaction of deaccessioning item is rolled back.";
 
+    public static final String COUNT_OF_PURGED_EXCEPTION_REQUESTS = "countOfPurgedExceptionRequests";
+
 
     private ReCAPConstants() {}
 
