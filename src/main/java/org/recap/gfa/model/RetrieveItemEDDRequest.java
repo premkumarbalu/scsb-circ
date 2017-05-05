@@ -7,14 +7,14 @@ import java.util.List;
  */
 public class RetrieveItemEDDRequest {
 
-    private List<TtitemEDDRequest> ttitem;
+    private List<TtitemEDDResponse> ttitem;
 
     /**
      * Gets ttitem.
      *
      * @return the ttitem
      */
-    public List<TtitemEDDRequest> getTtitem() {
+    public List<TtitemEDDResponse> getTtitem() {
         return ttitem;
     }
 
@@ -23,7 +23,7 @@ public class RetrieveItemEDDRequest {
      *
      * @param ttitem the ttitem
      */
-    public void setTtitem(List<TtitemEDDRequest> ttitem) {
+    public void setTtitem(List<TtitemEDDResponse> ttitem) {
         this.ttitem = ttitem;
     }
 }

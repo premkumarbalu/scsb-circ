@@ -34,15 +34,16 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.REQUEST_ITEM_QUEUE)
                         .routeId(ReCAPConstants.REQUEST_ITEM_QUEUE_ROUTEID)
+                        .threads(10,20)
                         .choice()
-                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RETRIEVAL))
-                        .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemOnMessage")
-                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_EDD))
-                        .bean(new RequestItemQueueConsumer(itemEDDRequestService), "requestItemEDDOnMessage")
-                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT))
-                        .bean(new RequestItemQueueConsumer(itemRequestService, itemEDDRequestService), "requestItemBorrowDirectOnMessage")
-                        .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RECALL))
-                        .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemRecallOnMessage");
+                            .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RETRIEVAL))
+                                .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemOnMessage")
+                            .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_EDD))
+                                .bean(new RequestItemQueueConsumer(itemEDDRequestService), "requestItemEDDOnMessage")
+                            .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_BORROW_DIRECT))
+                                .bean(new RequestItemQueueConsumer(itemRequestService, itemEDDRequestService), "requestItemBorrowDirectOnMessage")
+                            .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_RECALL))
+                                .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemRecallOnMessage");
                 }
             });
 

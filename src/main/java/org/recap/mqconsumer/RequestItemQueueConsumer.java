@@ -300,6 +300,7 @@ public class RequestItemQueueConsumer {
      */
     public void lasResponseEDDOnMessage(@Body String body) {
         getLogger().info(body);
+        getItemRequestService().processLASEddRetrieveResponse(body);
     }
 
     /**

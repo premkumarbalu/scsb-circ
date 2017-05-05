@@ -129,7 +129,7 @@ public class RequestItemController {
                     itemRequestInformation.getItemOwningInstitution(),
                     itemRequestInformation.getExpirationDate(),
                     itemRequestInformation.getBibId(),
-                    getpickupLoacation(callInstitition),
+                    getPickupLocationDB(itemRequestInformation,callInstitition),
                     itemRequestInformation.getTrackingId(),
                     itemRequestInformation.getTitleIdentifier(),
                     itemRequestInformation.getAuthor(),
@@ -162,7 +162,7 @@ public class RequestItemController {
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                getpickupLoacation(callInstitition), itemRequestInformation.getTrackingId());
+                getPickupLocationDB(itemRequestInformation,callInstitition), itemRequestInformation.getTrackingId());
         return itemHoldCancelResponse;
     }
 
@@ -228,8 +228,7 @@ public class RequestItemController {
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                getpickupLoacation(callInstitition));
-
+                getPickupLocationDB(itemRequestInformation,callInstitition));
         return itemRecallResponse;
     }
 
@@ -315,5 +314,9 @@ public class RequestItemController {
             inst = callingInst;
         }
         return inst;
+    }
+
+    private String getPickupLocationDB(ItemRequestInformation itemRequestInformation, String callInstitition){
+        return (StringUtils.isBlank(itemRequestInformation.getPickupLocation())) ? getpickupLoacation(callInstitition) : itemRequestInformation.getPickupLocation();
     }
 }
