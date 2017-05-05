@@ -317,7 +317,6 @@ public class RequestItemController {
     }
 
     private String getPickupLocationDB(ItemRequestInformation itemRequestInformation, String callInstitition){
-//        return getpickupLoacation(callInstitition);
         return (StringUtils.isBlank(itemRequestInformation.getPickupLocation())) ? getpickupLoacation(callInstitition) : itemRequestInformation.getPickupLocation();
     }
 }
