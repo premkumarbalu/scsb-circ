@@ -48,6 +48,8 @@ public class ItemRequestDBService {
     @Autowired
     private RequestTypeDetailsRepository requestTypeDetailsRepository;
 
+    @Autowired
+    private CustomerCodeDetailsRepository customerCodeDetailsRepository;
 
     /**
      * Update recap request item integer.
@@ -173,15 +175,21 @@ public class ItemRequestDBService {
      * @return the item information response
      */
     public ItemInformationResponse updateRecapRequestStatus(ItemInformationResponse itemInformationResponse) {
-        RequestStatusEntity requestStatusEntity;
+        RequestStatusEntity requestStatusEntity=null;
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
-        if (itemInformationResponse.isSuccess()) {
-            requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_PENDING);
-        } else {
-            requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
+        if(requestItemEntity != null) {
+            if (itemInformationResponse.isSuccess()) {
+                if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
+                    requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+                } else if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
+                    requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EDD);
+                }
+            } else {
+                requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
+            }
+            requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+            requestItemDetailsRepository.save(requestItemEntity);
         }
-        requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-        requestItemDetailsRepository.save(requestItemEntity);
         return itemInformationResponse;
     }
 
@@ -271,13 +279,15 @@ public class ItemRequestDBService {
     public ItemRequestInformation rollbackAfterGFA(ItemInformationResponse itemInformationResponse) {
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
-        rollbackUpdateItemAvailabilutyStatus(requestItemEntity.getItemEntity(), ReCAPConstants.GUEST_USER);
-        saveItemChangeLogEntity(itemInformationResponse.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_GFA_FAILURE, ReCAPConstants.GFA_ITEM_STATUS_CHECK_FAILED);
-        itemRequestInformation.setBibId(requestItemEntity.getItemEntity().getBibliographicEntities().get(0).getOwningInstitutionBibId());
-        itemRequestInformation.setPatronBarcode(requestItemEntity.getPatronId());
-        itemRequestInformation.setItemBarcodes(Arrays.asList(requestItemEntity.getItemEntity().getBarcode()));
-
-
+        if(requestItemEntity != null) {
+            CustomerCodeEntity customerCodeEntity= customerCodeDetailsRepository.findByCustomerCode(requestItemEntity.getItemEntity().getCustomerCode());
+            rollbackUpdateItemAvailabilutyStatus(requestItemEntity.getItemEntity(), ReCAPConstants.GUEST_USER);
+            saveItemChangeLogEntity(itemInformationResponse.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_GFA_FAILURE, ReCAPConstants.GFA_ITEM_STATUS_CHECK_FAILED);
+            itemRequestInformation.setBibId(requestItemEntity.getItemEntity().getBibliographicEntities().get(0).getOwningInstitutionBibId());
+            itemRequestInformation.setPatronBarcode(requestItemEntity.getPatronId());
+            itemRequestInformation.setItemBarcodes(Arrays.asList(requestItemEntity.getItemEntity().getBarcode()));
+            itemRequestInformation.setPickupLocation(customerCodeEntity.getPickupLocation());
+        }
         return itemRequestInformation;
     }
 

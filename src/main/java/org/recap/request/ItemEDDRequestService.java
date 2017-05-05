@@ -82,7 +82,7 @@ public class ItemEDDRequestService {
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
         ItemInformationResponse itemResponseInformation = getItemInformationResponse();
-        Integer requestId;
+        Integer requestId=0;
         String userNotes = "";
         try {
             itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
@@ -106,8 +106,6 @@ public class ItemEDDRequestService {
 
                 if (getItemRequestService().getGfaService().isUseQueueLasCall()) {
                     requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
-                } else {
-                    requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_EDD);
                 }
                 itemResponseInformation.setRequestId(requestId);
                 itemRequestInfo.setRequestNotes(userNotes);

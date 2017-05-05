@@ -37,7 +37,7 @@ public class ItemRequestInformation {
     private String itemAuthor;
     private String itemVolume;
     private Integer requestId;
-
+    private String pickupLocation;
 
     /**
      * Gets bib id.
@@ -485,5 +485,13 @@ public class ItemRequestInformation {
             bSuccess = false;
         }
         return bSuccess;
+    }
+
+    public String getPickupLocation() {
+        return pickupLocation;
+    }
+
+    public void setPickupLocation(String pickupLocation) {
+        this.pickupLocation = pickupLocation;
     }
 }

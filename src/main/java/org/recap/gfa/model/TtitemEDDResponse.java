@@ -3,10 +3,10 @@ package org.recap.gfa.model;
 /**
  * Created by sudhishk on 27/1/17.
  */
-public class TtitemEDDRequest {
+public class TtitemEDDResponse {
     private String itemBarcode;
     private String customerCode;
-    private String requestId;
+    private Integer requestId;
     private String requestor;
 
     private String requestorFirstName;
@@ -503,23 +503,6 @@ public class TtitemEDDRequest {
         this.requestTime = requestTime;
     }
 
-    /**
-     * Gets request id.
-     *
-     * @return the request id
-     */
-    public String getRequestId() {
-        return requestId;
-    }
-
-    /**
-     * Sets request id.
-     *
-     * @param requestId the request id
-     */
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
 
     public String getErrorCode() {
         return errorCode;
@@ -535,5 +518,13 @@ public class TtitemEDDRequest {
 
     public void setErrorNote(String errorNote) {
         this.errorNote = errorNote;
+    }
+
+    public Integer getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(Integer requestId) {
+        this.requestId = requestId;
     }
 }

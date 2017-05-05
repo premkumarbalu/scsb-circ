@@ -58,7 +58,7 @@ public final class ReCAPConstants {
 
 
     // MQ URI
-    public static final String REQUEST_ITEM_QUEUE = "scsbactivemq:queue:RequestItemQ";
+    public static final String REQUEST_ITEM_QUEUE = "scsbactivemq:queue:RequestItemQ?concurrentConsumers=5";
     public static final String EMAIL_Q = "scsbactivemq:queue:CircEmailQ";
     public static final String SCSB_OUTGOING_QUEUE = "scsbactivemq:queue:scsbOutgoingQ";
     public static final String LAS_OUTGOING_QUEUE = "scsbactivemq:queue:lasOutgoingQ";

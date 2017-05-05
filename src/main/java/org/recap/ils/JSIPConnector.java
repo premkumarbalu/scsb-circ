@@ -318,10 +318,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         try {
             if (connection.connect()) { // Connect to the SIP Server - Princton, Voyager, ILS
-                /* Login to the ILS */
-                /* Create a login request */
                 SIP2LoginRequest login = new SIP2LoginRequest(getOperatorUserId(), getOperatorPassword(), getOperatorLocation());
-                /* Send the request */
                 SIP2LoginResponse loginResponse = (SIP2LoginResponse) connection.send(login);
 
                 /* Check the response*/
