@@ -249,6 +249,7 @@ public class RequestItemQueueConsumerUT extends BaseTestCase{
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         itemRequestInformation.setItemBarcodes(Arrays.asList("123"));
         String body = itemRequestInformation.toString();
+        Mockito.when(requestItemQueueConsumer.getItemRequestService()).thenReturn(itemRequestService);
         Mockito.when(requestItemQueueConsumer.getLogger()).thenReturn(logger);
         Mockito.doCallRealMethod().when(requestItemQueueConsumer).lasResponseEDDOnMessage(body);
         requestItemQueueConsumer.lasResponseEDDOnMessage(body);
