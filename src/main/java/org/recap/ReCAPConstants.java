@@ -47,6 +47,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_RECALL_EMAILBODY_FOR = "emailBodyFor";
     public static final String REQUEST_RECALL_MAIL_QUEUE = "requestRecallMailSendQueue";
     public static final String REQUEST_CANCEL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
+    public static final String REQUEST_LAS_STATUS_EMAIL_TEMPLATE = "request_las_status_email_body.vm";
 
     // Retrieval,EDD, Hold, Recall, Borrow Direct
     public static final String REQUEST_TYPE_RETRIEVAL = "RETRIEVAL";
@@ -246,6 +247,7 @@ public final class ReCAPConstants {
     protected static final List<String> GFA_STATUS_NOT_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_NOT_ON_FILE, GFA_STATUS_OUT_ON_RETRIVAL_WORK_ORDER, GFA_STATUS_PW_INDIRECT_WORK_ORDER, GFA_STATUS_PW_DIRECT_WORK_ORDER,
             GFA_STATUS_SCH_ON_RET_WORK_ORDER, GFA_STATUS_VER_ON_PW_INDIRECT_WORK_ORDER, GFA_STATUS_VER_ON_PW_DIRECT_WORK_ORDER, GFA_STATUS_VER_ON_RET_WORK_ORDER, GFA_STATUS_VER_ON_WORK_ORDER);
 
+
     protected static final List<String> REQUEST_TYPE_LIST = Arrays.asList(ReCAPConstants.RETRIEVAL, ReCAPConstants.REQUEST_TYPE_EDD, ReCAPConstants.BORROW_DIRECT, ReCAPConstants.REQUEST_TYPE_RECALL);
 
     public static final String SUCCESSFULLY_PROCESSED_REQUEST_ITEM = "Successfully Processed Request Item";
@@ -265,6 +267,10 @@ public final class ReCAPConstants {
 
     public static final String REQUEST_RECALL_TO_BORRWER = "recalled";
     public static final String REQUEST_RECALL_SUBJECT = "Recall - ";
+
+    public static final String REQUEST_REFILE_BODY = "The following item has been requested and was found to be under Refile in LAS.";
+    public static final String REQUEST_REFILE_SUBJECT = "Request for Item on Refile WO - ";
+
 
     public static final String SUBMIT_COLLECTION_FAILURE_REPORT = "SubmitCollection_Failure_Report";
 

@@ -275,7 +275,7 @@ public class ItemRequestService {
 
         for (RequestItemEntity requestItemEntity : requestEntities) {
             itemEntity = requestItemEntity.getItemEntity();
-            if (itemEntity.getItemAvailabilityStatusId().intValue() == 2) { // Only Item Not Availability Status is Processed
+            if (itemEntity.getItemAvailabilityStatusId().intValue() == 2) { // Only Item Not Availability, Status is Processed
                 itemBarcode = itemEntity.getBarcode();
                 RequestStatusEntity requestStatusEntity = getRequestItemStatusDetailsRepository().findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_REFILED);
                 if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
@@ -303,8 +303,7 @@ public class ItemRequestService {
                             rollbackUpdateItemAvailabilutyStatus(requestItemEntity.getItemEntity(), ReCAPConstants.GUEST_USER);
                             updateSolrIndex(requestItemEntity.getItemEntity());
                             bSuccess = true;
-                        } else {
-                            // Borrowing Inst not same as Owning, Change Retrieval Status to Refiled
+                        } else { // Borrowing Inst not same as Owning, Change Retrieval Status to Refiled
                             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
                             getRequestItemDetailsRepository().save(requestItemEntity);
                             RequestStatusEntity requestStatusRO = getRequestItemStatusDetailsRepository().findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
