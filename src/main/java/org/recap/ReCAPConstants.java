@@ -333,7 +333,6 @@ public final class ReCAPConstants {
 
     public static final String COUNT_OF_PURGED_EXCEPTION_REQUESTS = "countOfPurgedExceptionRequests";
 
-
     private ReCAPConstants() {}
 
     public static final List getGFAStatusAvailableList() {
@@ -347,5 +346,35 @@ public final class ReCAPConstants {
     public static final List getRequestTypeList() {
         return REQUEST_TYPE_LIST;
     }
+
+    //Daily Reconcilation
+    public static final String DAILY_RR_FTP_ROUTE_ID = "DailyReconcilationFtpRoute";
+    public static final String DAILY_RR_FS_ROUTE_ID = "DailyReconcilationFsRoute";
+    public static final String DAILY_RR_FTP_OPTIONS = "&move=.done&delay=5s";
+    public static final String DAILY_RR_FS_OPTIONS = "?delete=true";
+    public static final String DAILY_RR_FS_FILE = "file:";
+    public static final String DAILY_RR_LAS = "LAS";
+    public static final String DAILY_RR_SCSB = "SCSB";
+    public static final String DAILY_RR_COMPARISON = "Comparison";
+    public static final String DAILY_RR_FILE_DATE_FORMAT = "yyyyMMdd";
+    public static final String DAILY_RR = "DailyRR";
+    public static final String DATE_CELL_STYLE_FORMAT = "MM/dd/yyyy HH:mm:ss.S";
+    public static final String DAILY_RR_REQUEST_ID = "RequestId";
+    public static final String DAILY_RR_BARCODE = "Barcode";
+    public static final String DAILY_RR_CUSTOMER_CODE = "CustomerCode";
+    public static final String DAILY_RR_STOP_CODE = "StopCode";
+    public static final String DAILY_RR_PATRON_ID = "PatronId";
+    public static final String DAILY_RR_CREATED_DATE = "CreatedDate";
+    public static final String DAILY_RR_LAST_UPDATED_DATE = "LastUpdatedDate";
+    public static final String DAILY_RR_REQUESTING_INST = "RequestingInstitution";
+    public static final String DAILY_RR_OWNING_INSTITUTION = "OwningInstitution";
+    public static final String DAILY_RR_DELIVERY_METHOD = "DeliveryMethod";
+    public static final String DAILY_RR_STATUS = "Status";
+    public static final String DAILY_RR_EMAIL = "Email";
+    public static final String DAILY_RR_MATCHED = "Matched";
+    public static final String DAILY_RR_MISMATCH = "Mismatch";
+    public static final String DAILY_RR_LAS_NOT_GIVEN_STATUS = "LASNotGivenStatus";
+    public static final String DAILY_RR_SCSB_NOT_GIVEN_STATUS = "StatusNotFoundInScsb";
+    public static final String DAILY_RR_NOT_IN_SCSB = "NotInScsb";
 
 }
