@@ -54,6 +54,9 @@ public class GFAService {
     @Autowired
     private ProducerTemplate producer;
 
+    @Autowired
+    private EmailService emailService;
+
     /**
      * Gets gfa item status.
      *
@@ -293,7 +296,7 @@ public class GFAService {
 
         GFAItemStatusCheckResponse gfaItemStatusCheckResponse;
         String itemStatus;
-        String gfaOnlyStaus;
+        String gfaOnlyStatus;
 
         try {
             GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
@@ -308,13 +311,18 @@ public class GFAService {
 
                 itemStatus = gfaItemStatusCheckResponse.getDsitem().getTtitem().get(0).getItemStatus();
                 if (itemStatus.contains(":")) {
-                    gfaOnlyStaus = itemStatus.substring(0, itemStatus.indexOf(':') + 1).toUpperCase();
+                    gfaOnlyStatus = itemStatus.substring(0, itemStatus.indexOf(':') + 1).toUpperCase();
                 } else {
-                    gfaOnlyStaus = itemStatus.toUpperCase();
+                    gfaOnlyStatus = itemStatus.toUpperCase();
                 }
-                logger.info(gfaOnlyStaus);
 
-                if (ReCAPConstants.getGFAStatusAvailableList().contains(gfaOnlyStaus)) {
+                logger.info(gfaOnlyStatus);
+                // Send Email
+                if(gfaOnlyStatus.equalsIgnoreCase(ReCAPConstants.GFA_STATUS_OUT_ON_EDD_WORK_ORDER) || gfaOnlyStatus.equalsIgnoreCase(ReCAPConstants.GFA_STATUS_REFILE_ON_WORK_ORDER)){
+                    sendEmailLasStatus(itemRequestInfo.getCustomerCode(),itemRequestInfo.getItemBarcodes().get(0),itemRequestInfo.getPatronBarcode());
+                }
+                // Call Retrival Order
+                if (ReCAPConstants.getGFAStatusAvailableList().contains(gfaOnlyStatus)) {
                     if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
                         itemResponseInformation = callItemEDDRetrivate(itemRequestInfo, itemResponseInformation);
                     } else if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
@@ -435,7 +443,7 @@ public class GFAService {
         try {
             ttitem001.setCustomerCode(itemRequestInfo.getCustomerCode());
             ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
-            ttitem001.setRequestId(itemResponseInformation.getRequestId());
+            ttitem001.setRequestId(itemRequestInfo.getRequestId());
             ttitem001.setRequestor(itemResponseInformation.getPatronBarcode());
             ttitem001.setRequestorEmail(itemRequestInfo.getEmailAddress());
 
@@ -606,6 +614,10 @@ public class GFAService {
             logger.error("", e);
         }
         return strJson;
+    }
+
+    private void sendEmailLasStatus(String customerCode, String itemBarcode, String patronBarcode) {
+        emailService.sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_REFILE_BODY, patronBarcode, ReCAPConstants.GFA, ReCAPConstants.REQUEST_REFILE_SUBJECT);
     }
 
 }

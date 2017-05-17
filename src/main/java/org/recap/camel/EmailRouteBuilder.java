@@ -45,6 +45,7 @@ public class EmailRouteBuilder {
                     loadEmailTemplateCancelRequest();
                     loadEmailPassword();
                     loadEmailBodyTemplateForNoData();
+                    loadEmailLasStatus();
 
                     from(ReCAPConstants.EMAIL_Q)
                             .routeId(ReCAPConstants.EMAIL_ROUTE_ID)
@@ -89,8 +90,8 @@ public class EmailRouteBuilder {
                     emailBody = out.toString();
                 }
 
-                private void loadEmailBody() {
-                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.REQUEST_CANCEL_EMAIL_TEMPLATE);
+                private void loadEmailLasStatus() {
+                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.REQUEST_LAS_STATUS_EMAIL_TEMPLATE);
                     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                     StringBuilder out = new StringBuilder();
                     String line;
