@@ -34,6 +34,9 @@ public class RequestDataLoadService {
     @Autowired
     private RequestItemDetailsRepository requestItemDetailsRepository;
 
+    @Autowired
+    private ItemStatusDetailsRepository itemStatusDetailsRepository;
+
     public List<RequestDataLoadErrorCSVRecord> process(List<RequestDataLoadCSVRecord> requestDataLoadCSVRecords, Set<String> barcodeSet) throws ParseException {
         List<RequestItemEntity> requestItemEntityList = new ArrayList<>();
         List<RequestDataLoadErrorCSVRecord> requestDataLoadErrorCSVRecords = new ArrayList<>();
@@ -87,8 +90,13 @@ public class RequestDataLoadService {
     }
 
     private Map<String,Integer> getItemInfo(String barcode){
+        Integer itemAvailabilityStatusId = 0;
         Map<String,Integer> itemInfo = new HashMap<>();
-        ItemEntity itemEntity = itemDetailsRepository.findByBarcodeAndNotAvailable(barcode);
+        ItemStatusEntity itemStatusEntity = itemStatusDetailsRepository.findByStatusCode(ReCAPConstants.NOT_AVAILABLE);
+        if(itemStatusEntity != null){
+            itemAvailabilityStatusId = itemStatusEntity.getItemStatusId();
+        }
+        ItemEntity itemEntity = itemDetailsRepository.findByBarcodeAndNotAvailable(barcode,itemAvailabilityStatusId);
         if(itemEntity != null){
             itemInfo.put(ReCAPConstants.REQUEST_DATA_LOAD_ITEM_ID , itemEntity.getItemId());
             itemInfo.put(ReCAPConstants.REQUEST_DATA_LOAD_REQUESTING_INST_ID , itemEntity.getOwningInstitutionId());
