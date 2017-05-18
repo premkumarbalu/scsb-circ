@@ -125,4 +125,7 @@ public interface ItemDetailsRepository extends PagingAndSortingRepository<ItemEn
     @Query("UPDATE ItemEntity item SET item.isDeleted = false, item.lastUpdatedBy = :lastUpdatedBy, item.lastUpdatedDate = :lastUpdatedDate WHERE item.itemId IN :itemIds")
     int markItemsAsNotDeleted(@Param("itemIds") List<Integer> itemIds, @Param("lastUpdatedBy") String lastUpdatedBy, @Param("lastUpdatedDate") Date lastUpdatedDate);
 
+    @Query("select item from ItemEntity item where item.barcode = :barcode and item.itemAvailabilityStatusId = :itemAvailabilityStatusId")
+    ItemEntity findByBarcodeAndNotAvailable(@Param("barcode") String barcode,@Param("itemAvailabilityStatusId") Integer itemAvailabilityStatusId);
+
 }
