@@ -339,6 +339,14 @@ public final class ReCAPConstants {
 
     public static final String COUNT_OF_PURGED_EXCEPTION_REQUESTS = "countOfPurgedExceptionRequests";
 
+    public static final String REQUEST_DATA_LOAD_DATE_FORMAT = "dd/MM/yy HH:mm";
+    public static final String  REQUEST_DATA_LOAD_CREATED_BY= "LAS";
+    public static final String REQUEST_DATA_LOAD_REQUEST_TYPE = "PHY";
+    public static final String REQUEST_DATA_LOAD_PATRON_ID = "0000000";
+    public static final String REQUEST_DATA_LOAD_ITEM_ID = "itemId";
+    public static final String REQUEST_DATA_LOAD_REQUESTING_INST_ID = "requestingInstitutionId";
+
+
     private ReCAPConstants() {}
 
     public static final List getGFAStatusAvailableList() {
