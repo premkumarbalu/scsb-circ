@@ -71,7 +71,9 @@ public class SubmitCollectionService {
 
     private RestTemplate restTemplate;
 
-    private Map<Integer,String> itemStatusMap;
+    private Map<Integer,String> itemStatusIdCodeMap;
+
+    private Map<String,Integer> itemStatusCodeIdMap;
 
     private Map<Integer,String> institutionEntityMap;
 
@@ -310,21 +312,28 @@ public class SubmitCollectionService {
             if(fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId())){
                 savedBibliographicEntity = updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
                 saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION,ReCAPConstants.SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE,savedBibliographicEntity.getItemEntities());
-            } else {//update existing incomplete record if any
+            } else {//update existing dummy record if any
                 idMapToRemoveIndex.put(ReCAPConstants.BIB_ID,String.valueOf(fetchBibliographicEntity.getBibliographicId()));
                 idMapToRemoveIndex.put(ReCAPConstants.HOLDING_ID,String.valueOf(fetchBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId()));
                 idMapToRemoveIndex.put(ReCAPConstants.ITEM_ID,String.valueOf(fetchBibliographicEntity.getItemEntities().get(0).getItemId()));
                 getBibliographicDetailsRepository().delete(fetchBibliographicEntity);
                 getBibliographicDetailsRepository().flush();
+                setItemAvailabilityStatusForDummyRecord(bibliographicEntity.getItemEntities().get(0));
                 savedBibliographicEntity = getBibliographicDetailsRepository().saveAndFlush(bibliographicEntity);
                 saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION,ReCAPConstants.SUBMIT_COLLECTION_INCOMPLETE_RECORD_UPDATE,savedBibliographicEntity.getItemEntities());
                 entityManager.refresh(savedBibliographicEntity);
             }
-        } else {//if no record found to update, generated exception info
+        } else {//if no record found to update, generate exception info
             savedBibliographicEntity = bibliographicEntity;
             setSubmitCollectionReportInfo(bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST),ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
         }
         return savedBibliographicEntity;
+    }
+
+    private void setItemAvailabilityStatusForDummyRecord(ItemEntity itemEntity){
+        if(itemEntity.getItemAvailabilityStatusId()==null) {
+            itemEntity.setItemAvailabilityStatusId((Integer) getItemStatusCodeIdMap().get("Available"));
+        }
     }
 
     private BibliographicEntity getBibEntityUsingBarcode(BibliographicEntity bibliographicEntity) {
@@ -335,13 +344,25 @@ public class SubmitCollectionService {
         List<ItemEntity> itemEntityList = getItemDetailsRepository().findByBarcodeIn(itemBarcodeList);
         BibliographicEntity fetchedBibliographicEntity = null;
         if (itemEntityList != null && !itemEntityList.isEmpty() && itemEntityList.get(0).getBibliographicEntities() != null) {
-            for (BibliographicEntity resultBibliographicEntity : itemEntityList.get(0).getBibliographicEntities()) {
-                if (bibliographicEntity.getOwningInstitutionBibId().equals(resultBibliographicEntity.getOwningInstitutionBibId())) {//To handle boundwith item
-                    fetchedBibliographicEntity = resultBibliographicEntity;
+            boolean isBoundWith = isBoundWithItem(itemEntityList.get(0));
+            if (isBoundWith) {//To handle boundwith item
+                for (BibliographicEntity resultBibliographicEntity : itemEntityList.get(0).getBibliographicEntities()) {
+                    if (bibliographicEntity.getOwningInstitutionBibId().equals(resultBibliographicEntity.getOwningInstitutionBibId())) {
+                        fetchedBibliographicEntity = resultBibliographicEntity;
+                    }
                 }
+            } else {
+                fetchedBibliographicEntity = itemEntityList.get(0).getBibliographicEntities().get(0);
             }
         }
         return fetchedBibliographicEntity;
+    }
+
+    private boolean isBoundWithItem(ItemEntity itemEntity){
+        if(itemEntity.getBibliographicEntities().size() > 1){
+            return true;
+        }
+        return false;
     }
 
     private BibliographicEntity updateCompleteRecord(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity,
@@ -444,7 +465,7 @@ public class SubmitCollectionService {
      * @return the boolean
      */
     public boolean isAvailableItem(Integer itemAvailabilityStatusId){
-        String itemStatusCode = (String) getItemStatusMap().get(itemAvailabilityStatusId);
+        String itemStatusCode = (String) getItemStatusIdCodeMap().get(itemAvailabilityStatusId);
         if (itemStatusCode.equalsIgnoreCase(ReCAPConstants.ITEM_STATUS_AVAILABLE)) {
             return true;
         }
@@ -666,24 +687,37 @@ public class SubmitCollectionService {
         this.restTemplate = restTemplate;
     }
 
-    /**
-     * Gets item status map.
-     *
-     * @return the item status map
-     */
-    public Map getItemStatusMap() {
-        if (null == itemStatusMap) {
-            itemStatusMap = new HashMap();
+
+    private Map getItemStatusIdCodeMap() {
+        if (null == itemStatusIdCodeMap) {
+            itemStatusIdCodeMap = new HashMap();
             try {
                 Iterable<ItemStatusEntity> itemStatusEntities = itemStatusDetailsRepository.findAll();
                 for (Iterator iterator = itemStatusEntities.iterator(); iterator.hasNext(); ) {
                     ItemStatusEntity itemStatusEntity = (ItemStatusEntity) iterator.next();
-                    itemStatusMap.put(itemStatusEntity.getItemStatusId(), itemStatusEntity.getStatusCode());
+                    itemStatusIdCodeMap.put(itemStatusEntity.getItemStatusId(), itemStatusEntity.getStatusCode());
                 }
             } catch (Exception e) {
-                logger.error(ReCAPConstants.LOG_ERROR,e);            }
+                logger.error(ReCAPConstants.LOG_ERROR,e);
+            }
         }
-        return itemStatusMap;
+        return itemStatusIdCodeMap;
+    }
+
+    private Map getItemStatusCodeIdMap() {
+        if (null == itemStatusCodeIdMap) {
+            itemStatusCodeIdMap = new HashMap();
+            try {
+                Iterable<ItemStatusEntity> itemStatusEntities = itemStatusDetailsRepository.findAll();
+                for (Iterator iterator = itemStatusEntities.iterator(); iterator.hasNext(); ) {
+                    ItemStatusEntity itemStatusEntity = (ItemStatusEntity) iterator.next();
+                    itemStatusCodeIdMap.put(itemStatusEntity.getStatusCode(), itemStatusEntity.getItemStatusId());
+                }
+            } catch (Exception e) {
+                logger.error(ReCAPConstants.LOG_ERROR,e);
+            }
+        }
+        return itemStatusCodeIdMap;
     }
 
     /**
