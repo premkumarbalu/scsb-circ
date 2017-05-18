@@ -45,6 +45,9 @@ public class NyplDataApiServiceUT extends BaseTestCase {
     @Value("${ils.nypl.operator.password}")
     private String operatorPassword;
 
+    @Value("${ils.nypl.source.nypl.item}")
+    private String nyplSourceNYPL;
+
     @Mock
     RestTemplate restTemplate;
 
@@ -273,7 +276,7 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
     @Test
     public void getJobById() throws Exception {
-        String jobId = "93558738b214f130";
+        String jobId = "879591d67acdf584";
         String apiUrl = nyplDataApiUrl + "/jobs/" + jobId;
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
@@ -296,8 +299,8 @@ public class NyplDataApiServiceUT extends BaseTestCase {
 
     @Test
     public void getItemByNyplSourceAndId() throws Exception {
-        String nyplSource = "recap-PUL";
-        String id = "1787347";
+        String nyplSource = nyplSourceNYPL;
+        String id = "12803317";
         String apiUrl = nyplDataApiUrl + "/items/" + nyplSource + "/" + id;
         String authorization = "Bearer " + generateAccessTokenForNyplApi();
 
@@ -332,7 +335,7 @@ public class NyplDataApiServiceUT extends BaseTestCase {
         params.put("offset", "");
         params.put("limit", "0");
         params.put("barcode", "");
-        params.put("nyplSource", "nypl-sierra");
+        params.put("nyplSource", nyplSourceNYPL);
         ResponseEntity<ItemsResponse> responseEntity = restTemplate.exchange(apiUrl, HttpMethod.GET, requestEntity, ItemsResponse.class, params);
         assertNotNull(responseEntity);
         ItemsResponse itemsResponse = responseEntity.getBody();

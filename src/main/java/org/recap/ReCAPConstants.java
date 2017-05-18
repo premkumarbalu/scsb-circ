@@ -186,6 +186,7 @@ public final class ReCAPConstants {
     public static final String CIRCULATION_STATUS_CHARGED = "CHARGED";
     public static final String CIRCULATION_STATUS_OTHER = "OTHER";
     public static final String CIRCULATION_STATUS_IN_TRANSIT = "IN_TRANSIT";
+    public static final String CIRCULATION_STATUS_ON_HOLDSHELF = "ON HOLDSHELF";
 
     public static final String SEARCH_RECORDS_SOLR = "/searchService/searchByParam";
     public static final String SEARCH_RECORDS_SOLR_PARAM_FIELD_VALUE = "fieldValue";
@@ -204,9 +205,6 @@ public final class ReCAPConstants {
     public static final String REQUEST_STATUS_PENDING = "PENDING";
     public static final String REQUEST_STATUS_PROCESSING = "PROCESSING";
 
-    public static final String NYPL_SOURCE_NYPL = "nypl-sierra";
-    public static final String NYPL_SOURCE_PUL = "recap-PUL";
-    public static final String NYPL_SOURCE_CUL = "recap-CUL";
     public static final String NYPL_HOLD_DATE_FORMAT = "yyyy-MM-dd";
     public static final String NYPL_RECORD_TYPE = "i";
 
