@@ -13,6 +13,7 @@ import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemEntity;
 import org.recap.repository.ItemDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -27,6 +28,15 @@ import java.util.List;
 
 @Service
 public class NyplApiResponseUtil {
+
+    @Value("${ils.nypl.source.nypl.item}")
+    private String nyplSourceNYPL;
+
+    @Value("${ils.nypl.source.pul.item}")
+    private String nyplSourcePUL;
+
+    @Value("${ils.nypl.source.cul.item}")
+    private String nyplSourceCUL;
 
     @Autowired
     ItemDetailsRepository itemDetailsRepository;
@@ -125,11 +135,11 @@ public class NyplApiResponseUtil {
         String nyplSource = null;
         if (StringUtils.isNotBlank(institutionId)) {
             if (institutionId.equalsIgnoreCase(ReCAPConstants.NYPL)) {
-                nyplSource = ReCAPConstants.NYPL_SOURCE_NYPL;
+                nyplSource = nyplSourceNYPL;
             } else if (institutionId.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
-                nyplSource = ReCAPConstants.NYPL_SOURCE_PUL;
+                nyplSource = nyplSourcePUL;
             } else if (institutionId.equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
-                nyplSource = ReCAPConstants.NYPL_SOURCE_CUL;
+                nyplSource = nyplSourceCUL;
             }
         }
         return nyplSource;
