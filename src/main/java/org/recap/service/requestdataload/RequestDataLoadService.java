@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -91,15 +92,26 @@ public class RequestDataLoadService {
 
     private Map<String,Integer> getItemInfo(String barcode){
         Integer itemAvailabilityStatusId = 0;
+        Integer itemId = 0;
+        Integer owningInstitutionId = 0;
         Map<String,Integer> itemInfo = new HashMap<>();
         ItemStatusEntity itemStatusEntity = itemStatusDetailsRepository.findByStatusCode(ReCAPConstants.NOT_AVAILABLE);
         if(itemStatusEntity != null){
             itemAvailabilityStatusId = itemStatusEntity.getItemStatusId();
         }
-        ItemEntity itemEntity = itemDetailsRepository.findByBarcodeAndNotAvailable(barcode,itemAvailabilityStatusId);
-        if(itemEntity != null){
-            itemInfo.put(ReCAPConstants.REQUEST_DATA_LOAD_ITEM_ID , itemEntity.getItemId());
-            itemInfo.put(ReCAPConstants.REQUEST_DATA_LOAD_REQUESTING_INST_ID , itemEntity.getOwningInstitutionId());
+        List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcodeAndNotAvailable(barcode,itemAvailabilityStatusId);
+        if(!itemEntityList.isEmpty()){
+            Integer itemInstitutionId = itemEntityList.get(0).getOwningInstitutionId();
+            for(ItemEntity itemEntity : itemEntityList){
+                if(itemEntity.getOwningInstitutionId() == itemInstitutionId){
+                    itemId = itemEntityList.get(0).getItemId();
+                    owningInstitutionId = itemEntityList.get(0).getOwningInstitutionId();
+                }else{
+                    return itemInfo;
+                }
+            }
+            itemInfo.put(ReCAPConstants.REQUEST_DATA_LOAD_ITEM_ID , itemId);
+            itemInfo.put(ReCAPConstants.REQUEST_DATA_LOAD_REQUESTING_INST_ID , owningInstitutionId);
         }
         return itemInfo;
     }
