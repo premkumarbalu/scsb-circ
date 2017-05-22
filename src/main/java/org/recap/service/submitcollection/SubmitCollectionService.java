@@ -13,6 +13,7 @@ import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.repository.*;
 import org.recap.util.MarcUtil;
+import org.recap.util.XMLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,15 +102,16 @@ public class SubmitCollectionService {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String reponse = null;
+        String finalXmlString = XMLUtils.escapeTextAroundXMLTags(inputRecords);
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
         try {
             if (!"".equals(inputRecords)) {
                 if (inputRecords.contains(ReCAPConstants.BIBRECORD_TAG)) {
-                    reponse = processSCSB(inputRecords, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
+                    reponse = processSCSB(finalXmlString, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
                     if (reponse != null)
                         return reponse;
                 } else {
-                    reponse = processMarc(inputRecords, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
+                    reponse = processMarc(finalXmlString, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
                     if (reponse != null)
                         return reponse;
                 }
