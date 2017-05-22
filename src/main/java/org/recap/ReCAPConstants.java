@@ -336,6 +336,7 @@ public final class ReCAPConstants {
     public static final String DEACCESSION_ROLLBACK_NOTES = " Hence, the transaction of deaccessioning item is rolled back.";
 
     public static final String COUNT_OF_PURGED_EXCEPTION_REQUESTS = "countOfPurgedExceptionRequests";
+    public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
 
     public static final String REQUEST_DATA_LOAD_DATE_FORMAT = "dd/MM/yy HH:mm";
     public static final String  REQUEST_DATA_LOAD_CREATED_BY= "LAS";
@@ -388,5 +389,8 @@ public final class ReCAPConstants {
     public static final String DAILY_RR_LAS_NOT_GIVEN_STATUS = "LASNotGivenStatus";
     public static final String DAILY_RR_SCSB_NOT_GIVEN_STATUS = "StatusNotFoundInScsb";
     public static final String DAILY_RR_NOT_IN_SCSB = "NotInScsb";
+
+
+    public static final String COMPLETED = "Completed";
 
 }

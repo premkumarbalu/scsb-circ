@@ -2,6 +2,7 @@ package org.recap.service.purge;
 
 import org.recap.ReCAPConstants;
 import org.recap.model.RequestTypeEntity;
+import org.recap.repository.AccessionDetailsRepository;
 import org.recap.repository.RequestItemDetailsRepository;
 import org.recap.repository.RequestTypeDetailsRepository;
 import org.slf4j.Logger;
@@ -29,11 +30,17 @@ public class PurgeService {
     @Value("${purge.exception.request.day.limit}")
     private Integer purgeExceptionRequestDayLimit;
 
+    @Value("${purge.accession.request.day.limit}")
+    private Integer purgeAccessionRequestDayLimit;
+
     @Autowired
     private RequestItemDetailsRepository requestItemDetailsRepository;
 
     @Autowired
     private RequestTypeDetailsRepository requestTypeDetailsRepository;
+
+    @Autowired
+    private AccessionDetailsRepository accessionDetailsRepository;
 
     public Map<String,Integer> purgeEmailAddress(){
         List<RequestTypeEntity> requestTypeEntityList = requestTypeDetailsRepository.findAll();
@@ -61,6 +68,21 @@ public class PurgeService {
             logger.info("Total number of exception requests purged : {}", countOfPurgedExceptionRequests);
             responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.SUCCESS);
             responseMap.put(ReCAPConstants.COUNT_OF_PURGED_EXCEPTION_REQUESTS, String.valueOf(countOfPurgedExceptionRequests));
+        } catch (Exception exception) {
+            logger.error(ReCAPConstants.LOG_ERROR, exception);
+            responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.FAILURE);
+            responseMap.put(ReCAPConstants.MESSAGE, exception.getMessage());
+        }
+        return responseMap;
+    }
+
+    public Map<String, String> purgeAccessionRequests() {
+        Map<String, String> responseMap = new HashMap<>();
+        try {
+            Integer countOfPurgedAccessionRequests = accessionDetailsRepository.purgeAccessionRequests(ReCAPConstants.COMPLETED, new Date(), purgeAccessionRequestDayLimit);
+            logger.info("Total number of accession requests purged : {}", countOfPurgedAccessionRequests);
+            responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.SUCCESS);
+            responseMap.put(ReCAPConstants.COUNT_OF_PURGED_ACCESSION_REQUESTS, String.valueOf(countOfPurgedAccessionRequests));
         } catch (Exception exception) {
             logger.error(ReCAPConstants.LOG_ERROR, exception);
             responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.FAILURE);
