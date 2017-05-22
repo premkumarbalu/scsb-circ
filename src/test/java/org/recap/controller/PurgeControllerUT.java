@@ -16,11 +16,24 @@ public class PurgeControllerUT extends BaseTestCase {
     PurgeController purgeEmailAddressController;
 
     @Test
-    public void testPurgeEmailAddress(){
+    public void testPurgeEmailAddress() {
         ResponseEntity responseEntity = purgeEmailAddressController.purgeEmailAddress();
         assertNotNull(responseEntity);
         assertNotNull(responseEntity.getBody());
+    }
 
+    @Test
+    public void testPurgeExceptionRequests() {
+        ResponseEntity responseEntity = purgeEmailAddressController.purgeExceptionRequests();
+        assertNotNull(responseEntity);
+        assertNotNull(responseEntity.getBody());
+    }
+
+    @Test
+    public void testPurgeAccessionRequests() {
+        ResponseEntity responseEntity = purgeEmailAddressController.purgeAccessionRequests();
+        assertNotNull(responseEntity);
+        assertNotNull(responseEntity.getBody());
     }
 
 }

@@ -1,4 +1,5 @@
 package org.recap.controller;
+
 import org.recap.service.purge.PurgeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -6,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.*;
 
 /**
@@ -19,14 +21,20 @@ public class PurgeController {
     private PurgeService purgeService;
 
     @RequestMapping(value = "/purgeEmailAddress", method = RequestMethod.GET)
-    public ResponseEntity purgeEmailAddress(){
-        Map<String,Integer> responseMap = purgeService.purgeEmailAddress();
+    public ResponseEntity purgeEmailAddress() {
+        Map<String, Integer> responseMap = purgeService.purgeEmailAddress();
         return new ResponseEntity(responseMap, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/purgeExceptionRequests", method = RequestMethod.GET)
-    public ResponseEntity purgeExceptionRequests(){
+    public ResponseEntity purgeExceptionRequests() {
         Map<String, String> responseMap = purgeService.purgeExceptionRequests();
+        return new ResponseEntity(responseMap, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/purgeAccessionRequests", method = RequestMethod.GET)
+    public ResponseEntity purgeAccessionRequests() {
+        Map<String, String> responseMap = purgeService.purgeAccessionRequests();
         return new ResponseEntity(responseMap, HttpStatus.OK);
     }
 }
