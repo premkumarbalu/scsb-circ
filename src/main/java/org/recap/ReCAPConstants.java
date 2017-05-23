@@ -40,6 +40,9 @@ public final class ReCAPConstants {
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
     public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Item not available for request.";
     public static final String RECALL_NOT_FOR_AVAILABLE_ITEM = "Recall not available for this item.";
+    public static final String RECALL_FOR_ITEM_EXISTS = "Recall for this item already exists.";
+    public static final String INITIAL_LOAD_ITEM_EXISTS = "Initial load item(s) cannot be recalled.";
+    public static final String EDD_REQUEST_NOT_ALLOWED = "EDD request is not allowed for this customer code";
 
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
@@ -64,7 +67,6 @@ public final class ReCAPConstants {
     public static final String SCSB_OUTGOING_QUEUE = "scsbactivemq:queue:scsbOutgoingQ";
     public static final String LAS_OUTGOING_QUEUE = "scsbactivemq:queue:lasOutgoingQ";
     public static final String LAS_INCOMING_QUEUE = "scsbactivemq:queue:lasIncomingQ";
-
 
     public static final String PUL_REQUEST_TOPIC = "scsbactivemq:topic:PUL.RequestT";
     public static final String PUL_EDD_TOPIC = "scsbactivemq:topic:PUL.EDDT";
@@ -142,7 +144,7 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT = "Submit_Collection_Exception_Report";
     public static final String SUBMIT_COLLECTION_SUCCESS_REPORT = "Submit_Collection_Success_Report";
     public static final String SUBMIT_COLLECTION_ITEM_BARCODE = "ItemBarcode";
-    public static final String SUBMIT_COLLECTION_CUSTOMER_CODE = "CustomerCode";
+    public static final String SUBMIT_COLLECTION_CUSTOMER_CODE = CUSTOMER_CODE;
     public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT_MESSAGE = "Exception report generated";
     public static final String SUBMIT_COLLECTION_REJECTION_REPORT_MESSAGE = "Rejection report generated";
     public static final String SUMBIT_COLLECTION_UPDATE_MESSAGE = "One or more record(s) updated.";
@@ -204,6 +206,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_STATUS_EXCEPTION = "EXCEPTION";
     public static final String REQUEST_STATUS_PENDING = "PENDING";
     public static final String REQUEST_STATUS_PROCESSING = "PROCESSING";
+    public static final String REQUEST_STATUS_INITIAL_LOAD = "INITIAL_LOAD";
 
     public static final String NYPL_HOLD_DATE_FORMAT = "yyyy-MM-dd";
     public static final String NYPL_RECORD_TYPE = "i";
@@ -373,7 +376,7 @@ public final class ReCAPConstants {
     public static final String DAILY_RR = "DailyRR";
     public static final String DATE_CELL_STYLE_FORMAT = "MM/dd/yyyy HH:mm:ss.S";
     public static final String DAILY_RR_REQUEST_ID = "RequestId";
-    public static final String DAILY_RR_BARCODE = "Barcode";
+    public static final String DAILY_RR_BARCODE = BARCODE;
     public static final String DAILY_RR_CUSTOMER_CODE = "CustomerCode";
     public static final String DAILY_RR_STOP_CODE = "StopCode";
     public static final String DAILY_RR_PATRON_ID = "PatronId";
