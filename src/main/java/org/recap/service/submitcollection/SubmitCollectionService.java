@@ -1,6 +1,7 @@
 package org.recap.service.submitcollection;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.marc4j.marc.Record;
 import org.recap.ReCAPConstants;
 import org.recap.converter.MarcToBibEntityConverter;
@@ -13,7 +14,6 @@ import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.repository.*;
 import org.recap.util.MarcUtil;
-import org.recap.util.XMLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,7 +102,9 @@ public class SubmitCollectionService {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String reponse = null;
-        String finalXmlString = XMLUtils.escapeTextAroundXMLTags(inputRecords);
+        String escapedString = StringEscapeUtils.escapeXml10(inputRecords);
+        String finalXmlString = replaceEscapedTags(escapedString);
+
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
         try {
             if (!"".equals(inputRecords)) {
@@ -129,6 +131,51 @@ public class SubmitCollectionService {
         logger.info("total time take for processing input record {}", stopWatch.getTotalTimeSeconds());
         return reponse;
     }
+
+    private String replaceEscapedTags(String xmlString){
+        String updatedString = xmlString.replaceAll(ReCAPConstants.ESCAPED_STARTING_COLLECTION_TAG,ReCAPConstants.UNESCAPED_STARTING_COLLECTION_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_COLLECTION_TAG,ReCAPConstants.UNESCAPED_ENDING_COLLECTION_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_BIBRECORDS_TAG,ReCAPConstants.UNESCAPED_STARTING_BIBRECORDS_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_BIBRECORDS_TAG,ReCAPConstants.UNESCAPED_ENDING_BIBRECORDS_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_BIBRECORD_TAG,ReCAPConstants.UNESCAPED_STARTING_BIBRECORD_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_BIBRECORD_TAG,ReCAPConstants.UNESCAPED_ENDING_BIBRECORD_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_BIB_TAG,ReCAPConstants.UNESCAPED_STARTING_BIB_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_BIB_TAG,ReCAPConstants.UNESCAPED_ENDING_BIB_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_OWNINSTID_TAG,ReCAPConstants.UNESCAPED_STARTING_OWNINSTID_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_OWNINSTID_TAG,ReCAPConstants.UNESCAPED_ENDING_OWNINSTID_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_OWNINSTID_BIBID_TAG,ReCAPConstants.UNESCAPED_STARTING_OWNINSTID_BIBID_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_OWNINSTID_BIBID_TAG,ReCAPConstants.UNESCAPED_ENDING_OWNINSTID_BIBID_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_CONTENT_TAG,ReCAPConstants.UNESCAPED_STARTING_CONTENT_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_CONTENT_TAG,ReCAPConstants.UNESCAPED_ENDING_CONTENT_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_INNER_COLLECTION_TAG,ReCAPConstants.UNESCAPED_STARTING_INNER_COLLECTION_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_HOLDINGS_TAG,ReCAPConstants.UNESCAPED_STARTING_HOLDINGS_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_HOLDINGS_TAG,ReCAPConstants.UNESCAPED_ENDING_HOLDINGS_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_HOLDING_TAG,ReCAPConstants.UNESCAPED_STARTING_HOLDING_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_HOLDING_TAG,ReCAPConstants.UNESCAPED_ENDING_HOLDING_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_OWNINGINST_HOLDID_TAG,ReCAPConstants.UNESCAPED_STARTING_OWNINGINST_HOLDID_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_OWNINGINST_HOLDID_TAG,ReCAPConstants.UNESCAPED_ENDING_OWNINGINST_HOLDID_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_ITEMS_HOLDID_TAG,ReCAPConstants.UNESCAPED_STARTING_ITEMS_HOLDID_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_ITEMS_HOLDID_TAG,ReCAPConstants.UNESCAPED_ENDING_ITEMS_HOLDID_TAG);
+
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_RECORD_TAG,ReCAPConstants.UNESCAPED_STARTING_RECORD_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_RECORD_TAG,ReCAPConstants.UNESCAPED_ENDING_RECORD_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_LEADER_TAG,ReCAPConstants.UNESCAPED_STARTING_LEADER_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_LEADER_TAG,ReCAPConstants.UNESCAPED_ENDING_LEADER_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_CONTROLFIELD_TAG,ReCAPConstants.UNESCAPED_STARTING_CONTROLFIELD_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_CONTROLFIELD_TAG,ReCAPConstants.UNESCAPED_ENDING_CONTROLFIELD_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_DATAFIELD_TAG,ReCAPConstants.UNESCAPED_STARTING_DATAFIELD_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_DATAFIELD_TAG,ReCAPConstants.UNESCAPED_ENDING_DATAFIELD_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_SUBFIELD_TAG,ReCAPConstants.UNESCAPED_STARTING_SUBFIELD_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_SUBFIELD_TAG,ReCAPConstants.UNESCAPED_ENDING_SUBFIELD_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_CLOSING_TAG_WITH_QUOTE,ReCAPConstants.UNESCAPED_CLOSING_TAG_WITH_QUOTE);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_CLOSING_TAG,ReCAPConstants.UNESCAPED_CLOSING_TAG);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_QUOTE,ReCAPConstants.UNESCAPED_QUOTE);
+        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_XML_TAG,ReCAPConstants.UNESCAPED_STARTING_XML_TAG);
+
+
+        return updatedString;
+    }
+
 
     private String getResponseMessage(List<SubmitCollectionReportInfo> submitCollectionRejectionInfos,List<SubmitCollectionReportInfo> submitCollectionExceptionInfos,
                                       List<Integer> processedBibIdList){
@@ -321,6 +368,8 @@ public class SubmitCollectionService {
                 getBibliographicDetailsRepository().delete(fetchBibliographicEntity);
                 getBibliographicDetailsRepository().flush();
                 setItemAvailabilityStatusForDummyRecord(bibliographicEntity.getItemEntities().get(0));
+                updateCatalogingStatusForItem(bibliographicEntity);
+                updateCatalogingStatusForBib(fetchBibliographicEntity);
                 savedBibliographicEntity = getBibliographicDetailsRepository().saveAndFlush(bibliographicEntity);
                 saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION,ReCAPConstants.SUBMIT_COLLECTION_INCOMPLETE_RECORD_UPDATE,savedBibliographicEntity.getItemEntities());
                 entityManager.refresh(savedBibliographicEntity);
@@ -330,6 +379,26 @@ public class SubmitCollectionService {
             setSubmitCollectionReportInfo(bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST),ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
         }
         return savedBibliographicEntity;
+    }
+
+    private BibliographicEntity updateCatalogingStatusForItem(BibliographicEntity bibliographicEntity) {
+        for(ItemEntity itemEntity:bibliographicEntity.getItemEntities()){
+            if(itemEntity.getUseRestrictions()==null || itemEntity.getCollectionGroupId()==null){
+                itemEntity.setCatalogingStatus(ReCAPConstants.INCOMPLETE_STATUS);
+            }
+        }
+        return bibliographicEntity;
+    }
+
+    private BibliographicEntity updateCatalogingStatusForBib(BibliographicEntity fetchBibliographicEntity) {
+        fetchBibliographicEntity.setCatalogingStatus(ReCAPConstants.INCOMPLETE_STATUS);
+        for(ItemEntity itemEntity:fetchBibliographicEntity.getItemEntities()){
+            if(itemEntity.getCatalogingStatus().equals(ReCAPConstants.COMPLETE_STATUS)){
+                fetchBibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
+                return fetchBibliographicEntity;
+            }
+        }
+        return fetchBibliographicEntity;
     }
 
     private void setItemAvailabilityStatusForDummyRecord(ItemEntity itemEntity){
@@ -413,6 +482,7 @@ public class SubmitCollectionService {
         fetchBibliographicEntity.setHoldingsEntities(fetchHoldingsEntities);
         fetchBibliographicEntity.setItemEntities(fetchItemsEntities);
         try {
+            updateCatalogingStatusForBib(fetchBibliographicEntity);
             savedOrUnsavedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(fetchBibliographicEntity);
             setSubmitCollectionReportInfo(fetchBibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST),ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD);
             return savedOrUnsavedBibliographicEntity;
@@ -428,7 +498,6 @@ public class SubmitCollectionService {
         fetchBibliographicEntity.setDeleted(bibliographicEntity.isDeleted());
         fetchBibliographicEntity.setLastUpdatedBy(bibliographicEntity.getLastUpdatedBy());
         fetchBibliographicEntity.setLastUpdatedDate(bibliographicEntity.getLastUpdatedDate());
-        fetchBibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
         return fetchBibliographicEntity;
     }
 
@@ -451,12 +520,20 @@ public class SubmitCollectionService {
             fetchItemEntity.setCustomerCode(itemEntity.getCustomerCode());
         }
         if (isAvailableItem(fetchItemEntity.getItemAvailabilityStatusId())) {
-            fetchItemEntity.setCollectionGroupId(itemEntity.getCollectionGroupId());
+            if (itemEntity.getCollectionGroupId() != null) {
+                fetchItemEntity.setCollectionGroupId(itemEntity.getCollectionGroupId());
+            }
             fetchItemEntity.setUseRestrictions(itemEntity.getUseRestrictions());
         }
         fetchItemEntity.setCopyNumber(itemEntity.getCopyNumber());
         fetchItemEntity.setVolumePartYear(itemEntity.getVolumePartYear());
-        fetchItemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
+        if((fetchItemEntity.getUseRestrictions() == null && itemEntity.getUseRestrictions() == null)
+                || ((fetchItemEntity.getCollectionGroupEntity().getCollectionGroupCode().equals(ReCAPConstants.NOT_AVAILABLE_CGD)
+                && itemEntity.getCollectionGroupId()==null))){
+            fetchItemEntity.setCatalogingStatus(ReCAPConstants.INCOMPLETE_STATUS);
+        } else{
+            fetchItemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
+        }
         return fetchItemEntity;
     }
 
