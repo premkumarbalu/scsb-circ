@@ -320,17 +320,10 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         String collectionGroupCode = marcUtil.getDataFieldValue(itemRecord, "900", 'a');
         if (StringUtils.isNotBlank(collectionGroupCode) && getCollectionGroupMap().containsKey(collectionGroupCode)) {
             itemEntity.setCollectionGroupId((Integer) getCollectionGroupMap().get(collectionGroupCode));
-        } else {
-            itemEntity.setCollectionGroupId((Integer) getCollectionGroupMap().get("Open"));
         }
-        itemEntity.setCreatedDate(currentDate);
-        itemEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
-        itemEntity.setLastUpdatedDate(currentDate);
-        itemEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
-        itemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
 
         String useRestrictions = marcUtil.getDataFieldValue(itemRecord, "876", 'h');
-        if (StringUtils.isNotBlank(useRestrictions) && ("In Library Use".equalsIgnoreCase(useRestrictions) || "Supervised Use".equalsIgnoreCase(useRestrictions))) {
+        if (useRestrictions != null) {
             itemEntity.setUseRestrictions(useRestrictions);
         }
 
@@ -342,6 +335,11 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
             errorMessage.append("\n");
             errorMessage.append("Item Owning Institution Id cannot be null");
         }
+
+        itemEntity.setCreatedDate(currentDate);
+        itemEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
+        itemEntity.setLastUpdatedDate(currentDate);
+        itemEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
 
         List<ReportDataEntity> reportDataEntities = null;
         if (errorMessage.toString().length() > 1) {

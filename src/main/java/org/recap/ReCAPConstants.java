@@ -40,6 +40,9 @@ public final class ReCAPConstants {
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
     public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Item not available for request.";
     public static final String RECALL_NOT_FOR_AVAILABLE_ITEM = "Recall not available for this item.";
+    public static final String RECALL_FOR_ITEM_EXISTS = "Recall for this item already exists.";
+    public static final String INITIAL_LOAD_ITEM_EXISTS = "Initial load item(s) cannot be recalled.";
+    public static final String EDD_REQUEST_NOT_ALLOWED = "EDD request is not allowed for this customer code";
 
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
@@ -64,7 +67,6 @@ public final class ReCAPConstants {
     public static final String SCSB_OUTGOING_QUEUE = "scsbactivemq:queue:scsbOutgoingQ";
     public static final String LAS_OUTGOING_QUEUE = "scsbactivemq:queue:lasOutgoingQ";
     public static final String LAS_INCOMING_QUEUE = "scsbactivemq:queue:lasIncomingQ";
-
 
     public static final String PUL_REQUEST_TOPIC = "scsbactivemq:topic:PUL.RequestT";
     public static final String PUL_EDD_TOPIC = "scsbactivemq:topic:PUL.EDDT";
@@ -142,7 +144,7 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT = "Submit_Collection_Exception_Report";
     public static final String SUBMIT_COLLECTION_SUCCESS_REPORT = "Submit_Collection_Success_Report";
     public static final String SUBMIT_COLLECTION_ITEM_BARCODE = "ItemBarcode";
-    public static final String SUBMIT_COLLECTION_CUSTOMER_CODE = "CustomerCode";
+    public static final String SUBMIT_COLLECTION_CUSTOMER_CODE = CUSTOMER_CODE;
     public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT_MESSAGE = "Exception report generated";
     public static final String SUBMIT_COLLECTION_REJECTION_REPORT_MESSAGE = "Rejection report generated";
     public static final String SUMBIT_COLLECTION_UPDATE_MESSAGE = "One or more record(s) updated.";
@@ -158,6 +160,7 @@ public final class ReCAPConstants {
     public static final String BIBRECORD_TAG = "<bibRecords>";
     public static final String SUBMIT_COLLECTION = "submitCollection";
     public static final String MESSAGE = "Message";
+    public static final String NOT_AVAILABLE_CGD = "NA";
 
     public static final String BIB_ID = "BibId";
     public static final String HOLDING_ID = "HoldingId";
@@ -204,6 +207,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_STATUS_EXCEPTION = "EXCEPTION";
     public static final String REQUEST_STATUS_PENDING = "PENDING";
     public static final String REQUEST_STATUS_PROCESSING = "PROCESSING";
+    public static final String REQUEST_STATUS_INITIAL_LOAD = "INITIAL_LOAD";
 
     public static final String NYPL_HOLD_DATE_FORMAT = "yyyy-MM-dd";
     public static final String NYPL_RECORD_TYPE = "i";
@@ -373,7 +377,7 @@ public final class ReCAPConstants {
     public static final String DAILY_RR = "DailyRR";
     public static final String DATE_CELL_STYLE_FORMAT = "MM/dd/yyyy HH:mm:ss.S";
     public static final String DAILY_RR_REQUEST_ID = "RequestId";
-    public static final String DAILY_RR_BARCODE = "Barcode";
+    public static final String DAILY_RR_BARCODE = BARCODE;
     public static final String DAILY_RR_CUSTOMER_CODE = "CustomerCode";
     public static final String DAILY_RR_STOP_CODE = "StopCode";
     public static final String DAILY_RR_PATRON_ID = "PatronId";
@@ -392,5 +396,82 @@ public final class ReCAPConstants {
 
 
     public static final String COMPLETED = "Completed";
+
+    public static final String ESCAPED_STARTING_COLLECTION_TAG = "&lt;collection xmlns=&quot;http://www.loc.gov/MARC21/slim&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd&quot;&gt;";
+    public static final String UNESCAPED_STARTING_COLLECTION_TAG = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">";
+    public static final String ESCAPED_ENDING_COLLECTION_TAG = "&lt;/collection&gt;";
+    public static final String UNESCAPED_ENDING_COLLECTION_TAG = "</collection>";
+    public static final String ESCAPED_STARTING_RECORD_TAG = "&lt;record&gt;";
+    public static final String UNESCAPED_STARTING_RECORD_TAG = "<record>";
+    public static final String ESCAPED_ENDING_RECORD_TAG = "&lt;/record&gt;";
+    public static final String UNESCAPED_ENDING_RECORD_TAG = "</record>";
+    public static final String ESCAPED_STARTING_LEADER_TAG = "&lt;leader&gt;";
+    public static final String UNESCAPED_STARTING_LEADER_TAG = "<leader>";
+    public static final String ESCAPED_ENDING_LEADER_TAG = "&lt;/leader&gt;";
+    public static final String UNESCAPED_ENDING_LEADER_TAG = "</leader>";
+    public static final String ESCAPED_STARTING_CONTROLFIELD_TAG = "&lt;controlfield";
+    public static final String UNESCAPED_STARTING_CONTROLFIELD_TAG = "<controlfield";
+    public static final String ESCAPED_ENDING_CONTROLFIELD_TAG = "&lt;/controlfield&gt;";
+    public static final String UNESCAPED_ENDING_CONTROLFIELD_TAG = "</controlfield>";
+    public static final String ESCAPED_STARTING_DATAFIELD_TAG = "&lt;datafield";
+    public static final String UNESCAPED_STARTING_DATAFIELD_TAG = "<datafield";
+    public static final String ESCAPED_ENDING_DATAFIELD_TAG = "&lt;/datafield&gt;";
+    public static final String UNESCAPED_ENDING_DATAFIELD_TAG = "</datafield>";
+    public static final String ESCAPED_STARTING_SUBFIELD_TAG = "&lt;subfield";
+    public static final String UNESCAPED_STARTING_SUBFIELD_TAG = "<subfield";
+    public static final String ESCAPED_ENDING_SUBFIELD_TAG = "&lt;/subfield&gt;";
+    public static final String UNESCAPED_ENDING_SUBFIELD_TAG = "</subfield>";
+    public static final String ESCAPED_QUOTE = "&quot;";
+    public static final String UNESCAPED_QUOTE = "\"";
+    public static final String ESCAPED_CLOSING_TAG_WITH_QUOTE = "&quot;&gt;";
+    public static final String UNESCAPED_CLOSING_TAG_WITH_QUOTE = "\">";
+    public static final String ESCAPED_CLOSING_TAG = "/&gt;";
+    public static final String UNESCAPED_CLOSING_TAG = "/>";
+
+    public static final String ESCAPED_STARTING_BIBRECORDS_TAG = "&lt;bibRecords&gt;";
+    public static final String UNESCAPED_STARTING_BIBRECORDS_TAG = "<bibRecords>";
+    public static final String ESCAPED_ENDING_BIBRECORDS_TAG = "&lt;/bibRecords&gt;";
+    public static final String UNESCAPED_ENDING_BIBRECORDS_TAG = "</bibRecords>";
+    public static final String ESCAPED_STARTING_BIBRECORD_TAG = "&lt;bibRecord&gt;";
+    public static final String UNESCAPED_STARTING_BIBRECORD_TAG = "<bibRecord>";
+    public static final String ESCAPED_ENDING_BIBRECORD_TAG = "&lt;/bibRecord&gt;";
+    public static final String UNESCAPED_ENDING_BIBRECORD_TAG = "</bibRecord>";
+    public static final String ESCAPED_STARTING_BIB_TAG = "&lt;bib&gt;";
+    public static final String UNESCAPED_STARTING_BIB_TAG = "<bib>";
+    public static final String ESCAPED_ENDING_BIB_TAG = "&lt;/bib&gt;";
+    public static final String UNESCAPED_ENDING_BIB_TAG = "</bib>";
+    public static final String ESCAPED_STARTING_OWNINSTID_TAG = "&lt;owningInstitutionId&gt;";
+    public static final String UNESCAPED_STARTING_OWNINSTID_TAG = "<owningInstitutionId>";
+    public static final String ESCAPED_ENDING_OWNINSTID_TAG = "&lt;/owningInstitutionId&gt;";
+    public static final String UNESCAPED_ENDING_OWNINSTID_TAG = "</owningInstitutionId>";
+    public static final String ESCAPED_STARTING_OWNINSTID_BIBID_TAG = "&lt;owningInstitutionBibId&gt;";
+    public static final String UNESCAPED_STARTING_OWNINSTID_BIBID_TAG = "<owningInstitutionBibId>";
+    public static final String ESCAPED_ENDING_OWNINSTID_BIBID_TAG = "&lt;/owningInstitutionBibId&gt;";
+    public static final String UNESCAPED_ENDING_OWNINSTID_BIBID_TAG = "</owningInstitutionBibId>";
+    public static final String ESCAPED_STARTING_CONTENT_TAG = "&lt;content&gt;";
+    public static final String UNESCAPED_STARTING_CONTENT_TAG = "<content>";
+    public static final String ESCAPED_ENDING_CONTENT_TAG = "&lt;/content&gt;";
+    public static final String UNESCAPED_ENDING_CONTENT_TAG = "</content>";
+    public static final String ESCAPED_ENDING_INNER_COLLECTION_TAG = "&lt;collection xmlns=&quot;http://www.loc.gov/MARC21/slim&quot;&gt;";
+    public static final String UNESCAPED_STARTING_INNER_COLLECTION_TAG = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\">";
+    public static final String ESCAPED_STARTING_HOLDINGS_TAG = "&lt;holdings&gt;";
+    public static final String UNESCAPED_STARTING_HOLDINGS_TAG = "<holdings>";
+    public static final String ESCAPED_ENDING_HOLDINGS_TAG = "&lt;/holdings&gt;";
+    public static final String UNESCAPED_ENDING_HOLDINGS_TAG = "</holdings>";
+    public static final String ESCAPED_STARTING_HOLDING_TAG = "&lt;holding&gt;";
+    public static final String UNESCAPED_STARTING_HOLDING_TAG = "<holding>";
+    public static final String ESCAPED_ENDING_HOLDING_TAG = "&lt;/holding&gt;";
+    public static final String UNESCAPED_ENDING_HOLDING_TAG = "</holding>";
+    public static final String ESCAPED_STARTING_OWNINGINST_HOLDID_TAG = "&lt;owningInstitutionHoldingsId&gt;";
+    public static final String UNESCAPED_STARTING_OWNINGINST_HOLDID_TAG = "<owningInstitutionHoldingsId>";
+    public static final String ESCAPED_ENDING_OWNINGINST_HOLDID_TAG = "&lt;/owningInstitutionHoldingsId&gt;";
+    public static final String UNESCAPED_ENDING_OWNINGINST_HOLDID_TAG = "</owningInstitutionHoldingsId>";
+    public static final String ESCAPED_STARTING_ITEMS_HOLDID_TAG = "&lt;items&gt;";
+    public static final String UNESCAPED_STARTING_ITEMS_HOLDID_TAG = "<items>";
+    public static final String ESCAPED_ENDING_ITEMS_HOLDID_TAG = "&lt;/items&gt;";
+    public static final String UNESCAPED_ENDING_ITEMS_HOLDID_TAG = "</items>";
+    public static final String ESCAPED_STARTING_XML_TAG = "&lt;?xml version=&quot;1.0&quot;?&gt;";
+    public static final String UNESCAPED_STARTING_XML_TAG = "<?xml version=\"1.0\"?>";
+
 
 }

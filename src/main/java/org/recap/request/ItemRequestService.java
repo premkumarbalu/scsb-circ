@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * Class for Request Item Service
  * Created by sudhishk on 1/12/16.
  */
 @Component
@@ -748,9 +749,8 @@ public class ItemRequestService {
             } else {
                 lTitle = title;
             }
-
             if (lTitle != null && lTitle.trim().length() > 126) {
-                lTitle = lTitle.toUpperCase().substring(126);
+                lTitle = lTitle.toUpperCase().substring(0,126);
             } else if (lTitle != null && lTitle.trim().length() <= 0) {
                 lTitle = "";
             }

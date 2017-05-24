@@ -152,7 +152,6 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         bibliographicEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         bibliographicEntity.setLastUpdatedDate(currentDate);
         bibliographicEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
-        bibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
 
         String bibContent = marcUtil.writeMarcXml(bibRecord);
         if (StringUtils.isNotBlank(bibContent)) {
@@ -272,17 +271,10 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         String collectionGroupCode = marcUtil.getDataFieldValue(itemRecord, "876", 'x');
         if (StringUtils.isNotBlank(collectionGroupCode) && getCollectionGroupMap().containsKey(collectionGroupCode)) {
             itemEntity.setCollectionGroupId((Integer) getCollectionGroupMap().get(collectionGroupCode));
-        } else {
-            itemEntity.setCollectionGroupId((Integer) getCollectionGroupMap().get("Open"));
         }
-        itemEntity.setCreatedDate(currentDate);
-        itemEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
-        itemEntity.setLastUpdatedDate(currentDate);
-        itemEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
-        itemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
 
         String useRestrictions = marcUtil.getDataFieldValue(itemRecord, "876", 'h');
-        if (StringUtils.isNotBlank(useRestrictions) && ("In Library Use".equalsIgnoreCase(useRestrictions) || "Supervised Use".equalsIgnoreCase(useRestrictions))) {
+        if (useRestrictions != null) {
             itemEntity.setUseRestrictions(useRestrictions);
         }
 
@@ -294,6 +286,11 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
             errorMessage.append("\n");
             errorMessage.append("Item Owning Institution Id cannot be null");
         }
+
+        itemEntity.setCreatedDate(currentDate);
+        itemEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
+        itemEntity.setLastUpdatedDate(currentDate);
+        itemEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
 
         List<ReportDataEntity> reportDataEntities = null;
         if (!org.springframework.util.CollectionUtils.isEmpty(reportDataEntities)) {
