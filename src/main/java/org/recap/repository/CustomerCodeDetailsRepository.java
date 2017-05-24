@@ -3,6 +3,7 @@ package org.recap.repository;
 
 import org.recap.model.CustomerCodeEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -28,4 +29,7 @@ public interface CustomerCodeDetailsRepository extends JpaRepository<CustomerCod
      * @return the list
      */
     List<CustomerCodeEntity> findByCustomerCodeIn(List<String> customerCodes);
+
+    @Query(value="select customerCode from CustomerCodeEntity customerCode where customerCode.customerCode =:customerCode and customerCode.recapDeliveryRestrictions LIKE ('%EDD%')")
+    CustomerCodeEntity findByCustomerCodeAndRecapDeliveryRestrictionLikeEDD(@Param("customerCode") String customerCode);
 }

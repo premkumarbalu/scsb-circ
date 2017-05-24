@@ -7,6 +7,7 @@ import org.recap.model.*;
 import org.recap.repository.CustomerCodeDetailsRepository;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.ItemStatusDetailsRepository;
+import org.recap.repository.RequestItemDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -33,31 +34,34 @@ public class ItemValidatorService {
      * The Scsb solr client url.
      */
     @Value("${scsb.solr.client.url}")
-    String scsbSolrClientUrl;
+    private String scsbSolrClientUrl;
 
     /**
      * The Item status details repository.
      */
     @Autowired
-    ItemStatusDetailsRepository itemStatusDetailsRepository;
+    private ItemStatusDetailsRepository itemStatusDetailsRepository;
 
     /**
      * The Item details repository.
      */
     @Autowired
-    ItemDetailsRepository itemDetailsRepository;
+    private ItemDetailsRepository itemDetailsRepository;
 
     /**
      * The Item controller.
      */
     @Autowired
-    ItemController itemController;
+    private ItemController itemController;
 
     /**
      * The Customer code details repository.
      */
     @Autowired
-    CustomerCodeDetailsRepository customerCodeDetailsRepository;
+    private CustomerCodeDetailsRepository customerCodeDetailsRepository;
+
+    @Autowired
+    private RequestItemDetailsRepository requestItemDetailsRepository;
 
     /**
      * Item validation response entity.
@@ -67,11 +71,15 @@ public class ItemValidatorService {
      */
     public ResponseEntity itemValidation(ItemRequestInformation itemRequestInformation) {
         List<ItemEntity> itemEntityList = getItemEntities(itemRequestInformation.getItemBarcodes());
+        RequestItemEntity requestItemList;
 
         if (itemRequestInformation.getItemBarcodes().size() == 1) {
             if (itemEntityList != null && !itemEntityList.isEmpty()) {
                 if (!itemEntityList.isEmpty()) {
                     for (ItemEntity itemEntity1 : itemEntityList) {
+                        if (!checkRequestItemStatus(itemEntity1.getBarcode(), ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD)) {
+                            return new ResponseEntity(ReCAPConstants.INITIAL_LOAD_ITEM_EXISTS, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                        }
                         String availabilityStatus = getItemStatus(itemEntity1.getItemAvailabilityStatusId());
                         if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.NOT_AVAILABLE) && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)
                                 || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)
@@ -80,11 +88,21 @@ public class ItemValidatorService {
                         } else if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
                             return new ResponseEntity(ReCAPConstants.RECALL_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                         }
+                        if (!checkRequestItemStatus(itemEntity1.getBarcode(), ReCAPConstants.REQUEST_STATUS_RECALLED)) {
+                            return new ResponseEntity(ReCAPConstants.RECALL_FOR_ITEM_EXISTS, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                        }
+
+                        if (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
+                            CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCodeAndRecapDeliveryRestrictionLikeEDD(itemEntity1.getCustomerCode());
+                            if (customerCodeEntity == null) {
+                                return new ResponseEntity(ReCAPConstants.EDD_REQUEST_NOT_ALLOWED, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                            }
+                        }
                     }
                 }
                 ItemEntity itemEntity = itemEntityList.get(0);
                 ResponseEntity responseEntity1 = null;
-                if (!(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
+                if (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
                     int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation);
                     if (validateCustomerCode == 1) {
                         responseEntity1 = new ResponseEntity(ReCAPConstants.VALID_REQUEST, getHttpHeaders(), HttpStatus.OK);
@@ -148,14 +166,20 @@ public class ItemValidatorService {
         List<BibliographicEntity> bibliographicList;
 
         for (ItemEntity itemEntity : itemEntityList) {
+            if (!checkRequestItemStatus(itemEntity.getBarcode(), ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD)) {
+                return new ResponseEntity(ReCAPConstants.INITIAL_LOAD_ITEM_EXISTS, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+            }
             if (itemEntity.getItemAvailabilityStatusId() == 2 && (itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.RETRIEVAL)
-                    || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)
-                    || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
+                    || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD))) {
                 return new ResponseEntity(ReCAPConstants.INVALID_ITEM_BARCODE, getHttpHeaders(), HttpStatus.BAD_REQUEST);
             } else if (itemEntity.getItemAvailabilityStatusId() == 1 && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
                 return new ResponseEntity(ReCAPConstants.RECALL_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
             }
-            if (!(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD) || itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.BORROW_DIRECT))) {
+            if (!checkRequestItemStatus(itemEntity.getBarcode(), ReCAPConstants.REQUEST_STATUS_RECALLED)) {
+                return new ResponseEntity(ReCAPConstants.RECALL_FOR_ITEM_EXISTS, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+            }
+
+            if (!(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD))) {
                 int validateCustomerCode = checkDeliveryLocation(itemEntity.getCustomerCode(), itemRequestInformation);
                 if (validateCustomerCode == 1) {
                     if (itemEntity.getBibliographicEntities().size() == bibliographicIds.size()) {
@@ -212,7 +236,13 @@ public class ItemValidatorService {
         }
         return bSuccess;
     }
+
+    private boolean checkRequestItemStatus(String barcode, String requestItemStatus) {
+        RequestItemEntity requestItemList = requestItemDetailsRepository.findByItemBarcodeAndRequestStaCode(barcode, requestItemStatus);
+        if (requestItemList != null && requestItemList.getRequestId() > 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }
-
-
-
