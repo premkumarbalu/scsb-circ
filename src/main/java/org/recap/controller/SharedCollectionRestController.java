@@ -49,7 +49,7 @@ public class SharedCollectionRestController {
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<SubmitCollectionResponse> submitCollectionResponseList;
         try {
-            submitCollectionResponseList = submitCollectionService.process(inputRecords,processedBibIdList,idMapToRemoveIndex,ReCAPConstants.REST);
+            submitCollectionResponseList = submitCollectionService.process(inputRecords,processedBibIdList,idMapToRemoveIndex,"");
             if (!processedBibIdList.isEmpty()) {
                 logger.info("Calling indexing service to update data");
                 submitCollectionService.indexData(processedBibIdList);

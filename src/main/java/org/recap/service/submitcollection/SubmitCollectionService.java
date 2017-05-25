@@ -575,7 +575,11 @@ public class SubmitCollectionService {
                 List<ReportDataEntity> reportDataEntities = new ArrayList<>();
                 String owningInstitution = submitCollectionReportList.get(0).getOwningInstitution();
                 if(!submitCollectionReportList.isEmpty()){
-                    reportEntity.setFileName(fileName+"-"+xmlFileName);
+                    if(!StringUtils.isEmpty(xmlFileName)) {
+                        reportEntity.setFileName(fileName + "-" + xmlFileName);
+                    }else{
+                        reportEntity.setFileName(fileName);
+                    }
                     reportEntity.setType(reportType);
                     reportEntity.setCreatedDate(new Date());
                     reportEntity.setInstitutionName(owningInstitution);
