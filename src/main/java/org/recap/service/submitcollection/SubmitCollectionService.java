@@ -347,7 +347,8 @@ public class SubmitCollectionService {
                 idMapToRemoveIndex.put(ReCAPConstants.BIB_ID,String.valueOf(fetchBibliographicEntity.getBibliographicId()));
                 idMapToRemoveIndex.put(ReCAPConstants.HOLDING_ID,String.valueOf(fetchBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId()));
                 idMapToRemoveIndex.put(ReCAPConstants.ITEM_ID,String.valueOf(fetchBibliographicEntity.getItemEntities().get(0).getItemId()));
-                logger.info("Delete dummy record - barcode - "+fetchBibliographicEntity.getItemEntities().get(0).getBarcode());
+                logger.info("Delete dummy record - barcode - {}",fetchBibliographicEntity.getItemEntities().get(0).getBarcode());
+                updateCustomerCode(fetchBibliographicEntity,bibliographicEntity);
                 getBibliographicDetailsRepository().delete(fetchBibliographicEntity);
                 getBibliographicDetailsRepository().flush();
                 setItemAvailabilityStatusForDummyRecord(bibliographicEntity.getItemEntities().get(0));
@@ -356,12 +357,17 @@ public class SubmitCollectionService {
                 savedBibliographicEntity = getBibliographicDetailsRepository().saveAndFlush(bibliographicEntity);
                 saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION,ReCAPConstants.SUBMIT_COLLECTION_INCOMPLETE_RECORD_UPDATE,savedBibliographicEntity.getItemEntities());
                 entityManager.refresh(savedBibliographicEntity);
+                setSubmitCollectionReportInfo(savedBibliographicEntity.getItemEntities(),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST),ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD);
             }
         } else {//if no record found to update, generate exception info
             savedBibliographicEntity = bibliographicEntity;
             setSubmitCollectionReportInfo(bibliographicEntity.getItemEntities(),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST),ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
         }
         return savedBibliographicEntity;
+    }
+
+    private void updateCustomerCode(BibliographicEntity dummyBibliographicEntity,BibliographicEntity updatedBibliographicEntity) {
+        updatedBibliographicEntity.getItemEntities().get(0).setCustomerCode(dummyBibliographicEntity.getItemEntities().get(0).getCustomerCode());
     }
 
     private BibliographicEntity updateCatalogingStatusForItem(BibliographicEntity bibliographicEntity) {
