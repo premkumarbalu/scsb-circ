@@ -14,9 +14,6 @@ public class RequestDataLoadErrorCSVRecord implements Serializable{
     @DataField(pos = 1, columnName = "BarcodesNotAvailable")
     private String barcodes;
 
-    @DataField(pos = 2, columnName = "InvalidStopCodes")
-    private String stopCodes;
-
     public String getBarcodes() {
         return barcodes;
     }
@@ -25,11 +22,4 @@ public class RequestDataLoadErrorCSVRecord implements Serializable{
         this.barcodes = barcodes;
     }
 
-    public String getStopCodes() {
-        return stopCodes;
-    }
-
-    public void setStopCodes(String stopCodes) {
-        this.stopCodes = stopCodes;
-    }
 }

@@ -48,8 +48,7 @@ public class RequestDataLoadService {
             RequestDataLoadErrorCSVRecord requestDataLoadErrorCSVRecord = new RequestDataLoadErrorCSVRecord();
             requestItemEntity = new RequestItemEntity();
             if(!barcodeSet.add(requestDataLoadCSVRecord.getBarcode())){
-                requestDataLoadErrorCSVRecord.setBarcodes(requestDataLoadCSVRecord.getBarcode());
-                requestDataLoadErrorCSVRecords.add(requestDataLoadErrorCSVRecord);
+                logger.info("Barcodes duplicated in the incoming record " + requestDataLoadCSVRecord.getBarcode());
                 continue;
             }
             Map<String,Integer> itemInfo = getItemInfo(requestDataLoadCSVRecord.getBarcode());
@@ -59,19 +58,13 @@ public class RequestDataLoadService {
             if(itemInfo.get(ReCAPConstants.REQUEST_DATA_LOAD_REQUESTING_INST_ID) != null){
                 requestingInstitutionId = itemInfo.get(ReCAPConstants.REQUEST_DATA_LOAD_REQUESTING_INST_ID);
             }
-            Integer requestingInstitution = getRequestingInstitution(requestDataLoadCSVRecord.getStopCode(),requestingInstitutionId);
-            if(itemId == 0 || requestingInstitution == 0){
-                if(requestingInstitution == 0){
-                    requestDataLoadErrorCSVRecord.setStopCodes(requestDataLoadCSVRecord.getStopCode());
-                }
-                if (itemId == 0) {
-                    requestDataLoadErrorCSVRecord.setBarcodes(requestDataLoadCSVRecord.getBarcode());
-                }
+            if(itemId == 0 || requestingInstitutionId == 0){
+                requestDataLoadErrorCSVRecord.setBarcodes(requestDataLoadCSVRecord.getBarcode());
                 requestDataLoadErrorCSVRecords.add(requestDataLoadErrorCSVRecord);
             }else{
                 requestItemEntity.setItemId(itemId);
                 requestItemEntity.setRequestTypeId(getRequestTypeId(requestDataLoadCSVRecord.getDeliveryMethod()));
-                requestItemEntity.setRequestingInstitutionId(requestingInstitution);
+                requestItemEntity.setRequestingInstitutionId(requestingInstitutionId);
                 SimpleDateFormat formatter=new SimpleDateFormat(ReCAPConstants.REQUEST_DATA_LOAD_DATE_FORMAT);
                 if(requestDataLoadCSVRecord.getExpiryDate() != null){
                     requestItemEntity.setRequestExpirationDate(formatter.parse(requestDataLoadCSVRecord.getExpiryDate()));
@@ -107,6 +100,7 @@ public class RequestDataLoadService {
                     itemId = itemEntityList.get(0).getItemId();
                     owningInstitutionId = itemEntityList.get(0).getOwningInstitutionId();
                 }else{
+                    logger.info("Barcodes duplicated in database with different institution "+ barcode);
                     return itemInfo;
                 }
             }
@@ -125,17 +119,4 @@ public class RequestDataLoadService {
         return requestTypeId;
     }
 
-    private Integer getRequestingInstitution(String stopCode,Integer requestingInstitution){
-        Integer requestingInstitutionId = 0;
-        if(!StringUtils.isEmpty(stopCode)){
-            CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(stopCode);
-            if(customerCodeEntity != null){
-                if(customerCodeEntity.getOwningInstitutionId() == null){
-                    return requestingInstitution;
-                }
-                requestingInstitutionId = customerCodeEntity.getOwningInstitutionId();
-            }
-        }
-        return requestingInstitutionId;
-    }
 }
