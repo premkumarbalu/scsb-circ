@@ -79,6 +79,7 @@ public class RequestDataLoadService {
             }
         }
         List<RequestItemEntity> savedRequestItemEntities = requestItemDetailsRepository.save(requestItemEntityList);
+        requestItemDetailsRepository.flush();
         logger.info("Total request item count saved in db "+ savedRequestItemEntities.size());
         return requestDataLoadErrorCSVRecords;
     }
