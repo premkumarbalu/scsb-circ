@@ -67,6 +67,13 @@ public class EmailRouteBuilder {
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
                                     .log("email body for submit collection")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                            .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo("AccessionReconcilation"))
+                                .log("email for accesion Recocilation")
+                                .setHeader("subject", simple("Accession Reconcilation"))
+                                .setBody(simple("${header.emailPayLoad.messageDisplay}"))
+                                .setHeader("from", simple(from))
+                                .setHeader("to", simple("${header.emailPayLoad.to}"))
+                                .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
                     ;
                 }
 

@@ -354,7 +354,6 @@ public final class ReCAPConstants {
     public static final String CGD_NA = "cgd is still in NA status, provide cdg in input xml";
     public static final String RECORD_INCOMPLETE = "Record continue to be incomplete because ";
 
-
     private ReCAPConstants() {}
 
     public static final List getGFAStatusAvailableList() {
@@ -479,5 +478,14 @@ public final class ReCAPConstants {
     public static final String ESCAPED_STARTING_XML_TAG = "&lt;?xml version=&quot;1.0&quot;?&gt;";
     public static final String UNESCAPED_STARTING_XML_TAG = "<?xml version=\"1.0\"?>";
 
-
+    public static final String ACCESSION_RR_FTP_OPTIONS = "&move=.done";
+    public static final String ACCESSION_RECONCILATION_FTP_PUL_ROUTE = "accessionReconcilationFtpPulRoute";
+    public static final String ACCESSION_RECONCILATION_FTP_CUL_ROUTE = "accessionReconcilationFtpCulRoute";
+    public static final String ACCESSION_RECONCILATION_FTP_NYPL_ROUTE = "accessionReconcilationFtpNyplRoute";
+    public static final String ACCESSION_RECONCILATION_FS_PUL_ROUTE = "accessionReconcilationFsPulRoute";
+    public static final String ACCESSION_RECONCILATION_FS_CUL_ROUTE = "accessionReconcilationFsCulRoute";
+    public static final String ACCESSION_RECONCILATION_FS_NYPL_ROUTE = "accessionReconcilationFsNyplRoute";
+    public static final String ACCESSION_RECONCILATION_FILE_NAME="AccessionReconcilation";
+    public static final String ACCESSION_RECONCILATION_SOLR_CLIENT_URL = "accessionReconcilationService/startAccessionReconcilation";
+    public static final String STARTING = "Starting";
 }
