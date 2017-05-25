@@ -81,8 +81,8 @@ public class SubmitCollectionProcessor {
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         String response = "";
         try {
-            response = submitCollectionService.process(inputXml,processedBibIdList,idMapToRemoveIndex,xmlFileName);
-            if (response.contains(ReCAPConstants.SUMBIT_COLLECTION_UPDATE_MESSAGE)) {
+            submitCollectionService.process(inputXml,processedBibIdList,idMapToRemoveIndex,xmlFileName);
+            if (processedBibIdList.size()>0) {
                 submitCollectionService.indexData(processedBibIdList);
                 if (idMapToRemoveIndex.size()>0) {//remove the incomplete record from solr index
                     submitCollectionService.removeSolrIndex(idMapToRemoveIndex);

@@ -2,6 +2,7 @@ package org.recap.controller;
 
 import org.recap.ReCAPConstants;
 import org.recap.model.deaccession.DeAccessionRequest;
+import org.recap.model.submitcollection.SubmitCollectionResponse;
 import org.recap.service.deaccession.DeAccessionService;
 import org.recap.service.submitcollection.SubmitCollectionService;
 import org.slf4j.Logger;
@@ -34,7 +35,8 @@ public class SharedCollectionRestController {
     DeAccessionService deAccessionService;
 
     /**
-     * Submit collection response entity.
+     * This controller method is the entry point for submit collection which receives
+     * input xml either in marc xml or scsb xml and pass it to the service class
      *
      * @param inputRecords the input records
      * @return the response entity
@@ -43,25 +45,23 @@ public class SharedCollectionRestController {
     @ResponseBody
     public ResponseEntity submitCollection(@RequestBody String inputRecords){
         ResponseEntity responseEntity;
-        String response;
         List<Integer> processedBibIdList = new ArrayList<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
+        List<SubmitCollectionResponse> submitCollectionResponseList;
         try {
-            response = submitCollectionService.process(inputRecords,processedBibIdList,idMapToRemoveIndex,ReCAPConstants.REST);
-            if (response.contains(ReCAPConstants.SUMBIT_COLLECTION_UPDATE_MESSAGE)) {
-                String indexResponse = submitCollectionService.indexData(processedBibIdList);
-                if (idMapToRemoveIndex.size()>0) {//remove the incomplete record from solr index
-                    response  = submitCollectionService.removeSolrIndex(idMapToRemoveIndex);
-                }
-                if(!indexResponse.equalsIgnoreCase(ReCAPConstants.SUCCESS)){
-                    response = indexResponse;
-                }
+            submitCollectionResponseList = submitCollectionService.process(inputRecords,processedBibIdList,idMapToRemoveIndex,ReCAPConstants.REST);
+            if (!processedBibIdList.isEmpty()) {
+                logger.info("Calling indexing service to update data");
+                submitCollectionService.indexData(processedBibIdList);
             }
-            responseEntity = new ResponseEntity(response,getHttpHeaders(), HttpStatus.OK);
+            if (!idMapToRemoveIndex.isEmpty()) {//remove the incomplete record from solr index
+                logger.info("Calling indexing to remove dummy record");
+                submitCollectionService.removeSolrIndex(idMapToRemoveIndex);
+            }
+            responseEntity = new ResponseEntity(submitCollectionResponseList,getHttpHeaders(), HttpStatus.OK);
         } catch (Exception e) {
             logger.error(ReCAPConstants.LOG_ERROR,e);
-            response = ReCAPConstants.FAILURE;
-            responseEntity = new ResponseEntity(response,getHttpHeaders(), HttpStatus.OK);
+            responseEntity = new ResponseEntity(ReCAPConstants.SUBMIT_COLLECTION_INTERNAL_ERROR,getHttpHeaders(), HttpStatus.OK);
         }
         return responseEntity;
     }

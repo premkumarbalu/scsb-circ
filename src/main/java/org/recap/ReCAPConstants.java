@@ -151,8 +151,10 @@ public final class ReCAPConstants {
     public static final String SUMBIT_COLLECTION_NOT_UPDATED_MESSAGE = "No record(s) updated.";
 
     public static final String ITEM_STATUS_AVAILABLE = "Available";
-    public static final String INVALID_SCSB_XML_FORMAT_MESSAGE = "Please provide valid SCSB xml format";
-    public static final String INVALID_MARC_XML_FORMAT_MESSAGE = "Please provide valid Marc xml format";
+    public static final String INVALID_SCSB_XML_FORMAT_MESSAGE = "Invalid SCSB xml format";
+    public static final String INVALID_MARC_XML_FORMAT_MESSAGE = "Invalid Marc xml format";
+    public static final String INVALID_MARC_XML_FORMAT_IN_SCSBXML_MESSAGE = "Invalid Marc xml content with in SCSB xml";
+    public static final String SCSB_SOLR_CLIENT_SERVICE_UNAVAILABLE = "Scsb Solr Client Service is Unavailable.";
     public static final String SUBMIT_COLLECTION_INTERNAL_ERROR = "Internal error occured during submit collection";
     public static final String SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE = "Maximum allowed input record is ";
     public static final String COMPLETE_STATUS = "Complete";
@@ -348,6 +350,9 @@ public final class ReCAPConstants {
     public static final String REQUEST_DATA_LOAD_PATRON_ID = "0000000";
     public static final String REQUEST_DATA_LOAD_ITEM_ID = "itemId";
     public static final String REQUEST_DATA_LOAD_REQUESTING_INST_ID = "requestingInstitutionId";
+    public static final String USE_RESTRICTION_UNAVAILABLE = "use restriction is unavailable in the input xml";
+    public static final String CGD_NA = "cgd is still in NA status, provide cdg in input xml";
+    public static final String RECORD_INCOMPLETE = "Record continue to be incomplete because ";
 
 
     private ReCAPConstants() {}
@@ -397,6 +402,7 @@ public final class ReCAPConstants {
 
     public static final String COMPLETED = "Completed";
 
+    //Added to handle special character while parsing xml
     public static final String ESCAPED_STARTING_COLLECTION_TAG = "&lt;collection xmlns=&quot;http://www.loc.gov/MARC21/slim&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd&quot;&gt;";
     public static final String UNESCAPED_STARTING_COLLECTION_TAG = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">";
     public static final String ESCAPED_ENDING_COLLECTION_TAG = "&lt;/collection&gt;";
