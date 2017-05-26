@@ -1,7 +1,6 @@
 package org.recap.service.submitcollection;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.marc4j.MarcException;
 import org.marc4j.marc.Record;
@@ -105,16 +104,14 @@ public class SubmitCollectionService {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String reponse = null;
-        String escapedString = StringEscapeUtils.escapeXml10(inputRecords);
-        String finalXmlString = replaceEscapedTags(escapedString);
         List<SubmitCollectionResponse> submitColletionResponseList = new ArrayList<>();
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
         try {
             if (!"".equals(inputRecords)) {
                 if (inputRecords.contains(ReCAPConstants.BIBRECORD_TAG)) {
-                    reponse = processSCSB(finalXmlString, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
+                    reponse = processSCSB(inputRecords, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
                 } else {
-                    reponse = processMarc(finalXmlString, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
+                    reponse = processMarc(inputRecords, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
                 }
                 if (reponse != null){//This happens when there is a failure
                     setResponse(reponse, submitColletionResponseList);
@@ -622,50 +619,6 @@ public class SubmitCollectionService {
         }
     }
 
-    //added for escaping special character in the xml content
-    private String replaceEscapedTags(String xmlString){
-        String updatedString = xmlString.replaceAll(ReCAPConstants.ESCAPED_STARTING_COLLECTION_TAG,ReCAPConstants.UNESCAPED_STARTING_COLLECTION_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_COLLECTION_TAG,ReCAPConstants.UNESCAPED_ENDING_COLLECTION_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_BIBRECORDS_TAG,ReCAPConstants.UNESCAPED_STARTING_BIBRECORDS_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_BIBRECORDS_TAG,ReCAPConstants.UNESCAPED_ENDING_BIBRECORDS_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_BIBRECORD_TAG,ReCAPConstants.UNESCAPED_STARTING_BIBRECORD_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_BIBRECORD_TAG,ReCAPConstants.UNESCAPED_ENDING_BIBRECORD_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_BIB_TAG,ReCAPConstants.UNESCAPED_STARTING_BIB_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_BIB_TAG,ReCAPConstants.UNESCAPED_ENDING_BIB_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_OWNINSTID_TAG,ReCAPConstants.UNESCAPED_STARTING_OWNINSTID_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_OWNINSTID_TAG,ReCAPConstants.UNESCAPED_ENDING_OWNINSTID_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_OWNINSTID_BIBID_TAG,ReCAPConstants.UNESCAPED_STARTING_OWNINSTID_BIBID_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_OWNINSTID_BIBID_TAG,ReCAPConstants.UNESCAPED_ENDING_OWNINSTID_BIBID_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_CONTENT_TAG,ReCAPConstants.UNESCAPED_STARTING_CONTENT_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_CONTENT_TAG,ReCAPConstants.UNESCAPED_ENDING_CONTENT_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_INNER_COLLECTION_TAG,ReCAPConstants.UNESCAPED_STARTING_INNER_COLLECTION_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_HOLDINGS_TAG,ReCAPConstants.UNESCAPED_STARTING_HOLDINGS_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_HOLDINGS_TAG,ReCAPConstants.UNESCAPED_ENDING_HOLDINGS_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_HOLDING_TAG,ReCAPConstants.UNESCAPED_STARTING_HOLDING_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_HOLDING_TAG,ReCAPConstants.UNESCAPED_ENDING_HOLDING_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_OWNINGINST_HOLDID_TAG,ReCAPConstants.UNESCAPED_STARTING_OWNINGINST_HOLDID_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_OWNINGINST_HOLDID_TAG,ReCAPConstants.UNESCAPED_ENDING_OWNINGINST_HOLDID_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_ITEMS_HOLDID_TAG,ReCAPConstants.UNESCAPED_STARTING_ITEMS_HOLDID_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_ITEMS_HOLDID_TAG,ReCAPConstants.UNESCAPED_ENDING_ITEMS_HOLDID_TAG);
-
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_RECORD_TAG,ReCAPConstants.UNESCAPED_STARTING_RECORD_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_RECORD_TAG,ReCAPConstants.UNESCAPED_ENDING_RECORD_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_LEADER_TAG,ReCAPConstants.UNESCAPED_STARTING_LEADER_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_LEADER_TAG,ReCAPConstants.UNESCAPED_ENDING_LEADER_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_CONTROLFIELD_TAG,ReCAPConstants.UNESCAPED_STARTING_CONTROLFIELD_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_CONTROLFIELD_TAG,ReCAPConstants.UNESCAPED_ENDING_CONTROLFIELD_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_DATAFIELD_TAG,ReCAPConstants.UNESCAPED_STARTING_DATAFIELD_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_DATAFIELD_TAG,ReCAPConstants.UNESCAPED_ENDING_DATAFIELD_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_SUBFIELD_TAG,ReCAPConstants.UNESCAPED_STARTING_SUBFIELD_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_ENDING_SUBFIELD_TAG,ReCAPConstants.UNESCAPED_ENDING_SUBFIELD_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_CLOSING_TAG_WITH_QUOTE,ReCAPConstants.UNESCAPED_CLOSING_TAG_WITH_QUOTE);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_CLOSING_TAG,ReCAPConstants.UNESCAPED_CLOSING_TAG);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_QUOTE,ReCAPConstants.UNESCAPED_QUOTE);
-        updatedString = updatedString.replaceAll(ReCAPConstants.ESCAPED_STARTING_XML_TAG,ReCAPConstants.UNESCAPED_STARTING_XML_TAG);
-
-
-        return updatedString;
-    }
 
     /**
      * Gets bibliographic details repository.
