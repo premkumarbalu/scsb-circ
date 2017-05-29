@@ -452,7 +452,7 @@ public class SubmitCollectionService {
         List<HoldingsEntity> fetchedHoldingsEntityList = fetchBibliographicEntity.getHoldingsEntities();
         List<HoldingsEntity> holdingsEntityList = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
         boolean isHoldingMatched = false;
-        for (HoldingsEntity holdingsEntity : holdingsEntityList) {// 1 bib 1 hold 2 item
+        for (HoldingsEntity holdingsEntity : holdingsEntityList) {
             for (HoldingsEntity fetchedHoldingEntity : fetchedHoldingsEntityList) {
                 if (fetchedHoldingEntity.getOwningInstitutionHoldingsId().equalsIgnoreCase(holdingsEntity.getOwningInstitutionHoldingsId())) {
                     copyHoldingsEntity(fetchedHoldingEntity, holdingsEntity,true);
@@ -473,7 +473,6 @@ public class SubmitCollectionService {
     private BibliographicEntity updateCompleteRecord(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity,
                                                      Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
         BibliographicEntity savedOrUnsavedBibliographicEntity;
-        setSubmitCollectionRejectionInfo(fetchBibliographicEntity, submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST));
         copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity);
         List<HoldingsEntity> fetchedHoldingsEntityList = fetchBibliographicEntity.getHoldingsEntities();
         List<HoldingsEntity> incomingHoldingsEntityList = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
@@ -520,6 +519,7 @@ public class SubmitCollectionService {
             updateCatalogingStatusForBib(fetchBibliographicEntity);
             savedOrUnsavedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(fetchBibliographicEntity);
             setSubmitCollectionReportInfo(updatedItemEntityList,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST),ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD);
+            setSubmitCollectionRejectionInfo(fetchBibliographicEntity, submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST));
             return savedOrUnsavedBibliographicEntity;
         } catch (Exception e) {
             setSubmitCollectionReportInfo(updatedItemEntityList,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD);
