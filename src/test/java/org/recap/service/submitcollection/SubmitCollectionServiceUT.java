@@ -814,8 +814,8 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         List<Integer> processedBibIdList = new ArrayList<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process(updatedMarcForPUL,processedBibIdList,idMapToRemoveIndex,ReCAPConstants.REST);
-        String response = submitCollectionResponseList.get(0).getMessage();
-        assertEquals("RejectedRecord",response);
+        String response = submitCollectionResponseList.get(1).getMessage();
+        assertEquals("RejectionRecord",response);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
         String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
         List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);
