@@ -64,4 +64,14 @@ public interface BibliographicDetailsRepository extends JpaRepository<Bibliograp
     @Query("UPDATE BibliographicEntity bib SET bib.isDeleted = false, bib.lastUpdatedBy = :lastUpdatedBy, bib.lastUpdatedDate = :lastUpdatedDate WHERE bib.bibliographicId IN :bibliographicIds")
     int markBibsAsNotDeleted(@Param("bibliographicIds") List<Integer> bibliographicIds, @Param("lastUpdatedBy") String lastUpdatedBy, @Param("lastUpdatedDate") Date lastUpdatedDate);
 
+    /**
+     * Find bibliographic entity by using owning institution id and owning institution bib id.
+     *
+     * @param owningInstitutionId    the owning institution id
+     * @param owningInstitutionBibId the owning institution bib id
+     * @return the bibliographic entity
+     */
+    BibliographicEntity findByOwningInstitutionIdAndOwningInstitutionBibId(@Param("owningInstitutionId") Integer owningInstitutionId, @Param("owningInstitutionBibId") String owningInstitutionBibId);
+
+
 }
