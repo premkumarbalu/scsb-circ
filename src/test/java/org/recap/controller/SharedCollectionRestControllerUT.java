@@ -148,8 +148,9 @@ public class SharedCollectionRestControllerUT extends BaseTestCase {
                 .content(updatedMarcXml))
                 .andExpect(status().isOk())
                 .andReturn();
+        mvcResult.getResponse().getContentAsString();
         String result = mvcResult.getResponse().getContentAsString();
-        assertEquals("No record(s) updated., Exception report generated",result);
+        assertEquals("[{\"itemBarcode\":\"32101068878931\",\"message\":\"ExceptionRecord\"}]",result);
     }
 
     @Test

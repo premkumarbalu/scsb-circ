@@ -9,8 +9,7 @@ import org.recap.converter.MarcToBibEntityConverter;
 import org.recap.converter.SCSBToBibEntityConverter;
 import org.recap.converter.XmlToBibEntityConverterInterface;
 import org.recap.model.*;
-import org.recap.model.jaxb.BibRecord;
-import org.recap.model.jaxb.JAXBHandler;
+import org.recap.model.jaxb.*;
 import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.model.submitcollection.SubmitCollectionResponse;
@@ -173,12 +172,12 @@ public class SubmitCollectionService {
         if (CollectionUtils.isNotEmpty(records)) {
             int count = 1;
             for (Record record : records) {
-                logger.info("Process record no: {}",count);
+                logger.info("Processing record no: {}",count);
                 BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndex);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIdList.add(bibliographicEntity.getBibliographicId());
                 }
-                logger.info("Process completed for record no: {}",count);
+                logger.info("Processing completed for record no: {}",count);
                 count ++;
             }
         }
@@ -206,7 +205,7 @@ public class SubmitCollectionService {
         }
         int count = 1;
         for (BibRecord bibRecord : bibRecords.getBibRecords()) {
-            logger.info("Process record no: {}",count);
+            logger.info("Processing Bib record no: {}",count);
             try {
                 BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndex);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
@@ -219,13 +218,12 @@ public class SubmitCollectionService {
                 logger.error(ReCAPConstants.LOG_ERROR,rae);
                 return ReCAPConstants.SCSB_SOLR_CLIENT_SERVICE_UNAVAILABLE;
             }
-            logger.info("Process completed for record no: {}",count);
+            logger.info("Process completed for Bib record no: {}",count);
             count ++;
         }
         logger.info("Total time take {}",stopWatch.getTotalTimeSeconds());
         return null;
     }
-
 
     private BibliographicEntity loadData(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,Map<String,String> idMapToRemoveIndex){
         BibliographicEntity savedBibliographicEntity = null;
@@ -288,9 +286,9 @@ public class SubmitCollectionService {
                 if(StringUtils.isEmpty(itemEntity.getUseRestrictions())){
                     sbMessage.append("-").append(ReCAPConstants.RECORD_INCOMPLETE).append(ReCAPConstants.USE_RESTRICTION_UNAVAILABLE);
                 }
-                if(itemEntity.getCollectionGroupEntity().getCollectionGroupCode().equals(ReCAPConstants.NOT_AVAILABLE_CGD)){
+/*                if(itemEntity.getCollectionGroupEntity().getCollectionGroupCode().equals(ReCAPConstants.NOT_AVAILABLE_CGD)){
                     sbMessage.append(ReCAPConstants.CGD_NA);
-                }
+                }*/
             }
             submitCollectionExceptionInfo.setMessage(sbMessage.toString());
             submitCollectionExceptionInfos.add(submitCollectionExceptionInfo);
@@ -336,23 +334,23 @@ public class SubmitCollectionService {
     public BibliographicEntity updateBibliographicEntity(BibliographicEntity bibliographicEntity,Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,Map<String,String> idMapToRemoveIndex) {
         BibliographicEntity savedBibliographicEntity;
         BibliographicEntity fetchBibliographicEntity = getBibEntityUsingBarcode(bibliographicEntity);
-        if(fetchBibliographicEntity != null ){//update exisiting complete record
-            if(fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId())){
+        if(fetchBibliographicEntity != null ){//update existing record
+            if(fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId())){//update existing complete record
                 savedBibliographicEntity = updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
                 saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION,ReCAPConstants.SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE,savedBibliographicEntity.getItemEntities());
-            } else {//update existing dummy record if any
-                idMapToRemoveIndex.put(ReCAPConstants.BIB_ID,String.valueOf(fetchBibliographicEntity.getBibliographicId()));
-                idMapToRemoveIndex.put(ReCAPConstants.HOLDING_ID,String.valueOf(fetchBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId()));
-                idMapToRemoveIndex.put(ReCAPConstants.ITEM_ID,String.valueOf(fetchBibliographicEntity.getItemEntities().get(0).getItemId()));
-                logger.info("Delete dummy record - barcode - {}",fetchBibliographicEntity.getItemEntities().get(0).getBarcode());
-                updateCustomerCode(fetchBibliographicEntity,bibliographicEntity);
-                getBibliographicDetailsRepository().delete(fetchBibliographicEntity);
-                getBibliographicDetailsRepository().flush();
-                setItemAvailabilityStatusForDummyRecord(bibliographicEntity.getItemEntities().get(0));
-                updateCatalogingStatusForItem(bibliographicEntity);
-                updateCatalogingStatusForBib(fetchBibliographicEntity);
-                savedBibliographicEntity = getBibliographicDetailsRepository().saveAndFlush(bibliographicEntity);
-                saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION,ReCAPConstants.SUBMIT_COLLECTION_INCOMPLETE_RECORD_UPDATE,savedBibliographicEntity.getItemEntities());
+            } else {//update existing dummy record if any (Removes existion dummy record and creates new record for the same barcode based on the input xml)
+                updateCustomerCode(fetchBibliographicEntity,bibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it, this happens mostly for CUL
+                removeDummyRecord(idMapToRemoveIndex, fetchBibliographicEntity);
+                BibliographicEntity fetchedBibliographicEntity = getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(),bibliographicEntity.getOwningInstitutionBibId());
+                BibliographicEntity bibliographicEntityToSave = bibliographicEntity;
+                setItemAvailabilityStatus(bibliographicEntity.getItemEntities().get(0));
+                updateCatalogingStatusForItem(bibliographicEntityToSave);
+                updateCatalogingStatusForBib(bibliographicEntityToSave);
+                if(fetchedBibliographicEntity != null){//1Bib n holding n item
+                    bibliographicEntityToSave = updateExistingRecordForDummy(fetchedBibliographicEntity,bibliographicEntity);
+                }
+                savedBibliographicEntity = getBibliographicDetailsRepository().saveAndFlush(bibliographicEntityToSave);
+                saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION,ReCAPConstants.SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE,savedBibliographicEntity.getItemEntities());
                 entityManager.refresh(savedBibliographicEntity);
                 setSubmitCollectionReportInfo(savedBibliographicEntity.getItemEntities(),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST),ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD);
             }
@@ -363,6 +361,25 @@ public class SubmitCollectionService {
         return savedBibliographicEntity;
     }
 
+    private void removeDummyRecord(Map<String, String> idMapToRemoveIndex, BibliographicEntity fetchBibliographicEntity) {
+        if (isNonCompleteBib(fetchBibliographicEntity)) {//This check is to not delete the existing bib which is complete for bound with (This happens when accession done for boundwith item which created as dummy and submit collection done for this boundwith item)
+            idMapToRemoveIndex.put(ReCAPConstants.BIB_ID,String.valueOf(fetchBibliographicEntity.getBibliographicId()));
+            idMapToRemoveIndex.put(ReCAPConstants.HOLDING_ID,String.valueOf(fetchBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId()));
+            idMapToRemoveIndex.put(ReCAPConstants.ITEM_ID,String.valueOf(fetchBibliographicEntity.getItemEntities().get(0).getItemId()));
+            logger.info("Delete dummy record - barcode - {}",fetchBibliographicEntity.getItemEntities().get(0).getBarcode());
+            getBibliographicDetailsRepository().delete(fetchBibliographicEntity);
+            getBibliographicDetailsRepository().flush();
+        }
+    }
+
+    private boolean isNonCompleteBib(BibliographicEntity bibliographicEntity){
+        boolean isNotComplete = true;
+        if(bibliographicEntity.getCatalogingStatus().equals(ReCAPConstants.COMPLETE_STATUS)){
+            isNotComplete = false;
+        }
+        return isNotComplete;
+    }
+
     private void updateCustomerCode(BibliographicEntity dummyBibliographicEntity,BibliographicEntity updatedBibliographicEntity) {
         updatedBibliographicEntity.getItemEntities().get(0).setCustomerCode(dummyBibliographicEntity.getItemEntities().get(0).getCustomerCode());
     }
@@ -371,6 +388,8 @@ public class SubmitCollectionService {
         for(ItemEntity itemEntity:bibliographicEntity.getItemEntities()){
             if(itemEntity.getUseRestrictions()==null || itemEntity.getCollectionGroupId()==null){
                 itemEntity.setCatalogingStatus(ReCAPConstants.INCOMPLETE_STATUS);
+            }else {
+                itemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
             }
         }
         return bibliographicEntity;
@@ -387,7 +406,7 @@ public class SubmitCollectionService {
         return fetchBibliographicEntity;
     }
 
-    private void setItemAvailabilityStatusForDummyRecord(ItemEntity itemEntity){
+    private void setItemAvailabilityStatus(ItemEntity itemEntity){
         if(itemEntity.getItemAvailabilityStatusId()==null) {
             itemEntity.setItemAvailabilityStatusId((Integer) getItemStatusCodeIdMap().get("Available"));
         }
@@ -428,36 +447,58 @@ public class SubmitCollectionService {
         submitColletionResponseList.add(submitCollectionResponse);
     }
 
+    private BibliographicEntity updateExistingRecordForDummy(BibliographicEntity fetchBibliographicEntity, BibliographicEntity bibliographicEntity) {
+        copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity);
+        List<HoldingsEntity> fetchedHoldingsEntityList = fetchBibliographicEntity.getHoldingsEntities();
+        List<HoldingsEntity> holdingsEntityList = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
+        boolean isHoldingMatched = false;
+        for (HoldingsEntity holdingsEntity : holdingsEntityList) {
+            for (HoldingsEntity fetchedHoldingEntity : fetchedHoldingsEntityList) {
+                if (fetchedHoldingEntity.getOwningInstitutionHoldingsId().equalsIgnoreCase(holdingsEntity.getOwningInstitutionHoldingsId())) {
+                    copyHoldingsEntity(fetchedHoldingEntity, holdingsEntity,true);
+                    isHoldingMatched = true;
+                } else {
+                    isHoldingMatched = false;
+                }
+            }
+        }
+        if (!isHoldingMatched) {
+            fetchBibliographicEntity.getHoldingsEntities().addAll(bibliographicEntity.getHoldingsEntities());
+        }
+        fetchBibliographicEntity.getItemEntities().addAll(bibliographicEntity.getItemEntities());
+        return fetchBibliographicEntity;
+    }
+
+
     private BibliographicEntity updateCompleteRecord(BibliographicEntity fetchBibliographicEntity,BibliographicEntity bibliographicEntity,
                                                      Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
         BibliographicEntity savedOrUnsavedBibliographicEntity;
-        setSubmitCollectionRejectionInfo(fetchBibliographicEntity, submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST));
         copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity);
-        List<HoldingsEntity> fetchHoldingsEntities = fetchBibliographicEntity.getHoldingsEntities();
-        List<HoldingsEntity> holdingsEntities = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
+        List<HoldingsEntity> fetchedHoldingsEntityList = fetchBibliographicEntity.getHoldingsEntities();
+        List<HoldingsEntity> incomingHoldingsEntityList = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
         List<ItemEntity> updatedItemEntityList = new ArrayList<>();
-        for (Iterator iholdings = holdingsEntities.iterator(); iholdings.hasNext(); ) {
-            HoldingsEntity holdingsEntity = (HoldingsEntity) iholdings.next();
-            for (int j = 0; j < fetchHoldingsEntities.size(); j++) {
-                HoldingsEntity fetchHolding = fetchHoldingsEntities.get(j);
-                if (fetchHolding.getOwningInstitutionHoldingsId().equalsIgnoreCase(holdingsEntity.getOwningInstitutionHoldingsId())) {
-                    copyHoldingsEntity(fetchHolding, holdingsEntity);
-                    iholdings.remove();
-                } else {
-                    List<ItemEntity> fetchedItemEntityList = fetchHolding.getItemEntities();
-                    List<ItemEntity> itemEntityList = holdingsEntity.getItemEntities();
+        for (Iterator incomingHoldingsIterator = incomingHoldingsEntityList.iterator(); incomingHoldingsIterator.hasNext(); ) {
+            HoldingsEntity incomingHoldingsEntity = (HoldingsEntity) incomingHoldingsIterator.next();
+            for (int j = 0; j < fetchedHoldingsEntityList.size(); j++) {
+                HoldingsEntity fetchedHoldingsEntity = fetchedHoldingsEntityList.get(j);
+                if (fetchedHoldingsEntity.getOwningInstitutionHoldingsId().equalsIgnoreCase(incomingHoldingsEntity.getOwningInstitutionHoldingsId())) {
+                    copyHoldingsEntity(fetchedHoldingsEntity, incomingHoldingsEntity,false);
+                    incomingHoldingsIterator.remove();
+                } else {//Added to handle bound with records
+                    List<ItemEntity> fetchedItemEntityList = fetchedHoldingsEntity.getItemEntities();
+                    List<ItemEntity> itemEntityList = incomingHoldingsEntity.getItemEntities();
                     for (ItemEntity fetchedItemEntity : fetchedItemEntityList) {
                         for (ItemEntity itemEntity : itemEntityList) {
                             if (fetchedItemEntity.getOwningInstitutionItemId().equals(itemEntity.getOwningInstitutionItemId())) {
-                                copyHoldingsEntity(fetchHolding, holdingsEntity);
-                                iholdings.remove();
+                                copyHoldingsEntity(fetchedHoldingsEntity, incomingHoldingsEntity,false);
+                                incomingHoldingsIterator.remove();
                             }
                         }
                     }
                 }
             }
         }
-        fetchHoldingsEntities.addAll(holdingsEntities);
+        fetchedHoldingsEntityList.addAll(incomingHoldingsEntityList);
         // Item
         List<ItemEntity> fetchItemsEntities = fetchBibliographicEntity.getItemEntities();
         List<ItemEntity> itemsEntities = new ArrayList<>(bibliographicEntity.getItemEntities());
@@ -472,12 +513,13 @@ public class SubmitCollectionService {
             }
         }
         fetchItemsEntities.addAll(itemsEntities);
-        fetchBibliographicEntity.setHoldingsEntities(fetchHoldingsEntities);
+        fetchBibliographicEntity.setHoldingsEntities(fetchedHoldingsEntityList);
         fetchBibliographicEntity.setItemEntities(fetchItemsEntities);
         try {
             updateCatalogingStatusForBib(fetchBibliographicEntity);
             savedOrUnsavedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(fetchBibliographicEntity);
             setSubmitCollectionReportInfo(updatedItemEntityList,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST),ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD);
+            setSubmitCollectionRejectionInfo(fetchBibliographicEntity, submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST));
             return savedOrUnsavedBibliographicEntity;
         } catch (Exception e) {
             setSubmitCollectionReportInfo(updatedItemEntityList,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD);
@@ -495,15 +537,18 @@ public class SubmitCollectionService {
         return fetchBibliographicEntity;
     }
 
-    private HoldingsEntity copyHoldingsEntity(HoldingsEntity fetchHoldingsEntity, HoldingsEntity holdingsEntity){
+    private HoldingsEntity copyHoldingsEntity(HoldingsEntity fetchHoldingsEntity, HoldingsEntity holdingsEntity,boolean isForDummyRecord){
         fetchHoldingsEntity.setContent(holdingsEntity.getContent());
         fetchHoldingsEntity.setDeleted(holdingsEntity.isDeleted());
         fetchHoldingsEntity.setLastUpdatedBy(holdingsEntity.getLastUpdatedBy());
         fetchHoldingsEntity.setLastUpdatedDate(holdingsEntity.getLastUpdatedDate());
+        if(isForDummyRecord){
+            fetchHoldingsEntity.getItemEntities().addAll(holdingsEntity.getItemEntities());
+        }
         return fetchHoldingsEntity;
     }
 
-    private ItemEntity copyItemEntity(ItemEntity fetchItemEntity, ItemEntity itemEntity,List<ItemEntity> updatedItemEntityList) {
+    private ItemEntity copyItemEntity(ItemEntity fetchItemEntity, ItemEntity itemEntity,List<ItemEntity> itemEntityList) {
         fetchItemEntity.setBarcode(itemEntity.getBarcode());
         fetchItemEntity.setDeleted(itemEntity.isDeleted());
         fetchItemEntity.setLastUpdatedBy(itemEntity.getLastUpdatedBy());
@@ -529,7 +574,7 @@ public class SubmitCollectionService {
             fetchItemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
         }
         logger.info("updating existing barcode - "+fetchItemEntity.getBarcode());
-        updatedItemEntityList.add(fetchItemEntity);
+        itemEntityList.add(fetchItemEntity);
         return fetchItemEntity;
     }
 

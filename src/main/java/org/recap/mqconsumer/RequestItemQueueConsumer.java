@@ -330,7 +330,7 @@ public class RequestItemQueueConsumer {
             if (itemInformationResponse.getRequestId() != null && itemInformationResponse.getRequestId() > 0) {
                 intRecordId = itemInformationResponse.getRequestId();
             }
-            itemRequestService.saveItemChangeLogEntity(intRecordId, itemRequestService.getUser(itemInformationResponse.getUsername()), operationType, body);
+            itemRequestService.saveItemChangeLogEntity(intRecordId, itemRequestService.getUser(itemInformationResponse.getUsername()), operationType, itemInformationResponse.getRequestNotes());
             itemRequestService.updateRecapRequestItem(itemInformationResponse);
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);

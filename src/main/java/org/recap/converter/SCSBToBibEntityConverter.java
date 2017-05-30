@@ -7,9 +7,11 @@ import org.marc4j.marc.Record;
 import org.recap.ReCAPConstants;
 import org.recap.model.*;
 import org.recap.model.jaxb.BibRecord;
+import org.recap.model.jaxb.Holding;
+import org.recap.model.jaxb.Holdings;
+import org.recap.model.jaxb.Items;
+import org.recap.model.jaxb.marc.CollectionType;
 import org.recap.model.marc.BibMarcRecord;
-import org.recap.model.marc.HoldingsMarcRecord;
-import org.recap.model.marc.ItemMarcRecord;
 import org.recap.repository.BibliographicDetailsRepository;
 import org.recap.repository.CollectionGroupDetailsRepository;
 import org.recap.repository.InstitutionDetailsRepository;
@@ -89,47 +91,47 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
             processBib = true;
         }
 
-        List<HoldingsMarcRecord> holdingsMarcRecords = bibMarcRecord.getHoldingsMarcRecords();
-        if (CollectionUtils.isNotEmpty(holdingsMarcRecords)) {
-            for (HoldingsMarcRecord holdingsMarcRecord : holdingsMarcRecords) {
-                boolean processHoldings = false;
-                Record holdingsRecord = holdingsMarcRecord.getHoldingsRecord();
-                Map<String, Object> holdingsMap = processAndValidateHoldingsEntity(bibliographicEntity, institutionName, holdingsRecord, bibRecord,bibRecordObject,currentDate);
+        List<Holdings> holdings = bibRecord.getHoldings();
+        for(Holdings holdings1 : holdings){
+            for(Holding holding:holdings1.getHolding()){
+                String owninigInstitutionHoldingId = holding.getOwningInstitutionHoldingsId();
+                CollectionType holdingContentCollection = holding.getContent().getCollection();
+                String holdingsContent = holdingContentCollection.serialize(holdingContentCollection);
+                List<Record> holdingsRecords = marcUtil.convertMarcXmlToRecord(holdingsContent);
+                Map<String, Object> holdingsMap = processAndValidateHoldingsEntity(bibliographicEntity, institutionName, owninigInstitutionHoldingId,holdingsRecords.get(0), bibRecord,bibRecordObject,currentDate);
                 HoldingsEntity holdingsEntity = (HoldingsEntity) holdingsMap.get("holdingsEntity");
                 ReportEntity holdingsReportEntity = (ReportEntity) holdingsMap.get("holdingsReportEntity");
+                boolean processHoldings = false;
                 if (holdingsReportEntity != null) {
                     reportEntities.add(holdingsReportEntity);
                 } else {
                     processHoldings = true;
                     holdingsEntities.add(holdingsEntity);
                 }
-                String holdingsCallNumber = marcUtil.getDataFieldValue(holdingsRecord, "852", 'h');
-                Character holdingsCallNumberType = marcUtil.getInd1(holdingsRecord, "852", 'h');
-
-                List<ItemMarcRecord> itemMarcRecordList = holdingsMarcRecord.getItemMarcRecordList();
-                if (CollectionUtils.isNotEmpty(itemMarcRecordList)) {
-                    for (ItemMarcRecord itemMarcRecord : itemMarcRecordList) {
-                        Record itemRecord = itemMarcRecord.getItemRecord();
-                        Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, holdingsEntity, owningInstitutionId, holdingsCallNumber, holdingsCallNumberType, itemRecord, institutionName, bibRecord, bibRecordObject,currentDate);
-                        ItemEntity itemEntity = (ItemEntity) itemMap.get("itemEntity");
-                        ReportEntity itemReportEntity = (ReportEntity) itemMap.get("itemReportEntity");
-                        if (itemReportEntity != null) {
-                            reportEntities.add(itemReportEntity);
-                        } else if (processHoldings) {
-                            if (holdingsEntity.getItemEntities() == null) {
-                                holdingsEntity.setItemEntities(new ArrayList<>());
-                            }
-                            holdingsEntity.getItemEntities().add(itemEntity);
-                            itemEntities.add(itemEntity);
+                String holdingsCallNumber = marcUtil.getDataFieldValue(holdingsRecords.get(0), "852", 'h');
+                Character holdingsCallNumberType = marcUtil.getInd1(holdingsRecords.get(0), "852", 'h');
+                List<Items> itemEntityList = holding.getItems();
+                for(Items items:itemEntityList){
+                    CollectionType itemContentCollection = items.getContent().getCollection();
+                    String itemContent = itemContentCollection.serialize(itemContentCollection);
+                    List<Record> itemRecord = marcUtil.convertMarcXmlToRecord(itemContent);
+                    Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, holdingsEntity, owningInstitutionId, holdingsCallNumber, holdingsCallNumberType, itemRecord.get(0), institutionName, bibRecord, bibRecordObject,currentDate);
+                    ItemEntity itemEntity = (ItemEntity) itemMap.get("itemEntity");
+                    ReportEntity itemReportEntity = (ReportEntity) itemMap.get("itemReportEntity");
+                    if (itemReportEntity != null) {
+                        reportEntities.add(itemReportEntity);
+                    } else if (processHoldings) {
+                        if (holdingsEntity.getItemEntities() == null) {
+                            holdingsEntity.setItemEntities(new ArrayList<>());
                         }
+                        holdingsEntity.getItemEntities().add(itemEntity);
+                        itemEntities.add(itemEntity);
                     }
                 }
-
             }
             bibliographicEntity.setHoldingsEntities(holdingsEntities);
             bibliographicEntity.setItemEntities(itemEntities);
         }
-
         if (CollectionUtils.isNotEmpty(reportEntities)) {
             map.put("reportEntities", reportEntities);
         }
@@ -227,7 +229,8 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
      * @param currentDate
      * @return
      */
-    private Map<String, Object> processAndValidateHoldingsEntity(BibliographicEntity bibliographicEntity, String institutionName, Record holdingsRecord, BibRecord bibRecord , Record bibRecordObject,Date currentDate) {
+    private Map<String, Object> processAndValidateHoldingsEntity(BibliographicEntity bibliographicEntity, String institutionName, String owningInstitutionHoldingsId,
+                                                                 Record holdingsRecord, BibRecord bibRecord , Record bibRecordObject,Date currentDate) {
         StringBuilder errorMessage = new StringBuilder();
         Map<String, Object> map = new HashMap<>();
         HoldingsEntity holdingsEntity = new HoldingsEntity();
@@ -244,10 +247,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         holdingsEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
         Integer owningInstitutionId = bibliographicEntity.getOwningInstitutionId();
         holdingsEntity.setOwningInstitutionId(owningInstitutionId);
-        String owningInstitutionHoldingsId = marcUtil.getDataFieldValue(holdingsRecord, "852", '0');
         if (StringUtils.isBlank(owningInstitutionHoldingsId)) {
-            owningInstitutionHoldingsId = UUID.randomUUID().toString();
-        } else if (owningInstitutionHoldingsId.length() > 100) {
             owningInstitutionHoldingsId = UUID.randomUUID().toString();
         }
         holdingsEntity.setOwningInstitutionHoldingsId(owningInstitutionHoldingsId);
