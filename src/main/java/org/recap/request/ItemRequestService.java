@@ -494,7 +494,7 @@ public class ItemRequestService {
     private ItemInformationResponse checkOwningInstitution(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
         try {
             if (itemRequestInfo.isOwningInstitutionItem()) {
-                itemResponseInformation = hodlItem(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo, itemResponseInformation, itemEntity);
+                itemResponseInformation = holdItem(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo, itemResponseInformation, itemEntity);
             } else {// Not the Owning Institute
                 // Get Temporary bibI from SCSB DB
                 ItemCreateBibResponse createBibResponse;
@@ -502,10 +502,11 @@ public class ItemRequestService {
                     createBibResponse = (ItemCreateBibResponse) getRequestItemController().createBibliogrphicItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                 } else {
                     createBibResponse = new ItemCreateBibResponse();
+                    createBibResponse.setSuccess(true);
                 }
-                if (createBibResponse.isSuccess() || ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
+                if (createBibResponse.isSuccess()) {
                     itemRequestInfo.setBibId(createBibResponse.getBibId());
-                    itemResponseInformation = hodlItem(itemRequestInfo.getRequestingInstitution(), itemRequestInfo, itemResponseInformation, itemEntity);
+                    itemResponseInformation = holdItem(itemRequestInfo.getRequestingInstitution(), itemRequestInfo, itemResponseInformation, itemEntity);
                 } else {
                     itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_ILS_EXCEPTION + ReCAPConstants.CREATING_A_BIB_RECORD_FAILED_IN_ILS);
                     itemResponseInformation.setSuccess(createBibResponse.isSuccess());
@@ -540,7 +541,7 @@ public class ItemRequestService {
         return itemResponseInformation;
     }
 
-    private ItemInformationResponse hodlItem(String callingInst, ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
+    private ItemInformationResponse holdItem(String callingInst, ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
         ItemHoldResponse itemHoldResponse = (ItemHoldResponse) getRequestItemController().holdItem(itemRequestInfo, callingInst);
         if (itemHoldResponse.isSuccess()) { // IF Hold command is successfully
             itemResponseInformation.setExpirationDate(itemHoldResponse.getExpirationDate());
@@ -578,13 +579,13 @@ public class ItemRequestService {
         logger.info("Borrowed   Inst = " + requestItemEntity.getInstitutionEntity().getInstitutionCode());
         logger.info("Requesting Inst = " + itemRequestInfo.getRequestingInstitution());
         ItemInformationResponse itemInformation = (ItemInformationResponse) getRequestItemController().itemInformation(itemRequestInfo, requestItemEntity.getInstitutionEntity().getInstitutionCode());
-        if (itemInformation.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_CHARGED)) {
+        if (itemInformation.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_CHARGED) || itemInformation.getCirculationStatus().equalsIgnoreCase(ReCAPConstants.CIRCULATION_STATUS_ON_HOLDSHELF)) {
             if (requestItemEntity.getInstitutionEntity().getInstitutionCode().equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
                 ItemRecallResponse itemRecallResponse = (ItemRecallResponse) getRequestItemController().recallItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
                 if (itemRecallResponse.isSuccess()) {
                     // Update Recap DB
                     itemRequestInfo.setExpirationDate(itemRecallResponse.getExpirationDate());
-                    sendEmail(requestItemEntity.getItemEntity().getCustomerCode(), itemRequestInfo.getItemBarcodes().get(0), itemRequestInfo.getPatronBarcode());
+                    sendEmail(requestItemEntity.getItemEntity().getCustomerCode(), itemRequestInfo.getItemBarcodes().get(0), itemRequestInfo.getPatronBarcode(), requestItemEntity.getInstitutionEntity().getInstitutionCode());
                     messagePublish = ReCAPConstants.SUCCESSFULLY_PROCESSED_REQUEST_ITEM;
                     bsuccess = true;
                 } else {
@@ -592,7 +593,7 @@ public class ItemRequestService {
                     bsuccess = false;
                 }
             } else {
-                itemResponseInformation = createBib(itemRequestInfo, itemResponseInformation, itemEntity);
+                itemResponseInformation = createBibAndHold(itemRequestInfo, itemResponseInformation, itemEntity);
                 if (itemResponseInformation.isSuccess()) { // IF Hold command is successfully
                     itemRequestInfo.setExpirationDate(itemRequestInfo.getExpirationDate());
                     String requestingPatron = itemRequestInfo.getPatronBarcode();
@@ -601,7 +602,7 @@ public class ItemRequestService {
                     ItemRecallResponse itemRecallResponse = (ItemRecallResponse) getRequestItemController().recallItem(itemRequestInfo, requestItemEntity.getInstitutionEntity().getInstitutionCode());
                     itemRequestInfo.setPatronBarcode(requestingPatron);
                     if (itemRecallResponse.isSuccess()) {
-                        sendEmail(requestItemEntity.getItemEntity().getCustomerCode(), itemRequestInfo.getItemBarcodes().get(0), itemRequestInfo.getPatronBarcode());
+                        sendEmail(requestItemEntity.getItemEntity().getCustomerCode(), itemRequestInfo.getItemBarcodes().get(0), itemRequestInfo.getPatronBarcode(), requestItemEntity.getInstitutionEntity().getInstitutionCode());
                         messagePublish = ReCAPConstants.SUCCESSFULLY_PROCESSED_REQUEST_ITEM;
                         bsuccess = true;
                     } else {
@@ -657,14 +658,15 @@ public class ItemRequestService {
         return patronId;
     }
 
-    private ItemInformationResponse createBib(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
+    private ItemInformationResponse createBibAndHold(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation, ItemEntity itemEntity) {
         ItemCreateBibResponse createBibResponse;
         if (!ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
             createBibResponse = (ItemCreateBibResponse) getRequestItemController().createBibliogrphicItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
         } else {
             createBibResponse = new ItemCreateBibResponse();
+            createBibResponse.setSuccess(true);
         }
-        if (createBibResponse.isSuccess() || ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
+        if (createBibResponse.isSuccess()) {
             itemRequestInfo.setBibId(createBibResponse.getBibId());
             ItemHoldResponse itemHoldResponse = (ItemHoldResponse) getRequestItemController().holdItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
             itemResponseInformation.setScreenMessage(itemHoldResponse.getScreenMessage());
@@ -832,8 +834,8 @@ public class ItemRequestService {
         return text == null ? null : Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
     }
 
-    private void sendEmail(String customerCode, String itemBarcode, String patronBarcode) {
-        getEmailService().sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_RECALL_TO_BORRWER, patronBarcode, ReCAPConstants.GFA, ReCAPConstants.REQUEST_RECALL_SUBJECT);
+    private void sendEmail(String customerCode, String itemBarcode, String patronBarcode, String toInstitution) {
+        getEmailService().sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_RECALL_TO_BORRWER, patronBarcode, toInstitution, ReCAPConstants.REQUEST_RECALL_SUBJECT);
     }
 
     private String getPickupLocation(String deliveryLocation) {
