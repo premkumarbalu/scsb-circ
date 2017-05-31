@@ -337,7 +337,6 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
             description.setCallNumber(callNumber);
             createHoldRequest.setDescription(description);
 
-            RestTemplate restTemplate = new RestTemplate();
             HttpEntity<CreateHoldRequest> requestEntity = new HttpEntity(createHoldRequest, getHttpHeaders());
             ResponseEntity<CreateHoldResponse> responseEntity = getRestTemplate().exchange(recapHoldApiUrl, HttpMethod.POST, requestEntity, CreateHoldResponse.class);
             CreateHoldResponse createHoldResponse = responseEntity.getBody();
@@ -523,6 +522,8 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
 
     @Override
     public Object recallItem(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
-        return null;
+        ItemRecallResponse itemRecallResponse = new ItemRecallResponse();
+        itemRecallResponse.setSuccess(true);
+        return itemRecallResponse;
     }
 }
