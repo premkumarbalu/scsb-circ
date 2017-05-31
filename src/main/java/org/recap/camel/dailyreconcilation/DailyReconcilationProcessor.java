@@ -1,4 +1,4 @@
-package org.recap.camel.route;
+package org.recap.camel.dailyreconcilation;
 
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
@@ -27,24 +27,28 @@ import static org.recap.ReCAPConstants.getGFAStatusAvailableList;
 import static org.recap.ReCAPConstants.getGFAStatusNotAvailableList;
 
 /**
- * Created by akulak on 3/5/17.
+ * The type Daily reconcilation processor.
  */
-
 @Service
 @Scope("prototype")
-public class DailyRRProcessor {
+public class DailyReconcilationProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(DailyRRProcessor.class);
-
-    @Autowired
-    ItemDetailsRepository itemDetailsRepository;
+    private static Logger logger = LoggerFactory.getLogger(DailyReconcilationProcessor.class);
 
     @Autowired
-    RequestItemDetailsRepository requestItemDetailsRepository;
+    private ItemDetailsRepository itemDetailsRepository;
+
+    @Autowired
+    private RequestItemDetailsRepository requestItemDetailsRepository;
 
     @Value("${daily.reconcilation.file}")
-    String filePath;
+    private String filePath;
 
+    /**
+     * Process input for daily reconciliation report.
+     *
+     * @param exchange the exchange
+     */
     public void processInput(Exchange exchange) {
         try {
             List<DailyReconcilationRecord> dailyReconcilationRecordList = (List<DailyReconcilationRecord>)exchange.getIn().getBody();
@@ -104,6 +108,14 @@ public class DailyRRProcessor {
         }
     }
 
+    /**
+     * Create cell in the xssf workbook to produce daily reconciliation report.
+     *
+     * @param xssfWorkbook the xssf workbook
+     * @param row          the row
+     * @param cellValue    the cell value
+     * @param cellNum      the cell num
+     */
     public void createCell(XSSFWorkbook xssfWorkbook, XSSFRow row, String cellValue, int cellNum) {
         if (StringUtils.isNotBlank(cellValue)){
             XSSFCell cell = row.createCell(cellNum);
@@ -114,6 +126,15 @@ public class DailyRRProcessor {
         }
     }
 
+    /**
+     * Build requests rows for daily reconciliation report.
+     *
+     * @param xssfWorkbook  the xssf workbook
+     * @param xssfSheet     the xssf sheet
+     * @param dateCellStyle the date cell style
+     * @param rowNum        the row num
+     * @param requestId     the request id
+     */
     public void buildRequestsRows(XSSFWorkbook xssfWorkbook, XSSFSheet xssfSheet, XSSFCellStyle dateCellStyle, int rowNum, String requestId){
         XSSFRow row = xssfSheet.createRow(rowNum);
         if(StringUtils.isNotBlank(requestId)){
@@ -135,6 +156,15 @@ public class DailyRRProcessor {
         }
     }
 
+    /**
+     * Build deacession rows daily reconciliation report.
+     *
+     * @param xssfWorkbook  the xssf workbook
+     * @param xssfSheet     the xssf sheet
+     * @param dateCellStyle the date cell style
+     * @param rowNum        the row num
+     * @param barcode       the barcode
+     */
     public void buildDeacessionRows(XSSFWorkbook xssfWorkbook,XSSFSheet xssfSheet, XSSFCellStyle dateCellStyle,int rowNum,String barcode){
         List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcode(barcode);
         if(itemEntityList != null){
@@ -159,6 +189,12 @@ public class DailyRRProcessor {
         lastupdatedDateCell.setCellStyle(dateCellStyle);
     }
 
+    /**
+     * Gets xssf cell style for date field in the xssf workbook to produce daily reconciliation report.
+     *
+     * @param xssfWorkbook the xssf workbook
+     * @return the xssf cell style for date
+     */
     public XSSFCellStyle getXssfCellStyleForDate(XSSFWorkbook xssfWorkbook) {
         XSSFCreationHelper createHelper = xssfWorkbook.getCreationHelper();
         XSSFCellStyle cellStyle = xssfWorkbook.createCellStyle();
@@ -197,6 +233,11 @@ public class DailyRRProcessor {
         xssfSheet.setColumnWidth(11, 5500);
     }
 
+    /**
+     * Compare las and scsb sheets.
+     *
+     * @param xssfWorkbook the xssf workbook
+     */
     public void compareLasAndScsbSheets(XSSFWorkbook xssfWorkbook) {
             XSSFSheet sheet1 = xssfWorkbook.getSheetAt(0);
             XSSFSheet sheet2 = xssfWorkbook.getSheetAt(1);
@@ -206,6 +247,14 @@ public class DailyRRProcessor {
             compareTwoSheets(sheet1, sheet2, sheet3,xssfWorkbook);
     }
 
+    /**
+     * Compare the given las and scsb sheets.
+     *
+     * @param sheet1       the sheet 1
+     * @param sheet2       the sheet 2
+     * @param sheet3       the sheet 3
+     * @param xssfWorkbook the xssf workbook
+     */
     public void compareTwoSheets(XSSFSheet sheet1, XSSFSheet sheet2, XSSFSheet sheet3,XSSFWorkbook xssfWorkbook) {
         int firstRow1 = 1;
         int lastRow1 = sheet1.getLastRowNum();
@@ -219,6 +268,14 @@ public class DailyRRProcessor {
         }
     }
 
+    /**
+     * Compare two rows for the given sheets.
+     *
+     * @param row1         the row 1
+     * @param row2         the row 2
+     * @param row3         the row 3
+     * @param xssfWorkbook the xssf workbook
+     */
     public void compareTwoRows(XSSFRow row1, XSSFRow row2, XSSFRow row3,XSSFWorkbook xssfWorkbook) {
         Cell sheet1RequestId = null;
         Cell sheet1Barcode = null;
@@ -336,6 +393,13 @@ public class DailyRRProcessor {
         return  cellContainsValue;
     }
 
+    /**
+     * Get cell values for the given row.
+     *
+     * @param row     the row
+     * @param cellNum the cell num
+     * @return the cell
+     */
     public Cell getRowValuesForCompare(Row row,int cellNum){
             return row.getCell(cellNum);
     }
