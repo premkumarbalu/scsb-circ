@@ -1,13 +1,13 @@
-package org.recap.camel.route;
+package org.recap.camel.dailyreconcilation;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.BindyType;
 import org.recap.ReCAPConstants;
+import org.recap.camel.route.StopRouteProcessor;
 import org.recap.model.csv.DailyReconcilationRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -20,6 +20,18 @@ public class DailyReconcilationRouteBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(DailyReconcilationRouteBuilder.class);
 
+    /**
+     * Instantiates a new Daily reconcilation route builder.
+     *
+     * @param camelContext                   the camel context
+     * @param applicationContext             the application context
+     * @param ftpUserName                    the ftp user name
+     * @param dailyReconcilationFtp          the daily reconcilation ftp
+     * @param dailyReconcilationFtpProcessed the daily reconcilation ftp processed
+     * @param ftpKnownHost                   the ftp known host
+     * @param ftpPrivateKey                  the ftp private key
+     * @param filePath                       the file path
+     */
     public DailyReconcilationRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
                                           @Value("${ftp.userName}") String ftpUserName, @Value("${ftp.daily.reconcilation}") String dailyReconcilationFtp,
                                           @Value("${ftp.daily.reconcilation.processed}") String dailyReconcilationFtpProcessed, @Value("${ftp.knownHost}") String ftpKnownHost,
@@ -33,7 +45,7 @@ public class DailyReconcilationRouteBuilder {
                             .routeId(ReCAPConstants.DAILY_RR_FTP_ROUTE_ID)
                             .noAutoStartup()
                             .unmarshal().bindy(BindyType.Csv, DailyReconcilationRecord.class)
-                            .bean(applicationContext.getBean(DailyRRProcessor.class),ReCAPConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(DailyReconcilationProcessor.class),ReCAPConstants.PROCESS_INPUT)
                             .onCompletion()
                             .process(new StopRouteProcessor(ReCAPConstants.DAILY_RR_FTP_ROUTE_ID));
                 }

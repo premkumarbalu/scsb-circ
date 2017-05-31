@@ -15,12 +15,29 @@ import org.springframework.stereotype.Component;
 /**
  * Created by akulak on 16/5/17.
  */
-
 @Component
 public class AccessionReconcilationRouteBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessionReconcilationRouteBuilder.class);
 
+    /**
+     * Instantiates a new Accession reconcilation route builder.
+     *
+     * @param camelContext                           the camel context
+     * @param applicationContext                     the application context
+     * @param ftpUserName                            the ftp user name
+     * @param ftpPrivateKey                          the ftp private key
+     * @param accessionReconcilationPulFtp           the accession reconcilation pul ftp
+     * @param accessionReconcilationCulFtp           the accession reconcilation cul ftp
+     * @param accessionReconcilationNyplFtp          the accession reconcilation nypl ftp
+     * @param accessionReconcilationFtpPulProcessed  the accession reconcilation ftp pul processed
+     * @param accessionReconcilationFtpCulProcessed  the accession reconcilation ftp cul processed
+     * @param accessionReconcilationFtpNyplProcessed the accession reconcilation ftp nypl processed
+     * @param ftpKnownHost                           the ftp known host
+     * @param filePathPul                            the file path pul
+     * @param filePathCul                            the file path cul
+     * @param filePathNypl                           the file path nypl
+     */
     public AccessionReconcilationRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
                                               @Value("${ftp.userName}") String ftpUserName, @Value("${ftp.privateKey}") String ftpPrivateKey,
                                               @Value("${ftp.accession.reconcilation.pul}") String accessionReconcilationPulFtp,

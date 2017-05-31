@@ -6,7 +6,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.*;
 import org.junit.Test;
 import org.recap.BaseTestCase;
-import org.recap.camel.route.DailyRRProcessor;
+import org.recap.camel.dailyreconcilation.DailyReconcilationProcessor;
 import org.recap.model.*;
 import org.recap.repository.RequestItemDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +23,13 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by akulak on 8/5/17.
  */
-public class DailyRRProcessorUT extends BaseTestCase {
+public class DailyReconcilationProcessorUT extends BaseTestCase {
 
     @PersistenceContext
     EntityManager entityManager;
 
     @Autowired
-    DailyRRProcessor dailyRRProcessor;
+    DailyReconcilationProcessor dailyReconcilationProcessor;
 
     @Autowired
     RequestItemDetailsRepository requestItemDetailsRepository;
@@ -45,7 +45,7 @@ public class DailyRRProcessorUT extends BaseTestCase {
         XSSFWorkbook xssfWorkbook = new XSSFWorkbook();
         XSSFSheet testSheet = xssfWorkbook.createSheet("test");
         XSSFRow row = testSheet.createRow(0);
-        dailyRRProcessor.createCell(xssfWorkbook,row,"test",0);
+        dailyReconcilationProcessor.createCell(xssfWorkbook,row,"test",0);
         XSSFSheet test = xssfWorkbook.getSheet("test");
         XSSFRow testRow = test.getRow(0);
         assertNotNull(testRow);
@@ -60,21 +60,21 @@ public class DailyRRProcessorUT extends BaseTestCase {
         BibliographicEntity bibliographicEntity = saveBibHoldingItemEntity();
         ItemEntity itemEntity = bibliographicEntity.getItemEntities().get(0);
         RequestItemEntity requestItemEntity = saveRequestItemEntity(itemEntity.getItemId(),itemEntity);
-        XSSFCellStyle xssfCellStyleForDate = dailyRRProcessor.getXssfCellStyleForDate(xssfWorkbook);
-        dailyRRProcessor.buildRequestsRows(xssfWorkbook,testSheet,xssfCellStyleForDate,0, String.valueOf(requestItemEntity.getRequestId()));
+        XSSFCellStyle xssfCellStyleForDate = dailyReconcilationProcessor.getXssfCellStyleForDate(xssfWorkbook);
+        dailyReconcilationProcessor.buildRequestsRows(xssfWorkbook,testSheet,xssfCellStyleForDate,0, String.valueOf(requestItemEntity.getRequestId()));
         XSSFSheet test = xssfWorkbook.getSheet("test");
         XSSFRow testRow = test.getRow(0);
         assertNotNull(testRow);
-        Cell cell0 = dailyRRProcessor.getRowValuesForCompare(testRow, 0);
-        Cell cell1 = dailyRRProcessor.getRowValuesForCompare(testRow, 1);
-        Cell cell2 = dailyRRProcessor.getRowValuesForCompare(testRow, 2);
-        Cell cell3 = dailyRRProcessor.getRowValuesForCompare(testRow, 3);
-        Cell cell4 = dailyRRProcessor.getRowValuesForCompare(testRow, 4);
-        Cell cell7 = dailyRRProcessor.getRowValuesForCompare(testRow, 7);
-        Cell cell8 = dailyRRProcessor.getRowValuesForCompare(testRow, 8);
-        Cell cell9 = dailyRRProcessor.getRowValuesForCompare(testRow, 9);
-        Cell cell10 = dailyRRProcessor.getRowValuesForCompare(testRow, 10);
-        Cell cell11 = dailyRRProcessor.getRowValuesForCompare(testRow, 11);
+        Cell cell0 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 0);
+        Cell cell1 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 1);
+        Cell cell2 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 2);
+        Cell cell3 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 3);
+        Cell cell4 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 4);
+        Cell cell7 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 7);
+        Cell cell8 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 8);
+        Cell cell9 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 9);
+        Cell cell10 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 10);
+        Cell cell11 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 11);
         assertEquals(String.valueOf(requestItemEntity.getRequestId()),cell0.getStringCellValue());
         assertEquals(String.valueOf(itemEntity.getBarcode()),cell1.getStringCellValue());
         assertEquals(String.valueOf(itemEntity.getCustomerCode()),cell2.getStringCellValue());
@@ -94,15 +94,15 @@ public class DailyRRProcessorUT extends BaseTestCase {
         XSSFSheet testSheet = xssfWorkbook.createSheet("test");
         BibliographicEntity bibliographicEntity = saveBibHoldingItemEntity();
         ItemEntity itemEntity = bibliographicEntity.getItemEntities().get(0);
-        XSSFCellStyle xssfCellStyleForDate = dailyRRProcessor.getXssfCellStyleForDate(xssfWorkbook);
-        dailyRRProcessor.buildDeacessionRows(xssfWorkbook,testSheet,xssfCellStyleForDate,0,itemEntity.getBarcode());
+        XSSFCellStyle xssfCellStyleForDate = dailyReconcilationProcessor.getXssfCellStyleForDate(xssfWorkbook);
+        dailyReconcilationProcessor.buildDeacessionRows(xssfWorkbook,testSheet,xssfCellStyleForDate,0,itemEntity.getBarcode());
         XSSFSheet test = xssfWorkbook.getSheet("test");
         XSSFRow testRow = test.getRow(0);
         assertNotNull(testRow);
-        Cell cell1 = dailyRRProcessor.getRowValuesForCompare(testRow, 1);
-        Cell cell2 = dailyRRProcessor.getRowValuesForCompare(testRow, 2);
-        Cell cell8 = dailyRRProcessor.getRowValuesForCompare(testRow, 8);
-        Cell cell10 = dailyRRProcessor.getRowValuesForCompare(testRow, 10);
+        Cell cell1 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 1);
+        Cell cell2 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 2);
+        Cell cell8 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 8);
+        Cell cell10 = dailyReconcilationProcessor.getRowValuesForCompare(testRow, 10);
         assertEquals(itemEntity.getBarcode(),cell1.getStringCellValue());
         assertEquals(itemEntity.getCustomerCode(),cell2.getStringCellValue());
         assertEquals(itemEntity.getInstitutionEntity().getInstitutionCode(),cell8.getStringCellValue());
@@ -119,7 +119,7 @@ public class DailyRRProcessorUT extends BaseTestCase {
         testSheet1.createRow(1).createCell(0).setCellValue("1");
         xssfWorkbook.setSheetOrder("test",0);
         xssfWorkbook.setSheetOrder("test1",1);
-        dailyRRProcessor.compareLasAndScsbSheets(xssfWorkbook);
+        dailyReconcilationProcessor.compareLasAndScsbSheets(xssfWorkbook);
         XSSFSheet compareSheet = xssfWorkbook.getSheetAt(2);
         assertEquals("1",compareSheet.getRow(2).getCell(0).getStringCellValue());
         assertEquals("1",compareSheet.getRow(2).getCell(3).getStringCellValue());

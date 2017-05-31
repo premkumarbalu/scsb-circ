@@ -21,7 +21,7 @@ public class AccessionReconcialtionEmailService {
     private static final Logger logger = LoggerFactory.getLogger(AccessionReconcialtionEmailService.class);
 
     @Autowired
-    ProducerTemplate producerTemplate;
+    private ProducerTemplate producerTemplate;
 
     @Value("${accession.reconcilation.email.pul.to}")
     private String pulEmailTo;
@@ -43,24 +43,45 @@ public class AccessionReconcialtionEmailService {
 
     private String institutionCode;
 
+    /**
+     * Instantiates a new Accession reconcialtion email service.
+     *
+     * @param institutionCode the institution code
+     */
     public AccessionReconcialtionEmailService(String institutionCode) {
         this.institutionCode = institutionCode;
     }
 
+    /**
+     * Process input for accession reconcialtion email service.
+     *
+     * @param exchange the exchange
+     */
     public void processInput(Exchange exchange) {
         logger.info("accession email started for"+institutionCode);
         producerTemplate.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(), ReCAPConstants.EMAIL_BODY_FOR,"AccessionReconcilation");
     }
 
-    private EmailPayLoad getEmailPayLoad(){
+    /**
+     * Get email pay load for accession reconcialtion email service.
+     *
+     * @return the email pay load
+     */
+    public EmailPayLoad getEmailPayLoad(){
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setTo(emailIdTo(institutionCode));
         logger.info("Email sent to "+emailPayLoad.getTo());
-        emailPayLoad.setMessageDisplay("Accession Recocilation report has Generated For the "+institutionCode+" in the location - "+reportLocation(institutionCode));
+        emailPayLoad.setMessageDisplay("Accession reconciliation report had generated for the "+institutionCode+" in the location - "+reportLocation(institutionCode));
         return emailPayLoad;
     }
 
-    private String emailIdTo(String institution) {
+    /**
+     * Generate Email To id for accession reconcialtion email service.
+     *
+     * @param institution the institution
+     * @return the string
+     */
+    public String emailIdTo(String institution) {
         if (ReCAPConstants.NYPL.equalsIgnoreCase(institution)) {
             return nyplEmailTo;
         } else if (ReCAPConstants.COLUMBIA.equalsIgnoreCase(institution)) {
@@ -71,7 +92,13 @@ public class AccessionReconcialtionEmailService {
         return null;
     }
 
-    private String reportLocation(String institution) {
+    /**
+     * Generate report location for accession reconcialtion email service.
+     *
+     * @param institution the institution
+     * @return the string
+     */
+    public String reportLocation(String institution) {
         if (ReCAPConstants.PRINCETON.equalsIgnoreCase(institution)) {
             return pulReportLocation;
         } else if (ReCAPConstants.COLUMBIA.equalsIgnoreCase(institution)) {

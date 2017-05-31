@@ -27,23 +27,33 @@ import java.util.*;
 @Scope("prototype")
 public class AccessionReconcilationProcessor {
 
+    private static final Logger logger = LoggerFactory.getLogger(AccessionReconcilationProcessor.class);
+
     @Value("${server.protocol}")
-    String serverProtocol;
+    private String serverProtocol;
 
     @Value("${scsb.solr.client.url}")
-    String solrSolrClientUrl;
+    private String solrSolrClientUrl;
 
     @Value("${accession.reconcilation.filePath}")
-    String accessionFilePath;
+    private String accessionFilePath;
 
     private String institutionCode;
 
+    /**
+     * Instantiates a new Accession reconcilation processor.
+     *
+     * @param institutionCode the institution code
+     */
     public AccessionReconcilationProcessor(String institutionCode) {
         this.institutionCode = institutionCode;
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(AccessionReconcilationProcessor.class);
-
+    /**
+     * Process input for accession reconcilation report.
+     *
+     * @param exchange the exchange
+     */
     public void processInput(Exchange exchange) {
         String barcode = exchange.getIn().getBody(String.class);
         String[] split = barcode.split("\n");

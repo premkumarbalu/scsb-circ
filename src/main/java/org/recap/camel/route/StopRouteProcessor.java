@@ -5,11 +5,17 @@ import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
 
 /**
- * Created by akulak on 10/5/17.
+ * The type Stop route processor.
  */
 public class StopRouteProcessor implements Processor {
-    Logger logger = Logger.getLogger(StopRouteProcessor.class);
-    String routeId;
+    private static final Logger logger = Logger.getLogger(StopRouteProcessor.class);
+    private String routeId;
+
+    /**
+     * Instantiates a new Stop route processor.
+     *
+     * @param routeId the route id
+     */
     public StopRouteProcessor(String routeId) {
         this.routeId = routeId;
     }
