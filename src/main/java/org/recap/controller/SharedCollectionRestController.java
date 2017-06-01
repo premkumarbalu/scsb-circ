@@ -45,11 +45,12 @@ public class SharedCollectionRestController {
     @ResponseBody
     public ResponseEntity submitCollection(@RequestBody String inputRecords){
         ResponseEntity responseEntity;
+        List<Integer> reportRecordNumberList = new ArrayList<>();
         List<Integer> processedBibIdList = new ArrayList<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<SubmitCollectionResponse> submitCollectionResponseList;
         try {
-            submitCollectionResponseList = submitCollectionService.process(inputRecords,processedBibIdList,idMapToRemoveIndex,"");
+            submitCollectionResponseList = submitCollectionService.process(inputRecords,processedBibIdList,idMapToRemoveIndex,"",reportRecordNumberList);
             if (!processedBibIdList.isEmpty()) {
                 logger.info("Calling indexing service to update data");
                 submitCollectionService.indexData(processedBibIdList);
@@ -58,6 +59,7 @@ public class SharedCollectionRestController {
                 logger.info("Calling indexing to remove dummy record");
                 submitCollectionService.removeSolrIndex(idMapToRemoveIndex);
             }
+            submitCollectionService.generateSubmitCollectionReportFile(reportRecordNumberList);
             responseEntity = new ResponseEntity(submitCollectionResponseList,getHttpHeaders(), HttpStatus.OK);
         } catch (Exception e) {
             logger.error(ReCAPConstants.LOG_ERROR,e);
