@@ -79,9 +79,10 @@ public class SubmitCollectionProcessor {
         String xmlFileName = exchange.getIn().toString();
         List<Integer> processedBibIdList = new ArrayList<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
+        List<Integer> reportRecordNumList = new ArrayList<>();
         String response = "";
         try {
-            submitCollectionService.process(inputXml,processedBibIdList,idMapToRemoveIndex,xmlFileName);
+            submitCollectionService.process(inputXml,processedBibIdList,idMapToRemoveIndex,xmlFileName,reportRecordNumList);
             if (processedBibIdList.size()>0) {
                 submitCollectionService.indexData(processedBibIdList);
                 if (idMapToRemoveIndex.size()>0) {//remove the incomplete record from solr index
