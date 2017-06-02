@@ -29,9 +29,6 @@ public class AccessionReconcilationProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessionReconcilationProcessor.class);
 
-    @Value("${server.protocol}")
-    private String serverProtocol;
-
     @Value("${scsb.solr.client.url}")
     private String solrSolrClientUrl;
 
@@ -65,7 +62,7 @@ public class AccessionReconcilationProcessor {
         String joinedBarcodes = StringUtils.join(barcodes, ",");
         HttpEntity httpEntity = new HttpEntity(joinedBarcodes);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Set> responseEntity = restTemplate.exchange(serverProtocol+solrSolrClientUrl+ReCAPConstants.ACCESSION_RECONCILATION_SOLR_CLIENT_URL, HttpMethod.POST, httpEntity,Set.class);
+        ResponseEntity<Set> responseEntity = restTemplate.exchange(solrSolrClientUrl+ReCAPConstants.ACCESSION_RECONCILATION_SOLR_CLIENT_URL, HttpMethod.POST, httpEntity,Set.class);
         Set<String> body = responseEntity.getBody();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ReCAPConstants.DAILY_RR_FILE_DATE_FORMAT);
         try {

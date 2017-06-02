@@ -19,18 +19,11 @@ public class SubmitCollectionReportGeneratorUT extends BaseTestCase{
     @Mock
     private SubmitCollectionReportGenerator submitCollectionReportGenerator;
 
-    @Value("${server.protocol}")
-    private String serverProtocol;
-
     @Value("${scsb.solr.client.url}")
     private String solrClientUrl;
 
     @Mock
     RestTemplate restTemplate;
-
-    public String getServerProtocol() {
-        return serverProtocol;
-    }
 
     public String getSolrClientUrl() {
         return solrClientUrl;
@@ -44,9 +37,8 @@ public class SubmitCollectionReportGeneratorUT extends BaseTestCase{
         reportDataRequest.setReportType("Submit_Collection_Exception_Report");
         reportDataRequest.setTransmissionType("FTP");
         Mockito.when(submitCollectionReportGenerator.getSolrClientUrl()).thenReturn(solrClientUrl);
-        Mockito.when(submitCollectionReportGenerator.getServerProtocol()).thenReturn(serverProtocol);
         Mockito.when(submitCollectionReportGenerator.getRestTemplate()).thenReturn(restTemplate);
-        Mockito.when(submitCollectionReportGenerator.getRestTemplate().postForObject(getServerProtocol() + getSolrClientUrl() + "/reportsService/generateCsvReport", reportDataRequest, String.class)).thenReturn("Submit_Collection_Report");
+        Mockito.when(submitCollectionReportGenerator.getRestTemplate().postForObject(getSolrClientUrl() + "/reportsService/generateCsvReport", reportDataRequest, String.class)).thenReturn("Submit_Collection_Report");
         Mockito.when(submitCollectionReportGenerator.generateReport(reportDataRequest)).thenCallRealMethod();
         String response = submitCollectionReportGenerator.generateReport(reportDataRequest);
         assertNotNull(response);

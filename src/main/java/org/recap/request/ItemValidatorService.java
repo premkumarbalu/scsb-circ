@@ -25,12 +25,6 @@ import java.util.*;
 public class ItemValidatorService {
 
     /**
-     * The Server protocol.
-     */
-    @Value("${server.protocol}")
-    String serverProtocol;
-
-    /**
      * The Scsb solr client url.
      */
     @Value("${scsb.solr.client.url}")
