@@ -355,15 +355,23 @@ public class MarcUtil {
     public BibMarcRecord buildBibMarcRecord(Record record) {
         Record bibRecord = record;
         List<VariableField> holdingsVariableFields = new ArrayList<>();
+        List<VariableField> holdings866VariableFields = new ArrayList<>();
         List<VariableField> itemVariableFields = new ArrayList<>();
         String[] holdingsTags = {"852"};
+        String[] holdings866Tags = {"866"};
         String[] itemTags = {"876"};
         holdingsVariableFields.addAll(bibRecord.getVariableFields(holdingsTags));
+        holdings866VariableFields.addAll(bibRecord.getVariableFields(holdings866Tags));
         itemVariableFields.addAll(bibRecord.getVariableFields(itemTags));
 
         if (org.apache.commons.collections.CollectionUtils.isNotEmpty(holdingsVariableFields)) {
             for (VariableField holdingsVariableField : holdingsVariableFields) {
                 bibRecord.removeVariableField(holdingsVariableField);
+            }
+        }
+        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(holdings866VariableFields)) {
+            for (VariableField holdings866VariableField : holdings866VariableFields) {
+                bibRecord.removeVariableField(holdings866VariableField);
             }
         }
         if (org.apache.commons.collections.CollectionUtils.isNotEmpty(itemVariableFields)) {
@@ -380,14 +388,21 @@ public class MarcUtil {
             for (VariableField holdingsVariableField : holdingsVariableFields) {
                 List<ItemMarcRecord> itemMarcRecords = new ArrayList<>();
                 DataField holdingsDataField = (DataField) holdingsVariableField;
-
                 String holdingsData = getDataFieldValue(holdingsDataField, '0');
                 if (StringUtils.isNotBlank(holdingsData)) {
                     HoldingsMarcRecord holdingsMarcRecord = new HoldingsMarcRecord();
                     Record holdingsRecord = marcFactory.newRecord();
                     holdingsRecord.getDataFields().add(holdingsDataField);
+                    if (org.apache.commons.collections.CollectionUtils.isNotEmpty(holdings866VariableFields)) {
+                        for (VariableField variableField866 : holdings866VariableFields) {
+                            DataField holdingsDataField866 = (DataField) variableField866;
+                            String holdingsData866 = getDataFieldValue(holdingsDataField866, '0');
+                            if (StringUtils.isNotBlank(holdingsData866) && holdingsData866.equalsIgnoreCase(holdingsData)) {
+                                holdingsRecord.getDataFields().add(holdingsDataField866);
+                            }
+                        }
+                    }
                     holdingsMarcRecord.setHoldingsRecord(holdingsRecord);
-
                     if (org.apache.commons.collections.CollectionUtils.isNotEmpty(itemVariableFields)) {
                         for (VariableField itemVariableField : itemVariableFields) {
                             DataField itemDataField = (DataField) itemVariableField;
