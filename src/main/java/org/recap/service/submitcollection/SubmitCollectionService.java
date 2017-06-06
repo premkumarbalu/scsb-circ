@@ -287,9 +287,6 @@ public class SubmitCollectionService {
                 if(StringUtils.isEmpty(itemEntity.getUseRestrictions())){
                     sbMessage.append("-").append(ReCAPConstants.RECORD_INCOMPLETE).append(ReCAPConstants.USE_RESTRICTION_UNAVAILABLE);
                 }
-/*                if(itemEntity.getCollectionGroupEntity().getCollectionGroupCode().equals(ReCAPConstants.NOT_AVAILABLE_CGD)){
-                    sbMessage.append(ReCAPConstants.CGD_NA);
-                }*/
             }
             submitCollectionExceptionInfo.setMessage(sbMessage.toString());
             submitCollectionExceptionInfos.add(submitCollectionExceptionInfo);
@@ -486,16 +483,7 @@ public class SubmitCollectionService {
                     copyHoldingsEntity(fetchedHoldingsEntity, incomingHoldingsEntity,false);
                     incomingHoldingsIterator.remove();
                 } else {//Added to handle bound with records
-                    List<ItemEntity> fetchedItemEntityList = fetchedHoldingsEntity.getItemEntities();
-                    List<ItemEntity> itemEntityList = incomingHoldingsEntity.getItemEntities();
-                    for (ItemEntity fetchedItemEntity : fetchedItemEntityList) {
-                        for (ItemEntity itemEntity : itemEntityList) {
-                            if (fetchedItemEntity.getOwningInstitutionItemId().equals(itemEntity.getOwningInstitutionItemId())) {
-                                copyHoldingsEntity(fetchedHoldingsEntity, incomingHoldingsEntity,false);
-                                incomingHoldingsIterator.remove();
-                            }
-                        }
-                    }
+                    manageHoldingWithItem(incomingHoldingsIterator, incomingHoldingsEntity, fetchedHoldingsEntity);
                 }
             }
         }
@@ -526,6 +514,19 @@ public class SubmitCollectionService {
             setSubmitCollectionReportInfo(updatedItemEntityList,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD);
             logger.error(ReCAPConstants.LOG_ERROR,e);
             return null;
+        }
+    }
+
+    private void manageHoldingWithItem(Iterator incomingHoldingsIterator, HoldingsEntity incomingHoldingsEntity, HoldingsEntity fetchedHoldingsEntity) {
+        List<ItemEntity> fetchedItemEntityList = fetchedHoldingsEntity.getItemEntities();
+        List<ItemEntity> itemEntityList = incomingHoldingsEntity.getItemEntities();
+        for (ItemEntity fetchedItemEntity : fetchedItemEntityList) {
+            for (ItemEntity itemEntity : itemEntityList) {
+                if (fetchedItemEntity.getOwningInstitutionItemId().equals(itemEntity.getOwningInstitutionItemId())) {
+                    copyHoldingsEntity(fetchedHoldingsEntity, incomingHoldingsEntity,false);
+                    incomingHoldingsIterator.remove();
+                }
+            }
         }
     }
 
