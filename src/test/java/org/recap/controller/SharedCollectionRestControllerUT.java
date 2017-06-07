@@ -3,13 +3,16 @@ package org.recap.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.recap.BaseTestCase;
 import org.recap.model.deaccession.DeAccessionItem;
 import org.recap.model.deaccession.DeAccessionRequest;
+import org.recap.model.submitcollection.SubmitCollectionResponse;
 import org.recap.service.deaccession.DeAccessionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Arrays;
@@ -24,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class SharedCollectionRestControllerUT extends BaseTestCase {
 
-    @Autowired
+    @Mock
     private SharedCollectionRestController sharedCollectionRestController;
 
     @Mock
@@ -142,15 +145,16 @@ public class SharedCollectionRestControllerUT extends BaseTestCase {
             "</collection>";
 
     @Test
-    public void submitCollection() throws Exception{
-        MvcResult mvcResult = this.mockMvc.perform(post("/sharedCollection/submitCollection")
-                .headers(getHttpHeaders())
-                .content(updatedMarcXml))
-                .andExpect(status().isOk())
-                .andReturn();
-        mvcResult.getResponse().getContentAsString();
-        String result = mvcResult.getResponse().getContentAsString();
-        assertEquals("[{\"itemBarcode\":\"32101068878931\",\"message\":\"ExceptionRecord\"}]",result);
+    public void submitCollectiontest() throws Exception{
+        SubmitCollectionResponse submitCollectionResponse = new SubmitCollectionResponse();
+        submitCollectionResponse.setItemBarcode("32101068878931");
+        submitCollectionResponse.setMessage("ExceptionRecord");
+        ResponseEntity responseEntity = new ResponseEntity(submitCollectionResponse,HttpStatus.OK);
+        Mockito.when(sharedCollectionRestController.submitCollection(updatedMarcXml)).thenReturn(responseEntity);
+        ResponseEntity response = sharedCollectionRestController.submitCollection(updatedMarcXml);
+        SubmitCollectionResponse responseBody = (SubmitCollectionResponse) response.getBody();
+        assertEquals(submitCollectionResponse.getItemBarcode(),responseBody.getItemBarcode());
+        assertEquals(submitCollectionResponse.getMessage(),responseBody.getMessage());
     }
 
     @Test
