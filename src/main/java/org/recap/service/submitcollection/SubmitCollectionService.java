@@ -80,9 +80,6 @@ public class SubmitCollectionService {
 
     private Map<Integer,String> institutionEntityMap;
 
-    @Value("${server.protocol}")
-    private String serverProtocol;
-
     @Value("${scsb.solr.client.url}")
     private String scsbSolrClientUrl;
 
@@ -308,7 +305,7 @@ public class SubmitCollectionService {
      * @return the string
      */
     public String indexData(List<Integer> bibliographicIdList){
-        return getRestTemplate().postForObject(serverProtocol + scsbSolrClientUrl + "solrIndexer/indexByBibliographicId", bibliographicIdList, String.class);
+        return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/indexByBibliographicId", bibliographicIdList, String.class);
     }
 
     /**
@@ -318,7 +315,7 @@ public class SubmitCollectionService {
      * @return the string
      */
     public String removeSolrIndex(Map idMapToRemoveIndex){
-        return getRestTemplate().postForObject(serverProtocol + scsbSolrClientUrl + "solrIndexer/deleteByBibHoldingItemId", idMapToRemoveIndex, String.class);
+        return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/deleteByBibHoldingItemId", idMapToRemoveIndex, String.class);
     }
 
     /**
@@ -882,7 +879,7 @@ public class SubmitCollectionService {
     }
 
     public void generateSubmitCollectionReportFile(List<Integer> reportRecordNumberList) {
-        getRestTemplate().postForObject(serverProtocol + scsbSolrClientUrl + "generateReportService/generateSubmitCollectionReport", reportRecordNumberList, String.class);
+        getRestTemplate().postForObject(scsbSolrClientUrl + "generateReportService/generateSubmitCollectionReport", reportRecordNumberList, String.class);
 
     }
 }

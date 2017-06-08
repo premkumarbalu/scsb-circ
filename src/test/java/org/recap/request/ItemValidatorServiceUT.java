@@ -30,8 +30,6 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 public class ItemValidatorServiceUT extends BaseTestCase{
 
-    @Value("${server.protocol}")
-    String serverProtocol;
     @Value("${scsb.solr.client.url}")
     String scsbSolrClientUrl;
 

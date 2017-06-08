@@ -42,9 +42,6 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Value("${server.protocol}")
-    private String serverProtocol;
-
     @Value("${scsb.solr.client.url}")
     private String scsbSolrClientUrl;
 

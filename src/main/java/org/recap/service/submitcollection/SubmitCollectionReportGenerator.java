@@ -11,9 +11,6 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class SubmitCollectionReportGenerator {
 
-    @Value("${server.protocol}")
-    private String serverProtocol;
-
     @Value("${scsb.solr.client.url}")
     private String solrClientUrl;
 
@@ -24,15 +21,6 @@ public class SubmitCollectionReportGenerator {
      */
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
-    }
-
-    /**
-     * Gets server protocol.
-     *
-     * @return the server protocol
-     */
-    public String getServerProtocol() {
-        return serverProtocol;
     }
 
     /**
@@ -51,7 +39,7 @@ public class SubmitCollectionReportGenerator {
      * @return the string
      */
     public String generateReport(ReportDataRequest reportDataRequest){
-        return getRestTemplate().postForObject(getServerProtocol() + getSolrClientUrl() + "/reportsService/generateCsvReport", reportDataRequest, String.class);
+        return getRestTemplate().postForObject(getSolrClientUrl() + "/reportsService/generateCsvReport", reportDataRequest, String.class);
 
     }
 

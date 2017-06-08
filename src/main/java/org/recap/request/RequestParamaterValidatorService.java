@@ -31,12 +31,6 @@ public class RequestParamaterValidatorService {
     private static final Logger logger = LoggerFactory.getLogger(RequestParamaterValidatorService.class);
 
     /**
-     * The Server protocol.
-     */
-    @Value("${server.protocol}")
-    String serverProtocol;
-
-    /**
      * The Scsb solr client url.
      */
     @Value("${scsb.solr.client.url}")
