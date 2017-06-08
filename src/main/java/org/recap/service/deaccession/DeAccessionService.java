@@ -89,12 +89,6 @@ public class DeAccessionService {
     GFAService gfaService;
 
     /**
-     * The Server protocol.
-     */
-    @Value("${server.protocol}")
-    String serverProtocol;
-
-    /**
      * The Scsb solr client url.
      */
     @Value("${scsb.solr.client.url}")
@@ -670,7 +664,7 @@ public class DeAccessionService {
                     }
                 }
                 if (CollectionUtils.isNotEmpty(bibIds) || CollectionUtils.isNotEmpty(holdingsIds) || CollectionUtils.isNotEmpty(itemIds)) {
-                    String deAccessionSolrClientUrl = serverProtocol + scsbSolrClientUrl + ReCAPConstants.DEACCESSION_IN_SOLR_URL;
+                    String deAccessionSolrClientUrl = scsbSolrClientUrl + ReCAPConstants.DEACCESSION_IN_SOLR_URL;
                     DeAccessionSolrRequest deAccessionSolrRequest = new DeAccessionSolrRequest();
                     deAccessionSolrRequest.setBibIds(bibIds);
                     deAccessionSolrRequest.setHoldingsIds(holdingsIds);
