@@ -21,6 +21,12 @@ public class AccessionReconcilationJobController {
     @Autowired
     CamelContext camelContext;
 
+    /**
+     * This method is used for generating report by, comparing LAS(ReCAP) barcodes and SCSB barcodes. The LAS barcodes are send to SCSB as CVS files, in specific FTP folder.
+     * The barcodes are physically seprated by institution. This method will initiate the comparison of all the three institution at the same time.
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "/startAccessionReconcilation",method = RequestMethod.POST)
     public String startAccessionReconcilation() throws Exception{
         logger.info("Starting Accession Reconcilation Routes");
