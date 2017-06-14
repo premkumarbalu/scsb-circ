@@ -317,10 +317,10 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_FAILURE_LIST = "submitCollectionFailureList";
     public static final String SUBMIT_COLLECTION_REJECTION_LIST = "submitCollectionRejectionList";
     public static final String SUBMIT_COLLECTION_EXCEPTION_LIST = "submitCollectionExceptionList";
-    public static final String SUBMIT_COLLECTION_EXCEPTION_RECORD = "ExceptionRecord";
-    public static final String SUBMIT_COLLECTION_REJECTION_RECORD = "RejectionRecord";
-    public static final String SUBMIT_COLLECTION_SUCCESS_RECORD = "SuccessRecord";
-    public static final String SUBMIT_COLLECTION_FAILED_RECORD = "FailedRecord";
+    public static final String SUBMIT_COLLECTION_EXCEPTION_RECORD = "Exception record - Item is unavailable in scsb to update";
+    public static final String SUBMIT_COLLECTION_REJECTION_RECORD = "Rejection record - Use restriction and cgd not updated since the item in use";
+    public static final String SUBMIT_COLLECTION_SUCCESS_RECORD = "Success record";
+    public static final String SUBMIT_COLLECTION_FAILED_RECORD = "Failed record";
     public static final String ALL_INST = "ALL";
     public static final String FTP = "FTP";
     public static final String SUBMIT_COLLECTION_SUMMARY = "SubmitCollectionSummary";
