@@ -36,7 +36,10 @@ public class DeletedRecordsService {
                 int statusChange = deletedRecordsRepository.updateDeletedReportedStatus(ReCAPConstants.DELETED_STATUS_REPORTED, ReCAPConstants.DELETED_STATUS_NOT_REPORTED);
                 logger.info("Delete Count : " + statusChange);
                 // Send Email
-                emailService.sendEmail("Total No. of Records Deleted : " + lCountDeleted, "", ReCAPConstants.DELETED_MAIl_TO, "List of Deleted Records");
+                emailService.sendEmail(ReCAPConstants.EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE + lCountDeleted, "", ReCAPConstants.DELETED_MAIl_TO, ReCAPConstants.EMAIL_SUBJECT_DELETED_RECORDS);
+                bReturnMsg = true;
+            } else {
+                logger.info("No records to delete" );
                 bReturnMsg = true;
             }
         } catch (Exception ex) {
