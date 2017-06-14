@@ -360,6 +360,8 @@ public final class ReCAPConstants {
     public static final String DELETED_STATUS_NOT_REPORTED = "Not Reported";
     public static final String DELETED_STATUS_REPORTED = "Reported";
     public static final String DELETED_MAIl_TO = "DELETED_MAIl_TO";
+    public static final String EMAIL_SUBJECT_DELETED_RECORDS = "List of Deleted Records";
+    public static final String EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE = "Total No. of Records Deleted : ";
 
     private ReCAPConstants() {
     }
