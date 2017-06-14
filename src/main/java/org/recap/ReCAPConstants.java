@@ -292,6 +292,7 @@ public final class ReCAPConstants {
     public static final String STATUS = "Status";
     public static final String DEACCESSION_IN_SOLR_URL = "deaccessionInSolrService/deaccessionInSolr";
     public static final String DEACCESSION_NO_BARCODE_ERROR = "Provide one or more barcodes to deaccession";
+    public static final String DEACCESSION_NO_BARCODE_PROVIDED_ERROR = "No barcode provided for deaccession";
     public static final String REQUEST_ITEM_CANCEL_DEACCESSION_ITEM = "RequestItemCancel DeaccessionItem";
     public static final String REQUEST_ITEM_CANCELED_FOR_DEACCESSION = "The request for this item has been canceled because the item has been deaccessioned.";
     public static final String REASON_CANCEL_REQUEST_FAILED = "Canceling hold for the requested item failed for the reason";
@@ -301,6 +302,7 @@ public final class ReCAPConstants {
     //Logger
     public static final String LOG_ERROR="error-->";
     public static final String GFA_ITEM_STATUS_MISMATCH = "There is a mismatch in item status between SCSB and LAS. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
+    public static final String GFA_SERVER_DOWN = "LAS item status check failed to give valid response or LAS is down. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
     public static final String LAS_DEACCESSION_REJECT_ERROR = "LAS has rejected the {0} request with Error code : \"{1}\" and Error note : \"{2}\".";
     public static final String LAS_REJECTED = "LAS has rejected";
     public static final String CREATING_A_BIB_RECORD_FAILED_IN_ILS = "Creating a Bib record failed in ILS";
