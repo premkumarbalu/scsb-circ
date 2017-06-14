@@ -17,6 +17,12 @@ public class DailyReconcilationJobController {
     @Autowired
     CamelContext camelContext;
 
+    /**
+     * This Rest service initiates, transaction comparions between LAS and SCSB on day-to-day basis.
+     *
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "/startDailyReconcilation",method = RequestMethod.POST)
     public String statCamel() throws Exception{
         camelContext.startRoute(ReCAPConstants.DAILY_RR_FTP_ROUTE_ID);
