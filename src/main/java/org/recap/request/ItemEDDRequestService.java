@@ -82,7 +82,7 @@ public class ItemEDDRequestService {
         List<ItemEntity> itemEntities;
         ItemEntity itemEntity;
         ItemInformationResponse itemResponseInformation = getItemInformationResponse();
-        Integer requestId=0;
+        Integer requestId = 0;
         String userNotes = "";
         try {
             itemEntities = getItemDetailsRepository().findByBarcodeIn(itemRequestInfo.getItemBarcodes());
@@ -96,19 +96,23 @@ public class ItemEDDRequestService {
                 SearchResultRow searchResultRow = getItemRequestService().searchRecords(itemEntity);
 
                 itemRequestInfo.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
-                itemRequestInfo.setTitleIdentifier(searchResultRow.getTitle().replaceAll("[^\\x00-\\x7F]", "?"));
-                itemRequestInfo.setItemAuthor(searchResultRow.getAuthor());
+                itemRequestInfo.setTitleIdentifier(getItemRequestService().removeDiacritical(searchResultRow.getTitle().replaceAll("[^\\x00-\\x7F]", "?")));
+                itemRequestInfo.setItemAuthor(getItemRequestService().removeDiacritical(searchResultRow.getAuthor()));
                 itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
+                // Save user Notes to be sent to LAS
                 userNotes = itemRequestInfo.getRequestNotes();
+                // Add EDD Information to notes to be saved in database
                 itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
-                itemResponseInformation.setItemId(itemEntity.getItemId());
-                itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
+                requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
+                itemRequestInfo.setRequestId(requestId);
 
                 if (getItemRequestService().getGfaService().isUseQueueLasCall()) {
                     requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
                 }
-                itemResponseInformation.setRequestId(requestId);
                 itemRequestInfo.setRequestNotes(userNotes);
+                itemResponseInformation.setItemId(itemEntity.getItemId());
+                itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
+                itemResponseInformation.setRequestId(requestId);
                 itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
                 itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
             } else {
@@ -125,8 +129,12 @@ public class ItemEDDRequestService {
             itemResponseInformation.setRequestType(itemRequestInfo.getRequestType());
             itemResponseInformation.setEmailAddress(itemRequestInfo.getEmailAddress());
             itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
-            itemResponseInformation.setRequestNotes(getItemRequestService().getNotes(itemResponseInformation.isSuccess(), itemResponseInformation.getScreenMessage(), itemRequestInfo.getRequestNotes()));
             itemResponseInformation.setUsername(itemRequestInfo.getUsername());
+            if (!itemResponseInformation.isSuccess()) {
+                itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes() + "\nException" + itemResponseInformation.getScreenMessage());
+            } else {
+                itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes());
+            }
             // Update Topics
             getItemRequestService().sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
