@@ -117,7 +117,7 @@ public class DeAccessionService {
             List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities = new ArrayList<>();
             String username = StringUtils.isNotBlank(deAccessionRequest.getUsername()) ? deAccessionRequest.getUsername() : ReCAPConstants.DISCOVERY;
 
-            checkGfaItemStatusForPWI(deAccessionRequest.getDeAccessionItems(), deAccessionDBResponseEntities, barcodeAndStopCodeMap);
+            checkGfaItemStatus(deAccessionRequest.getDeAccessionItems(), deAccessionDBResponseEntities, barcodeAndStopCodeMap);
             checkAndCancelHolds(barcodeAndStopCodeMap, deAccessionDBResponseEntities, username);
             deAccessionItemsInDB(barcodeAndStopCodeMap, deAccessionDBResponseEntities, username);
             callGfaDeaccessionService(deAccessionDBResponseEntities, username);
@@ -159,7 +159,7 @@ public class DeAccessionService {
         }
     }
 
-    private void checkGfaItemStatusForPWI(List<DeAccessionItem> deAccessionItems, List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, Map<String, String> barcodeAndStopCodeMap) {
+    private void checkGfaItemStatus(List<DeAccessionItem> deAccessionItems, List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, Map<String, String> barcodeAndStopCodeMap) {
         try {
             for (DeAccessionItem deAccessionItem : deAccessionItems) {
                 String itemBarcode = deAccessionItem.getItemBarcode();
@@ -172,26 +172,27 @@ public class DeAccessionService {
                         } else if (!itemEntity.isComplete()) {
                             deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), ReCAPConstants.ITEM_BARCDE_DOESNOT_EXIST, itemEntity));
                         } else {
-                            ItemStatusEntity itemStatusEntity = itemEntity.getItemStatusEntity();
-                            if (ReCAPConstants.NOT_AVAILABLE.equals(itemStatusEntity.getStatusCode())) {
-                                String gfaItemStatus = callGfaItemStatus(itemBarcode);
-                                if (StringUtils.isNotBlank(gfaItemStatus) && gfaItemStatus.contains(":")) {
-                                    gfaItemStatus = gfaItemStatus.substring(0, gfaItemStatus.indexOf(':') + 1).toUpperCase();
-                                } else {
-                                    gfaItemStatus = gfaItemStatus.toUpperCase();
-                                }
-                                if (StringUtils.isNotBlank(gfaItemStatus) && ReCAPConstants.getGFAStatusNotAvailableList().contains(gfaItemStatus) && !ReCAPConstants.GFA_STATUS_NOT_ON_FILE.equalsIgnoreCase(gfaItemStatus)) {
+                            String scsbItemStatus = itemEntity.getItemStatusEntity().getStatusCode();
+                            String gfaItemStatus = callGfaItemStatus(itemBarcode);
+                            if (StringUtils.isNotBlank(gfaItemStatus)) {
+                                gfaItemStatus = gfaItemStatus.toUpperCase();
+                                gfaItemStatus = gfaItemStatus.contains(":") ? gfaItemStatus.substring(0, gfaItemStatus.indexOf(':') + 1) : gfaItemStatus;
+                                if ((StringUtils.isNotBlank(gfaItemStatus) && !ReCAPConstants.GFA_STATUS_NOT_ON_FILE.equalsIgnoreCase(gfaItemStatus))
+                                        && ((ReCAPConstants.AVAILABLE.equals(scsbItemStatus) && ReCAPConstants.getGFAStatusAvailableList().contains(gfaItemStatus))
+                                        || (ReCAPConstants.NOT_AVAILABLE.equals(scsbItemStatus) && ReCAPConstants.getGFAStatusNotAvailableList().contains(gfaItemStatus)))) {
                                     barcodeAndStopCodeMap.put(itemBarcode.trim(), deAccessionItem.getDeliveryLocation());
                                 } else {
                                     deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), MessageFormat.format(ReCAPConstants.GFA_ITEM_STATUS_MISMATCH, recapAssistanceEmailTo, recapAssistanceEmailTo), itemEntity));
                                 }
                             } else {
-                                barcodeAndStopCodeMap.put(itemBarcode.trim(), deAccessionItem.getDeliveryLocation());
+                                deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), MessageFormat.format(ReCAPConstants.GFA_SERVER_DOWN, recapAssistanceEmailTo, recapAssistanceEmailTo), itemEntity));
                             }
                         }
                     } else {
                         deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), ReCAPConstants.ITEM_BARCDE_DOESNOT_EXIST, null));
                     }
+                } else {
+                    deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), ReCAPConstants.DEACCESSION_NO_BARCODE_PROVIDED_ERROR, null));
                 }
             }
         } catch (Exception e) {
