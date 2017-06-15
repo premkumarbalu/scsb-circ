@@ -2,12 +2,7 @@ package org.recap.request;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.DefaultFluentProducerTemplate;
-import org.apache.camel.impl.DefaultCamelContext;
 import org.recap.ReCAPConstants;
 import org.recap.gfa.model.*;
 import org.recap.ils.model.response.ItemInformationResponse;
@@ -17,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -50,6 +46,9 @@ public class GFAService {
 
     @Value("${las.use.queue}")
     private boolean useQueueLasCall;
+
+    @Value("${gfa.server.response.timeout.milliseconds}")
+    private Integer gfaServerResponseTimeOutMilliseconds;
 
     @Autowired
     private ProducerTemplate producer;
@@ -156,6 +155,16 @@ public class GFAService {
         return useQueueLasCall;
     }
 
+
+    /**
+     * Gets gfa server response time out milliseconds.
+     *
+     * @return the gfa server response time out milliseconds
+     */
+    public Integer getGfaServerResponseTimeOutMilliseconds() {
+        return gfaServerResponseTimeOutMilliseconds;
+    }
+
     /**
      * Item status check gfa item status check response.
      *
@@ -174,6 +183,7 @@ public class GFAService {
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity requestEntity = new HttpEntity<>(new HttpHeaders());
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(gfaItemStatus).queryParam(ReCAPConstants.GFA_SERVICE_PARAM, filterParamValue);
+            ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setReadTimeout(getGfaServerResponseTimeOutMilliseconds());
             ResponseEntity<GFAItemStatusCheckResponse> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, GFAItemStatusCheckResponse.class);
             if (responseEntity != null && responseEntity.getBody() != null) {
                 gfaItemStatusCheckResponse = responseEntity.getBody();
@@ -579,8 +589,8 @@ public class GFAService {
     /**
      * Process las EDD response item information response.
      *
-     * @param body
-     * @return
+     * @param body the body
+     * @return item information response
      */
     public ItemInformationResponse processLASEDDRetrieveResponse(String body) {
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
