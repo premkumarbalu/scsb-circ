@@ -124,7 +124,7 @@ public class ItemRequestService {
      *
      * @return the item details repository
      */
-    public ItemDetailsRepository getItemDetailsRepository() {
+    private ItemDetailsRepository getItemDetailsRepository() {
         return itemDetailsRepository;
     }
 
@@ -191,6 +191,7 @@ public class ItemRequestService {
                 updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
                 Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
                 itemRequestInfo.setRequestId(requestId);
+                itemResponseInformation.setRequestId(requestId);
                 // Process
                 itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity);
             } else {
@@ -269,7 +270,7 @@ public class ItemRequestService {
 
         for (RequestItemEntity requestItemEntity : requestEntities) {
             itemEntity = requestItemEntity.getItemEntity();
-            if (itemEntity.getItemAvailabilityStatusId().intValue() == 2) { // Only Item Not Availability, Status is Processed
+            if (itemEntity.getItemAvailabilityStatusId() == 2) { // Only Item Not Availability, Status is Processed
                 itemBarcode = itemEntity.getBarcode();
                 RequestStatusEntity requestStatusEntity = getRequestItemStatusDetailsRepository().findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_REFILED);
                 if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
@@ -568,7 +569,7 @@ public class ItemRequestService {
         String messagePublish;
         boolean bsuccess;
         RequestItemEntity requestItemEntity = getRequestItemDetailsRepository().findByItemBarcodeAndRequestStaCode(itemRequestInfo.getItemBarcodes().get(0), ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
-        logger.info("Owning     Inst = " + requestItemEntity.getItemEntity().getOwningInstitutionId());
+        logger.info("Owning     Inst = " + requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
         logger.info("Borrowed   Inst = " + requestItemEntity.getInstitutionEntity().getInstitutionCode());
         logger.info("Requesting Inst = " + itemRequestInfo.getRequestingInstitution());
         ItemInformationResponse itemInformation = (ItemInformationResponse) getRequestItemController().itemInformation(itemRequestInfo, requestItemEntity.getInstitutionEntity().getInstitutionCode());
@@ -592,6 +593,7 @@ public class ItemRequestService {
                     String requestingPatron = itemRequestInfo.getPatronBarcode();
                     itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(), requestItemEntity.getInstitutionEntity().getInstitutionCode()));
                     itemRequestInfo.setPickupLocation(getPickupLocation(requestItemEntity.getStopCode()));
+                    itemRequestInfo.setBibId(itemInformation.getBibID());
                     ItemRecallResponse itemRecallResponse = (ItemRecallResponse) getRequestItemController().recallItem(itemRequestInfo, requestItemEntity.getInstitutionEntity().getInstitutionCode());
                     itemRequestInfo.setPatronBarcode(requestingPatron);
                     if (itemRecallResponse.isSuccess()) {
@@ -698,7 +700,7 @@ public class ItemRequestService {
      * @return the search result row
      */
     protected SearchResultRow searchRecords(ItemEntity itemEntity) {
-        List<SearchResultRow> statusResponse = null;
+        List<SearchResultRow> statusResponse;
         SearchResultRow searchResultRow = null;
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -729,7 +731,7 @@ public class ItemRequestService {
     protected String getTitle(String title, ItemEntity itemEntity, SearchResultRow searchResultRow) {
         String titleIdentifier = "";
         String useRestrictions = ReCAPConstants.REQUEST_USE_RESTRICTIONS;
-        String lTitle = "";
+        String lTitle;
         String returnTitle = "";
         try {
             if (itemEntity != null && itemEntity.getUseRestrictions() != null) {
@@ -823,7 +825,7 @@ public class ItemRequestService {
         }
     }
 
-    private static String removeDiacritical(String text) {
+    public String removeDiacritical(String text) {
         return text == null ? null : Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
     }
 

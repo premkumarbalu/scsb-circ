@@ -14,7 +14,7 @@ import java.util.List;
 
 
 /**
- * The type Item controller.
+ *
  */
 @RestController
 @RequestMapping("/item")
@@ -23,7 +23,7 @@ public class ItemController {
 
 
     /**
-     * Instantiates a new Item controller.
+     * Instantiates a new item details repository.
      *
      * @param itemDetailsRepository the item details repository
      */
@@ -33,7 +33,7 @@ public class ItemController {
     }
 
     /**
-     * Find by barcode in list.
+     * Find by barcode and completed status from the item_t table.
      *
      * @param barcodes the barcodes
      * @return the list
@@ -54,7 +54,7 @@ public class ItemController {
     }
 
     /**
-     * Split string and get list list.
+     * Split string and get list item barcode.
      *
      * @param itemBarcodes the item barcodes
      * @return the list

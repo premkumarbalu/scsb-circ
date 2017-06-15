@@ -260,19 +260,35 @@ public class GFAService {
      */
     public GFARetrieveItemResponse itemEDDRetrival(GFARetrieveEDDItemRequest gfaRetrieveEDDItemRequest) {
         GFARetrieveItemResponse gfaRetrieveItemResponse = null;
+        GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
+        GFAItemStatusCheckResponse gfaItemStatusCheckResponse;
         try {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpEntity requestEntity = new HttpEntity(gfaRetrieveEDDItemRequest, getHttpHeaders());
-            logger.info("" + convertJsontoString(requestEntity.getBody()));
-            ResponseEntity<GFARetrieveItemResponse> responseEntity = restTemplate.exchange(getGfaItemEDDRetrival(), HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
-            logger.info(responseEntity.getStatusCode() + " - " + responseEntity.getBody());
-            if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                gfaRetrieveItemResponse = responseEntity.getBody();
-                gfaRetrieveItemResponse = getLASRetrieveResponse(gfaRetrieveItemResponse);
+            GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
+            gfaItemStatus001.setItemBarCode(gfaRetrieveEDDItemRequest.getRetrieveEDD().getTtitem().get(0).getItemBarcode());
+            List<GFAItemStatus> gfaItemStatuses = new ArrayList<>();
+            gfaItemStatuses.add(gfaItemStatus001);
+            gfaItemStatusCheckRequest.setItemStatus(gfaItemStatuses);
+            gfaItemStatusCheckResponse = itemStatusCheck(gfaItemStatusCheckRequest);
+            if (gfaItemStatusCheckResponse != null
+                    && gfaItemStatusCheckResponse.getDsitem() != null
+                    && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
+
+                RestTemplate restTemplate = new RestTemplate();
+                HttpEntity requestEntity = new HttpEntity(gfaRetrieveEDDItemRequest, getHttpHeaders());
+                logger.info("" + convertJsontoString(requestEntity.getBody()));
+                ResponseEntity<GFARetrieveItemResponse> responseEntity = restTemplate.exchange(getGfaItemEDDRetrival(), HttpMethod.POST, requestEntity, GFARetrieveItemResponse.class);
+                logger.info(responseEntity.getStatusCode() + " - " + convertJsontoString(responseEntity.getBody()));
+                if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                    gfaRetrieveItemResponse = responseEntity.getBody();
+                    gfaRetrieveItemResponse = getLASRetrieveResponse(gfaRetrieveItemResponse);
+                } else {
+                    gfaRetrieveItemResponse = new GFARetrieveItemResponse();
+                    gfaRetrieveItemResponse.setSuccess(false);
+                    gfaRetrieveItemResponse.setScrenMessage("HTTP Error response from LAS");
+                }
             } else {
-                gfaRetrieveItemResponse = new GFARetrieveItemResponse();
                 gfaRetrieveItemResponse.setSuccess(false);
-                gfaRetrieveItemResponse.setScrenMessage("HTTP Error response from LAS");
+                gfaRetrieveItemResponse.setScrenMessage(ReCAPConstants.GFA_ITEM_STATUS_CHECK_FAILED);
             }
         } catch (HttpServerErrorException e) {
             gfaRetrieveItemResponse = new GFARetrieveItemResponse();
@@ -303,7 +319,6 @@ public class GFAService {
      */
     public ItemInformationResponse executeRetriveOrder(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
-
         GFAItemStatusCheckResponse gfaItemStatusCheckResponse;
         String itemStatus;
         String gfaOnlyStatus;
@@ -454,7 +469,7 @@ public class GFAService {
             ttitem001.setCustomerCode(itemRequestInfo.getCustomerCode());
             ttitem001.setItemBarcode(itemRequestInfo.getItemBarcodes().get(0));
             ttitem001.setRequestId(itemRequestInfo.getRequestId());
-            ttitem001.setRequestor(itemResponseInformation.getPatronBarcode());
+            ttitem001.setRequestor(itemRequestInfo.getPatronBarcode());
             ttitem001.setRequestorEmail(itemRequestInfo.getEmailAddress());
 
             ttitem001.setStartPage(itemRequestInfo.getStartPage());

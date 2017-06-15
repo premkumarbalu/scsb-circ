@@ -20,7 +20,8 @@ public class EmailRouteBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailRouteBuilder.class);
 
-    private String emailBody;
+    private String emailBodyLasStatus;
+    private String emailBodyDeletedRecords;
     private String emailPassword;
     private String emailBodyForSubmitCollection;
 
@@ -42,10 +43,10 @@ public class EmailRouteBuilder {
             context.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    loadEmailTemplateCancelRequest();
                     loadEmailPassword();
                     loadEmailBodyTemplateForNoData();
-                    loadEmailLasStatus();
+                    emailBodyLasStatus = loadEmailLasStatus(ReCAPConstants.REQUEST_LAS_STATUS_EMAIL_TEMPLATE);
+                    emailBodyDeletedRecords=loadEmailLasStatus(ReCAPConstants.DELETED_RECORDS_EMAIL_TEMPLATE);
 
                     from(ReCAPConstants.EMAIL_Q)
                             .routeId(ReCAPConstants.EMAIL_ROUTE_ID)
@@ -55,30 +56,37 @@ public class EmailRouteBuilder {
                             .choice()
                                 .when(header(ReCAPConstants.REQUEST_RECALL_EMAILBODY_FOR).isEqualTo(ReCAPConstants.REQUEST_RECALL_MAIL_QUEUE))
                                     .setHeader("subject", simple("${header.emailPayLoad.subject}"))
-                                    .setBody(simple(emailBody))
+                                    .setBody(simple(emailBodyLasStatus))
                                     .setHeader("from", simple(from))
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
-                                    .log("email body for data available")
+                                    .log("Email for Recall")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
-                                        .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.SUBMIT_COLLECTION))
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.SUBMIT_COLLECTION))
                                     .setHeader("subject", simple("${header.emailPayLoad.subject}"))
                                     .setBody(simple(emailBodyForSubmitCollection))
                                     .setHeader("from", simple(from))
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
                                     .log("email body for submit collection")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
-                            .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo("AccessionReconcilation"))
-                                .log("email for accesion Recocilation")
-                                .setHeader("subject", simple("Accession Reconcilation"))
-                                .setBody(simple("${header.emailPayLoad.messageDisplay}"))
-                                .setHeader("from", simple(from))
-                                .setHeader("to", simple("${header.emailPayLoad.to}"))
-                                .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo("AccessionReconcilation"))
+                                    .log("email for accesion Recocilation")
+                                    .setHeader("subject", simple("Accession Reconcilation"))
+                                    .setBody(simple("${header.emailPayLoad.messageDisplay}"))
+                                    .setHeader("from", simple(from))
+                                    .setHeader("to", simple("${header.emailPayLoad.to}"))
+                                    .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.DELETED_MAIL_QUEUE))
+                                    .setHeader("subject", simple("${header.emailPayLoad.subject}"))
+                                    .setBody(simple(emailBodyDeletedRecords))
+                                    .setHeader("from", simple(from))
+                                    .setHeader("to", simple("${header.emailPayLoad.to}"))
+                                    .log("Email Send for Deleted Records")
+                                    .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
                     ;
                 }
 
-                private void loadEmailTemplateCancelRequest() {
-                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.REQUEST_CANCEL_EMAIL_TEMPLATE);
+                private String loadEmailLasStatus(String emailTemplate) {
+                    InputStream inputStream = getClass().getResourceAsStream(emailTemplate);
                     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                     StringBuilder out = new StringBuilder();
                     String line;
@@ -94,27 +102,7 @@ public class EmailRouteBuilder {
                     } catch (IOException e) {
                         logger.error(ReCAPConstants.LOG_ERROR,e);
                     }
-                    emailBody = out.toString();
-                }
-
-                private void loadEmailLasStatus() {
-                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.REQUEST_LAS_STATUS_EMAIL_TEMPLATE);
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    StringBuilder out = new StringBuilder();
-                    String line;
-                    try {
-                        while ((line = reader.readLine()) != null) {
-                            if (line.isEmpty()) {
-                                out.append("\n");
-                            } else {
-                                out.append(line);
-                                out.append("\n");
-                            }
-                        }
-                    } catch (IOException e) {
-                        logger.error(ReCAPConstants.LOG_ERROR,e);
-                    }
-                    emailBody = out.toString();
+                    return out.toString();
                 }
 
                 private void loadEmailBodyTemplateForNoData() {
