@@ -51,6 +51,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_RECALL_MAIL_QUEUE = "requestRecallMailSendQueue";
     public static final String REQUEST_CANCEL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
     public static final String REQUEST_LAS_STATUS_EMAIL_TEMPLATE = "request_las_status_email_body.vm";
+    public static final String DELETED_RECORDS_EMAIL_TEMPLATE = "deleted_records_email_body.vm";
 
     // Retrieval,EDD, Hold, Recall, Borrow Direct
     public static final String REQUEST_TYPE_RETRIEVAL = "RETRIEVAL";
@@ -265,7 +266,7 @@ public final class ReCAPConstants {
 
     public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Retrieval order successfully created in LAS.";
     public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "Item not available in LAS";
-    public static final String GFA_ITEM_STATUS_CHECK_FAILED = "Item status check failed to return valid response.";
+    public static final String GFA_ITEM_STATUS_CHECK_FAILED = "SCSB: Item status check failed to return valid response.";
     public static final String REQUEST_CANCELLED_NO_REFILED = "canceled";
     public static final String REQUEST_CANCELLED_SUBJECT = "Cancel Request - ";
 
@@ -344,10 +345,9 @@ public final class ReCAPConstants {
     public static final String DEACCESSION_ROLLBACK_NOTES = " Hence, the transaction of deaccessioning item is rolled back.";
 
     public static final String COUNT_OF_PURGED_EXCEPTION_REQUESTS = "countOfPurgedExceptionRequests";
-    public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
 
     public static final String REQUEST_DATA_LOAD_DATE_FORMAT = "dd/MM/yy HH:mm";
-    public static final String  REQUEST_DATA_LOAD_CREATED_BY= "LAS";
+    public static final String REQUEST_DATA_LOAD_CREATED_BY = "LAS";
     public static final String REQUEST_DATA_LOAD_REQUEST_TYPE = "PHY";
     public static final String REQUEST_DATA_LOAD_PATRON_ID = "0000000";
     public static final String REQUEST_DATA_LOAD_ITEM_ID = "itemId";
@@ -355,8 +355,17 @@ public final class ReCAPConstants {
     public static final String USE_RESTRICTION_UNAVAILABLE = "use restriction is unavailable in the input xml";
     public static final String CGD_NA = "cgd is still in NA status, provide cdg in input xml";
     public static final String RECORD_INCOMPLETE = "Record continue to be incomplete because ";
+    public static final String DELETED_RECORDS_SUCCESS_MSG = "Deletee records completed successfully";
+    public static final String DELETED_RECORDS_FAILURE_MSG = "Deleted records failed due to unexpected error";
 
-    private ReCAPConstants() {}
+    public static final String DELETED_STATUS_NOT_REPORTED = "Not Reported";
+    public static final String DELETED_STATUS_REPORTED = "Reported";
+    public static final String DELETED_MAIl_TO = "DELETED_MAIl_TO";
+    public static final String EMAIL_SUBJECT_DELETED_RECORDS = "List of Deleted Records";
+    public static final String EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE = "Total No. of Records Deleted : ";
+
+    private ReCAPConstants() {
+    }
 
     public static final List getGFAStatusAvailableList() {
         return GFA_STATUS_AVAILABLE_LIST;
@@ -400,6 +409,11 @@ public final class ReCAPConstants {
     public static final String DAILY_RR_SCSB_NOT_GIVEN_STATUS = "StatusNotFoundInScsb";
     public static final String DAILY_RR_NOT_IN_SCSB = "NotInScsb";
 
+    //status Reconciliation
+
+    public static final String STATUS_RECONCILIATION_REPORT = "scsbactivemq:queue:statusReconciliationReportQ";
+    public static final String STATUS_RECONCILIATION_REPORT_ID = "statusReconciliationReportRoute";
+    public static final String REPORT_FILE_NAME = "fileName";
 
     public static final String COMPLETED = "Completed";
 
@@ -410,7 +424,13 @@ public final class ReCAPConstants {
     public static final String ACCESSION_RECONCILATION_FS_PUL_ROUTE = "accessionReconcilationFsPulRoute";
     public static final String ACCESSION_RECONCILATION_FS_CUL_ROUTE = "accessionReconcilationFsCulRoute";
     public static final String ACCESSION_RECONCILATION_FS_NYPL_ROUTE = "accessionReconcilationFsNyplRoute";
-    public static final String ACCESSION_RECONCILATION_FILE_NAME="AccessionReconcilation";
+    public static final String ACCESSION_RECONCILATION_FILE_NAME = "AccessionReconcilation";
     public static final String ACCESSION_RECONCILATION_SOLR_CLIENT_URL = "accessionReconcilationService/startAccessionReconcilation";
     public static final String STARTING = "Starting";
+
+    public static final String DELETED_MAIL_QUEUE = "deletedRecordsMailSendQueue";
+    public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
+
+    public static final String STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE = "StatusReconciliation-ItemAvailablityStatusChange";
+
 }

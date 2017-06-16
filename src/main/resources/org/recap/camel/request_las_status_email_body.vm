@@ -1,5 +1,4 @@
 The following item has been requested and was found to be under Refile in LAS.
 
-Item Barcode 	: ${header.emailPayLoad.itemBarcode}
-Customer Code   : ${header.emailPayLoad.customerCode}
-Patron Barcode 	: ${header.emailPayLoad.patronBarcode}
+
+

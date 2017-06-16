@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 /**
  * Created by sudhishk on 9/11/16.
@@ -98,9 +99,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                 sip2ItemInformationResponse = (SIP2ItemInformationResponse) connection.send(itemRequest);
                 itemInformationResponse.setEsipDataOut(sip2ItemInformationResponse.getData());
                 itemInformationResponse.setItemBarcode(sip2ItemInformationResponse.getItemIdentifier());
-                if (!sip2ItemInformationResponse.getScreenMessage().isEmpty()) {
-                    itemInformationResponse.setScreenMessage(sip2ItemInformationResponse.getScreenMessage().get(0));
-                }
+                itemInformationResponse.setScreenMessage(getScreenMessage(sip2ItemInformationResponse.getScreenMessage()));
                 itemInformationResponse.setSuccess(sip2ItemInformationResponse.isOk());
                 itemInformationResponse.setTitleIdentifier(sip2ItemInformationResponse.getTitleIdentifier());
 
@@ -195,6 +194,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                     SIP2ACSStatusResponse statusResponse = (SIP2ACSStatusResponse) connection.send(status);
                     if (statusResponse.getSupportedMessages().isCheckout()) {
                         sendAcsStatus(connection);
+
                         SIP2CheckoutRequest checkoutRequest = new SIP2CheckoutRequest(patronIdentifier, itemIdentifier);
                         checkoutRequest.setCurrentLocation("");
 
@@ -344,7 +344,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
                         itemHoldResponse.setEsipDataOut(holdResponse.getData());
 
                         itemHoldResponse.setItemBarcode(holdResponse.getItemIdentifier());
-                        itemHoldResponse.setScreenMessage((!holdResponse.getScreenMessage().isEmpty()) ? holdResponse.getScreenMessage().get(0) : "");
+                        itemHoldResponse.setScreenMessage(getScreenMessage(holdResponse.getScreenMessage()));
                         itemHoldResponse.setSuccess(holdResponse.isOk());
                         itemHoldResponse.setTitleIdentifier(holdResponse.getTitleIdentifier());
                         itemHoldResponse.setExpirationDate(formatFromSipDate(holdResponse.getExpirationDate()));
@@ -581,5 +581,15 @@ public abstract class JSIPConnector implements IJSIPConnector {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return reformattedStr;
+    }
+
+    private String getScreenMessage(List<String> screenMessage) {
+        String retMessage;
+        for (int i = 0; !screenMessage.isEmpty() && i < screenMessage.size(); i++) {
+            String strScreenMessage = screenMessage.get(i);
+            logger.info(strScreenMessage);
+        }
+        retMessage = (!screenMessage.isEmpty()) ? screenMessage.get(0) : "";
+        return retMessage;
     }
 }

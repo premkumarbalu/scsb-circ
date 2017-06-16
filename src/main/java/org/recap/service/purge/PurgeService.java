@@ -42,6 +42,11 @@ public class PurgeService {
     @Autowired
     private AccessionDetailsRepository accessionDetailsRepository;
 
+    /**
+     * Purge email address map.
+     *
+     * @return the map
+     */
     public Map<String,Integer> purgeEmailAddress(){
         List<RequestTypeEntity> requestTypeEntityList = requestTypeDetailsRepository.findAll();
         List<Integer> physicalRequestTypeIdList = new ArrayList<>();
@@ -61,6 +66,11 @@ public class PurgeService {
         return responseMap;
     }
 
+    /**
+     * Purge exception Request from Request_t table after certain period.
+     *
+     * @return the map
+     */
     public Map<String, String> purgeExceptionRequests() {
         Map<String, String> responseMap = new HashMap<>();
         try {
@@ -76,6 +86,11 @@ public class PurgeService {
         return responseMap;
     }
 
+    /**
+     * Purge accession requests map.
+     *
+     * @return the map
+     */
     public Map<String, String> purgeAccessionRequests() {
         Map<String, String> responseMap = new HashMap<>();
         try {

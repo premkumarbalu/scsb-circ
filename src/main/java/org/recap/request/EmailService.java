@@ -25,11 +25,14 @@ public class EmailService {
     @Value("${request.cancel.email.recap.to}")
     private String recapMailTo;
 
+    @Value("${deleted.records.email.to}")
+    private String deletedRecordsMailTo;
+
     @Autowired
     private ProducerTemplate producer;
 
     /**
-     * Send email.
+     * Send email method for recall process, the information is send to the mail queue, with .
      *
      * @param customerCode   the customer code
      * @param itemBarcode    the item barcode
@@ -49,6 +52,23 @@ public class EmailService {
     }
 
     /**
+     *  Send email method for deleted records reporting.
+     *
+     * @param messageDisplay
+     * @param patronBarcode
+     * @param toInstitution
+     * @param subject
+     */
+    public void sendEmail(String messageDisplay, String patronBarcode, String toInstitution, String subject) {
+        EmailPayLoad emailPayLoad = new EmailPayLoad();
+        emailPayLoad.setTo(emailIdTo(toInstitution));
+        emailPayLoad.setMessageDisplay(messageDisplay);
+        emailPayLoad.setPatronBarcode(patronBarcode);
+        emailPayLoad.setSubject(subject);
+        producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, emailPayLoad, ReCAPConstants.REQUEST_RECALL_EMAILBODY_FOR, ReCAPConstants.DELETED_MAIL_QUEUE);
+    }
+
+    /**
      * @param institution
      * @return
      */
@@ -61,6 +81,8 @@ public class EmailService {
             return pulMailTo;
         } else if (institution.equalsIgnoreCase(ReCAPConstants.GFA)) {
             return recapMailTo;
+        } else if(institution.equalsIgnoreCase(ReCAPConstants.DELETED_MAIl_TO)){
+            return deletedRecordsMailTo;
         }
         return null;
     }

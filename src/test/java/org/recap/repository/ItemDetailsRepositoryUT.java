@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -48,6 +45,26 @@ public class ItemDetailsRepositoryUT extends BaseTestCase {
         List<String> lstBarcode = Arrays.asList("100000999", "100009999");
         List<ItemEntity> itemEntities = itemDetailsRepository.findByBarcodeInAndComplete(lstBarcode);
         assertEquals("Size ", 2, itemEntities.size());
+    }
+
+    @Test
+    public void testFindByAvailableStatusId(){
+        List<ItemEntity> itemEntityList = new ArrayList<>();
+        long itemCount = itemDetailsRepository.getNotAvailableItemsCount(2,new Date(),9);
+        System.out.println("Total Records : {}"+ itemCount);
+        int totalPagesCount = (int) (itemCount / 100);
+        System.out.println("Total Pages : {}" + totalPagesCount);
+        for(int pageNum = 0; pageNum < totalPagesCount + 1; pageNum++) {
+            long from = pageNum * Long.valueOf(100);
+            itemEntityList =  itemDetailsRepository.getNotAvailableItems(2,new Date(),9 , from, 1000);
+        }
+        assertNotNull(itemEntityList);
+    }
+
+    @Test
+    public void testFindNotAvailableitems(){
+        List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcodeAndNotAvailable("AD00004588",2);
+        assertNotNull(itemEntityList);
     }
 
     public BibliographicEntity saveBibSingleHoldingsMultipleItem() throws Exception {

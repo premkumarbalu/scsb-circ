@@ -36,7 +36,7 @@ public class RequestItemController {
     private ItemRequestService itemRequestService;
 
     /**
-     * Gets jsip conector factory.
+     * Gets JSIPConectorFactory object.
      *
      * @return the jsip conector factory
      */
@@ -45,7 +45,7 @@ public class RequestItemController {
     }
 
     /**
-     * Gets item request service.
+     * Gets ItemRequestService object.
      *
      * @return the item request service
      */
@@ -54,7 +54,7 @@ public class RequestItemController {
     }
 
     /**
-     * Checkout item abstract response item.
+     * Checkout item method is for processing SIP2 protocol function check out, This function converts SIP data to JSON format.
      *
      * @param itemRequestInformation the item request information
      * @param callInstitition        the call institition
@@ -82,7 +82,7 @@ public class RequestItemController {
     }
 
     /**
-     * Checkin item abstract response item.
+     * This method checkinItem is for processing SIP2 protocol function check in. This function converts SIP data to JSON format.
      *
      * @param itemRequestInformation the item request information
      * @param callInstitition        the call institition
