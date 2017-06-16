@@ -2,6 +2,7 @@ package org.recap.repository;
 
 import org.recap.model.ItemEntity;
 import org.recap.model.ItemPK;
+import org.recap.model.RequestItemEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
@@ -127,5 +128,18 @@ public interface ItemDetailsRepository extends PagingAndSortingRepository<ItemEn
 
     @Query("select item from ItemEntity item where item.barcode = :barcode and item.itemAvailabilityStatusId = :itemAvailabilityStatusId")
     List<ItemEntity> findByBarcodeAndNotAvailable(@Param("barcode") String barcode,@Param("itemAvailabilityStatusId") Integer itemAvailabilityStatusId);
+
+    @Query(value = "SELECT count(*) FROM recap.item_t where ITEM_AVAIL_STATUS_ID = ?1 and DATEDIFF(?2,LAST_UPDATED_DATE) = ?3", nativeQuery = true)
+    Long getNotAvailableItemsCount(@Param("itemAvailabilityStatusId") Integer itemAvailabilityStatusId,@Param("currentDate") Date currentDate,@Param("dateDifference") Integer dateDifference);
+
+
+    @Query(value = "SELECT * FROM recap.item_t where ITEM_AVAIL_STATUS_ID = ?1 and DATEDIFF(?2,LAST_UPDATED_DATE) = ?3 order by ITEM_ID limit ?4,?5" , nativeQuery = true)
+    List<ItemEntity> getNotAvailableItems(@Param("itemAvailabilityStatusId") Integer itemAvailabilityStatusId,@Param("currentDate") Date currentDate,@Param("dateDifference") Integer dateDifference,
+                                          @Param("from") long from , @Param("batchSize") long batchSize);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ItemEntity item SET item.itemAvailabilityStatusId = :itemAvailabilityStatusId, item.lastUpdatedDate = :lastUpdatedDate, item.lastUpdatedBy = :lastUpdatedBy where item.barcode IN (:barcode)")
+    int updateAvailabilityStatus(@Param("itemAvailabilityStatusId") Integer itemAvailabilityStatusId,@Param("lastUpdatedDate") Date lastUpdatedDate,@Param("lastUpdatedBy") String lastUpdatedBy,@Param("barcode") String barcode);
 
 }

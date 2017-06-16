@@ -301,7 +301,7 @@ public final class ReCAPConstants {
 
 
     //Logger
-    public static final String LOG_ERROR = "error-->";
+    public static final String LOG_ERROR="error-->";
     public static final String GFA_ITEM_STATUS_MISMATCH = "There is a mismatch in item status between SCSB and LAS. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
     public static final String GFA_SERVER_DOWN = "LAS item status check failed to give valid response or LAS is down. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
     public static final String LAS_DEACCESSION_REJECT_ERROR = "LAS has rejected the {0} request with Error code : \"{1}\" and Error note : \"{2}\".";
@@ -345,7 +345,6 @@ public final class ReCAPConstants {
     public static final String DEACCESSION_ROLLBACK_NOTES = " Hence, the transaction of deaccessioning item is rolled back.";
 
     public static final String COUNT_OF_PURGED_EXCEPTION_REQUESTS = "countOfPurgedExceptionRequests";
-    public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
 
     public static final String REQUEST_DATA_LOAD_DATE_FORMAT = "dd/MM/yy HH:mm";
     public static final String REQUEST_DATA_LOAD_CREATED_BY = "LAS";
@@ -410,6 +409,11 @@ public final class ReCAPConstants {
     public static final String DAILY_RR_SCSB_NOT_GIVEN_STATUS = "StatusNotFoundInScsb";
     public static final String DAILY_RR_NOT_IN_SCSB = "NotInScsb";
 
+    //status Reconciliation
+
+    public static final String STATUS_RECONCILIATION_REPORT = "scsbactivemq:queue:statusReconciliationReportQ";
+    public static final String STATUS_RECONCILIATION_REPORT_ID = "statusReconciliationReportRoute";
+    public static final String REPORT_FILE_NAME = "fileName";
 
     public static final String COMPLETED = "Completed";
 
@@ -425,4 +429,8 @@ public final class ReCAPConstants {
     public static final String STARTING = "Starting";
 
     public static final String DELETED_MAIL_QUEUE = "deletedRecordsMailSendQueue";
+    public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
+
+    public static final String STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE = "StatusReconciliation-ItemAvailablityStatusChange";
+
 }
