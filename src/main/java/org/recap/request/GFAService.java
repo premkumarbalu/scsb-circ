@@ -4,9 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.ProducerTemplate;
 import org.recap.ReCAPConstants;
+import org.recap.camel.statusreconciliation.StatusReconciliationCSVRecord;
+import org.recap.camel.statusreconciliation.StatusReconciliationErrorCSVRecord;
 import org.recap.gfa.model.*;
 import org.recap.ils.model.response.ItemInformationResponse;
-import org.recap.model.ItemRequestInformation;
+import org.recap.model.*;
+import org.recap.repository.ItemChangeLogDetailsRepository;
+import org.recap.repository.ItemDetailsRepository;
+import org.recap.repository.ItemStatusDetailsRepository;
+import org.recap.repository.RequestItemDetailsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +24,8 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by sudhishk on 27/1/17.
@@ -47,6 +53,15 @@ public class GFAService {
     @Value("${las.use.queue}")
     private boolean useQueueLasCall;
 
+    @Value("${external.status.reconciliation.batch.size}")
+    private Integer batchSize;
+
+    @Value("${external.status.reconciliation.day.limit}")
+    private Integer statusReconciliationDayLimit;
+
+    @Value("${external.status.reconciliation.las.barcode.limit}")
+    private Integer statusReconciliationLasBarcodeLimit;
+
     @Value("${gfa.server.response.timeout.milliseconds}")
     private Integer gfaServerResponseTimeOutMilliseconds;
 
@@ -55,6 +70,21 @@ public class GFAService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private ItemDetailsRepository itemDetailsRepository;
+
+    @Autowired
+    private RequestItemDetailsRepository requestItemDetailsRepository;
+
+    @Autowired
+    private ItemRequestService itemRequestService;
+
+    @Autowired
+    private ItemStatusDetailsRepository itemStatusDetailsRepository;
+
+    @Autowired
+    private ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
 
     /**
      * Gets gfa item status.
@@ -155,6 +185,22 @@ public class GFAService {
         return useQueueLasCall;
     }
 
+    public RequestItemDetailsRepository getRequestItemDetailsRepository() {
+        return requestItemDetailsRepository;
+    }
+
+    public ItemDetailsRepository getItemDetailsRepository() {
+        return itemDetailsRepository;
+    }
+
+    public ItemStatusDetailsRepository getItemStatusDetailsRepository() {
+        return itemStatusDetailsRepository;
+    }
+
+    public ItemChangeLogDetailsRepository getItemChangeLogDetailsRepository() {
+        return itemChangeLogDetailsRepository;
+    }
+
 
     /**
      * Gets gfa server response time out milliseconds.
@@ -198,6 +244,133 @@ public class GFAService {
         }
         return gfaItemStatusCheckResponse;
     }
+
+    public List<StatusReconciliationCSVRecord> itemStatusComparison(List<List<ItemEntity>> itemEntityChunkList) {
+        List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList = new ArrayList<>();
+        List<StatusReconciliationErrorCSVRecord> statusReconciliationErrorCSVRecordList = new ArrayList<>();
+        List<ItemChangeLogEntity> itemChangeLogEntityList = new ArrayList<>();
+            for (List<ItemEntity> itemEntities : itemEntityChunkList) { // 10
+                List<String> lasNotAvailableStatusList = ReCAPConstants.getGFAStatusNotAvailableList();
+                GFAItemStatusCheckResponse gfaItemStatusCheckResponse = getGFAItemStatusCheckResponse(itemEntities);
+                if (gfaItemStatusCheckResponse != null && gfaItemStatusCheckResponse.getDsitem() != null && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null) {
+                    List<Ttitem> ttitemList = gfaItemStatusCheckResponse.getDsitem().getTtitem();
+                    String lasStatus = null;
+                    StatusReconciliationErrorCSVRecord statusReconciliationErrorCSVRecord = new StatusReconciliationErrorCSVRecord();
+                    for (ItemEntity itemEntity : itemEntities) {
+                        boolean isBarcodeAvailableForErrorReport = false;
+                        for (Ttitem ttitem : ttitemList) {
+                            if (itemEntity.getBarcode().equalsIgnoreCase(ttitem.getItemBarcode())) {
+                                isBarcodeAvailableForErrorReport = true;
+                                lasStatus = ttitem.getItemStatus();
+                                boolean isNotAvailable = false;
+                                for (String status : lasNotAvailableStatusList) {
+                                    if (ttitem.getItemStatus().toUpperCase().contains(status)) {
+                                        isNotAvailable = true;
+                                    }
+                                }
+                                if (!isNotAvailable) {
+                                    StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
+                                    List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByItemBarcode(itemEntity.getBarcode());
+                                    List<String> barcodeList = new ArrayList<>();
+                                    List<Integer> requestIdList = new ArrayList<>();
+                                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
+                                    ItemStatusEntity itemStatusEntity = getItemStatusDetailsRepository().findByItemStatusId(itemEntity.getItemAvailabilityStatusId());
+                                    if (!requestItemEntityList.isEmpty()) {
+                                        statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "yes", requestItemEntityList.get(0).getRequestId().toString(), lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
+                                        barcodeList.add(itemEntity.getBarcode());
+                                        requestIdList.add(requestItemEntityList.get(0).getRequestId());
+                                    } else {
+                                        statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "No", null, lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
+                                        getItemDetailsRepository().updateAvailabilityStatus(1,new Date(),ReCAPConstants.GUEST_USER, itemEntity.getBarcode());
+                                        ItemChangeLogEntity itemChangeLogEntity = saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE,itemEntity.getBarcode());
+                                        itemChangeLogEntityList.add(itemChangeLogEntity);
+                                    }
+                                    if (!barcodeList.isEmpty() && !requestIdList.isEmpty()) {
+                                        ItemRefileRequest itemRefileRequest = new ItemRefileRequest();
+                                        itemRefileRequest.setItemBarcodes(barcodeList);
+                                        itemRefileRequest.setRequestIds(requestIdList);
+                                        itemRequestService.reFileItem(itemRefileRequest);
+                                    }
+                                    statusReconciliationCSVRecordList.add(statusReconciliationCSVRecord);
+                                }
+
+                                break;
+                            }else {
+                                continue;
+                            }
+
+                        }
+                        if(!isBarcodeAvailableForErrorReport){
+                            statusReconciliationErrorCSVRecord.setBarcode(itemEntity.getBarcode());
+                            statusReconciliationErrorCSVRecord.setInstitution(itemEntity.getOwningInstitutionId().toString());
+                            statusReconciliationErrorCSVRecordList.add(statusReconciliationErrorCSVRecord);
+                        }
+                    }
+                }
+                getItemChangeLogDetailsRepository().save(itemChangeLogEntityList); // <= 100
+                getItemChangeLogDetailsRepository().flush();
+            }
+         return statusReconciliationCSVRecordList;
+    }
+
+    public GFAItemStatusCheckResponse getGFAItemStatusCheckResponse(List<ItemEntity> itemEntities){
+        GFAItemStatusCheckResponse gfaItemStatusCheckResponse = new GFAItemStatusCheckResponse();
+        List<GFAItemStatus> gfaItemStatusList = new ArrayList<>();
+        if(itemEntities != null) {
+            for (ItemEntity itemEntity : itemEntities) {
+                GFAItemStatus gfaItemStatus = new GFAItemStatus();
+                gfaItemStatus.setItemBarCode(itemEntity.getBarcode());
+                gfaItemStatusList.add(gfaItemStatus);
+            }
+            GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
+            gfaItemStatusCheckRequest.setItemStatus(gfaItemStatusList);
+            gfaItemStatusCheckResponse = itemStatusCheck(gfaItemStatusCheckRequest);
+        }
+        return gfaItemStatusCheckResponse;
+    }
+
+    public StatusReconciliationCSVRecord getStatusReconciliationCSVRecord(String barcode,String availability,String requestId,String statusInLas,String dateTime,ItemStatusEntity itemStatusEntity){
+        StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
+        statusReconciliationCSVRecord.setBarcode(barcode);
+        statusReconciliationCSVRecord.setRequestAvailability(availability);
+        statusReconciliationCSVRecord.setRequestId(requestId);
+        statusReconciliationCSVRecord.setStatusInLas(statusInLas);
+        if(itemStatusEntity != null){
+            statusReconciliationCSVRecord.setStatusInScsb(itemStatusEntity.getStatusDescription());
+        }
+        statusReconciliationCSVRecord.setDateTime(dateTime);
+        return statusReconciliationCSVRecord;
+
+    }
+
+    public Map<String,Integer> getTotalPageCount(){
+        Map<String,Integer> itemCountAndStatusIdMap = new HashMap<>();
+        Integer itemAvailabilityStatusId = 0;
+        ItemStatusEntity itemStatusEntity = itemStatusDetailsRepository.findByStatusCode(ReCAPConstants.NOT_AVAILABLE);
+        if(itemStatusEntity != null){
+            itemAvailabilityStatusId = itemStatusEntity.getItemStatusId();
+        }
+        long itemCount = itemDetailsRepository.getNotAvailableItemsCount(itemAvailabilityStatusId, new Date(), statusReconciliationDayLimit);
+        logger.info("Total Records :" + itemCount);
+        int totalPagesCount = (int) (itemCount / batchSize);
+        itemCountAndStatusIdMap.put("itemAvailabilityStatusId",itemAvailabilityStatusId);
+        itemCountAndStatusIdMap.put("totalPagesCount",totalPagesCount);
+        return itemCountAndStatusIdMap;
+    }
+
+    private ItemChangeLogEntity saveItemChangeLogEntity(Integer requestId, String deaccessionUser, String operationType, String barcode) {
+        ItemChangeLogEntity itemChangeLogEntity = new ItemChangeLogEntity();
+        String notes = "ItemBarcode:"+barcode+" , "+"ItemAvailabilityStatusChange"+ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK;
+        itemChangeLogEntity.setUpdatedBy(deaccessionUser);
+        itemChangeLogEntity.setUpdatedDate(new Date());
+        itemChangeLogEntity.setOperationType(operationType);
+        itemChangeLogEntity.setRecordId(requestId);
+        itemChangeLogEntity.setNotes(notes);
+        return itemChangeLogEntity;
+
+    }
+
+
 
     /**
      * Item retrival gfa retrieve item response.
@@ -319,6 +492,7 @@ public class GFAService {
      */
     public ItemInformationResponse executeRetriveOrder(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
+
         GFAItemStatusCheckResponse gfaItemStatusCheckResponse;
         String itemStatus;
         String gfaOnlyStatus;

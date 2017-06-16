@@ -82,6 +82,13 @@ public class EmailRouteBuilder {
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
                                     .log("Email Send for Deleted Records")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                            .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo("StatusReconcilation"))
+                               .log("email for status Recocilation")
+                            .setHeader("subject", simple("Status Reconcilation"))
+                            .setBody(simple("${header.emailPayLoad.messageDisplay}"))
+                            .setHeader("from", simple(from))
+                            .setHeader("to", simple("${header.emailPayLoad.to}"))
+                            .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
                     ;
                 }
 
