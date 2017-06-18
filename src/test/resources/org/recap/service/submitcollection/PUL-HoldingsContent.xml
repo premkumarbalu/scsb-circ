@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><collection xmlns:marcxml="http://www.loc.gov/MARC21/slim">
+    <record>
+        <leader>00000nam a2200000 a 4500</leader>
+        <datafield tag="852" ind1="0" ind2="1">
+            <subfield code="0">222420</subfield>
+            <subfield code="b">rcppa</subfield>
+            <subfield code="h">K25 .xN5</subfield>
+            <subfield code="t">1</subfield>
+            <subfield code="x">tr fr f</subfield>
+        </datafield>
+    </record>
+</collection>
