@@ -1,0 +1,182 @@
+<collection xmlns="http://www.loc.gov/MARC21/slim" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd">
+    <record>
+        <leader>01750cam a2200493 i 4500</leader>
+        <controlfield tag="001">9919400</controlfield>
+        <controlfield tag="005">20160912115017.0</controlfield>
+        <controlfield tag="008">160120t20172016enk b 000 0 eng</controlfield>
+        <datafield ind1=" " ind2=" " tag="010">
+            <subfield code="a">2016002744</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="020">
+            <subfield code="a">9780415710466</subfield>
+            <subfield code="q">hardcover</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="020">
+            <subfield code="a">0415710464</subfield>
+            <subfield code="q">hardcover</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="020">
+            <subfield code="z">9781315867618</subfield>
+            <subfield code="q">electronic book</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="020">
+            <subfield code="z">1315867613</subfield>
+            <subfield code="q">electronic book</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="035">
+            <subfield code="a">(OCoLC)909322578</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="035">
+            <subfield code="a">(OCoLC)ocn909322578</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="040">
+            <subfield code="a">DLC</subfield>
+            <subfield code="e">rda</subfield>
+            <subfield code="b">eng</subfield>
+            <subfield code="c">DLC</subfield>
+            <subfield code="d">YDX</subfield>
+            <subfield code="d">BTCTA</subfield>
+            <subfield code="d">BDX</subfield>
+            <subfield code="d">OCLCF</subfield>
+            <subfield code="d">YDXCP</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="042">
+            <subfield code="a">pcc</subfield>
+        </datafield>
+        <datafield ind1="0" ind2="0" tag="050">
+            <subfield code="a">K236</subfield>
+            <subfield code="b">.F38 2017</subfield>
+        </datafield>
+        <datafield ind1="0" ind2="0" tag="082">
+            <subfield code="a">342.08/5297</subfield>
+            <subfield code="2">23</subfield>
+        </datafield>
+        <datafield ind1="1" ind2=" " tag="100">
+            <subfield code="a">Farrar, Salim,</subfield>
+            <subfield code="e">author.</subfield>
+        </datafield>
+        <datafield ind1="1" ind2="0" tag="245">
+            <subfield code="a">Accommodating Muslims under common law :</subfield>
+            <subfield code="b">a comparative analysis /</subfield>
+            <subfield code="c">Salim Farrar and Ghena Krayem.</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="1" tag="264">
+            <subfield code="a">Abingdon, Oxon ;</subfield>
+            <subfield code="a">New York, NY :</subfield>
+            <subfield code="b">Routledge,</subfield>
+            <subfield code="c">2017.</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="4" tag="264">
+            <subfield code="c">©2016</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="300">
+            <subfield code="a">viii, 206 pages ;</subfield>
+            <subfield code="c">25 cm</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="336">
+            <subfield code="a">text</subfield>
+            <subfield code="b">txt</subfield>
+            <subfield code="2">rdacontent</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="337">
+            <subfield code="a">unmediated</subfield>
+            <subfield code="b">n</subfield>
+            <subfield code="2">rdamedia</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="338">
+            <subfield code="a">volume</subfield>
+            <subfield code="b">nc</subfield>
+            <subfield code="2">rdacarrier</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="504">
+            <subfield code="a">Includes bibliographical references.</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="0" tag="650">
+            <subfield code="a">Legal polycentricity.</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="0" tag="650">
+            <subfield code="a">Muslims</subfield>
+            <subfield code="x">Legal status, laws, etc.</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="0" tag="650">
+            <subfield code="a">Muslims</subfield>
+            <subfield code="x">Civil rights.</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="0" tag="650">
+            <subfield code="a">Common law.</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="0" tag="650">
+            <subfield code="a">Islamic law.</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="0" tag="650">
+            <subfield code="a">Comparative law.</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="7" tag="650">
+            <subfield code="a">Common law.</subfield>
+            <subfield code="2">fast</subfield>
+            <subfield code="0">(OCoLC)fst00869795</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="7" tag="650">
+            <subfield code="a">Comparative law.</subfield>
+            <subfield code="2">fast</subfield>
+            <subfield code="0">(OCoLC)fst00871350</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="7" tag="650">
+            <subfield code="a">Islamic law.</subfield>
+            <subfield code="2">fast</subfield>
+            <subfield code="0">(OCoLC)fst00979949</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="7" tag="650">
+            <subfield code="a">Legal polycentricity.</subfield>
+            <subfield code="2">fast</subfield>
+            <subfield code="0">(OCoLC)fst00995519</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="7" tag="650">
+            <subfield code="a">Muslims</subfield>
+            <subfield code="x">Civil rights.</subfield>
+            <subfield code="2">fast</subfield>
+            <subfield code="0">(OCoLC)fst01031035</subfield>
+        </datafield>
+        <datafield ind1=" " ind2="7" tag="650">
+            <subfield code="a">Muslims</subfield>
+            <subfield code="x">Legal status, laws, etc.</subfield>
+            <subfield code="2">fast</subfield>
+            <subfield code="0">(OCoLC)fst01031055</subfield>
+        </datafield>
+        <datafield ind1="1" ind2=" " tag="700">
+            <subfield code="a">Krayem, Ghena,</subfield>
+            <subfield code="e">author.</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="902">
+            <subfield code="a">kl</subfield>
+            <subfield code="b">s</subfield>
+            <subfield code="6">a</subfield>
+            <subfield code="7">m</subfield>
+            <subfield code="d">v</subfield>
+            <subfield code="f">1</subfield>
+            <subfield code="e">20160912</subfield>
+        </datafield>
+        <datafield ind1=" " ind2=" " tag="904">
+            <subfield code="a">kl</subfield>
+            <subfield code="b">a</subfield>
+            <subfield code="h">m</subfield>
+            <subfield code="c">b</subfield>
+            <subfield code="e">20160912</subfield>
+        </datafield>
+        <datafield ind1="0" ind2=" " tag="852">
+            <subfield code="0">9734816</subfield>
+            <subfield code="b">rcppa</subfield>
+            <subfield code="h">K236 .F38 2017</subfield>
+        </datafield>
+        <datafield ind1="0" ind2="0" tag="876">
+            <subfield code="0">9734816</subfield>
+            <subfield code="a">7453441</subfield>
+            <subfield code="h"/>
+            <subfield code="j">Not Charged</subfield>
+            <subfield code="p">32101095533293</subfield>
+            <subfield code="t">0</subfield>
+            <subfield code="x">Shared</subfield>
+            <subfield code="z">PA</subfield>
+        </datafield>
+    </record>
+</collection>

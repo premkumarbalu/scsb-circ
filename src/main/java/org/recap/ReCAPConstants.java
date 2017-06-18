@@ -320,10 +320,10 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_FAILURE_LIST = "submitCollectionFailureList";
     public static final String SUBMIT_COLLECTION_REJECTION_LIST = "submitCollectionRejectionList";
     public static final String SUBMIT_COLLECTION_EXCEPTION_LIST = "submitCollectionExceptionList";
-    public static final String SUBMIT_COLLECTION_EXCEPTION_RECORD = "ExceptionRecord";
-    public static final String SUBMIT_COLLECTION_REJECTION_RECORD = "RejectionRecord";
-    public static final String SUBMIT_COLLECTION_SUCCESS_RECORD = "SuccessRecord";
-    public static final String SUBMIT_COLLECTION_FAILED_RECORD = "FailedRecord";
+    public static final String SUBMIT_COLLECTION_EXCEPTION_RECORD = "Exception record - Item is unavailable in scsb to update";
+    public static final String SUBMIT_COLLECTION_REJECTION_RECORD = "Rejection record - Only use restriction and cgd not updated because the item is in use";
+    public static final String SUBMIT_COLLECTION_SUCCESS_RECORD = "Success record";
+    public static final String SUBMIT_COLLECTION_FAILED_RECORD = "Failed record";
     public static final String ALL_INST = "ALL";
     public static final String FTP = "FTP";
     public static final String SUBMIT_COLLECTION_SUMMARY = "SubmitCollectionSummary";
@@ -355,7 +355,7 @@ public final class ReCAPConstants {
     public static final String USE_RESTRICTION_UNAVAILABLE = "use restriction is unavailable in the input xml";
     public static final String CGD_NA = "cgd is still in NA status, provide cdg in input xml";
     public static final String RECORD_INCOMPLETE = "Record continue to be incomplete because ";
-    public static final String DELETED_RECORDS_SUCCESS_MSG = "Deletee records completed successfully";
+    public static final String DELETED_RECORDS_SUCCESS_MSG = "Deleted records completed successfully";
     public static final String DELETED_RECORDS_FAILURE_MSG = "Deleted records failed due to unexpected error";
 
     public static final String DELETED_STATUS_NOT_REPORTED = "Not Reported";
