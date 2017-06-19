@@ -46,14 +46,14 @@ public class SharedCollectionRestController {
     public ResponseEntity submitCollection(@RequestBody String inputRecords){
         ResponseEntity responseEntity;
         List<Integer> reportRecordNumberList = new ArrayList<>();
-        List<Integer> processedBibIdList = new ArrayList<>();
+        Set<Integer> processedBibIds = new HashSet<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<SubmitCollectionResponse> submitCollectionResponseList;
         try {
-            submitCollectionResponseList = submitCollectionService.process(inputRecords,processedBibIdList,idMapToRemoveIndex,"",reportRecordNumberList);
-            if (!processedBibIdList.isEmpty()) {
+            submitCollectionResponseList = submitCollectionService.process(inputRecords,processedBibIds,idMapToRemoveIndex,"",reportRecordNumberList, true);
+            if (!processedBibIds.isEmpty()) {
                 logger.info("Calling indexing service to update data");
-                submitCollectionService.indexData(processedBibIdList);
+                submitCollectionService.indexData(processedBibIds);
             }
             if (!idMapToRemoveIndex.isEmpty()) {//remove the incomplete record from solr index
                 logger.info("Calling indexing to remove dummy record");

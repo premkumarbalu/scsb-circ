@@ -38,10 +38,10 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
     @Mock
     GFAService gfaService;
 
-    @Value("${external.status.reconciliation.batch.size}")
+    @Value("${status.reconciliation.batch.size}")
     private Integer batchSize;
 
-    @Value("${external.status.reconciliation.day.limit}")
+    @Value("${status.reconciliation.day.limit}")
     private Integer statusReconciliationDayLimit;
 
     @Mock
@@ -50,7 +50,7 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
     @Mock
     private ItemDetailsRepository itemDetailsRepository;
 
-    @Value("${external.status.reconciliation.las.barcode.limit}")
+    @Value("${status.reconciliation.las.barcode.limit}")
     private Integer statusReconciliationLasBarcodeLimit;
 
     @Mock

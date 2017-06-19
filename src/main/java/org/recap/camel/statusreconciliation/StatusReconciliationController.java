@@ -32,10 +32,10 @@ public class StatusReconciliationController {
     @Autowired
     GFAService gfaService;
 
-    @Value("${external.status.reconciliation.batch.size}")
+    @Value("${status.reconciliation.batch.size}")
     private Integer batchSize;
 
-    @Value("${external.status.reconciliation.day.limit}")
+    @Value("${status.reconciliation.day.limit}")
     private Integer statusReconciliationDayLimit;
 
     @Autowired
@@ -44,7 +44,7 @@ public class StatusReconciliationController {
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;
 
-    @Value("${external.status.reconciliation.las.barcode.limit}")
+    @Value("${status.reconciliation.las.barcode.limit}")
     private Integer statusReconciliationLasBarcodeLimit;
 
     @Autowired
