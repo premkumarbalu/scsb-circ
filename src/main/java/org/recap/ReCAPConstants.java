@@ -47,9 +47,11 @@ public final class ReCAPConstants {
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
     // Email
-    public static final String REQUEST_RECALL_EMAILBODY_FOR = "emailBodyFor";
     public static final String REQUEST_RECALL_MAIL_QUEUE = "requestRecallMailSendQueue";
-    public static final String REQUEST_CANCEL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
+    public static final String REQUEST_LAS_STATUS_MAIL_QUEUE = "requestLASStatusMailSendQueue";
+    public static final String REQUEST_ACCESSION_RECONCILATION_MAIL_QUEUE = "AccessionReconcilation";
+
+    public static final String REQUEST_RECALL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
     public static final String REQUEST_LAS_STATUS_EMAIL_TEMPLATE = "request_las_status_email_body.vm";
     public static final String DELETED_RECORDS_EMAIL_TEMPLATE = "deleted_records_email_body.vm";
 

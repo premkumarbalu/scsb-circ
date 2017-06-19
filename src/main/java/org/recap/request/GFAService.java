@@ -53,13 +53,13 @@ public class GFAService {
     @Value("${las.use.queue}")
     private boolean useQueueLasCall;
 
-    @Value("${external.status.reconciliation.batch.size}")
+    @Value("${status.reconciliation.batch.size}")
     private Integer batchSize;
 
-    @Value("${external.status.reconciliation.day.limit}")
+    @Value("${status.reconciliation.day.limit}")
     private Integer statusReconciliationDayLimit;
 
-    @Value("${external.status.reconciliation.las.barcode.limit}")
+    @Value("${status.reconciliation.las.barcode.limit}")
     private Integer statusReconciliationLasBarcodeLimit;
 
     @Value("${gfa.server.response.timeout.milliseconds}")
@@ -518,7 +518,7 @@ public class GFAService {
                 logger.info(gfaOnlyStatus);
                 // Send Email
                 if(gfaOnlyStatus.equalsIgnoreCase(ReCAPConstants.GFA_STATUS_OUT_ON_EDD_WORK_ORDER) || gfaOnlyStatus.equalsIgnoreCase(ReCAPConstants.GFA_STATUS_REFILE_ON_WORK_ORDER)){
-                    sendEmailLasStatus(itemRequestInfo.getCustomerCode(),itemRequestInfo.getItemBarcodes().get(0),itemRequestInfo.getPatronBarcode());
+                    sendEmailLasStatus(itemRequestInfo.getItemBarcodes().get(0));
                 }
                 // Call Retrival Order
                 if (ReCAPConstants.getGFAStatusAvailableList().contains(gfaOnlyStatus)) {
@@ -815,8 +815,8 @@ public class GFAService {
         return strJson;
     }
 
-    private void sendEmailLasStatus(String customerCode, String itemBarcode, String patronBarcode) {
-        emailService.sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_REFILE_BODY, patronBarcode, ReCAPConstants.GFA, ReCAPConstants.REQUEST_REFILE_SUBJECT);
+    private void sendEmailLasStatus(String itemBarcode) {
+        emailService.sendEmail(itemBarcode,ReCAPConstants.GFA, ReCAPConstants.REQUEST_REFILE_SUBJECT);
     }
 
 }

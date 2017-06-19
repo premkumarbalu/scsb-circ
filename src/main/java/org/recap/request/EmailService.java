@@ -48,7 +48,7 @@ public class EmailService {
         emailPayLoad.setMessageDisplay(messageDisplay);
         emailPayLoad.setPatronBarcode(patronBarcode);
         emailPayLoad.setSubject(subject + itemBarcode);
-        producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, emailPayLoad, ReCAPConstants.REQUEST_RECALL_EMAILBODY_FOR, ReCAPConstants.REQUEST_RECALL_MAIL_QUEUE);
+        producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, emailPayLoad, ReCAPConstants.EMAIL_BODY_FOR, ReCAPConstants.REQUEST_RECALL_MAIL_QUEUE);
     }
 
     /**
@@ -65,7 +65,15 @@ public class EmailService {
         emailPayLoad.setMessageDisplay(messageDisplay);
         emailPayLoad.setPatronBarcode(patronBarcode);
         emailPayLoad.setSubject(subject);
-        producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, emailPayLoad, ReCAPConstants.REQUEST_RECALL_EMAILBODY_FOR, ReCAPConstants.DELETED_MAIL_QUEUE);
+        producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, emailPayLoad, ReCAPConstants.EMAIL_BODY_FOR, ReCAPConstants.DELETED_MAIL_QUEUE);
+    }
+
+    public void sendEmail(String itemBarcode, String toInstitution, String subject) {
+        EmailPayLoad emailPayLoad = new EmailPayLoad();
+        emailPayLoad.setTo(emailIdTo(toInstitution));
+        emailPayLoad.setItemBarcode(itemBarcode);
+        emailPayLoad.setSubject(subject);
+        producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, emailPayLoad, ReCAPConstants.EMAIL_BODY_FOR, ReCAPConstants.REQUEST_LAS_STATUS_MAIL_QUEUE);
     }
 
     /**

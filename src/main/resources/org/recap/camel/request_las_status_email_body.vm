@@ -1,4 +1,4 @@
-The following item has been requested and was found to be under Refile in LAS.
+The following item has been requested in SCSB and LAS status is REFILE ON WO or OUT ON EDD WO.
+These trasactions will go in to the error report. Please do verify.
 
-
-
+Item Barcode 	: ${header.emailPayLoad.itemBarcode}
