@@ -47,7 +47,6 @@ public class SubmitCollectionDAOService {
         if(fetchBibliographicEntity != null ){//update existing record
             if(fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId())){//update existing complete record
                 savedBibliographicEntity = updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
-                saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, ReCAPConstants.SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE,savedBibliographicEntity.getItemEntities());
             } else {//update existing dummy record if any (Removes existion dummy record and creates new record for the same barcode based on the input xml)
                 updateCustomerCode(fetchBibliographicEntity,bibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it, this happens mostly for CUL
                 removeDummyRecord(idMapToRemoveIndex, fetchBibliographicEntity);
@@ -107,6 +106,7 @@ public class SubmitCollectionDAOService {
         try {
             updateCatalogingStatusForBib(fetchBibliographicEntity);
             savedOrUnsavedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().saveAndFlush(fetchBibliographicEntity);
+            saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, ReCAPConstants.SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE,updatedItemEntityList);
             submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,fetchBibliographicEntity,incomingBibliographicEntity);
             return savedOrUnsavedBibliographicEntity;
         } catch (Exception e) {

@@ -69,14 +69,15 @@ public class SubmitCollectionService {
      * Process string.
      *
      * @param inputRecords       the input records
-     * @param processedBibIdList the processed bib id list
+     * @param processedBibIds the processed bib id list
      * @param idMapToRemoveIndex the id map to remove index
      * @param xmlFileName        the xml file name
+     * @param checkLimit
      * @return the string
      */
     @Transactional
-    public List<SubmitCollectionResponse> process(String inputRecords, List<Integer> processedBibIdList, Map<String,String> idMapToRemoveIndex, String xmlFileName, List<Integer> reportRecordNumberList) {
-        logger.info("Input record processing started");
+    public List<SubmitCollectionResponse> process(String inputRecords, Set<Integer> processedBibIds, Map<String, String> idMapToRemoveIndex, String xmlFileName, List<Integer> reportRecordNumberList, boolean checkLimit) {
+        logger.info("Submit Collection : Input record processing started");
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String reponse = null;
@@ -85,9 +86,9 @@ public class SubmitCollectionService {
         try {
             if (!"".equals(inputRecords)) {
                 if (inputRecords.contains(ReCAPConstants.BIBRECORD_TAG)) {
-                    reponse = processSCSB(inputRecords, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
+                    reponse = processSCSB(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit);
                 } else {
-                    reponse = processMarc(inputRecords, processedBibIdList, submitCollectionReportInfoMap, idMapToRemoveIndex);
+                    reponse = processMarc(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit);
                 }
                 if (reponse != null){//This happens when there is a failure
                     setResponse(reponse, submitColletionResponseList);
@@ -107,7 +108,7 @@ public class SubmitCollectionService {
         }
         setResponse(reponse, submitColletionResponseList);
         stopWatch.stop();
-        logger.info("total time take for processing input record {}", stopWatch.getTotalTimeSeconds());
+        logger.info("Submit Collection : total time take for processing input record and saving to DB {}", stopWatch.getTotalTimeSeconds());
         return submitColletionResponseList;
     }
 
@@ -130,7 +131,7 @@ public class SubmitCollectionService {
         return submitColletionResponseList;
     }
 
-    private String processMarc(String inputRecords, List<Integer> processedBibIdList, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String,String> idMapToRemoveIndex) {
+    private String processMarc(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String, String> idMapToRemoveIndex, boolean checkLimit) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String format;
@@ -138,7 +139,7 @@ public class SubmitCollectionService {
         List<Record> records = null;
         try {
             records = getMarcUtil().convertMarcXmlToRecord(inputRecords);
-            if(records.size() > inputLimit){
+            if(checkLimit && records.size() > inputLimit){
                 return ReCAPConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE + inputLimit;
             }
         } catch (Exception e) {
@@ -152,7 +153,7 @@ public class SubmitCollectionService {
                 logger.info("Processing record no: {}",count);
                 BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndex);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
-                    processedBibIdList.add(bibliographicEntity.getBibliographicId());
+                    processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
                 logger.info("Processing completed for record no: {}",count);
                 count ++;
@@ -163,7 +164,8 @@ public class SubmitCollectionService {
         return null;
     }
 
-    private String processSCSB(String inputRecords, List<Integer> processedBibIdList, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String, String> idMapToRemoveIndex) {
+    private String processSCSB(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,
+                               Map<String, String> idMapToRemoveIndex, boolean checkLimit) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String format;
@@ -172,7 +174,7 @@ public class SubmitCollectionService {
         try {
             bibRecords = (BibRecords) JAXBHandler.getInstance().unmarshal(inputRecords, BibRecords.class);
             logger.info("bibrecord size {}", bibRecords.getBibRecords().size());
-            if (bibRecords.getBibRecords().size() > inputLimit) {
+            if (checkLimit && bibRecords.getBibRecords().size() > inputLimit) {
                 return ReCAPConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE + " " + inputLimit;
             }
         } catch (JAXBException e) {
@@ -186,7 +188,7 @@ public class SubmitCollectionService {
             try {
                 BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndex);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
-                    processedBibIdList.add(bibliographicEntity.getBibliographicId());
+                    processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
             } catch (MarcException me) {
                 logger.error(ReCAPConstants.LOG_ERROR,me);
@@ -222,7 +224,7 @@ public class SubmitCollectionService {
      * @param bibliographicIdList the bibliographic id list
      * @return the string
      */
-    public String indexData(List<Integer> bibliographicIdList){
+    public String indexData(Set<Integer> bibliographicIdList){
         return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/indexByBibliographicId", bibliographicIdList, String.class);
     }
 

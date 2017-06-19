@@ -15,10 +15,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by premkb on 19/3/17.
@@ -74,17 +71,19 @@ public class SubmitCollectionProcessor {
     public void processInput(Exchange exchange) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        logger.info("Route started and started processing the records from ftp for submitcollection");
+        logger.info("Submit Collection : Route started and started processing the records from ftp for submitcollection");
         String inputXml = exchange.getIn().getBody(String.class);
         String xmlFileName = exchange.getIn().toString();
-        List<Integer> processedBibIdList = new ArrayList<>();
+        Set<Integer> processedBibIds = new HashSet<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
         String response = "";
         try {
-            submitCollectionService.process(inputXml,processedBibIdList,idMapToRemoveIndex,xmlFileName,reportRecordNumList);
-            if (processedBibIdList.size()>0) {
-                submitCollectionService.indexData(processedBibIdList);
+            submitCollectionService.process(inputXml,processedBibIds,idMapToRemoveIndex,xmlFileName,reportRecordNumList, false);
+            logger.info("Submit Collection : Solr indexing started for {} records", processedBibIds.size());
+            if (processedBibIds.size()>0) {
+                submitCollectionService.indexData(processedBibIds);
+                logger.info("Submit Collection : Solr indexing completed and remove the incomplete record from solr index for {} records", idMapToRemoveIndex.size());
                 if (idMapToRemoveIndex.size()>0) {//remove the incomplete record from solr index
                     submitCollectionService.removeSolrIndex(idMapToRemoveIndex);
                 }
@@ -93,7 +92,7 @@ public class SubmitCollectionProcessor {
             submitCollectionReportGenerator.generateReport(reportRequest);
             producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION);
             stopWatch.stop();
-            logger.info("Total time taken for processing through ftp---> {}",stopWatch.getTotalTimeSeconds());
+            logger.info("Submit Collection : Total time taken for processing through ftp---> {}",stopWatch.getTotalTimeSeconds());
         } catch (Exception e) {
             logger.error(ReCAPConstants.LOG_ERROR,e);
         }
