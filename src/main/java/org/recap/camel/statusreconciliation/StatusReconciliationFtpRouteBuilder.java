@@ -23,7 +23,7 @@ public class StatusReconciliationFtpRouteBuilder {
 
     @Autowired
     public StatusReconciliationFtpRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
-                                                        @Value("${ftp.userName}") String ftpUserName, @Value("${request.initial.accession}") String requestAccessionFolder,
+                                                        @Value("${ftp.userName}") String ftpUserName,
                                                         @Value("${ftp.knownHost}") String ftpKnownHost, @Value("${ftp.privateKey}") String ftpPrivateKey,
                                                         @Value("${status.reconciliation}") String statusReconciliation){
         try{

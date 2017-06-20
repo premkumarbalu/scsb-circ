@@ -1,19 +1,23 @@
 package org.recap.camel.requestinitialdataload.processor;
 
-import com.google.common.collect.Lists;
 import org.apache.camel.Exchange;
-import org.apache.commons.collections.CollectionUtils;
+import org.recap.ReCAPConstants;
 import org.recap.camel.requestinitialdataload.RequestDataLoadCSVRecord;
-import org.recap.camel.requestinitialdataload.RequestDataLoadErrorCSVRecord;
 import org.recap.service.requestdataload.RequestDataLoadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +26,7 @@ import java.util.Set;
  * Created by hemalathas on 3/5/17.
  */
 @Service
+@Scope("prototype")
 public class RequestInitialDataLoadProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestInitialDataLoadProcessor.class);
@@ -29,29 +34,37 @@ public class RequestInitialDataLoadProcessor {
     @Autowired
     private RequestDataLoadService requestDataLoadService;
 
-    @Value("${request.data.load.batch.size}")
-    private Integer batchSize;
+    @Value("${request.initial.load.filepath}")
+    String requestInitialLoadFilePath;
 
+    private String institutionCode;
+
+    public RequestInitialDataLoadProcessor(String institutionCode) {
+        this.institutionCode = institutionCode;
+    }
 
     private Set<String> barcodeSet = new HashSet<>();
+    private int totalCount = 0;
 
     public void processInput(Exchange exchange) throws ParseException {
         List<RequestDataLoadCSVRecord> requestDataLoadCSVRecordList = (List<RequestDataLoadCSVRecord>)exchange.getIn().getBody();
-        logger.info("Data load process started .... ");
-        logger.info("Total RequestDataLoadCSVRecord count from ftp "+requestDataLoadCSVRecordList.size());
-        List<RequestDataLoadErrorCSVRecord> requestDataLoadErrorCSVRecords = new ArrayList<>();
-        List<RequestDataLoadErrorCSVRecord> requestDataLoadErrorCSVRecordList = new ArrayList<>();
-        List<List<RequestDataLoadCSVRecord>> requestDataLoadCsvChunkList = Lists.partition(requestDataLoadCSVRecordList,batchSize);
-        for(List<RequestDataLoadCSVRecord> requestDataLoadCSVRecords : requestDataLoadCsvChunkList){
-            requestDataLoadErrorCSVRecords = requestDataLoadService.process(requestDataLoadCSVRecords,barcodeSet);
-            requestDataLoadErrorCSVRecordList.addAll(requestDataLoadErrorCSVRecords);
+        logger.info("count from ftp" + requestDataLoadCSVRecordList.size());
+        try {
+            Set<String> barcodesNotInScsb = requestDataLoadService.process(requestDataLoadCSVRecordList,barcodeSet);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("ddMMMyyyy");
+            Path filePath = Paths.get(requestInitialLoadFilePath+"/"+institutionCode+"/"+ReCAPConstants.REQUEST_INITIAL_FILE_NAME+institutionCode+simpleDateFormat.format(new Date())+".csv");
+            if (!filePath.toFile().exists()) {
+                Files.createDirectories(filePath.getParent());
+                Files.createFile(filePath);
+                logger.info("Request Initial Load File Created"+filePath);
+            }
+            Files.write(filePath,barcodesNotInScsb, StandardOpenOption.APPEND);
         }
-        if(CollectionUtils.isNotEmpty(requestDataLoadErrorCSVRecordList)) {
-            exchange.getIn().setBody(requestDataLoadErrorCSVRecordList);
+        catch (Exception e){
+            logger.error(ReCAPConstants.LOG_ERROR+e);
         }
-
-        logger.info("Total request item in error csv file "+ requestDataLoadErrorCSVRecordList.size());
-        barcodeSet.clear();
+        totalCount = totalCount + requestDataLoadCSVRecordList.size();
+        logger.info("Total count from las report ---->" + totalCount);
     }
 
     public Set<String> getBarcodeSet() {
