@@ -348,7 +348,6 @@ public final class ReCAPConstants {
 
     public static final String COUNT_OF_PURGED_EXCEPTION_REQUESTS = "countOfPurgedExceptionRequests";
 
-    public static final String REQUEST_DATA_LOAD_DATE_FORMAT = "dd/MM/yy HH:mm";
     public static final String REQUEST_DATA_LOAD_CREATED_BY = "LAS";
     public static final String REQUEST_DATA_LOAD_REQUEST_TYPE = "PHY";
     public static final String REQUEST_DATA_LOAD_PATRON_ID = "0000000";
@@ -435,4 +434,13 @@ public final class ReCAPConstants {
 
     public static final String STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE = "StatusReconciliation-ItemAvailablityStatusChange";
 
+    public static final String REQUEST_DATA_LOAD_DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
+    public static final String REQUEST_INITIAL_LOAD_FS_FILE = "file:";
+    public static final String REQUEST_INITIAL_LOAD_PUL_FS_ROUTE = "requestInitialLoadPulFsRoute";
+    public static final String REQUEST_INITIAL_LOAD_CUL_FS_ROUTE = "requestInitialLoadCulFsRoute";
+    public static final String REQUEST_INITIAL_LOAD_NYPL_FS_ROUTE = "requestInitialLoadNyplFsRoute";
+    public static final String REQUEST_INITIAL_LOAD_PUL_FTP_ROUTE = "requestInitialLoadPulFtpRoute";
+    public static final String REQUEST_INITIAL_LOAD_CUL_FTP_ROUTE = "requestInitialLoadCulFtpRoute";
+    public static final String REQUEST_INITIAL_LOAD_NYPL_FTP_ROUTE = "requestInitialLoadNyplFtpRoute";
+    public static final String REQUEST_INITIAL_FILE_NAME = "RequestInvalidItem_";
 }

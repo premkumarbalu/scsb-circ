@@ -7,17 +7,17 @@ import java.io.Serializable;
 /**
  * Created by hemalathas on 3/5/17.
  */
-@CsvRecord(generateHeaderColumns = true, separator = ",", quoting = true, crlf = "UNIX", skipFirstLine = true)
+@CsvRecord(generateHeaderColumns = true, separator = ",", quoting = true, crlf = "UNIX", skipFirstLine = false)
 public class RequestDataLoadCSVRecord implements Serializable {
 
     @DataField(pos = 1, columnName = "Barcode")
     private String barcode;
 
-    @DataField(pos = 2, columnName = "DeliveryMethod")
-    private String deliveryMethod;
+    @DataField(pos = 2, columnName = "CustomerCode")
+    private String customerCode;
 
-    @DataField(pos = 3, columnName = "ExpiryDate")
-    private String expiryDate;
+    @DataField(pos = 3, columnName = "DeliveryMethod")
+    private String deliveryMethod;
 
     @DataField(pos = 4, columnName = "CreateDate")
     private String createdDate;
@@ -31,10 +31,7 @@ public class RequestDataLoadCSVRecord implements Serializable {
     @DataField(pos = 7, columnName = "StopCode")
     private String stopCode;
 
-    @DataField(pos = 8, columnName = "RequestingInst")
-    private String requestingInst;
-
-    @DataField(pos = 9, columnName = "Email")
+    @DataField(pos = 8, columnName = "Email")
     private String email;
 
     public String getBarcode() {
@@ -51,14 +48,6 @@ public class RequestDataLoadCSVRecord implements Serializable {
 
     public void setDeliveryMethod(String deliveryMethod) {
         this.deliveryMethod = deliveryMethod;
-    }
-
-    public String getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(String expiryDate) {
-        this.expiryDate = expiryDate;
     }
 
     public String getCreatedDate() {
@@ -93,19 +82,19 @@ public class RequestDataLoadCSVRecord implements Serializable {
         this.stopCode = stopCode;
     }
 
-    public String getRequestingInst() {
-        return requestingInst;
-    }
-
-    public void setRequestingInst(String requestingInst) {
-        this.requestingInst = requestingInst;
-    }
-
     public String getEmail() {
         return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getCustomerCode() {
+        return customerCode;
+    }
+
+    public void setCustomerCode(String customerCode) {
+        this.customerCode = customerCode;
     }
 }
