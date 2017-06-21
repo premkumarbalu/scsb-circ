@@ -443,4 +443,8 @@ public final class ReCAPConstants {
     public static final String REQUEST_INITIAL_LOAD_CUL_FTP_ROUTE = "requestInitialLoadCulFtpRoute";
     public static final String REQUEST_INITIAL_LOAD_NYPL_FTP_ROUTE = "requestInitialLoadNyplFtpRoute";
     public static final String REQUEST_INITIAL_FILE_NAME = "RequestInvalidItem_";
+
+    public static final String FOR = "for";
+    public static final String STATUS_RECONCILIATION = "StatusReconciliation";
+    public static final String STATUS_RECONCILIATION_FAILURE = "StatusReconciliationFailure";
 }

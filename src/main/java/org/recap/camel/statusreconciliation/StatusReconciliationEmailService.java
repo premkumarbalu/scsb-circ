@@ -20,12 +20,17 @@ public class StatusReconciliationEmailService {
     private static final Logger logger = LoggerFactory.getLogger(StatusReconciliationEmailService.class);
 
     @Autowired
-    ProducerTemplate producerTemplate;
+    private ProducerTemplate producerTemplate;
 
     @Value("${status.reconciliation.email.to}")
     private String statusReconciliationEmailTo;
 
 
+    /**
+     * Sets the email payload for the status reconciliation.
+     *
+     * @param exchange the exchange
+     */
     public void processInput(Exchange exchange) {
         String fileLocation = (String) exchange.getIn().getHeaders().get("CamelFileNameProduced");
         producerTemplate.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(fileLocation), ReCAPConstants.EMAIL_BODY_FOR,"StatusReconcilation");
@@ -34,7 +39,7 @@ public class StatusReconciliationEmailService {
     private EmailPayLoad getEmailPayLoad(String FileLocation){
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setTo(statusReconciliationEmailTo);
-        logger.info("Email sent to "+emailPayLoad.getTo());
+        logger.info("Status Reconciliatiion : email sent to "+emailPayLoad.getTo());
         emailPayLoad.setMessageDisplay("Status Recocilation report has Generated in the ftp location - "+FileLocation);
         return emailPayLoad;
     }

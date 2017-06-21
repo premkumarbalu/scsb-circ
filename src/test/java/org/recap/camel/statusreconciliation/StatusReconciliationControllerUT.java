@@ -92,7 +92,6 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
         Mockito.when(gfaService.getItemChangeLogDetailsRepository()).thenReturn(itemChangeLogDetailsRepository);
         Mockito.when(statusReconciliationController.getGfaService()).thenReturn(gfaService);
         Mockito.when(statusReconciliationController.getFromDate(0)).thenReturn(from);
-        Mockito.when(statusReconciliationController.getCurrentDate()).thenReturn(date);
         Mockito.when(statusReconciliationController.getTotalPageCount()).thenReturn(itemCountAndStatusIdMap);
         Mockito.when(statusReconciliationController.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
         Mockito.when(statusReconciliationController.getBatchSize()).thenReturn(batchSize);
@@ -100,8 +99,8 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
         Mockito.when(statusReconciliationController.getStatusReconciliationDayLimit()).thenReturn(statusReconciliationDayLimit);
         Mockito.when(statusReconciliationController.getStatusReconciliationLasBarcodeLimit()).thenReturn(statusReconciliationLasBarcodeLimit);
         Mockito.when(statusReconciliationController.getProducer()).thenReturn(producer);
-        Mockito.when(statusReconciliationController.getGfaService().itemStatusComparison(Mockito.any())).thenCallRealMethod();
-        Mockito.when(statusReconciliationController.getItemDetailsRepository().getNotAvailableItems(itemAvailabilityStatusId, date, statusReconciliationDayLimit, from,batchSize)).thenReturn(itemEntityList);
+        Mockito.when(statusReconciliationController.getGfaService().itemStatusComparison(Mockito.any(),Mockito.any())).thenCallRealMethod();
+        Mockito.when(statusReconciliationController.getItemDetailsRepository().getNotAvailableItems( statusReconciliationDayLimit,itemAvailabilityStatusId,"complete",false,from,batchSize)).thenReturn(itemEntityList);
         Mockito.when(statusReconciliationController.getTotalPageCount()).thenCallRealMethod();
         Mockito.when(statusReconciliationController.itemStatusReconciliation()).thenCallRealMethod();
         ResponseEntity responseEntity = statusReconciliationController.itemStatusReconciliation();
