@@ -185,18 +185,38 @@ public class GFAService {
         return useQueueLasCall;
     }
 
+    /**
+     * Gets request item details repository.
+     *
+     * @return the request item details repository
+     */
     public RequestItemDetailsRepository getRequestItemDetailsRepository() {
         return requestItemDetailsRepository;
     }
 
+    /**
+     * Gets item details repository.
+     *
+     * @return the item details repository
+     */
     public ItemDetailsRepository getItemDetailsRepository() {
         return itemDetailsRepository;
     }
 
+    /**
+     * Gets item status details repository.
+     *
+     * @return the item status details repository
+     */
     public ItemStatusDetailsRepository getItemStatusDetailsRepository() {
         return itemStatusDetailsRepository;
     }
 
+    /**
+     * Gets item change log details repository.
+     *
+     * @return the item change log details repository
+     */
     public ItemChangeLogDetailsRepository getItemChangeLogDetailsRepository() {
         return itemChangeLogDetailsRepository;
     }
@@ -245,11 +265,17 @@ public class GFAService {
         return gfaItemStatusCheckResponse;
     }
 
-    public List<StatusReconciliationCSVRecord> itemStatusComparison(List<List<ItemEntity>> itemEntityChunkList) {
+    /**
+     * To compare the item status for the status reconciliation process with LAS .
+     *
+     * @param itemEntityChunkList                    the item entity chunk list
+     * @param statusReconciliationErrorCSVRecordList the status reconciliation error csv record list
+     * @return the list
+     */
+    public List<StatusReconciliationCSVRecord> itemStatusComparison(List<List<ItemEntity>> itemEntityChunkList,List<StatusReconciliationErrorCSVRecord> statusReconciliationErrorCSVRecordList) {
         List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList = new ArrayList<>();
-        List<StatusReconciliationErrorCSVRecord> statusReconciliationErrorCSVRecordList = new ArrayList<>();
         List<ItemChangeLogEntity> itemChangeLogEntityList = new ArrayList<>();
-            for (List<ItemEntity> itemEntities : itemEntityChunkList) { // 10
+            for (List<ItemEntity> itemEntities : itemEntityChunkList) {
                 List<String> lasNotAvailableStatusList = ReCAPConstants.getGFAStatusNotAvailableList();
                 GFAItemStatusCheckResponse gfaItemStatusCheckResponse = getGFAItemStatusCheckResponse(itemEntities);
                 if (gfaItemStatusCheckResponse != null && gfaItemStatusCheckResponse.getDsitem() != null && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null) {
@@ -302,17 +328,24 @@ public class GFAService {
                         }
                         if(!isBarcodeAvailableForErrorReport){
                             statusReconciliationErrorCSVRecord.setBarcode(itemEntity.getBarcode());
-                            statusReconciliationErrorCSVRecord.setInstitution(itemEntity.getOwningInstitutionId().toString());
+                            statusReconciliationErrorCSVRecord.setInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
+                            statusReconciliationErrorCSVRecord.setReasonForFailure("Barcode not found in LAS");
                             statusReconciliationErrorCSVRecordList.add(statusReconciliationErrorCSVRecord);
                         }
                     }
                 }
-                getItemChangeLogDetailsRepository().save(itemChangeLogEntityList); // <= 100
+                getItemChangeLogDetailsRepository().save(itemChangeLogEntityList);
                 getItemChangeLogDetailsRepository().flush();
             }
-         return statusReconciliationCSVRecordList;
+        return statusReconciliationCSVRecordList;
     }
 
+    /**
+     * For the given item entities this method prepares item barcodes to check status with LAS.
+     *
+     * @param itemEntities the item entities
+     * @return the gfa item status check response
+     */
     public GFAItemStatusCheckResponse getGFAItemStatusCheckResponse(List<ItemEntity> itemEntities){
         GFAItemStatusCheckResponse gfaItemStatusCheckResponse = new GFAItemStatusCheckResponse();
         List<GFAItemStatus> gfaItemStatusList = new ArrayList<>();
@@ -329,6 +362,17 @@ public class GFAService {
         return gfaItemStatusCheckResponse;
     }
 
+    /**
+     * For the given input this method prepares the status reconciliation csv record.
+     *
+     * @param barcode          the barcode
+     * @param availability     the availability
+     * @param requestId        the request id
+     * @param statusInLas      the status in las
+     * @param dateTime         the date time
+     * @param itemStatusEntity the item status entity
+     * @return the status reconciliation csv record
+     */
     public StatusReconciliationCSVRecord getStatusReconciliationCSVRecord(String barcode,String availability,String requestId,String statusInLas,String dateTime,ItemStatusEntity itemStatusEntity){
         StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
         statusReconciliationCSVRecord.setBarcode(barcode);
@@ -343,21 +387,6 @@ public class GFAService {
 
     }
 
-    public Map<String,Integer> getTotalPageCount(){
-        Map<String,Integer> itemCountAndStatusIdMap = new HashMap<>();
-        Integer itemAvailabilityStatusId = 0;
-        ItemStatusEntity itemStatusEntity = itemStatusDetailsRepository.findByStatusCode(ReCAPConstants.NOT_AVAILABLE);
-        if(itemStatusEntity != null){
-            itemAvailabilityStatusId = itemStatusEntity.getItemStatusId();
-        }
-        long itemCount = itemDetailsRepository.getNotAvailableItemsCount(itemAvailabilityStatusId, new Date(), statusReconciliationDayLimit);
-        logger.info("Total Records :" + itemCount);
-        int totalPagesCount = (int) (itemCount / batchSize);
-        itemCountAndStatusIdMap.put("itemAvailabilityStatusId",itemAvailabilityStatusId);
-        itemCountAndStatusIdMap.put("totalPagesCount",totalPagesCount);
-        return itemCountAndStatusIdMap;
-    }
-
     private ItemChangeLogEntity saveItemChangeLogEntity(Integer requestId, String deaccessionUser, String operationType, String barcode) {
         ItemChangeLogEntity itemChangeLogEntity = new ItemChangeLogEntity();
         String notes = "ItemBarcode:"+barcode+" , "+"ItemAvailabilityStatusChange"+ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK;
@@ -369,8 +398,6 @@ public class GFAService {
         return itemChangeLogEntity;
 
     }
-
-
 
     /**
      * Item retrival gfa retrieve item response.
@@ -397,10 +424,6 @@ public class GFAService {
         return gfaRetrieveItemResponse;
     }
 
-    /**
-     * @param gfaRetrieveItemResponseParam
-     * @return
-     */
     private GFARetrieveItemResponse getLASRetrieveResponse(GFARetrieveItemResponse gfaRetrieveItemResponseParam) {
         GFARetrieveItemResponse gfaRetrieveItemResponse = gfaRetrieveItemResponseParam;
         if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
@@ -586,11 +609,6 @@ public class GFAService {
         return bSuccess;
     }
 
-    /**
-     * @param itemRequestInfo
-     * @param itemResponseInformation
-     * @return
-     */
     private ItemInformationResponse callItemRetrivate(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         GFARetrieveItemRequest gfaRetrieveItemRequest = new GFARetrieveItemRequest();
         TtitemRequest ttitem001 = new TtitemRequest();

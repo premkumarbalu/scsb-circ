@@ -30,7 +30,7 @@ public class StatusReconciliationController {
     private static final Logger logger = LoggerFactory.getLogger(StatusReconciliationController.class);
 
     @Autowired
-    GFAService gfaService;
+    private GFAService gfaService;
 
     @Value("${status.reconciliation.batch.size}")
     private Integer batchSize;
@@ -50,66 +50,121 @@ public class StatusReconciliationController {
     @Autowired
     private ProducerTemplate producer;
 
+    /**
+     * Gets logger.
+     *
+     * @return the logger
+     */
     public static Logger getLogger() {
         return logger;
     }
 
+    /**
+     * Gets gfa service.
+     *
+     * @return the gfa service
+     */
     public GFAService getGfaService() {
         return gfaService;
     }
 
+    /**
+     * Gets batch size.
+     *
+     * @return the batch size
+     */
     public Integer getBatchSize() {
         return batchSize;
     }
 
+    /**
+     * Gets status reconciliation day limit.
+     *
+     * @return the status reconciliation day limit
+     */
     public Integer getStatusReconciliationDayLimit() {
         return statusReconciliationDayLimit;
     }
 
+    /**
+     * Gets item status details repository.
+     *
+     * @return the item status details repository
+     */
     public ItemStatusDetailsRepository getItemStatusDetailsRepository() {
         return itemStatusDetailsRepository;
     }
 
+    /**
+     * Gets item details repository.
+     *
+     * @return the item details repository
+     */
     public ItemDetailsRepository getItemDetailsRepository() {
         return itemDetailsRepository;
     }
 
+    /**
+     * Gets status reconciliation las barcode limit.
+     *
+     * @return the status reconciliation las barcode limit
+     */
     public Integer getStatusReconciliationLasBarcodeLimit() {
         return statusReconciliationLasBarcodeLimit;
     }
 
+    /**
+     * Gets producer.
+     *
+     * @return the producer
+     */
     public ProducerTemplate getProducer() {
         return producer;
     }
 
+    /**
+     * Get from date long.
+     *
+     * @param pageNum the page num
+     * @return the long
+     */
     public Long getFromDate(int pageNum){
         return pageNum * Long.valueOf(getBatchSize());
     }
 
-    public Date getCurrentDate(){
-        return new Date();
-    }
-
+    /**
+     * Prepare the item entites for the status reconciliation and
+     * placing the status reconciliation csv records in the scsb active-mq.
+     *
+     * @return the response entity
+     */
     @RequestMapping(value = "/itemStatusReconciliation", method = RequestMethod.GET)
     public ResponseEntity itemStatusReconciliation(){
         Map<String,Integer> itemCountAndStatusIdMap = getTotalPageCount();
         int totalPagesCount = itemCountAndStatusIdMap.get("totalPagesCount");
-        getLogger().info("Total page count :"+totalPagesCount);
+        getLogger().info("status reconciliation total page count :{}",totalPagesCount);
         int itemAvailabilityStatusId = itemCountAndStatusIdMap.get("itemAvailabilityStatusId");
         List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList = new ArrayList<>();
         List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList1 = new ArrayList<>();
-        for (int pageNum = 0; pageNum < totalPagesCount + 1; pageNum++) { // 1000
+        List<StatusReconciliationErrorCSVRecord> statusReconciliationErrorCSVRecords = new ArrayList<>();
+        for (int pageNum = 0; pageNum < totalPagesCount + 1; pageNum++) {
             long from = getFromDate(pageNum);
-            Date date = getCurrentDate();
-            List<ItemEntity> itemEntityList = getItemDetailsRepository().getNotAvailableItems(itemAvailabilityStatusId, date, getStatusReconciliationDayLimit(), from, getBatchSize());
-            List<List<ItemEntity>> itemEntityChunkList = Lists.partition(itemEntityList, getStatusReconciliationDayLimit());
-            statusReconciliationCSVRecordList = getGfaService().itemStatusComparison(itemEntityChunkList);
+            List<ItemEntity> itemEntityList = getItemDetailsRepository().getNotAvailableItems(getStatusReconciliationDayLimit(),itemAvailabilityStatusId,"Complete",false,from, getBatchSize());
+            List<List<ItemEntity>> itemEntityChunkList = Lists.partition(itemEntityList, getStatusReconciliationLasBarcodeLimit());
+            statusReconciliationCSVRecordList = getGfaService().itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecords);
             statusReconciliationCSVRecordList1.addAll(statusReconciliationCSVRecordList);
+            getLogger().info("status reconciliation page num:{} and records {} processed",pageNum,from+getBatchSize());
         }
-        getProducer().sendBodyAndHeader(ReCAPConstants.STATUS_RECONCILIATION_REPORT, statusReconciliationCSVRecordList1, ReCAPConstants.REPORT_FILE_NAME, "status_reconciliation");
+        getProducer().sendBodyAndHeader(ReCAPConstants.STATUS_RECONCILIATION_REPORT, statusReconciliationCSVRecordList1, ReCAPConstants.FOR,ReCAPConstants.STATUS_RECONCILIATION);
+        getProducer().sendBodyAndHeader(ReCAPConstants.STATUS_RECONCILIATION_REPORT,statusReconciliationErrorCSVRecords,ReCAPConstants.FOR,ReCAPConstants.STATUS_RECONCILIATION_FAILURE);
         return new ResponseEntity("Success", HttpStatus.OK);
     }
 
+    /**
+     * Get total page count for the status reconciliation.
+     *
+     * @return the map
+     */
     public Map<String,Integer> getTotalPageCount(){
         Map<String,Integer> itemCountAndStatusIdMap = new HashMap<>();
         Integer itemAvailabilityStatusId = 0;
@@ -117,13 +172,11 @@ public class StatusReconciliationController {
         if(itemStatusEntity != null){
             itemAvailabilityStatusId = itemStatusEntity.getItemStatusId();
         }
-        long itemCount = getItemDetailsRepository().getNotAvailableItemsCount(itemAvailabilityStatusId, new Date(), getStatusReconciliationDayLimit());
-        getLogger().info("Total Records :" + itemCount);
+        long itemCount = getItemDetailsRepository().getNotAvailableItemsCount(getStatusReconciliationDayLimit(),itemAvailabilityStatusId,"Complete",false);
+        getLogger().info("status reconciliation total item records count :{}" ,itemCount);
         int totalPagesCount = (int) (itemCount / getBatchSize());
         itemCountAndStatusIdMap.put("itemAvailabilityStatusId",itemAvailabilityStatusId);
         itemCountAndStatusIdMap.put("totalPagesCount",totalPagesCount);
         return itemCountAndStatusIdMap;
     }
-
-
 }
