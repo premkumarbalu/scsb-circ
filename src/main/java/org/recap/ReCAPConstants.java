@@ -447,4 +447,9 @@ public final class ReCAPConstants {
     public static final String FOR = "for";
     public static final String STATUS_RECONCILIATION = "StatusReconciliation";
     public static final String STATUS_RECONCILIATION_FAILURE = "StatusReconciliationFailure";
+
+    public static final String REQUEST_INITIAL_LOAD_PUL = "pul";
+    public static final String REQUEST_INITIAL_LOAD_CUL = "cul";
+    public static final String REQUEST_INITIAL_LOAD_NYPL = "nypl";
+
 }

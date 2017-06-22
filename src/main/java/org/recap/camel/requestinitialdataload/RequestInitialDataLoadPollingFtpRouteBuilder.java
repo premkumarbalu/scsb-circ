@@ -45,7 +45,7 @@ public class RequestInitialDataLoadPollingFtpRouteBuilder {
                             .noAutoStartup()
                             .split(body().tokenize("\n",1000,true))
                             .unmarshal().bindy(BindyType.Csv, RequestDataLoadCSVRecord.class)
-                            .bean(applicationContext.getBean(RequestInitialDataLoadProcessor.class,ReCAPConstants.PRINCETON), ReCAPConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(RequestInitialDataLoadProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_PUL), ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()
                             .process(new Processor() {
@@ -80,7 +80,7 @@ public class RequestInitialDataLoadPollingFtpRouteBuilder {
                             .noAutoStartup()
                             .split(body().tokenize("\n",1000,true))
                             .unmarshal().bindy(BindyType.Csv, RequestDataLoadCSVRecord.class)
-                            .bean(applicationContext.getBean(RequestInitialDataLoadProcessor.class,ReCAPConstants.COLUMBIA), ReCAPConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(RequestInitialDataLoadProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_CUL), ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()
                             .process(new Processor() {
@@ -115,7 +115,7 @@ public class RequestInitialDataLoadPollingFtpRouteBuilder {
                             .noAutoStartup()
                             .split(body().tokenize("\n",1000,true))
                             .unmarshal().bindy(BindyType.Csv, RequestDataLoadCSVRecord.class)
-                            .bean(applicationContext.getBean(RequestInitialDataLoadProcessor.class,ReCAPConstants.NYPL), ReCAPConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(RequestInitialDataLoadProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL), ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()
                             .process(new Processor() {
