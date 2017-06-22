@@ -135,7 +135,7 @@ public class RequestItemControllerUT extends BaseTestCase {
         return itemHoldResponse;
     }
 
-    private String getpickupLoacation(String institution) {
+    private String getPickupLocation(String institution) {
         String pickUpLocation = "";
         if (institution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
             pickUpLocation = ReCAPConstants.DEFAULT_PICK_UP_LOCATION_PUL;
@@ -163,12 +163,12 @@ public class RequestItemControllerUT extends BaseTestCase {
         Mockito.when(jsipConectorFactory.getColumbiaJSIPConnector()).thenReturn(columbiaJSIPConnector);
         Mockito.when(jsipConectorFactory.getNyplAPIConnector()).thenReturn(nyplAPIConnector);
         Mockito.when(requestItemController.getJsipConectorFactory().getJSIPConnector(callInstitition)).thenCallRealMethod();
-        Mockito.when(requestItemController.getpickupLoacation(callInstitition)).thenCallRealMethod();
+        Mockito.when(requestItemController.getPickupLocation(callInstitition)).thenCallRealMethod();
         Mockito.when((ItemHoldResponse)requestItemController.getJsipConectorFactory().getJSIPConnector(callInstitition).cancelHold(itembarcode, itemRequestInformation.getPatronBarcode(),
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                getpickupLoacation(callInstitition), itemRequestInformation.getTrackingId())).thenReturn(getItemHoldResponse());
+                getPickupLocation(callInstitition), itemRequestInformation.getTrackingId())).thenReturn(getItemHoldResponse());
         Mockito.when((ItemInformationResponse)requestItemController.cancelHoldItem(itemRequestInformation,callInstitition)).thenCallRealMethod();
         AbstractResponseItem abstractResponseItem = requestItemController.cancelHoldItem(itemRequestInformation,callInstitition);
         assertNotNull(abstractResponseItem);
@@ -195,13 +195,13 @@ public class RequestItemControllerUT extends BaseTestCase {
         Mockito.when(jsipConectorFactory.getColumbiaJSIPConnector()).thenReturn(columbiaJSIPConnector);
         Mockito.when(jsipConectorFactory.getNyplAPIConnector()).thenReturn(nyplAPIConnector);
         Mockito.when(requestItemController.getJsipConectorFactory().getJSIPConnector(callInstitition)).thenCallRealMethod();
-        Mockito.when(requestItemController.getpickupLoacation(callInstitition)).thenCallRealMethod();
+        Mockito.when(requestItemController.getPickupLocation(callInstitition)).thenCallRealMethod();
         Mockito.when(requestItemController.getJsipConectorFactory().getJSIPConnector(callInstitition).placeHold(itembarcode, itemRequestInformation.getPatronBarcode(),
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getItemOwningInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                getpickupLoacation(callInstitition),
+                getPickupLocation(callInstitition),
                 itemRequestInformation.getTrackingId(),
                 itemRequestInformation.getTitleIdentifier(),
                 itemRequestInformation.getAuthor(),
@@ -293,12 +293,12 @@ public class RequestItemControllerUT extends BaseTestCase {
         Mockito.when(jsipConectorFactory.getColumbiaJSIPConnector()).thenReturn(columbiaJSIPConnector);
         Mockito.when(jsipConectorFactory.getNyplAPIConnector()).thenReturn(nyplAPIConnector);
         Mockito.when(requestItemController.getJsipConectorFactory().getJSIPConnector(callInstitition)).thenCallRealMethod();
-        Mockito.when(requestItemController.getpickupLoacation(callInstitition)).thenCallRealMethod();
+        Mockito.when(requestItemController.getPickupLocation(callInstitition)).thenCallRealMethod();
         Mockito.when(requestItemController.getJsipConectorFactory().getJSIPConnector(callInstitition).recallItem(itembarcode, itemRequestInformation.getPatronBarcode(),
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                getpickupLoacation(callInstitition))).thenReturn(itemRecallResponse);
+                getPickupLocation(callInstitition))).thenReturn(itemRecallResponse);
         Mockito.when(requestItemController.recallItem(itemRequestInformation,callInstitition)).thenCallRealMethod();
         AbstractResponseItem abstractResponseItem = requestItemController.recallItem(itemRequestInformation,callInstitition);
         assertNotNull(abstractResponseItem);

@@ -319,12 +319,12 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
     }
 
     @Override
-    public AbstractResponseItem placeHold(String itemIdentifier, String patronIdentifier, String callInstitutionId, String itemInstitutionId, String expirationDate, String bibId, String pickupLocation, String trackingId, String title, String author, String callNumber) {
+    public AbstractResponseItem placeHold(String itemIdentifier, String patronIdentifier, String callInstitutionId, String itemInstitutionId, String expirationDate, String bibId, String deliveryLocation, String trackingId, String title, String author, String callNumber) {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         try {
             String recapHoldApiUrl = getNyplDataApiUrl() + "/recap/hold-requests";
             if (StringUtils.isBlank(trackingId)) {
-                trackingId = initiateNyplHoldRequest(itemIdentifier, patronIdentifier, itemInstitutionId, pickupLocation);
+                trackingId = initiateNyplHoldRequest(itemIdentifier, patronIdentifier, itemInstitutionId, deliveryLocation);
             }
             CreateHoldRequest createHoldRequest = getCreateHoldRequest();
             createHoldRequest.setTrackingId(trackingId);
@@ -462,7 +462,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return headers;
     }
 
-    private String initiateNyplHoldRequest(String itemIdentifier, String patronIdentifier, String itemInstitutionId, String pickupLocation) throws Exception {
+    private String initiateNyplHoldRequest(String itemIdentifier, String patronIdentifier, String itemInstitutionId, String deliveryLocation) throws Exception {
         String trackingId = null;
         String nyplHoldApiUrl = nyplDataApiUrl + "/hold-requests";
         String nyplSource = nyplApiResponseUtil.getNyplSource(itemInstitutionId);
@@ -471,7 +471,8 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         nyplHoldRequest.setPatron(getPatronIdByPatronBarcode(patronIdentifier));
         nyplHoldRequest.setNyplSource(nyplSource);
         nyplHoldRequest.setRecordType(ReCAPConstants.NYPL_RECORD_TYPE);
-        nyplHoldRequest.setPickupLocation(pickupLocation);
+        nyplHoldRequest.setPickupLocation("");
+        nyplHoldRequest.setDeliveryLocation(deliveryLocation);
         nyplHoldRequest.setNumberOfCopies(1);
         nyplHoldRequest.setNeededBy(nyplApiResponseUtil.getExpirationDateForNypl());
 
