@@ -295,31 +295,8 @@ public class GFAService {
                                     }
                                 }
                                 if (!isNotAvailable) {
-                                    StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
-                                    List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByItemBarcode(itemEntity.getBarcode());
-                                    List<String> barcodeList = new ArrayList<>();
-                                    List<Integer> requestIdList = new ArrayList<>();
-                                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
-                                    ItemStatusEntity itemStatusEntity = getItemStatusDetailsRepository().findByItemStatusId(itemEntity.getItemAvailabilityStatusId());
-                                    if (!requestItemEntityList.isEmpty()) {
-                                        statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "yes", requestItemEntityList.get(0).getRequestId().toString(), lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
-                                        barcodeList.add(itemEntity.getBarcode());
-                                        requestIdList.add(requestItemEntityList.get(0).getRequestId());
-                                    } else {
-                                        statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "No", null, lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
-                                        getItemDetailsRepository().updateAvailabilityStatus(1,new Date(),ReCAPConstants.GUEST_USER, itemEntity.getBarcode());
-                                        ItemChangeLogEntity itemChangeLogEntity = saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE,itemEntity.getBarcode());
-                                        itemChangeLogEntityList.add(itemChangeLogEntity);
-                                    }
-                                    if (!barcodeList.isEmpty() && !requestIdList.isEmpty()) {
-                                        ItemRefileRequest itemRefileRequest = new ItemRefileRequest();
-                                        itemRefileRequest.setItemBarcodes(barcodeList);
-                                        itemRefileRequest.setRequestIds(requestIdList);
-                                        itemRequestService.reFileItem(itemRefileRequest);
-                                    }
-                                    statusReconciliationCSVRecordList.add(statusReconciliationCSVRecord);
+                                    processMismatchStatus(statusReconciliationCSVRecordList, itemChangeLogEntityList, lasStatus, itemEntity);
                                 }
-
                                 break;
                             }else {
                                 continue;
@@ -338,6 +315,34 @@ public class GFAService {
                 getItemChangeLogDetailsRepository().flush();
             }
         return statusReconciliationCSVRecordList;
+    }
+
+    private void processMismatchStatus(List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList, List<ItemChangeLogEntity> itemChangeLogEntityList, String lasStatus, ItemEntity itemEntity) {
+        StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
+        List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByitemId(itemEntity.getItemId(),Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED,ReCAPConstants.REQUEST_STATUS_EDD));
+        List<String> barcodeList = new ArrayList<>();
+        List<Integer> requestIdList = new ArrayList<>();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
+        ItemStatusEntity itemStatusEntity = getItemStatusDetailsRepository().findByItemStatusId(itemEntity.getItemAvailabilityStatusId());
+        if (!requestItemEntityList.isEmpty()) {
+            for (RequestItemEntity requestItemEntity: requestItemEntityList) {
+                statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "yes", requestItemEntity.getRequestId().toString(), lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
+                barcodeList.add(itemEntity.getBarcode());
+                requestIdList.add(requestItemEntity.getRequestId());
+            }
+        } else {
+            statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "No", null, lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
+            getItemDetailsRepository().updateAvailabilityStatus(1,new Date(), ReCAPConstants.GUEST_USER, itemEntity.getBarcode());
+            ItemChangeLogEntity itemChangeLogEntity = saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE,itemEntity.getBarcode());
+            itemChangeLogEntityList.add(itemChangeLogEntity);
+        }
+        if (!barcodeList.isEmpty() && !requestIdList.isEmpty()) {
+            ItemRefileRequest itemRefileRequest = new ItemRefileRequest();
+            itemRefileRequest.setItemBarcodes(barcodeList);
+            itemRefileRequest.setRequestIds(requestIdList);
+            itemRequestService.reFileItem(itemRefileRequest);
+        }
+        statusReconciliationCSVRecordList.add(statusReconciliationCSVRecord);
     }
 
     /**

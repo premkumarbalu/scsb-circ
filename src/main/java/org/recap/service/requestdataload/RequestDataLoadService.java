@@ -69,7 +69,7 @@ public class RequestDataLoadService {
     }
 
     private void prepareRequestItemEntities(List<RequestItemEntity> requestItemEntityList, RequestItemEntity requestItemEntity, RequestDataLoadCSVRecord requestDataLoadCSVRecord, Integer itemId, Integer requestingInstitutionId) throws ParseException {
-        List<RequestItemEntity> requestAlreadyPlacedList = requestItemDetailsRepository.findByitemId(itemId);
+        List<RequestItemEntity> requestAlreadyPlacedList = requestItemDetailsRepository.findByitemId(itemId,Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED,ReCAPConstants.REQUEST_STATUS_RECALLED,ReCAPConstants.REQUEST_STATUS_EDD,ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD));
         if (CollectionUtils.isEmpty(requestAlreadyPlacedList)) {
             requestItemEntity.setItemId(itemId);
             requestItemEntity.setRequestTypeId(getRequestTypeId(requestDataLoadCSVRecord.getDeliveryMethod()));
