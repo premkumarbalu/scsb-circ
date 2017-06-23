@@ -29,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -288,7 +289,7 @@ public class ItemRequestService {
                         updateSolrIndex(itemEntity);
                         bSuccess = true;
                     } else { // Recall Request Exist
-                        if (requestItemEntity.getRequestingInstitutionId().intValue() == requestItemEntity.getItemEntity().getOwningInstitutionId().intValue()) { // Borrowing Inst same as Owning
+                        if (requestItemEntityRecalled.getRequestingInstitutionId().intValue() == requestItemEntityRecalled.getItemEntity().getOwningInstitutionId().intValue()) { // Borrowing Inst same as Owning
                             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
                             requestItemEntity.setLastUpdatedDate(new Date());
                             requestItemEntityRecalled.setRequestStatusId(requestStatusEntity.getRequestStatusId());
@@ -302,6 +303,16 @@ public class ItemRequestService {
                             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
                             getRequestItemDetailsRepository().save(requestItemEntity);
                             RequestStatusEntity requestStatusRO = getRequestItemStatusDetailsRepository().findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+                            if (!requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
+                                ItemRequestInformation itemRequestInfo = new ItemRequestInformation();
+                                ArrayList barcodes = new ArrayList();
+                                barcodes.add(requestItemEntity.getItemEntity().getBarcode());
+                                itemRequestInfo.setItemBarcodes(barcodes);
+                                itemRequestInfo.setItemOwningInstitution(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
+                                itemRequestInfo.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
+                                itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(),itemRequestInfo.getItemOwningInstitution()));
+                                getRequestItemController().checkoutItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
+                            }
                             // Change Existing Recall to Retrieval Order
                             requestItemEntityRecalled.setRequestStatusId(requestStatusRO.getRequestStatusId());
                             requestItemEntityRecalled.setLastUpdatedDate(new Date());
@@ -317,7 +328,7 @@ public class ItemRequestService {
                     itemRequestInfo.setItemOwningInstitution(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
                     itemRequestInfo.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
 
-                    if (itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
+                    if (itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON) || itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
                         itemRequestInfo.setPatronBarcode(requestItemEntity.getPatronId());
                         getRequestItemController().checkinItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
                     }
