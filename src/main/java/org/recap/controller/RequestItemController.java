@@ -270,12 +270,12 @@ public class RequestItemController {
     }
 
     /**
-     * Gets loacation.
+     * Gets pickup location.
      *
      * @param institution the institution
-     * @return the loacation
+     * @return the pickup location
      */
-    public String getpickupLoacation(String institution) {
+    public String getPickupLocation(String institution) {
         String pickUpLocation = "";
         if (institution.equalsIgnoreCase(ReCAPConstants.PRINCETON)) {
             pickUpLocation = ReCAPConstants.DEFAULT_PICK_UP_LOCATION_PUL;
@@ -318,7 +318,10 @@ public class RequestItemController {
         return inst;
     }
 
-    private String getPickupLocationDB(ItemRequestInformation itemRequestInformation, String callInstitition){
-        return (StringUtils.isBlank(itemRequestInformation.getPickupLocation())) ? getpickupLoacation(callInstitition) : itemRequestInformation.getPickupLocation();
+    private String getPickupLocationDB(ItemRequestInformation itemRequestInformation, String callInstitution){
+        if (ReCAPConstants.NYPL.equalsIgnoreCase(callInstitution)) {
+            return itemRequestInformation.getDeliveryLocation();
+        }
+        return (StringUtils.isBlank(itemRequestInformation.getPickupLocation())) ? getPickupLocation(callInstitution) : itemRequestInformation.getPickupLocation();
     }
 }
