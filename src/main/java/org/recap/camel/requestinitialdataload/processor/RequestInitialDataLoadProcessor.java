@@ -61,8 +61,10 @@ public class RequestInitialDataLoadProcessor {
             Files.write(filePath,barcodesNotInScsb, StandardOpenOption.APPEND);
         }
         catch (Exception e){
+            barcodeSet.clear();
             logger.error(ReCAPConstants.LOG_ERROR+e);
         }
+        barcodeSet.clear();
         totalCount = totalCount + requestDataLoadCSVRecordList.size();
         logger.info("Total count from las report ---->" + totalCount);
     }
