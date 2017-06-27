@@ -50,13 +50,13 @@ public class ItemDetailsRepositoryUT extends BaseTestCase {
     @Test
     public void testFindByAvailableStatusId(){
         List<ItemEntity> itemEntityList = new ArrayList<>();
-        long itemCount = itemDetailsRepository.getNotAvailableItemsCount(2,new Date(),9);
+        long itemCount = itemDetailsRepository.getNotAvailableItemsCount(2,2,"complete",false);
         System.out.println("Total Records : {}"+ itemCount);
         int totalPagesCount = (int) (itemCount / 100);
         System.out.println("Total Pages : {}" + totalPagesCount);
         for(int pageNum = 0; pageNum < totalPagesCount + 1; pageNum++) {
             long from = pageNum * Long.valueOf(100);
-            itemEntityList =  itemDetailsRepository.getNotAvailableItems(2,new Date(),9 , from, 1000);
+            itemEntityList =  itemDetailsRepository.getNotAvailableItems(2,2,"complete",false,from, 1000);
         }
         assertNotNull(itemEntityList);
     }

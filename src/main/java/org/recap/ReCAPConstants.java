@@ -47,9 +47,11 @@ public final class ReCAPConstants {
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
     // Email
-    public static final String REQUEST_RECALL_EMAILBODY_FOR = "emailBodyFor";
     public static final String REQUEST_RECALL_MAIL_QUEUE = "requestRecallMailSendQueue";
-    public static final String REQUEST_CANCEL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
+    public static final String REQUEST_LAS_STATUS_MAIL_QUEUE = "requestLASStatusMailSendQueue";
+    public static final String REQUEST_ACCESSION_RECONCILATION_MAIL_QUEUE = "AccessionReconcilation";
+
+    public static final String REQUEST_RECALL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
     public static final String REQUEST_LAS_STATUS_EMAIL_TEMPLATE = "request_las_status_email_body.vm";
     public static final String DELETED_RECORDS_EMAIL_TEMPLATE = "deleted_records_email_body.vm";
 
@@ -320,10 +322,10 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_FAILURE_LIST = "submitCollectionFailureList";
     public static final String SUBMIT_COLLECTION_REJECTION_LIST = "submitCollectionRejectionList";
     public static final String SUBMIT_COLLECTION_EXCEPTION_LIST = "submitCollectionExceptionList";
-    public static final String SUBMIT_COLLECTION_EXCEPTION_RECORD = "ExceptionRecord";
-    public static final String SUBMIT_COLLECTION_REJECTION_RECORD = "RejectionRecord";
-    public static final String SUBMIT_COLLECTION_SUCCESS_RECORD = "SuccessRecord";
-    public static final String SUBMIT_COLLECTION_FAILED_RECORD = "FailedRecord";
+    public static final String SUBMIT_COLLECTION_EXCEPTION_RECORD = "Exception record - Item is unavailable in scsb to update";
+    public static final String SUBMIT_COLLECTION_REJECTION_RECORD = "Rejection record - Only use restriction and cgd not updated because the item is in use";
+    public static final String SUBMIT_COLLECTION_SUCCESS_RECORD = "Success record";
+    public static final String SUBMIT_COLLECTION_FAILED_RECORD = "Failed record";
     public static final String ALL_INST = "ALL";
     public static final String FTP = "FTP";
     public static final String SUBMIT_COLLECTION_SUMMARY = "SubmitCollectionSummary";
@@ -334,7 +336,7 @@ public final class ReCAPConstants {
     public static final String PRIVATE_KEY_FILE = "?privateKeyFile=";
     public static final String KNOWN_HOST_FILE = "&knownHostsFile=";
     public static final String PROCESS_INPUT = "processInput";
-    public static final String SUBMIT_COLLECTION_SFTP_OPTIONS = "&move=.done&delay=5s&localWorkDirectory=";
+    public static final String SUBMIT_COLLECTION_SFTP_OPTIONS = "&move=.done&delay=10m&localWorkDirectory=";
     public static final String SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE = "Complete item record info updated through submit collection";
     public static final String SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE = "Dummy item record removed and actual record added through submit collection";
 
@@ -346,7 +348,6 @@ public final class ReCAPConstants {
 
     public static final String COUNT_OF_PURGED_EXCEPTION_REQUESTS = "countOfPurgedExceptionRequests";
 
-    public static final String REQUEST_DATA_LOAD_DATE_FORMAT = "dd/MM/yy HH:mm";
     public static final String REQUEST_DATA_LOAD_CREATED_BY = "LAS";
     public static final String REQUEST_DATA_LOAD_REQUEST_TYPE = "PHY";
     public static final String REQUEST_DATA_LOAD_PATRON_ID = "0000000";
@@ -355,7 +356,7 @@ public final class ReCAPConstants {
     public static final String USE_RESTRICTION_UNAVAILABLE = "use restriction is unavailable in the input xml";
     public static final String CGD_NA = "cgd is still in NA status, provide cdg in input xml";
     public static final String RECORD_INCOMPLETE = "Record continue to be incomplete because ";
-    public static final String DELETED_RECORDS_SUCCESS_MSG = "Deletee records completed successfully";
+    public static final String DELETED_RECORDS_SUCCESS_MSG = "Deleted records completed successfully";
     public static final String DELETED_RECORDS_FAILURE_MSG = "Deleted records failed due to unexpected error";
 
     public static final String DELETED_STATUS_NOT_REPORTED = "Not Reported";
@@ -432,5 +433,23 @@ public final class ReCAPConstants {
     public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
 
     public static final String STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE = "StatusReconciliation-ItemAvailablityStatusChange";
+
+    public static final String REQUEST_DATA_LOAD_DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
+    public static final String REQUEST_INITIAL_LOAD_FS_FILE = "file:";
+    public static final String REQUEST_INITIAL_LOAD_PUL_FS_ROUTE = "requestInitialLoadPulFsRoute";
+    public static final String REQUEST_INITIAL_LOAD_CUL_FS_ROUTE = "requestInitialLoadCulFsRoute";
+    public static final String REQUEST_INITIAL_LOAD_NYPL_FS_ROUTE = "requestInitialLoadNyplFsRoute";
+    public static final String REQUEST_INITIAL_LOAD_PUL_FTP_ROUTE = "requestInitialLoadPulFtpRoute";
+    public static final String REQUEST_INITIAL_LOAD_CUL_FTP_ROUTE = "requestInitialLoadCulFtpRoute";
+    public static final String REQUEST_INITIAL_LOAD_NYPL_FTP_ROUTE = "requestInitialLoadNyplFtpRoute";
+    public static final String REQUEST_INITIAL_FILE_NAME = "RequestInvalidItem_";
+
+    public static final String FOR = "for";
+    public static final String STATUS_RECONCILIATION = "StatusReconciliation";
+    public static final String STATUS_RECONCILIATION_FAILURE = "StatusReconciliationFailure";
+
+    public static final String REQUEST_INITIAL_LOAD_PUL = "pul";
+    public static final String REQUEST_INITIAL_LOAD_CUL = "cul";
+    public static final String REQUEST_INITIAL_LOAD_NYPL = "nypl";
 
 }

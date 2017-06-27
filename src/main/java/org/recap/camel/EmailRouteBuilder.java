@@ -21,6 +21,7 @@ public class EmailRouteBuilder {
     private static final Logger logger = LoggerFactory.getLogger(EmailRouteBuilder.class);
 
     private String emailBodyLasStatus;
+    private String emailBodyRecall;
     private String emailBodyDeletedRecords;
     private String emailPassword;
     private String emailBodyForSubmitCollection;
@@ -45,6 +46,7 @@ public class EmailRouteBuilder {
                 public void configure() throws Exception {
                     loadEmailPassword();
                     loadEmailBodyTemplateForNoData();
+                    emailBodyRecall = loadEmailLasStatus(ReCAPConstants.REQUEST_RECALL_EMAIL_TEMPLATE);
                     emailBodyLasStatus = loadEmailLasStatus(ReCAPConstants.REQUEST_LAS_STATUS_EMAIL_TEMPLATE);
                     emailBodyDeletedRecords=loadEmailLasStatus(ReCAPConstants.DELETED_RECORDS_EMAIL_TEMPLATE);
 
@@ -54,12 +56,19 @@ public class EmailRouteBuilder {
                             .onCompletion().log("Email has been sent successfully.")
                             .end()
                             .choice()
-                                .when(header(ReCAPConstants.REQUEST_RECALL_EMAILBODY_FOR).isEqualTo(ReCAPConstants.REQUEST_RECALL_MAIL_QUEUE))
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.REQUEST_RECALL_MAIL_QUEUE))
+                                    .setHeader("subject", simple("${header.emailPayLoad.subject}"))
+                                    .setBody(simple(emailBodyRecall))
+                                    .setHeader("from", simple(from))
+                                    .setHeader("to", simple("${header.emailPayLoad.to}"))
+                                    .log("Email for Recall")
+                                    .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.REQUEST_LAS_STATUS_MAIL_QUEUE))
                                     .setHeader("subject", simple("${header.emailPayLoad.subject}"))
                                     .setBody(simple(emailBodyLasStatus))
                                     .setHeader("from", simple(from))
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
-                                    .log("Email for Recall")
+                                    .log("Email for LAS Status")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
                                 .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.SUBMIT_COLLECTION))
                                     .setHeader("subject", simple("${header.emailPayLoad.subject}"))
@@ -68,7 +77,7 @@ public class EmailRouteBuilder {
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
                                     .log("email body for submit collection")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
-                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo("AccessionReconcilation"))
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.REQUEST_ACCESSION_RECONCILATION_MAIL_QUEUE))
                                     .log("email for accesion Recocilation")
                                     .setHeader("subject", simple("Accession Reconcilation"))
                                     .setBody(simple("${header.emailPayLoad.messageDisplay}"))
@@ -82,13 +91,13 @@ public class EmailRouteBuilder {
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
                                     .log("Email Send for Deleted Records")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
-                            .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo("StatusReconcilation"))
-                               .log("email for status Recocilation")
-                            .setHeader("subject", simple("Status Reconcilation"))
-                            .setBody(simple("${header.emailPayLoad.messageDisplay}"))
-                            .setHeader("from", simple(from))
-                            .setHeader("to", simple("${header.emailPayLoad.to}"))
-                            .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo("StatusReconcilation"))
+                                    .log("email for status Recocilation")
+                                    .setHeader("subject", simple("Status Reconcilation"))
+                                    .setBody(simple("${header.emailPayLoad.messageDisplay}"))
+                                    .setHeader("from", simple(from))
+                                    .setHeader("to", simple("${header.emailPayLoad.to}"))
+                                    .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
                     ;
                 }
 

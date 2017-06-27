@@ -29,6 +29,8 @@ public class NyplHoldRequest {
     private String nyplSource;
     @JsonProperty("pickupLocation")
     private String pickupLocation;
+    @JsonProperty("deliveryLocation")
+    private String deliveryLocation;
     @JsonProperty("numberOfCopies")
     private Integer numberOfCopies;
     @JsonProperty("neededBy")
@@ -132,6 +134,26 @@ public class NyplHoldRequest {
     @JsonProperty("pickupLocation")
     public void setPickupLocation(String pickupLocation) {
         this.pickupLocation = pickupLocation;
+    }
+
+    /**
+     * Gets delivery location.
+     *
+     * @return the pickup location
+     */
+    @JsonProperty("deliveryLocation")
+    public String getDeliveryLocation() {
+        return deliveryLocation;
+    }
+
+    /**
+     * Sets delivery location.
+     *
+     * @param deliveryLocation the delivery location
+     */
+    @JsonProperty("deliveryLocation")
+    public void setDeliveryLocation(String deliveryLocation) {
+        this.deliveryLocation = deliveryLocation;
     }
 
     /**

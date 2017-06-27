@@ -1,16 +1,19 @@
 package org.recap.service.requestdataload;
+
 import org.recap.ReCAPConstants;
 import org.recap.camel.requestinitialdataload.RequestDataLoadCSVRecord;
-import org.recap.camel.requestinitialdataload.RequestDataLoadErrorCSVRecord;
-import org.recap.camel.requestinitialdataload.processor.RequestInitialDataLoadProcessor;
-import org.recap.model.*;
-import org.recap.repository.*;
+import org.recap.model.ItemEntity;
+import org.recap.model.RequestItemEntity;
+import org.recap.model.RequestTypeEntity;
+import org.recap.repository.ItemDetailsRepository;
+import org.recap.repository.RequestItemDetailsRepository;
+import org.recap.repository.RequestTypeDetailsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -30,24 +33,19 @@ public class RequestDataLoadService {
     private RequestTypeDetailsRepository requestTypeDetailsRepository;
 
     @Autowired
-    private CustomerCodeDetailsRepository customerCodeDetailsRepository;
-
-    @Autowired
     private RequestItemDetailsRepository requestItemDetailsRepository;
 
-    @Autowired
-    private ItemStatusDetailsRepository itemStatusDetailsRepository;
-
-    public List<RequestDataLoadErrorCSVRecord> process(List<RequestDataLoadCSVRecord> requestDataLoadCSVRecords, Set<String> barcodeSet) throws ParseException {
+    public Set<String> process(List<RequestDataLoadCSVRecord> requestDataLoadCSVRecords, Set<String> barcodeSet) throws ParseException {
         List<RequestItemEntity> requestItemEntityList = new ArrayList<>();
-        List<RequestDataLoadErrorCSVRecord> requestDataLoadErrorCSVRecords = new ArrayList<>();
+        List<String> duplicateBarcodes = new ArrayList<>();
+        Set<String> barcodesNotInScsb = new HashSet<>();
         RequestItemEntity requestItemEntity = null;
         for(RequestDataLoadCSVRecord requestDataLoadCSVRecord : requestDataLoadCSVRecords){
             Integer itemId = 0;
             Integer requestingInstitutionId = 0 ;
-            RequestDataLoadErrorCSVRecord requestDataLoadErrorCSVRecord = new RequestDataLoadErrorCSVRecord();
             requestItemEntity = new RequestItemEntity();
             if(!barcodeSet.add(requestDataLoadCSVRecord.getBarcode())){
+                duplicateBarcodes.add(requestDataLoadCSVRecord.getBarcode());
                 logger.info("Barcodes duplicated in the incoming record " + requestDataLoadCSVRecord.getBarcode());
                 continue;
             }
@@ -59,49 +57,62 @@ public class RequestDataLoadService {
                 requestingInstitutionId = itemInfo.get(ReCAPConstants.REQUEST_DATA_LOAD_REQUESTING_INST_ID);
             }
             if(itemId == 0 || requestingInstitutionId == 0){
-                requestDataLoadErrorCSVRecord.setBarcodes(requestDataLoadCSVRecord.getBarcode());
-                requestDataLoadErrorCSVRecords.add(requestDataLoadErrorCSVRecord);
+                barcodesNotInScsb.add(requestDataLoadCSVRecord.getBarcode());
             }else{
-                requestItemEntity.setItemId(itemId);
-                requestItemEntity.setRequestTypeId(getRequestTypeId(requestDataLoadCSVRecord.getDeliveryMethod()));
-                requestItemEntity.setRequestingInstitutionId(requestingInstitutionId);
-                SimpleDateFormat formatter=new SimpleDateFormat(ReCAPConstants.REQUEST_DATA_LOAD_DATE_FORMAT);
-                if(requestDataLoadCSVRecord.getExpiryDate() != null){
-                    requestItemEntity.setRequestExpirationDate(formatter.parse(requestDataLoadCSVRecord.getExpiryDate()));
-                }
-                requestItemEntity.setCreatedBy(ReCAPConstants.REQUEST_DATA_LOAD_CREATED_BY);
-                requestItemEntity.setCreatedDate(formatter.parse(requestDataLoadCSVRecord.getCreatedDate()));
-                requestItemEntity.setLastUpdatedDate(formatter.parse(requestDataLoadCSVRecord.getLastUpdatedDate()));
-                requestItemEntity.setStopCode(requestDataLoadCSVRecord.getStopCode());
-                requestItemEntity.setRequestStatusId(9);
-                requestItemEntity.setPatronId(ReCAPConstants.REQUEST_DATA_LOAD_PATRON_ID);
-                requestItemEntityList.add(requestItemEntity);
+                prepareRequestItemEntities(requestItemEntityList, requestItemEntity, requestDataLoadCSVRecord, itemId, requestingInstitutionId);
             }
         }
-        List<RequestItemEntity> savedRequestItemEntities = requestItemDetailsRepository.save(requestItemEntityList);
-        requestItemDetailsRepository.flush();
-        logger.info("Total request item count saved in db "+ savedRequestItemEntities.size());
-        return requestDataLoadErrorCSVRecords;
+        savingRequestItemEntities(requestItemEntityList);
+        logger.info("Total request item count not in db {}" ,barcodesNotInScsb.size());
+        logger.info("Total duplicate barcodes from las report{}", duplicateBarcodes.size());
+        return barcodesNotInScsb;
+    }
+
+    private void prepareRequestItemEntities(List<RequestItemEntity> requestItemEntityList, RequestItemEntity requestItemEntity, RequestDataLoadCSVRecord requestDataLoadCSVRecord, Integer itemId, Integer requestingInstitutionId) throws ParseException {
+        List<RequestItemEntity> requestAlreadyPlacedList = requestItemDetailsRepository.findByitemId(itemId,Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED,ReCAPConstants.REQUEST_STATUS_RECALLED,ReCAPConstants.REQUEST_STATUS_EDD,ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD));
+        if (CollectionUtils.isEmpty(requestAlreadyPlacedList)) {
+            requestItemEntity.setItemId(itemId);
+            requestItemEntity.setRequestTypeId(getRequestTypeId(requestDataLoadCSVRecord.getDeliveryMethod()));
+            requestItemEntity.setRequestingInstitutionId(requestingInstitutionId);
+            SimpleDateFormat formatter = new SimpleDateFormat(ReCAPConstants.REQUEST_DATA_LOAD_DATE_FORMAT);
+            requestItemEntity.setCreatedBy(ReCAPConstants.REQUEST_DATA_LOAD_CREATED_BY);
+            Date createdDate = getDateFormat(requestDataLoadCSVRecord.getCreatedDate());
+            requestItemEntity.setCreatedDate(formatter.parse(formatter.format(createdDate)));
+            Date updatedDate = getDateFormat(requestDataLoadCSVRecord.getLastUpdatedDate());
+            requestItemEntity.setLastUpdatedDate(formatter.parse(formatter.format(updatedDate)));
+            requestItemEntity.setStopCode(requestDataLoadCSVRecord.getStopCode());
+            requestItemEntity.setRequestStatusId(9);
+            requestItemEntity.setPatronId(ReCAPConstants.REQUEST_DATA_LOAD_PATRON_ID);
+            requestItemEntityList.add(requestItemEntity);
+        }
+    }
+
+    private void savingRequestItemEntities(List<RequestItemEntity> requestItemEntityList) {
+        if (!CollectionUtils.isEmpty(requestItemEntityList)){
+            List<RequestItemEntity> savedRequestItemEntities = requestItemDetailsRepository.save(requestItemEntityList);
+            requestItemDetailsRepository.flush();
+            logger.info("Total request item count saved in db {}", savedRequestItemEntities.size());
+        }
+    }
+
+    private Date getDateFormat(String date) throws ParseException {
+        SimpleDateFormat formatter=new SimpleDateFormat(ReCAPConstants.REQUEST_DATA_LOAD_DATE_FORMAT);
+        return formatter.parse(date);
     }
 
     private Map<String,Integer> getItemInfo(String barcode){
-        Integer itemAvailabilityStatusId = 0;
         Integer itemId = 0;
         Integer owningInstitutionId = 0;
         Map<String,Integer> itemInfo = new HashMap<>();
-        ItemStatusEntity itemStatusEntity = itemStatusDetailsRepository.findByStatusCode(ReCAPConstants.NOT_AVAILABLE);
-        if(itemStatusEntity != null){
-            itemAvailabilityStatusId = itemStatusEntity.getItemStatusId();
-        }
-        List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcodeAndNotAvailable(barcode,itemAvailabilityStatusId);
-        if(!itemEntityList.isEmpty()){
+        List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcodeAndItemStatusEntity_StatusCode(barcode,ReCAPConstants.NOT_AVAILABLE);;
+        if(org.apache.commons.collections.CollectionUtils.isNotEmpty(itemEntityList)){
             Integer itemInstitutionId = itemEntityList.get(0).getOwningInstitutionId();
             for(ItemEntity itemEntity : itemEntityList){
                 if(itemEntity.getOwningInstitutionId() == itemInstitutionId){
                     itemId = itemEntityList.get(0).getItemId();
                     owningInstitutionId = itemEntityList.get(0).getOwningInstitutionId();
                 }else{
-                    logger.info("Barcodes duplicated in database with different institution "+ barcode);
+                    logger.info("Barcodes duplicated in database with different institution {}",barcode);
                     return itemInfo;
                 }
             }
