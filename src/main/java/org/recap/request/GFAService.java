@@ -423,6 +423,11 @@ public class GFAService {
                 gfaRetrieveItemResponse = new GFARetrieveItemResponse();
                 gfaRetrieveItemResponse.setSuccess(false);
             }
+        } catch (HttpServerErrorException e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            gfaRetrieveItemResponse = new GFARetrieveItemResponse();
+            gfaRetrieveItemResponse.setSuccess(false);
+            gfaRetrieveItemResponse.setScrenMessage("LAS : Server not reachable");
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
