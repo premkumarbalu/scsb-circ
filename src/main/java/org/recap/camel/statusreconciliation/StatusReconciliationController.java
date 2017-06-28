@@ -150,6 +150,7 @@ public class StatusReconciliationController {
         for (int pageNum = 0; pageNum < totalPagesCount + 1; pageNum++) {
             long from = getFromDate(pageNum);
             List<ItemEntity> itemEntityList = getItemDetailsRepository().getNotAvailableItems(getStatusReconciliationDayLimit(),itemAvailabilityStatusId,"Complete",false,from, getBatchSize());
+            logger.info("items fetched from data base ----->{}",itemEntityList.size());
             List<List<ItemEntity>> itemEntityChunkList = Lists.partition(itemEntityList, getStatusReconciliationLasBarcodeLimit());
             statusReconciliationCSVRecordList = getGfaService().itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecords);
             statusReconciliationCSVRecordList1.addAll(statusReconciliationCSVRecordList);

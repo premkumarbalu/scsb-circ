@@ -319,7 +319,7 @@ public class GFAService {
 
     private void processMismatchStatus(List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList, List<ItemChangeLogEntity> itemChangeLogEntityList, String lasStatus, ItemEntity itemEntity) {
         StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
-        List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByitemId(itemEntity.getItemId(),Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED,ReCAPConstants.REQUEST_STATUS_EDD));
+        List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByitemId(itemEntity.getItemId(),Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED,ReCAPConstants.REQUEST_STATUS_EDD,ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD));
         List<String> barcodeList = new ArrayList<>();
         List<Integer> requestIdList = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
@@ -335,6 +335,8 @@ public class GFAService {
             getItemDetailsRepository().updateAvailabilityStatus(1,new Date(), ReCAPConstants.GUEST_USER, itemEntity.getBarcode());
             ItemChangeLogEntity itemChangeLogEntity = saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE,itemEntity.getBarcode());
             itemChangeLogEntityList.add(itemChangeLogEntity);
+            itemRequestService.updateSolrIndex(itemEntity);
+            logger.info("status updated for the item barcode:{}",itemEntity.getBarcode());
         }
         if (!barcodeList.isEmpty() && !requestIdList.isEmpty()) {
             ItemRefileRequest itemRefileRequest = new ItemRefileRequest();
