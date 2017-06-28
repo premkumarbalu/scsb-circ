@@ -63,7 +63,7 @@ public class RequestInitialDataLoadProcessor {
         catch (Exception e){
             barcodeSet.clear();
             totalCount=0;
-            logger.error(ReCAPConstants.LOG_ERROR+e);
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         }
         barcodeSet.clear();
         totalCount = totalCount + requestDataLoadCSVRecordList.size();
