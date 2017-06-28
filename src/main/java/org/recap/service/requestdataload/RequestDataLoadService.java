@@ -104,7 +104,7 @@ public class RequestDataLoadService {
         Integer itemId = 0;
         Integer owningInstitutionId = 0;
         Map<String,Integer> itemInfo = new HashMap<>();
-        List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcodeAndItemStatusEntity_StatusCode(barcode,ReCAPConstants.NOT_AVAILABLE);;
+        List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcodeAndItemStatusEntity_StatusCode(barcode,ReCAPConstants.NOT_AVAILABLE);
         if(org.apache.commons.collections.CollectionUtils.isNotEmpty(itemEntityList)){
             Integer itemInstitutionId = itemEntityList.get(0).getOwningInstitutionId();
             for(ItemEntity itemEntity : itemEntityList){
