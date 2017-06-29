@@ -22,6 +22,27 @@ public class RequestInitialDataLoadPollingFtpRouteBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestInitialDataLoadPollingFtpRouteBuilder.class);
 
+    /**
+     * Instantiates a new Request initial data load polling ftp route builder.
+     *
+     * @param camelContext               the camel context
+     * @param applicationContext         the application context
+     * @param ftpUserName                the ftp user name
+     * @param requestAccessionPulFolder  the request accession pul folder
+     * @param requestAccessionCulFolder  the request accession cul folder
+     * @param requestAccessionNyplFolder the request accession nypl folder
+     * @param ftpKnownHost               the ftp known host
+     * @param ftpPrivateKey              the ftp private key
+     * @param requestInvalidPulFile      the request invalid pul file
+     * @param requestInvalidCulFile      the request invalid cul file
+     * @param requestInvalidNyplFile     the request invalid nypl file
+     * @param requestLoadPulFilePath     the request load pul file path
+     * @param requestLoadCulFilePath     the request load cul file path
+     * @param requestLoadNyplFilePath    the request load nypl file path
+     * @param pulWorkDirectory           the pul work directory
+     * @param culWorkDirectory           the cul work directory
+     * @param nyplWorkDirectory          the nypl work directory
+     */
     public RequestInitialDataLoadPollingFtpRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
                                                         @Value("${ftp.userName}") String ftpUserName, @Value("${request.initial.accession.pul}") String requestAccessionPulFolder,
                                                         @Value("${request.initial.accession.cul}") String requestAccessionCulFolder, @Value("${request.initial.accession.nypl}") String requestAccessionNyplFolder,

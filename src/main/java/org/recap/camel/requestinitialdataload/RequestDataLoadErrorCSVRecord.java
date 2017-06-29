@@ -14,10 +14,20 @@ public class RequestDataLoadErrorCSVRecord implements Serializable{
     @DataField(pos = 1, columnName = "BarcodesNotAvailable")
     private String barcodes;
 
+    /**
+     * Gets barcodes.
+     *
+     * @return the barcodes
+     */
     public String getBarcodes() {
         return barcodes;
     }
 
+    /**
+     * Sets barcodes.
+     *
+     * @param barcodes the barcodes
+     */
     public void setBarcodes(String barcodes) {
         this.barcodes = barcodes;
     }

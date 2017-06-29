@@ -35,6 +35,14 @@ public class RequestDataLoadService {
     @Autowired
     private RequestItemDetailsRepository requestItemDetailsRepository;
 
+    /**
+     * To save the given requestDataLoadCSVRecords in scsb.
+     *
+     * @param requestDataLoadCSVRecords the request data load csv records
+     * @param barcodeSet                the barcode set
+     * @return the set
+     * @throws ParseException the parse exception
+     */
     public Set<String> process(List<RequestDataLoadCSVRecord> requestDataLoadCSVRecords, Set<String> barcodeSet) throws ParseException {
         List<RequestItemEntity> requestItemEntityList = new ArrayList<>();
         List<String> duplicateBarcodes = new ArrayList<>();
