@@ -129,7 +129,7 @@ public class RequestItemController {
                     itemRequestInformation.getItemOwningInstitution(),
                     itemRequestInformation.getExpirationDate(),
                     itemRequestInformation.getBibId(),
-                    getPickupLocationDB(itemRequestInformation,callInstitition),
+                    getPickupLocationDB(itemRequestInformation,callInst),
                     itemRequestInformation.getTrackingId(),
                     itemRequestInformation.getTitleIdentifier(),
                     itemRequestInformation.getAuthor(),
@@ -162,7 +162,7 @@ public class RequestItemController {
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                getPickupLocationDB(itemRequestInformation,callInstitition), itemRequestInformation.getTrackingId());
+                getPickupLocationDB(itemRequestInformation,callInst), itemRequestInformation.getTrackingId());
         return itemHoldCancelResponse;
     }
 
@@ -230,7 +230,7 @@ public class RequestItemController {
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                getPickupLocationDB(itemRequestInformation,callInstitition));
+                getPickupLocationDB(itemRequestInformation,callInst));
         return itemRecallResponse;
     }
 

@@ -194,6 +194,7 @@ public final class ReCAPConstants {
     public static final String CIRCULATION_STATUS_CHARGED = "CHARGED";
     public static final String CIRCULATION_STATUS_OTHER = "OTHER";
     public static final String CIRCULATION_STATUS_IN_TRANSIT = "IN_TRANSIT";
+    public static final String CIRCULATION_STATUS_IN_TRANSIT_NYPL = "IN TRANSIT";
     public static final String CIRCULATION_STATUS_ON_HOLDSHELF = "ON HOLDSHELF";
 
     public static final String SEARCH_RECORDS_SOLR = "/searchService/searchByParam";
