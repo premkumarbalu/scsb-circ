@@ -43,7 +43,7 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
      * @param itemBarcode the item barcode
      * @return the page
      */
-    @Query(value = "select request from RequestItemEntity request where request.itemId = (select item.itemId from ItemEntity item where item.barcode = :itemBarcode)")
+    @Query(value = "select request from RequestItemEntity request inner join request.itemEntity item where item.barcode = :itemBarcode")
     Page<RequestItemEntity> findByItemBarcode(Pageable pageable, @Param("itemBarcode") String itemBarcode);
 
     /**
@@ -63,7 +63,7 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
      * @param itemBarcode the item barcode
      * @return the list
      */
-    @Query(value = "select request from RequestItemEntity request where request.itemId = (select item.itemId from ItemEntity item where item.barcode = :itemBarcode)")
+    @Query(value = "select request from RequestItemEntity request inner join request.itemEntity item where item.barcode = :itemBarcode")
     List<RequestItemEntity> findByItemBarcode(@Param("itemBarcode") String itemBarcode);
 
     @Transactional

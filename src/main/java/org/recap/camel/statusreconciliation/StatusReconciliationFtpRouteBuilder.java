@@ -50,7 +50,8 @@ public class StatusReconciliationFtpRouteBuilder {
                                     .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + statusReconciliation + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + "&fileName=StatusReconciliation-${date:now:ddMMMyyyy-HH:mm:ss}.csv")
                                 .when(header(ReCAPConstants.FOR).isEqualTo(ReCAPConstants.STATUS_RECONCILIATION_FAILURE))
                                     .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
-                                    .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + statusReconciliation + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + "&fileName=StatusReconciliationFailure-${date:now:ddMMMyyyy-HH:mm:ss}.csv");
+                                    .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + statusReconciliation + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + "&fileName=StatusReconciliationFailure-${date:now:ddMMMyyyy-HH:mm:ss}.csv")
+                                    .log("status reconciliation failure report generated in ftp");
                 }
             });
         }catch (Exception e){
