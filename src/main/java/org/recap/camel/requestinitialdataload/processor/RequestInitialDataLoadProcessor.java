@@ -35,10 +35,15 @@ public class RequestInitialDataLoadProcessor {
     private RequestDataLoadService requestDataLoadService;
 
     @Value("${request.initial.load.filepath}")
-    String requestInitialLoadFilePath;
+    private String requestInitialLoadFilePath;
 
     private String institutionCode;
 
+    /**
+     * Instantiates a new request initial data load processor.
+     *
+     * @param institutionCode the institution code
+     */
     public RequestInitialDataLoadProcessor(String institutionCode) {
         this.institutionCode = institutionCode;
     }
@@ -46,6 +51,12 @@ public class RequestInitialDataLoadProcessor {
     private Set<String> barcodeSet = new HashSet<>();
     private int totalCount = 0;
 
+    /**
+     * To load the request initial data in scsb.
+     *
+     * @param exchange the exchange
+     * @throws ParseException the parse exception
+     */
     public void processInput(Exchange exchange) throws ParseException {
         List<RequestDataLoadCSVRecord> requestDataLoadCSVRecordList = (List<RequestDataLoadCSVRecord>)exchange.getIn().getBody();
         logger.info("count from ftp" + requestDataLoadCSVRecordList.size());
@@ -71,10 +82,20 @@ public class RequestInitialDataLoadProcessor {
         totalCount = 0;
     }
 
+    /**
+     * Gets barcode set.
+     *
+     * @return the barcode set
+     */
     public Set<String> getBarcodeSet() {
         return barcodeSet;
     }
 
+    /**
+     * Sets barcode set.
+     *
+     * @param barcodeSet the barcode set
+     */
     public void setBarcodeSet(Set<String> barcodeSet) {
         this.barcodeSet = barcodeSet;
     }
