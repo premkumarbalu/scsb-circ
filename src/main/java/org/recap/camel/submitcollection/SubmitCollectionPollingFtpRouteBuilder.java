@@ -1,8 +1,12 @@
 package org.recap.camel.submitcollection;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Predicate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.camel.submitcollection.processor.SubmitCollectionProcessor;
 import org.slf4j.Logger;
@@ -33,6 +37,17 @@ public class SubmitCollectionPollingFtpRouteBuilder {
     @Value("${ftp.privateKey}")
     private String ftpPrivateKey;
 
+    Predicate gzipFile = new Predicate() {
+        @Override
+        public boolean matches(Exchange exchange) {
+
+            String fileName = (String) exchange.getIn().getHeader(Exchange.FILE_NAME);
+
+            return StringUtils.equalsIgnoreCase("gz", FilenameUtils.getExtension(fileName));
+
+        }
+    };
+
     /**
      * Instantiates a new Submit collection polling ftp route builder.
      *
@@ -58,8 +73,16 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                 @Override
                 public void configure() throws Exception {
                     from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + pulFtpFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+pulWorkDir)
+                            .routeId("pulSubmitCollectionFTPRoute")
+                            .choice()
+                                .when(gzipFile)
+                                    .unmarshal()
+                                    .gzip()
+                                    .log("PUL Submit Collection FTP Route Unzip Complete")
+                            .end()
                             .bean(applicationContext.getBean(SubmitCollectionProcessor.class,ReCAPConstants.PRINCETON),ReCAPConstants.PROCESS_INPUT)
-                    ;
+                            .log("PUL Submit Collection FTP Route Record Processing completed")
+                            .end();
                 }
             });
 
@@ -67,7 +90,16 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                 @Override
                 public void configure() throws Exception {
                     from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + culFtpFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+culWorkDir)
+                            .routeId("culSubmitCollectionFTPRoute")
+                            .choice()
+                                .when(gzipFile)
+                                    .unmarshal()
+                                    .gzip()
+                                    .log("CUL Submit Collection FTP Route Unzip Complete")
+                            .end()
                             .bean(applicationContext.getBean(SubmitCollectionProcessor.class,ReCAPConstants.COLUMBIA),ReCAPConstants.PROCESS_INPUT)
+                            .log("CUL Submit Collection FTP Route Record Processing completed")
+                            .end();
 
                     ;
                 }
@@ -77,7 +109,16 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                 @Override
                 public void configure() throws Exception {
                     from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + nyplFtpFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+nyplWorkDir)
+                            .routeId("nyplSubmitCollectionFTPRoute")
+                            .choice()
+                                .when(gzipFile)
+                                    .unmarshal()
+                                    .gzip()
+                                    .log("NLYP Submit Collection FTP Route Unzip Complete")
+                            .end()
                             .bean(applicationContext.getBean(SubmitCollectionProcessor.class,ReCAPConstants.NYPL),ReCAPConstants.PROCESS_INPUT)
+                            .log("NYPL Submit Collection FTP Route Record Processing completed")
+                            .end();
 
                     ;
                 }
