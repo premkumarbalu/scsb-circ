@@ -25,6 +25,7 @@ public class EmailRouteBuilder {
     private String emailBodyDeletedRecords;
     private String emailPassword;
     private String emailBodyForSubmitCollection;
+    private String emailBodyForSubmitCollectionEmptyDirectory;
 
     /**
      * Instantiates a new Email route builder.
@@ -46,6 +47,7 @@ public class EmailRouteBuilder {
                 public void configure() throws Exception {
                     loadEmailPassword();
                     loadEmailBodyTemplateForNoData();
+                    loadEmailBodyTemplateForSubmitCollectionEmptyDirectory();
                     emailBodyRecall = loadEmailLasStatus(ReCAPConstants.REQUEST_RECALL_EMAIL_TEMPLATE);
                     emailBodyLasStatus = loadEmailLasStatus(ReCAPConstants.REQUEST_LAS_STATUS_EMAIL_TEMPLATE);
                     emailBodyDeletedRecords=loadEmailLasStatus(ReCAPConstants.DELETED_RECORDS_EMAIL_TEMPLATE);
@@ -73,6 +75,13 @@ public class EmailRouteBuilder {
                                 .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.SUBMIT_COLLECTION))
                                     .setHeader("subject", simple("${header.emailPayLoad.subject}"))
                                     .setBody(simple(emailBodyForSubmitCollection))
+                                    .setHeader("from", simple(from))
+                                    .setHeader("to", simple("${header.emailPayLoad.to}"))
+                                    .log("email body for submit collection")
+                                    .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES))
+                                    .setHeader("subject", simple("${header.emailPayLoad.subject}"))
+                                    .setBody(simple(emailBodyForSubmitCollectionEmptyDirectory))
                                     .setHeader("from", simple(from))
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
                                     .log("email body for submit collection")
@@ -139,6 +148,26 @@ public class EmailRouteBuilder {
                         logger.error(ReCAPConstants.LOG_ERROR,e);
                     }
                     emailBodyForSubmitCollection = out.toString();
+                }
+
+                private void loadEmailBodyTemplateForSubmitCollectionEmptyDirectory() {
+                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.SUBMIT_COLLECTION_EMAIL_BODY_FOR_EMPTY_DIRECTORY_VM);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    StringBuilder out = new StringBuilder();
+                    String line;
+                    try {
+                        while ((line = reader.readLine()) != null) {
+                            if (line.isEmpty()) {
+                                out.append("\n");
+                            } else {
+                                out.append(line);
+                                out.append("\n");
+                            }
+                        }
+                    } catch (IOException e) {
+                        logger.error(ReCAPConstants.LOG_ERROR,e);
+                    }
+                    emailBodyForSubmitCollectionEmptyDirectory = out.toString();
                 }
 
                 private void loadEmailPassword() {

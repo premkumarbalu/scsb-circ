@@ -164,6 +164,7 @@ public final class ReCAPConstants {
     public static final String INCOMPLETE_STATUS = "Incomplete";
     public static final String BIBRECORD_TAG = "<bibRecords>";
     public static final String SUBMIT_COLLECTION = "submitCollection";
+    public static final String SUBMIT_COLLECTION_FOR_NO_FILES = "submitCollectionForNoFiles";
     public static final String MESSAGE = "Message";
     public static final String NOT_AVAILABLE_CGD = "NA";
 
@@ -332,6 +333,7 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_SUMMARY = "SubmitCollectionSummary";
     public static final String REST = "rest-api";
     public static final String SUBMIT_COLLECTION_EMAIL_BODY_VM = "submit_collection_email_body.vm";
+    public static final String SUBMIT_COLLECTION_EMAIL_BODY_FOR_EMPTY_DIRECTORY_VM = "submit_collection_email_body_for_emptyDirectory.vm";
     public static final String SFTP = "sftp://";
     public static final String AT = "@";
     public static final String PRIVATE_KEY_FILE = "?privateKeyFile=";
@@ -429,6 +431,10 @@ public final class ReCAPConstants {
     public static final String ACCESSION_RECONCILATION_FILE_NAME = "AccessionReconcilation";
     public static final String ACCESSION_RECONCILATION_SOLR_CLIENT_URL = "accessionReconcilationService/startAccessionReconcilation";
     public static final String STARTING = "Starting";
+
+    public static final String SUBMIT_COLLECTION_FTP_PUL_ROUTE = "pulSubmitCollectionFTPRoute";
+    public static final String SUBMIT_COLLECTION_FTP_CUL_ROUTE = "culSubmitCollectionFTPRoute";
+    public static final String SUBMIT_COLLECTION_FTP_NYPL_ROUTE = "nyplSubmitCollectionFTPRoute";
 
     public static final String DELETED_MAIL_QUEUE = "deletedRecordsMailSendQueue";
     public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
