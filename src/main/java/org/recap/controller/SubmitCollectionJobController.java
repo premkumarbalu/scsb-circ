@@ -78,7 +78,7 @@ public class SubmitCollectionJobController {
     @Value("${sftp.sftpPort}")
     private String sftpPort;
 
-    @Value("${sftp.sftpUser}")
+    @Value("${ftp.userName}")
     private String sftpUser;
 
     @Value("${sftp.sftpPassword}")
