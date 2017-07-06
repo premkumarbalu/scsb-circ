@@ -6,10 +6,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.recap.ReCAPConstants;
 import org.recap.ils.model.nypl.*;
 import org.recap.ils.model.nypl.response.*;
-import org.recap.ils.model.response.ItemCheckinResponse;
-import org.recap.ils.model.response.ItemCheckoutResponse;
-import org.recap.ils.model.response.ItemHoldResponse;
-import org.recap.ils.model.response.ItemInformationResponse;
+import org.recap.ils.model.response.*;
 import org.recap.model.ItemEntity;
 import org.recap.repository.ItemDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +22,6 @@ import java.util.List;
 /**
  * Created by rajeshbabuk on 20/12/16.
  */
-
 @Service
 public class NyplApiResponseUtil {
 
@@ -38,13 +34,27 @@ public class NyplApiResponseUtil {
     @Value("${ils.nypl.source.cul.item}")
     private String nyplSourceCUL;
 
+    /**
+     * The Item details repository.
+     */
     @Autowired
     ItemDetailsRepository itemDetailsRepository;
 
+    /**
+     * Gets item details repository.
+     *
+     * @return the item details repository
+     */
     public ItemDetailsRepository getItemDetailsRepository() {
         return itemDetailsRepository;
     }
 
+    /**
+     * Build item information response from itemResponse object..
+     *
+     * @param itemResponse the item response
+     * @return the item information response
+     */
     public ItemInformationResponse buildItemInformationResponse(ItemResponse itemResponse) {
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
         ItemData itemData = itemResponse.getItemData();
@@ -69,6 +79,12 @@ public class NyplApiResponseUtil {
         return itemInformationResponse;
     }
 
+    /**
+     * Build item checkout response from checkoutResponse object.
+     *
+     * @param checkoutResponse the checkout response
+     * @return the item checkout response
+     */
     public ItemCheckoutResponse buildItemCheckoutResponse(CheckoutResponse checkoutResponse) {
         ItemCheckoutResponse itemCheckoutResponse = new ItemCheckoutResponse();
         CheckoutData checkoutData = checkoutResponse.getData();
@@ -83,6 +99,12 @@ public class NyplApiResponseUtil {
         return itemCheckoutResponse;
     }
 
+    /**
+     * Build item checkin response from checkinResponse object.
+     *
+     * @param checkinResponse the checkin response
+     * @return the item checkin response
+     */
     public ItemCheckinResponse buildItemCheckinResponse(CheckinResponse checkinResponse) {
         ItemCheckinResponse itemCheckinResponse = new ItemCheckinResponse();
         CheckinData checkinData = checkinResponse.getData();
@@ -95,6 +117,13 @@ public class NyplApiResponseUtil {
         return itemCheckinResponse;
     }
 
+    /**
+     * Build item hold response from createHoldResponse object.
+     *
+     * @param createHoldResponse the create hold response
+     * @return the item hold response
+     * @throws Exception the exception
+     */
     public ItemHoldResponse buildItemHoldResponse(CreateHoldResponse createHoldResponse) throws Exception {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         CreateHoldData holdData = createHoldResponse.getData();
@@ -108,6 +137,12 @@ public class NyplApiResponseUtil {
         return itemHoldResponse;
     }
 
+    /**
+     * Build item cancel hold response from cancelHoldResponse object.
+     *
+     * @param cancelHoldResponse the cancel hold response
+     * @return the item hold response
+     */
     public ItemHoldResponse buildItemCancelHoldResponse(CancelHoldResponse cancelHoldResponse) {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         CancelHoldData holdData = cancelHoldResponse.getData();
@@ -120,6 +155,28 @@ public class NyplApiResponseUtil {
         return itemHoldResponse;
     }
 
+    /**
+     * Build item recall response from recallResponse object.
+     *
+     * @param recallResponse the recall response
+     * @return the item recall response
+     */
+    public ItemRecallResponse buildItemRecallResponse(RecallResponse recallResponse) {
+        ItemRecallResponse itemRecallResponse = new ItemRecallResponse();
+        RecallData recallData = recallResponse.getData();
+        itemRecallResponse.setItemOwningInstitution(recallData.getOwningInstitutionId());
+        itemRecallResponse.setItemBarcode(recallData.getItemBarcode());
+        itemRecallResponse.setJobId(recallData.getJobId());
+        return itemRecallResponse;
+    }
+
+    /**
+     * Gets job status message from job data.
+     *
+     * @param jobData the job data
+     * @return the job status message
+     * @throws Exception the exception
+     */
     public String getJobStatusMessage(JobData jobData) throws Exception {
         String jobStatus = null;
         List<Notice> notices = jobData.getNotices();
@@ -131,6 +188,12 @@ public class NyplApiResponseUtil {
         return jobStatus;
     }
 
+    /**
+     * Gets nypl source based on institution id.
+     *
+     * @param institutionId the institution id
+     * @return the nypl source
+     */
     public String getNyplSource(String institutionId) {
         String nyplSource = null;
         if (StringUtils.isNotBlank(institutionId)) {
@@ -145,6 +208,13 @@ public class NyplApiResponseUtil {
         return nyplSource;
     }
 
+    /**
+     * Gets normalized item id for nypl.
+     *
+     * @param itemBarcode the item barcode
+     * @return the normalized item id for nypl
+     * @throws Exception the exception
+     */
     public String getNormalizedItemIdForNypl(String itemBarcode) throws Exception {
         String itemId = null;
         List<ItemEntity> itemEntities = getItemDetailsRepository().findByBarcode(itemBarcode);
@@ -162,12 +232,25 @@ public class NyplApiResponseUtil {
         return itemId;
     }
 
+    /**
+     * Gets expiration date for nypl.
+     *
+     * @return the expiration date for nypl
+     * @throws Exception the exception
+     */
     public String getExpirationDateForNypl() throws Exception {
         Date expirationDate = DateUtils.addYears(new Date(), 1);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ReCAPConstants.NYPL_HOLD_DATE_FORMAT);
         return simpleDateFormat.format(expirationDate);
     }
 
+    /**
+     * Gets item owning institution by item barcode.
+     *
+     * @param itemBarcode the item barcode
+     * @return the item owning institution by item barcode
+     * @throws Exception the exception
+     */
     public String getItemOwningInstitutionByItemBarcode(String itemBarcode) throws Exception {
         String institutionCode = null;
         List<ItemEntity> itemEntities = getItemDetailsRepository().findByBarcode(itemBarcode);

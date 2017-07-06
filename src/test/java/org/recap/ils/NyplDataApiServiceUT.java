@@ -8,11 +8,8 @@ import org.recap.BaseTestCase;
 import org.recap.ils.model.nypl.CancelHoldData;
 import org.recap.ils.model.nypl.DebugInfo;
 import org.recap.ils.model.nypl.Description;
+import org.recap.ils.model.nypl.request.*;
 import org.recap.ils.model.nypl.response.*;
-import org.recap.ils.model.nypl.request.CancelHoldRequest;
-import org.recap.ils.model.nypl.request.CheckinRequest;
-import org.recap.ils.model.nypl.request.CheckoutRequest;
-import org.recap.ils.model.nypl.request.CreateHoldRequest;
 import org.recap.ils.model.response.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -364,5 +361,30 @@ public class NyplDataApiServiceUT extends BaseTestCase {
         assertNotNull(nyplPatronResponse.getData().get(0).getBarCodes());
         assertNotNull(nyplPatronResponse.getData().get(0).getBarCodes().get(0));
         assertEquals(patronBarcode, nyplPatronResponse.getData().get(0).getBarCodes().get(0));
+    }
+
+    @Test
+    public void recapRecallRequest() throws Exception {
+        String institutionId = "PUL";
+        String itemBarcode = "33433001888415";
+        String apiUrl = nyplDataApiUrl + "/recap/recall-requests";
+        String authorization = "Bearer " + generateAccessTokenForNyplApi();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        headers.set("Authorization", authorization);
+
+        RecallRequest recallRequest = new RecallRequest();
+        recallRequest.setOwningInstitutionId(institutionId);
+        recallRequest.setItemBarcode(itemBarcode);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<RecallRequest> requestEntity = new HttpEntity(recallRequest, headers);
+        ResponseEntity<RecallResponse> responseEntity = restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, RecallResponse.class);
+        assertNotNull(responseEntity);
+        assertNotNull(responseEntity.getBody());
+        RecallResponse recallResponse = responseEntity.getBody();
+        assertNotNull(recallResponse);
     }
 }
