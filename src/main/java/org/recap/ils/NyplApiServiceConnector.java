@@ -4,10 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.ils.model.nypl.*;
-import org.recap.ils.model.nypl.request.CancelHoldRequest;
-import org.recap.ils.model.nypl.request.CheckinRequest;
-import org.recap.ils.model.nypl.request.CheckoutRequest;
-import org.recap.ils.model.nypl.request.CreateHoldRequest;
+import org.recap.ils.model.nypl.request.*;
 import org.recap.ils.model.nypl.response.*;
 import org.recap.ils.model.response.*;
 import org.recap.ils.service.NyplApiResponseUtil;
@@ -189,6 +186,12 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
     @Override
     public abstract String getOperatorLocation();
 
+    /**
+     * Look up item in NYPL for the given item identifier.
+     *
+     * @param itemIdentifier the item identifier
+     * @return
+     */
     @Override
     public ItemInformationResponse lookupItem(String itemIdentifier) {
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
@@ -220,11 +223,18 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return itemInformationResponse;
     }
 
+    /**
+     * Checks out item in NYPL for the given patron.
+     *
+     * @param itemIdentifier   the item identifier
+     * @param patronIdentifier the patron identifier
+     * @return
+     */
     @Override
     public ItemCheckoutResponse checkOutItem(String itemIdentifier, String patronIdentifier) {
         ItemCheckoutResponse itemCheckoutResponse = new ItemCheckoutResponse();
         try {
-            String apiUrl = getNyplDataApiUrl() + "/checkout-requests";
+            String apiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_CHECKOUT_REQUEST_URL;
 
             CheckoutRequest checkoutRequest = getCheckOutRequest();
             checkoutRequest.setPatronBarcode(patronIdentifier);
@@ -270,11 +280,18 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return itemCheckoutResponse;
     }
 
+    /**
+     * Checks in item in NYPL for the given patron.
+     *
+     * @param itemIdentifier   the item identifier
+     * @param patronIdentifier the patron identifier
+     * @return
+     */
     @Override
     public ItemCheckinResponse checkInItem(String itemIdentifier, String patronIdentifier) {
         ItemCheckinResponse itemCheckinResponse = new ItemCheckinResponse();
         try {
-            String apiUrl = getNyplDataApiUrl() + "/checkin-requests";
+            String apiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_CHECKIN_REQUEST_URL;
 
             CheckinRequest checkinRequest = getCheckInRequest();
             checkinRequest.setItemBarcode(itemIdentifier);
@@ -318,11 +335,27 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return itemCheckinResponse;
     }
 
+    /**
+     * Creates a hold request in NYPL with the provided information.
+     *
+     * @param itemIdentifier    the item identifier
+     * @param patronIdentifier  the patron identifier
+     * @param callInstitutionId the call institution id
+     * @param itemInstitutionId the item institution id
+     * @param expirationDate    the expiration date
+     * @param bibId             the bib id
+     * @param deliveryLocation
+     * @param trackingId        the tracking id
+     * @param title             the title
+     * @param author            the author
+     * @param callNumber        the call number
+     * @return
+     */
     @Override
     public AbstractResponseItem placeHold(String itemIdentifier, String patronIdentifier, String callInstitutionId, String itemInstitutionId, String expirationDate, String bibId, String deliveryLocation, String trackingId, String title, String author, String callNumber) {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         try {
-            String recapHoldApiUrl = getNyplDataApiUrl() + "/recap/hold-requests";
+            String recapHoldApiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_RECAP_HOLD_REQUEST_URL;
             if (StringUtils.isBlank(trackingId)) {
                 trackingId = initiateNyplHoldRequest(itemIdentifier, patronIdentifier, itemInstitutionId, deliveryLocation);
             }
@@ -380,11 +413,23 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return itemHoldResponse;
     }
 
+    /**
+     * Cancels hold request in NYPL for the given item.
+     *
+     * @param itemIdentifier   the item identifier
+     * @param patronIdentifier the patron identifier
+     * @param institutionId    the institution id
+     * @param expirationDate   the expiration date
+     * @param bibId            the bib id
+     * @param pickupLocation   the pickup location
+     * @param trackingId       the tracking id
+     * @return
+     */
     @Override
     public AbstractResponseItem cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId) {
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         try {
-            String apiUrl = getNyplDataApiUrl() + "/recap/cancel-hold-requests";
+            String apiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_RECAP_CANCEL_HOLD_REQUEST_URL;
 
             CancelHoldRequest cancelHoldRequest = getCancelHoldRequest();
             cancelHoldRequest.setTrackingId(trackingId);
@@ -431,7 +476,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
     }
 
     /**
-     * Query for job job response.
+     * Query for job response by job id.
      *
      * @param jobId the job id
      * @return the job response
@@ -445,6 +490,13 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return jobResponseEntity.getBody();
     }
 
+    /**
+     * Gets the NYPL hold response information by the tracking id.
+     *
+     * @param trackingId
+     * @return
+     * @throws Exception
+     */
     private NYPLHoldResponse queryForNyplHoldResponseByTrackingId(String trackingId) throws Exception {
         String apiUrl = getNyplDataApiUrl() + "/hold-requests/" + trackingId;
         HttpHeaders headers = getHttpHeaders();
@@ -453,6 +505,12 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return jobResponseEntity.getBody();
     }
 
+    /**
+     * Build Http headers to access NYPL API.
+     *
+     * @return
+     * @throws Exception
+     */
     private HttpHeaders getHttpHeaders() throws Exception {
         String authorization = "Bearer " + getNyplOauthTokenApiService().generateAccessTokenForNyplApi(getOperatorUserId(), getOperatorPassword());
         HttpHeaders headers = new HttpHeaders();
@@ -462,9 +520,19 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return headers;
     }
 
+    /**
+     * This method initiates the hold request on NYPL end to get the tracking id and use it in recap hold request subsequently.
+     *
+     * @param itemIdentifier
+     * @param patronIdentifier
+     * @param itemInstitutionId
+     * @param deliveryLocation
+     * @return
+     * @throws Exception
+     */
     private String initiateNyplHoldRequest(String itemIdentifier, String patronIdentifier, String itemInstitutionId, String deliveryLocation) throws Exception {
         String trackingId = null;
-        String nyplHoldApiUrl = nyplDataApiUrl + "/hold-requests";
+        String nyplHoldApiUrl = nyplDataApiUrl + ReCAPConstants.NYPL_HOLD_REQUEST_URL;
         String nyplSource = nyplApiResponseUtil.getNyplSource(itemInstitutionId);
         NyplHoldRequest nyplHoldRequest = new NyplHoldRequest();
         nyplHoldRequest.setRecord(nyplApiResponseUtil.getNormalizedItemIdForNypl(itemIdentifier));
@@ -487,6 +555,13 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return trackingId;
     }
 
+    /**
+     * Gets patron id by the given patron barcode from NYPL.
+     *
+     * @param patronBarcode
+     * @return
+     * @throws Exception
+     */
     private String getPatronIdByPatronBarcode(String patronBarcode) throws Exception {
         String patronId = null;
         NyplPatronResponse nyplPatronResponse = queryForPatronResponse(patronBarcode);
@@ -498,8 +573,15 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return patronId;
     }
 
+    /**
+     * Get patron response information based on the patron id from NYPL.
+     *
+     * @param patronIdentifier
+     * @return
+     * @throws Exception
+     */
     private NyplPatronResponse queryForPatronResponse(String patronIdentifier) throws Exception {
-        String apiUrl = nyplDataApiUrl + "/patrons?barcode=" + patronIdentifier;
+        String apiUrl = nyplDataApiUrl + ReCAPConstants.NYPL_PATRON_BY_BARCODE_URL + patronIdentifier;
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity requestEntity = new HttpEntity(getHttpHeaders());
         ResponseEntity<NyplPatronResponse> jobResponseEntity = restTemplate.exchange(apiUrl, HttpMethod.GET, requestEntity, NyplPatronResponse.class);
@@ -521,10 +603,62 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
         return null;
     }
 
+    /**
+     * Creates a recall request for the item in NYPL.
+     *
+     * @param itemIdentifier   the item identifier
+     * @param patronIdentifier the patron identifier
+     * @param institutionId    the institution id
+     * @param expirationDate   the expiration date
+     * @param bibId            the bib id
+     * @param pickupLocation   the pickup location
+     * @return
+     */
     @Override
-    public Object recallItem(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
+    public AbstractResponseItem recallItem(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
         ItemRecallResponse itemRecallResponse = new ItemRecallResponse();
-        itemRecallResponse.setSuccess(true);
+        try {
+            String apiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_RECAP_RECALL_REQUEST_URL;
+
+            RecallRequest recallRequest = new RecallRequest();
+            recallRequest.setOwningInstitutionId(nyplApiResponseUtil.getItemOwningInstitutionByItemBarcode(itemIdentifier));
+            recallRequest.setItemBarcode(itemIdentifier);
+
+            HttpEntity<RecallRequest> requestEntity = new HttpEntity(recallRequest, getHttpHeaders());
+            ResponseEntity<RecallResponse> responseEntity = getRestTemplate().exchange(apiUrl, HttpMethod.POST, requestEntity, RecallResponse.class);
+            RecallResponse recallResponse = responseEntity.getBody();
+            itemRecallResponse = getNyplApiResponseUtil().buildItemRecallResponse(recallResponse);
+            RecallData recallData = recallResponse.getData();
+            if (null != recallData) {
+                String jobId = recallData.getJobId();
+                itemRecallResponse.setJobId(jobId);
+                getLogger().info("Initiated recall request on NYPL");
+                getLogger().info("Nypl recall request job id -> {}" , jobId);
+                JobResponse jobResponse = getNyplJobResponsePollingProcessor().pollNyplRequestItemJobResponse(itemRecallResponse.getJobId());
+                String statusMessage = jobResponse.getStatusMessage();
+                itemRecallResponse.setScreenMessage(statusMessage);
+                JobData jobData = jobResponse.getData();
+                if (null != jobData) {
+                    itemRecallResponse.setSuccess(jobData.getSuccess());
+                    getLogger().info("Recall request Finished -> " + jobData.getFinished());
+                    getLogger().info("Recall request Success -> " + jobData.getSuccess());
+                    getLogger().info(statusMessage);
+                } else {
+                    itemRecallResponse.setSuccess(false);
+                    getLogger().info("Recall request Finished -> " + false);
+                    getLogger().info("Recall request Success -> " + false);
+                    getLogger().info(statusMessage);
+                }
+            }
+        } catch (HttpClientErrorException httpException) {
+            getLogger().error(ReCAPConstants.LOG_ERROR,httpException);
+            itemRecallResponse.setSuccess(false);
+            itemRecallResponse.setScreenMessage(httpException.getStatusText());
+        } catch (Exception e) {
+            getLogger().error(ReCAPConstants.LOG_ERROR,e);
+            itemRecallResponse.setSuccess(false);
+            itemRecallResponse.setScreenMessage(e.getMessage());
+        }
         return itemRecallResponse;
     }
 }

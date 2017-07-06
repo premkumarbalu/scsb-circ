@@ -459,4 +459,13 @@ public final class ReCAPConstants {
     public static final String REQUEST_INITIAL_LOAD_CUL = "cul";
     public static final String REQUEST_INITIAL_LOAD_NYPL = "nypl";
 
+    // NYPL API URL
+    public static final String NYPL_CHECKOUT_REQUEST_URL = "/checkout-requests";
+    public static final String NYPL_CHECKIN_REQUEST_URL = "/checkin-requests";
+    public static final String NYPL_RECAP_HOLD_REQUEST_URL = "/recap/hold-requests";
+    public static final String NYPL_RECAP_CANCEL_HOLD_REQUEST_URL = "/recap/cancel-hold-requests";
+    public static final String NYPL_RECAP_RECALL_REQUEST_URL = "/recap/recall-requests";
+    public static final String NYPL_HOLD_REQUEST_URL = "/hold-requests";
+    public static final String NYPL_PATRON_BY_BARCODE_URL = "/patrons?barcode=";
+
 }

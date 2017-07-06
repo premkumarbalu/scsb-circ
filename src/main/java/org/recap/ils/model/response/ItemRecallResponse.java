@@ -16,6 +16,7 @@ public class ItemRecallResponse extends AbstractResponseItem {
     private String bibId;
     private String ISBN;
     private String LCCN;
+    private String jobId;
 
 
     /**
@@ -216,4 +217,21 @@ public class ItemRecallResponse extends AbstractResponseItem {
         this.LCCN = LCCN;
     }
 
+    /**
+     * Gets job id.
+     *
+     * @return the job id
+     */
+    public String getJobId() {
+        return jobId;
+    }
+
+    /**
+     * Sets job id.
+     *
+     * @param jobId the job id
+     */
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
+    }
 }
