@@ -8,9 +8,7 @@ import org.recap.ReCAPConstants;
 import org.recap.converter.MarcToBibEntityConverter;
 import org.recap.converter.SCSBToBibEntityConverter;
 import org.recap.converter.XmlToBibEntityConverterInterface;
-import org.recap.model.BibliographicEntity;
-import org.recap.model.ReportDataEntity;
-import org.recap.model.ReportEntity;
+import org.recap.model.*;
 import org.recap.model.jaxb.BibRecord;
 import org.recap.model.jaxb.JAXBHandler;
 import org.recap.model.jaxb.marc.BibRecords;
@@ -76,23 +74,24 @@ public class SubmitCollectionService {
      * @return the string
      */
     @Transactional
-    public List<SubmitCollectionResponse> process(String inputRecords, Set<Integer> processedBibIds, Map<String, String> idMapToRemoveIndex, String xmlFileName, List<Integer> reportRecordNumberList, boolean checkLimit) {
+    public List<SubmitCollectionResponse> process(String institutionCode, String inputRecords, Set<Integer> processedBibIds, Map<String, String> idMapToRemoveIndex, String xmlFileName, List<Integer> reportRecordNumberList, boolean checkLimit,boolean isCGDProtected) {
         logger.info("Submit Collection : Input record processing started");
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        String reponse = null;
+        String response = null;
         List<SubmitCollectionResponse> submitColletionResponseList = new ArrayList<>();
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
+        InstitutionEntity institutionEntity = repositoryService.getInstitutionDetailsRepository().findByInstitutionCode(institutionCode);
         try {
             if (!"".equals(inputRecords)) {
                 if (inputRecords.contains(ReCAPConstants.BIBRECORD_TAG)) {
-                    reponse = processSCSB(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit);
+                    response = processSCSB(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit,isCGDProtected,institutionEntity);
                 } else {
-                    reponse = processMarc(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit);
+                    response = processMarc(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit,isCGDProtected,institutionEntity);
                 }
-                if (reponse != null){//This happens when there is a failure
-                    setResponse(reponse, submitColletionResponseList);
-                    submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidXml(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),reponse);
+                if (response != null){//This happens when there is a failure
+                    setResponse(response, submitColletionResponseList);
+                    submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidXml(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),response);
                     generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT, xmlFileName,reportRecordNumberList);
                     return submitColletionResponseList;
                 }
@@ -104,9 +103,9 @@ public class SubmitCollectionService {
             }
         }catch (Exception e) {
             logger.error(ReCAPConstants.LOG_ERROR, e);
-            reponse = ReCAPConstants.SUBMIT_COLLECTION_INTERNAL_ERROR;
+            response = ReCAPConstants.SUBMIT_COLLECTION_INTERNAL_ERROR;
         }
-        setResponse(reponse, submitColletionResponseList);
+        setResponse(response, submitColletionResponseList);
         stopWatch.stop();
         logger.info("Submit Collection : total time take for processing input record and saving to DB {}", stopWatch.getTotalTimeSeconds());
         return submitColletionResponseList;
@@ -131,7 +130,8 @@ public class SubmitCollectionService {
         return submitColletionResponseList;
     }
 
-    private String processMarc(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String, String> idMapToRemoveIndex, boolean checkLimit) {
+    private String processMarc(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String, String> idMapToRemoveIndex, boolean checkLimit
+            ,boolean isCGDProtection,InstitutionEntity institutionEntity) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String format;
@@ -151,7 +151,7 @@ public class SubmitCollectionService {
             int count = 1;
             for (Record record : records) {
                 logger.info("Processing record no: {}",count);
-                BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndex);
+                BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndex,isCGDProtection,institutionEntity);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
@@ -165,7 +165,7 @@ public class SubmitCollectionService {
     }
 
     private String processSCSB(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,
-                               Map<String, String> idMapToRemoveIndex, boolean checkLimit) {
+                               Map<String, String> idMapToRemoveIndex, boolean checkLimit,boolean isCGDProtected,InstitutionEntity institutionEntity) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String format;
@@ -186,7 +186,7 @@ public class SubmitCollectionService {
         for (BibRecord bibRecord : bibRecords.getBibRecords()) {
             logger.info("Processing Bib record no: {}",count);
             try {
-                BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndex);
+                BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndex,isCGDProtected,institutionEntity);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
@@ -204,11 +204,13 @@ public class SubmitCollectionService {
         return null;
     }
 
-    private BibliographicEntity loadData(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String,String> idMapToRemoveIndex){
+    private BibliographicEntity loadData(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String,String> idMapToRemoveIndex
+            ,boolean isCGDProtected,InstitutionEntity institutionEntity){
         BibliographicEntity savedBibliographicEntity = null;
-        Map responseMap = getConverter(format).convert(record);
+        Map responseMap = getConverter(format).convert(record,institutionEntity);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) responseMap.get("bibliographicEntity");
         List<ReportEntity> reportEntityList = (List<ReportEntity>) responseMap.get("reportEntities");
+        setCGDProtectionForItems(bibliographicEntity,isCGDProtected);
         if (CollectionUtils.isNotEmpty(reportEntityList)) {
             repositoryService.getReportDetailRepository().save(reportEntityList);
         }
@@ -216,6 +218,18 @@ public class SubmitCollectionService {
             savedBibliographicEntity = submitCollectionDAOService.updateBibliographicEntity(bibliographicEntity, submitCollectionReportInfoMap,idMapToRemoveIndex);
         }
         return savedBibliographicEntity;
+    }
+
+    private void setCGDProtectionForItems(BibliographicEntity bibliographicEntity,boolean isCGDProtected){
+        if(bibliographicEntity != null && bibliographicEntity.getHoldingsEntities() != null){
+            for(HoldingsEntity holdingsEntity : bibliographicEntity.getHoldingsEntities()){
+                if (holdingsEntity.getItemEntities() != null){
+                    for (ItemEntity itemEntity : holdingsEntity.getItemEntities()){
+                        itemEntity.setCgdProtection(isCGDProtected);
+                    }
+                }
+            }
+        }
     }
 
     /**

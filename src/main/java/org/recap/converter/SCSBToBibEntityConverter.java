@@ -63,7 +63,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
      * @return
      */
     @Override
-    public Map convert(Object scsbRecord) {
+    public Map convert(Object scsbRecord, InstitutionEntity institutionEntity) {
         Map<String, Object> map = new HashMap<>();
         boolean processBib = false;
 
@@ -80,7 +80,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         Record bibRecordObject = bibMarcRecord.getBibRecord();
         String institutionName = bibRecord.getBib().getOwningInstitutionId();
 
-        Integer owningInstitutionId = (Integer) getInstitutionEntityMap().get(institutionName);
+        Integer owningInstitutionId = institutionEntity.getInstitutionId();
         Date currentDate = new Date();
         Map<String, Object> bibMap = processAndValidateBibliographicEntity(bibRecordObject, owningInstitutionId, institutionName, owningInstitutionBibId,currentDate);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) bibMap.get(ReCAPConstants.BIBLIOGRAPHIC_ENTITY);
@@ -115,7 +115,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
                     CollectionType itemContentCollection = items.getContent().getCollection();
                     String itemContent = itemContentCollection.serialize(itemContentCollection);
                     List<Record> itemRecord = marcUtil.convertMarcXmlToRecord(itemContent);
-                    Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, holdingsEntity, owningInstitutionId, holdingsCallNumber, holdingsCallNumberType, itemRecord.get(0), institutionName, bibRecord, bibRecordObject,currentDate);
+                    Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, holdingsEntity, owningInstitutionId, holdingsCallNumber, holdingsCallNumberType, itemRecord.get(0), institutionName, bibRecordObject,currentDate);
                     ItemEntity itemEntity = (ItemEntity) itemMap.get("itemEntity");
                     ReportEntity itemReportEntity = (ReportEntity) itemMap.get("itemReportEntity");
                     if (itemReportEntity != null) {
@@ -282,12 +282,11 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
      * @param holdingsCallNumberType
      * @param itemRecord
      * @param institutionName
-     * @param bibRecord
      * @param bibRecordObject
      * @param currentDate
      * @return
      */
-    private Map<String, Object> processAndValidateItemEntity(BibliographicEntity bibliographicEntity, HoldingsEntity holdingsEntity, Integer owningInstitutionId, String holdingsCallNumber, Character holdingsCallNumberType, Record itemRecord, String institutionName, BibRecord bibRecord, Record bibRecordObject,Date currentDate) {
+    private Map<String, Object> processAndValidateItemEntity(BibliographicEntity bibliographicEntity, HoldingsEntity holdingsEntity, Integer owningInstitutionId, String holdingsCallNumber, Character holdingsCallNumberType, Record itemRecord, String institutionName, Record bibRecordObject,Date currentDate) {
         StringBuffer errorMessage = new StringBuffer();
         Map<String, Object> map = new HashMap<>();
         ItemEntity itemEntity = new ItemEntity();
@@ -301,10 +300,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         String customerCode = marcUtil.getDataFieldValue(itemRecord, "900", 'b');
         if (StringUtils.isNotBlank(customerCode)) {
             itemEntity.setCustomerCode(customerCode);
-        } /*else {
-            errorMessage.append("\n");
-            errorMessage.append("Customer Code cannot be null");
-        }*/
+        }
         itemEntity.setCallNumber(holdingsCallNumber);
         itemEntity.setCallNumberType(String.valueOf(holdingsCallNumberType));
         String copyNumber = marcUtil.getDataFieldValue(itemRecord, "876", 't');

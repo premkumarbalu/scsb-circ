@@ -70,6 +70,9 @@ public class ItemEntity implements Serializable {
     @Column(name = "IS_DELETED")
     private boolean isDeleted;
 
+    @Column(name = "IS_CGD_PROTECTION")
+    private boolean isCgdProtection;
+
     @Column(name = "CATALOGING_STATUS")
     private String catalogingStatus;
 
@@ -395,6 +398,14 @@ public class ItemEntity implements Serializable {
      */
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public boolean isCgdProtection() {
+        return isCgdProtection;
+    }
+
+    public void setCgdProtection(boolean cgdProtection) {
+        isCgdProtection = cgdProtection;
     }
 
     /**

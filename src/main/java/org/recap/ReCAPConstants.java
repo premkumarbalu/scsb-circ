@@ -433,8 +433,14 @@ public final class ReCAPConstants {
     public static final String STARTING = "Starting";
 
     public static final String SUBMIT_COLLECTION_FTP_PUL_ROUTE = "pulSubmitCollectionFTPRoute";
+    public static final String SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE = "pulSubmitCollectionFTPCgdProtectedRoute";
+    public static final String SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_PUL_ROUTE = "pulSubmitCollectionFTPCgdNotProtectedRoute";
     public static final String SUBMIT_COLLECTION_FTP_CUL_ROUTE = "culSubmitCollectionFTPRoute";
+    public static final String SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE = "culSubmitCollectionFTPCgdProtectedRoute";
+    public static final String SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_CUL_ROUTE = "culSubmitCollectionFTPCgdNotProtectedRoute";
     public static final String SUBMIT_COLLECTION_FTP_NYPL_ROUTE = "nyplSubmitCollectionFTPRoute";
+    public static final String SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdProtectedRoute";
+    public static final String SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdNotProtectedRoute";
 
     public static final String DELETED_MAIL_QUEUE = "deletedRecordsMailSendQueue";
     public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
@@ -468,4 +474,7 @@ public final class ReCAPConstants {
     public static final String NYPL_HOLD_REQUEST_URL = "/hold-requests";
     public static final String NYPL_PATRON_BY_BARCODE_URL = "/patrons?barcode=";
 
+    public static final String INPUT_RECORDS = "inputRecords";
+    public static final String INSTITUTION = "institution";
+    public static final String IS_CGD_PROTECTED = "isCGDProtection";
 }
