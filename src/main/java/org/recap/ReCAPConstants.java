@@ -476,5 +476,5 @@ public final class ReCAPConstants {
 
     public static final String INPUT_RECORDS = "inputRecords";
     public static final String INSTITUTION = "institution";
-    public static final String IS_CGD_PROTECTED = "isCGDProtection";
+    public static final String IS_CGD_PROTECTED = "isCGDProtected";
 }
