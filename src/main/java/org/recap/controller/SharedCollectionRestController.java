@@ -38,19 +38,23 @@ public class SharedCollectionRestController {
      * This controller method is the entry point for submit collection which receives
      * input xml either in marc xml or scsb xml and pass it to the service class
      *
-     * @param inputRecords the input records
+     * @param requestParameters holds map of input xml string, institution, cdg protetion flag
      * @return the response entity
      */
     @RequestMapping(value = "/submitCollection", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity submitCollection(@RequestBody String inputRecords){
+    public ResponseEntity submitCollection(@RequestParam Map<String,Object> requestParameters){
         ResponseEntity responseEntity;
+        String inputRecords = (String) requestParameters.get(ReCAPConstants.INPUT_RECORDS);
+        String institution = (String) requestParameters.get(ReCAPConstants.INSTITUTION);
+        Boolean isCGDProtection = Boolean.valueOf((String) requestParameters.get(ReCAPConstants.IS_CGD_PROTECTED));
+
         List<Integer> reportRecordNumberList = new ArrayList<>();
         Set<Integer> processedBibIds = new HashSet<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<SubmitCollectionResponse> submitCollectionResponseList;
         try {
-            submitCollectionResponseList = submitCollectionService.process(inputRecords,processedBibIds,idMapToRemoveIndex,"",reportRecordNumberList, true);
+            submitCollectionResponseList = submitCollectionService.process(institution,inputRecords,processedBibIds,idMapToRemoveIndex,"",reportRecordNumberList, true,isCGDProtection);
             if (!processedBibIds.isEmpty()) {
                 logger.info("Calling indexing service to update data");
                 submitCollectionService.indexData(processedBibIds);

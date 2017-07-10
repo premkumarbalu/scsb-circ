@@ -58,8 +58,11 @@ public class SubmitCollectionProcessor {
 
     private String institutionCode;
 
-    public SubmitCollectionProcessor(String inputInstitutionCode) {
+    private boolean isCGDProtection;
+
+    public SubmitCollectionProcessor(String inputInstitutionCode,boolean isCGDProtection) {
         this.institutionCode = inputInstitutionCode;
+        this.isCGDProtection = isCGDProtection;
     }
 
     /**
@@ -77,9 +80,8 @@ public class SubmitCollectionProcessor {
         Set<Integer> processedBibIds = new HashSet<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        String response = "";
         try {
-            submitCollectionService.process(inputXml,processedBibIds,idMapToRemoveIndex,xmlFileName,reportRecordNumList, false);
+            submitCollectionService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndex,xmlFileName,reportRecordNumList, false, isCGDProtection);
             logger.info("Submit Collection : Solr indexing started for {} records", processedBibIds.size());
             if (processedBibIds.size()>0) {
                 submitCollectionService.indexData(processedBibIds);

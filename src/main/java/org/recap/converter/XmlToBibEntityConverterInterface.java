@@ -1,5 +1,7 @@
 package org.recap.converter;
 
+import org.recap.model.InstitutionEntity;
+
 import java.util.Map;
 
 /**
@@ -14,5 +16,5 @@ public interface XmlToBibEntityConverterInterface {
      * @param record the record
      * @return the map
      */
-    public Map convert(Object record);
+    public Map convert(Object record, InstitutionEntity institutionEntity);
 }

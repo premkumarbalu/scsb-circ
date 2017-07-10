@@ -47,7 +47,7 @@ public class SubmitCollectionDAOService {
         if(fetchBibliographicEntity != null ){//update existing record
             if(fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId())){//update existing complete record
                 savedBibliographicEntity = updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
-            } else {//update existing dummy record if any (Removes existion dummy record and creates new record for the same barcode based on the input xml)
+            } else {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
                 updateCustomerCode(fetchBibliographicEntity,bibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it, this happens mostly for CUL
                 removeDummyRecord(idMapToRemoveIndex, fetchBibliographicEntity);
                 BibliographicEntity fetchedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(),bibliographicEntity.getOwningInstitutionBibId());
@@ -269,7 +269,7 @@ public class SubmitCollectionDAOService {
             fetchItemEntity.setCustomerCode(itemEntity.getCustomerCode());
         }
         if (isAvailableItem(fetchItemEntity.getItemAvailabilityStatusId())) {
-            if (itemEntity.getCollectionGroupId() != null) {
+            if (itemEntity.getCollectionGroupId() != null && !itemEntity.isCgdProtection()) {
                 fetchItemEntity.setCollectionGroupId(itemEntity.getCollectionGroupId());
             }
             fetchItemEntity.setUseRestrictions(itemEntity.getUseRestrictions());
@@ -283,6 +283,7 @@ public class SubmitCollectionDAOService {
         } else{
             fetchItemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
         }
+        fetchItemEntity.setCgdProtection(itemEntity.isCgdProtection());
         logger.info("updating existing barcode - "+fetchItemEntity.getBarcode());
         itemEntityList.add(fetchItemEntity);
         return fetchItemEntity;
