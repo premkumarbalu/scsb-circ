@@ -48,7 +48,6 @@ public class SubmitCollectionPollingFtpRouteBuilder {
         }
     };
 
-
     /**
      * Instantiates a router ftp for Submit collection process for each institution
      *
@@ -142,7 +141,7 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                             .bean(applicationContext.getBean(SubmitCollectionProcessor.class,ReCAPConstants.COLUMBIA,true),ReCAPConstants.PROCESS_INPUT)
                             .log("CUL Submit Collection FTP Route Record Processing completed")
                             .end()
-                            .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE));
+                            .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE));
                 }
             });
 
