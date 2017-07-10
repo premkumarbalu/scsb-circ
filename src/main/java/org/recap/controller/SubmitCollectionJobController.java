@@ -63,14 +63,23 @@ public class SubmitCollectionJobController {
     @Value("${ftp.privateKey}")
     private String ftpPrivateKey;
 
-    @Value("${sftp.submitcollection.pul}")
-    private String ftpSubmitcollectionPul;
+    @Value("${sftp.submitcollection.pul.cgdprotected}")
+    private String ftpSubmitcollectionPulCgdProtected;
 
-    @Value("${sftp.submitcollection.cul}")
-    private String ftpSubmitcollectionCul;
+    @Value("${sftp.submitcollection.cul.cgdprotected}")
+    private String ftpSubmitcollectionCulCgdProtected;
 
-    @Value("${sftp.submitcollection.nypl}")
-    private String ftpSubmitcollectionNypl;
+    @Value("${sftp.submitcollection.nypl.cgdprotected}")
+    private String ftpSubmitcollectionNyplCgdProtected;
+
+    @Value("${sftp.submitcollection.pul.cgdnotprotected}")
+    private String ftpSubmitcollectionPulCgdNotProtected;
+
+    @Value("${sftp.submitcollection.cul.cgdnotprotected}")
+    private String ftpSubmitcollectionCulCgdNotProtected;
+
+    @Value("${sftp.submitcollection.nypl.cgdnotprotected}")
+    private String ftpSubmitcollectionNyplCgdNotProtected;
 
     @Value("${sftp.sftpHost}")
     private String sftpHost;
@@ -84,14 +93,26 @@ public class SubmitCollectionJobController {
     @Value("${sftp.sftpPassword}")
     private String sftpPassword;
 
+
+    /**
+     * This method is initiated from the scheduler to start the submit collection process for each institution
+     * if file exists in their respective folders.
+     *
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "/startSubmitCollection",method = RequestMethod.POST)
     public String startSubmitCollection() throws Exception{
 
         Session session 	= null;
         Channel channel 	= null;
-        ChannelSftp pulchannelSftp = null;
-        ChannelSftp culchannelSftp = null;
-        ChannelSftp nyplchannelSftp = null;
+        ChannelSftp pulCgdProtectedchannelSftp = null;
+        ChannelSftp culCgdProtectedchannelSftp = null;
+        ChannelSftp nyplCgdProtectedchannelSftp = null;
+        ChannelSftp pulCgdNotProtectedchannelSftp = null;
+        ChannelSftp culCgdNotProtectedchannelSftp = null;
+        ChannelSftp nyplCgdNotProtectedchannelSftp = null;
+
 
         try{
             JSch jsch = new JSch();
@@ -105,19 +126,32 @@ public class SubmitCollectionJobController {
             session.connect();
             channel = session.openChannel("sftp");
             channel.connect();
-            pulchannelSftp = (ChannelSftp)channel;
-            culchannelSftp = (ChannelSftp)channel;
-            nyplchannelSftp = (ChannelSftp)channel;
-            pulchannelSftp.cd(ftpSubmitcollectionPul);
-            culchannelSftp.cd(ftpSubmitcollectionCul);
-            nyplchannelSftp.cd(ftpSubmitcollectionNypl);
-            Vector pulfilelist = pulchannelSftp.ls(ftpSubmitcollectionPul);
-            Vector culfilelist = culchannelSftp.ls(ftpSubmitcollectionCul);
-            Vector nyplfilelist = nyplchannelSftp.ls(ftpSubmitcollectionNypl);
+            pulCgdProtectedchannelSftp = (ChannelSftp)channel;
+            culCgdProtectedchannelSftp = (ChannelSftp)channel;
+            nyplCgdProtectedchannelSftp = (ChannelSftp)channel;
+            pulCgdNotProtectedchannelSftp = (ChannelSftp)channel;
+            culCgdNotProtectedchannelSftp = (ChannelSftp)channel;
+            nyplCgdNotProtectedchannelSftp = (ChannelSftp)channel;
+            pulCgdProtectedchannelSftp.cd(ftpSubmitcollectionPulCgdProtected);
+            culCgdProtectedchannelSftp.cd(ftpSubmitcollectionCulCgdProtected);
+            nyplCgdProtectedchannelSftp.cd(ftpSubmitcollectionNyplCgdProtected);
+            pulCgdNotProtectedchannelSftp.cd(ftpSubmitcollectionPulCgdNotProtected);
+            culCgdNotProtectedchannelSftp.cd(ftpSubmitcollectionCulCgdNotProtected);
+            nyplCgdNotProtectedchannelSftp.cd(ftpSubmitcollectionNyplCgdNotProtected);
+            Vector pulCgdProtectedFileList = pulCgdProtectedchannelSftp.ls(ftpSubmitcollectionPulCgdProtected);
+            Vector culCgdProtectedFileList = culCgdProtectedchannelSftp.ls(ftpSubmitcollectionCulCgdProtected);
+            Vector nyplCgdProtectedFileList = nyplCgdProtectedchannelSftp.ls(ftpSubmitcollectionNyplCgdProtected);
+            Vector pulCgdNotProtectedFileList = pulCgdProtectedchannelSftp.ls(ftpSubmitcollectionPulCgdNotProtected);
+            Vector culCgdNotProtectedFileList = culCgdProtectedchannelSftp.ls(ftpSubmitcollectionCulCgdNotProtected);
+            Vector nyplCgdNotProtectedFileList = nyplCgdProtectedchannelSftp.ls(ftpSubmitcollectionNyplCgdNotProtected);
             boolean flag=false;
-            flag = checkIfFileExistsInPULFolderAndStart(pulfilelist, flag);
-            flag = checkIfFileExistsInCULFolderAndStart(culfilelist, flag);
-            checkIfFilesExistsInNYPLAndStart(nyplfilelist, flag);
+            flag = checkIfFileExistsOrNot(pulCgdProtectedFileList, flag,ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE,ReCAPConstants.PRINCETON);
+            flag = checkIfFileExistsOrNot(culCgdProtectedFileList, flag,ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE,ReCAPConstants.COLUMBIA);
+            flag = checkIfFileExistsOrNot(nyplCgdProtectedFileList, flag,ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE,ReCAPConstants.NYPL);
+            flag = checkIfFileExistsOrNot(pulCgdNotProtectedFileList, flag,ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_PUL_ROUTE,ReCAPConstants.PRINCETON);
+            flag = checkIfFileExistsOrNot(culCgdNotProtectedFileList, flag,ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_CUL_ROUTE,ReCAPConstants.COLUMBIA);
+            flag = checkIfFileExistsOrNot(nyplCgdNotProtectedFileList, flag,ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE,ReCAPConstants.NYPL);
+
         }
         catch(Exception ex){
             logger.error(ReCAPConstants.LOG_ERROR,ex);
@@ -126,61 +160,22 @@ public class SubmitCollectionJobController {
         return ReCAPConstants.SUCCESS;
     }
 
-    private void checkIfFilesExistsInNYPLAndStart(Vector nyplfilelist, boolean flag) throws Exception {
-        for(int i=0; i<nyplfilelist.size();i++){
-            ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) nyplfilelist.get(i);
+    private boolean checkIfFileExistsOrNot(Vector fileList, boolean flag, String routeId,String institution) throws Exception {
+        for(int i=0; i<fileList.size();i++){
+            ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) fileList.get(i);
             if(!entry.getFilename().startsWith(".")) {
                 flag=true;
                 break;
             }
         }
         if (flag) {
-            logger.info("Started for nypl");
-            camelContext.startRoute(ReCAPConstants.SUBMIT_COLLECTION_FTP_NYPL_ROUTE);
-            flag = false;
-        }
-        else{
-            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.NYPL), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
-            logger.info("No files in the NYPL directory");
-        }
-    }
-
-    private boolean checkIfFileExistsInCULFolderAndStart(Vector culfilelist, boolean flag) throws Exception {
-        for(int i=0; i<culfilelist.size();i++){
-            ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) culfilelist.get(i);
-            if(!entry.getFilename().startsWith(".")) {
-                flag=true;
-                break;
-            }
-        }
-        if (flag) {
-            logger.info("Started for cul");
-            camelContext.startRoute(ReCAPConstants.SUBMIT_COLLECTION_FTP_CUL_ROUTE);
+            logger.info("Started for : {} ",routeId);
+            camelContext.startRoute(routeId);
             flag=false;
         }
         else{
-            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.COLUMBIA), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
-            logger.info("No files in the CUL directory");
-        }
-        return flag;
-    }
-
-    private boolean checkIfFileExistsInPULFolderAndStart(Vector pulfilelist, boolean flag) throws Exception {
-        for(int i=0; i<pulfilelist.size();i++){
-            ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) pulfilelist.get(i);
-            if(!entry.getFilename().startsWith(".")) {
-                flag=true;
-                break;
-            }
-        }
-        if (flag) {
-            logger.info("Started for pul");
-            camelContext.startRoute(ReCAPConstants.SUBMIT_COLLECTION_FTP_PUL_ROUTE);
-            flag=false;
-        }
-        else{
-            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.PRINCETON), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
-            logger.info("No files in the PUL directory");
+            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(institution), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
+            logger.info("No files in the {} directoty",routeId);
         }
         return flag;
     }
