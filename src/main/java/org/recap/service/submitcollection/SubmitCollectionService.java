@@ -115,6 +115,7 @@ public class SubmitCollectionService {
             logger.info("Submit Collection : total time take for processing input record and saving to DB {}", stopWatch.getTotalTimeSeconds());
         } else {
             SubmitCollectionResponse submitCollectionResponse = new SubmitCollectionResponse();
+            submitCollectionResponse.setItemBarcode("");
             submitCollectionResponse.setMessage("Please provide valid institution code");
             submitColletionResponseList.add(submitCollectionResponse);
         }
