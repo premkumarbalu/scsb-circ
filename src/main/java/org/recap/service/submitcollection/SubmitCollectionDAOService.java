@@ -260,7 +260,6 @@ public class SubmitCollectionDAOService {
 
     private ItemEntity copyItemEntity(ItemEntity fetchItemEntity, ItemEntity itemEntity, List<ItemEntity> itemEntityList) {
         fetchItemEntity.setBarcode(itemEntity.getBarcode());
-        fetchItemEntity.setDeleted(itemEntity.isDeleted());
         fetchItemEntity.setLastUpdatedBy(itemEntity.getLastUpdatedBy());
         fetchItemEntity.setLastUpdatedDate(itemEntity.getLastUpdatedDate());
         fetchItemEntity.setCallNumber(itemEntity.getCallNumber());
