@@ -202,8 +202,6 @@ public class ItemRequestDBService {
     public void updateItemAvailabilutyStatus(List<ItemEntity> itemEntities, String userName) {
         for (ItemEntity itemEntity : itemEntities) {
             itemEntity.setItemAvailabilityStatusId(2); // Not Available
-            itemEntity.setLastUpdatedBy(getUser(userName));
-            itemEntity.setLastUpdatedDate(new Date());
 
             saveItemChangeLogEntity(itemEntity.getItemId(), getUser(userName), ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE);
         }
@@ -220,8 +218,6 @@ public class ItemRequestDBService {
      */
     public void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity, String userName) {
         itemEntity.setItemAvailabilityStatusId(1); // Available
-        itemEntity.setLastUpdatedBy(getUser(userName));
-        itemEntity.setLastUpdatedDate(new Date());
         itemDetailsRepository.save(itemEntity);
         saveItemChangeLogEntity(itemEntity.getItemId(), getUser(userName), ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK);
     }
