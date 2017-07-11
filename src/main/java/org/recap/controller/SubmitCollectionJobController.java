@@ -25,7 +25,7 @@ import java.util.Vector;
 @RequestMapping("/submitCollectionJob")
 public class SubmitCollectionJobController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AccessionReconcilationJobController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SubmitCollectionJobController.class);
 
     @Autowired
     private ProducerTemplate producer;
@@ -63,34 +63,34 @@ public class SubmitCollectionJobController {
     @Value("${ftp.privateKey}")
     private String ftpPrivateKey;
 
-    @Value("${sftp.submitcollection.pul.cgdprotected}")
+    @Value("${ftp.submitcollection.cgdprotected.pul}")
     private String ftpSubmitcollectionPulCgdProtected;
 
-    @Value("${sftp.submitcollection.cul.cgdprotected}")
+    @Value("${ftp.submitcollection.cgdprotected.cul}")
     private String ftpSubmitcollectionCulCgdProtected;
 
-    @Value("${sftp.submitcollection.nypl.cgdprotected}")
+    @Value("${ftp.submitcollection.cgdprotected.nypl}")
     private String ftpSubmitcollectionNyplCgdProtected;
 
-    @Value("${sftp.submitcollection.pul.cgdnotprotected}")
+    @Value("${ftp.submitcollection.cgdnotprotected.pul}")
     private String ftpSubmitcollectionPulCgdNotProtected;
 
-    @Value("${sftp.submitcollection.cul.cgdnotprotected}")
+    @Value("${ftp.submitcollection.cgdnotprotected.cul}")
     private String ftpSubmitcollectionCulCgdNotProtected;
 
-    @Value("${sftp.submitcollection.nypl.cgdnotprotected}")
+    @Value("${ftp.submitcollection.cgdnotprotected.nypl}")
     private String ftpSubmitcollectionNyplCgdNotProtected;
 
-    @Value("${sftp.sftpHost}")
+    @Value("${ftp.ftpHost}")
     private String sftpHost;
 
-    @Value("${sftp.sftpPort}")
+    @Value("${ftp.ftpPort}")
     private String sftpPort;
 
     @Value("${ftp.userName}")
     private String sftpUser;
 
-    @Value("${sftp.sftpPassword}")
+    @Value("${ftp.ftpPassword}")
     private String sftpPassword;
 
 
@@ -175,7 +175,7 @@ public class SubmitCollectionJobController {
         }
         else{
             producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(institution), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
-            logger.info("No files in the {} directoty",routeId);
+            logger.info("No files in the {} directory",routeId);
         }
         return flag;
     }
