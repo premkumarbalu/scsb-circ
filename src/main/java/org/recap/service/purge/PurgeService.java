@@ -47,22 +47,29 @@ public class PurgeService {
      *
      * @return the map
      */
-    public Map<String,Integer> purgeEmailAddress(){
-        List<RequestTypeEntity> requestTypeEntityList = requestTypeDetailsRepository.findAll();
-        List<Integer> physicalRequestTypeIdList = new ArrayList<>();
-        List<Integer> eddRequestTypeIdList = new ArrayList();
-        for(RequestTypeEntity requestTypeEntity : requestTypeEntityList){
-            if(requestTypeEntity.getRequestTypeCode().equals(ReCAPConstants.EDD_REQUEST)){
-                eddRequestTypeIdList.add(requestTypeEntity.getRequestTypeId());
-            }else{
-                physicalRequestTypeIdList.add(requestTypeEntity.getRequestTypeId());
+    public Map<String, String> purgeEmailAddress() {
+        Map<String, String> responseMap = new HashMap<>();
+        try {
+            List<RequestTypeEntity> requestTypeEntityList = requestTypeDetailsRepository.findAll();
+            List<Integer> physicalRequestTypeIdList = new ArrayList<>();
+            List<Integer> eddRequestTypeIdList = new ArrayList();
+            for (RequestTypeEntity requestTypeEntity : requestTypeEntityList) {
+                if (requestTypeEntity.getRequestTypeCode().equals(ReCAPConstants.EDD_REQUEST)) {
+                    eddRequestTypeIdList.add(requestTypeEntity.getRequestTypeId());
+                } else {
+                    physicalRequestTypeIdList.add(requestTypeEntity.getRequestTypeId());
+                }
             }
+            int noOfUpdatedRecordsForEddRequest = requestItemDetailsRepository.purgeEmailId(eddRequestTypeIdList, new Date(), purgeEmailEddRequestDayLimit);
+            int noOfUpdatedRecordsForPhysicalRequest = requestItemDetailsRepository.purgeEmailId(physicalRequestTypeIdList, new Date(), purgeEmailPhysicalRequestDayLimit);
+            responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.SUCCESS);
+            responseMap.put(ReCAPConstants.PURGE_EDD_REQUEST, String.valueOf(noOfUpdatedRecordsForEddRequest));
+            responseMap.put(ReCAPConstants.PURGE_PHYSICAL_REQUEST, String.valueOf(noOfUpdatedRecordsForPhysicalRequest));
+        } catch (Exception exception) {
+            logger.error(ReCAPConstants.LOG_ERROR, exception);
+            responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.FAILURE);
+            responseMap.put(ReCAPConstants.MESSAGE, exception.getMessage());
         }
-        int noOfUpdatedRecordsForEddRequest = requestItemDetailsRepository.purgeEmailId(eddRequestTypeIdList,new Date(), purgeEmailEddRequestDayLimit);
-        int noOfUpdatedRecordsForPhysicalRequest = requestItemDetailsRepository.purgeEmailId(physicalRequestTypeIdList,new Date(), purgeEmailPhysicalRequestDayLimit);
-        Map<String,Integer> responseMap = new HashMap<>();
-        responseMap.put(ReCAPConstants.PURGE_EDD_REQUEST , noOfUpdatedRecordsForEddRequest);
-        responseMap.put(ReCAPConstants.PURGE_PHYSICAL_REQUEST , noOfUpdatedRecordsForPhysicalRequest);
         return responseMap;
     }
 
@@ -77,7 +84,7 @@ public class PurgeService {
             Integer countOfPurgedExceptionRequests = requestItemDetailsRepository.purgeExceptionRequests(ReCAPConstants.REQUEST_STATUS_EXCEPTION, new Date(), purgeExceptionRequestDayLimit);
             logger.info("Total number of exception requests purged : {}", countOfPurgedExceptionRequests);
             responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.SUCCESS);
-            responseMap.put(ReCAPConstants.COUNT_OF_PURGED_EXCEPTION_REQUESTS, String.valueOf(countOfPurgedExceptionRequests));
+            responseMap.put(ReCAPConstants.MESSAGE, ReCAPConstants.COUNT_OF_PURGED_EXCEPTION_REQUESTS + " : " + String.valueOf(countOfPurgedExceptionRequests));
         } catch (Exception exception) {
             logger.error(ReCAPConstants.LOG_ERROR, exception);
             responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.FAILURE);
@@ -97,7 +104,7 @@ public class PurgeService {
             Integer countOfPurgedAccessionRequests = accessionDetailsRepository.purgeAccessionRequests(ReCAPConstants.COMPLETED, new Date(), purgeAccessionRequestDayLimit);
             logger.info("Total number of accession requests purged : {}", countOfPurgedAccessionRequests);
             responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.SUCCESS);
-            responseMap.put(ReCAPConstants.COUNT_OF_PURGED_ACCESSION_REQUESTS, String.valueOf(countOfPurgedAccessionRequests));
+            responseMap.put(ReCAPConstants.MESSAGE, ReCAPConstants.COUNT_OF_PURGED_ACCESSION_REQUESTS + " : " + String.valueOf(countOfPurgedAccessionRequests));
         } catch (Exception exception) {
             logger.error(ReCAPConstants.LOG_ERROR, exception);
             responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.FAILURE);

@@ -19,8 +19,9 @@ public class PurgeServiceUT extends BaseTestCase {
 
     @Test
     public void testPurgeEmailAddress() {
-        Map<String, Integer> responseMap = purgeService.purgeEmailAddress();
+        Map<String, String> responseMap = purgeService.purgeEmailAddress();
         assertNotNull(responseMap);
+        assertNotNull(responseMap.get(ReCAPConstants.STATUS));
         assertNotNull(responseMap.get(ReCAPConstants.PURGE_EDD_REQUEST));
         assertNotNull(responseMap.get(ReCAPConstants.PURGE_PHYSICAL_REQUEST));
     }

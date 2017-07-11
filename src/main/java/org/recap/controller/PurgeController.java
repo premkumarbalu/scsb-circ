@@ -31,7 +31,7 @@ public class PurgeController {
      */
     @RequestMapping(value = "/purgeEmailAddress", method = RequestMethod.GET)
     public ResponseEntity purgeEmailAddress() {
-        Map<String, Integer> responseMap = purgeService.purgeEmailAddress();
+        Map<String, String> responseMap = purgeService.purgeEmailAddress();
         return new ResponseEntity(responseMap, HttpStatus.OK);
     }
 
