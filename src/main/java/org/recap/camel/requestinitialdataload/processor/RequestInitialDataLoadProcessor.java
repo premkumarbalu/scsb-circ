@@ -67,7 +67,7 @@ public class RequestInitialDataLoadProcessor {
             if (!filePath.toFile().exists()) {
                 Files.createDirectories(filePath.getParent());
                 Files.createFile(filePath);
-                logger.info("Request Initial Load File Created"+filePath);
+                logger.info("Request Initial Load File Created--->{}",filePath);
             }
             Files.write(filePath,barcodesNotInScsb, StandardOpenOption.APPEND);
         }
@@ -78,7 +78,7 @@ public class RequestInitialDataLoadProcessor {
         }
         barcodeSet.clear();
         totalCount = totalCount + requestDataLoadCSVRecordList.size();
-        logger.info("Total count from las report ---->" + totalCount);
+        logger.info("Total count from las report---->{}",totalCount);
         totalCount = 0;
     }
 
