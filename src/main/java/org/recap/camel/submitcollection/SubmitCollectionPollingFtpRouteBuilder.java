@@ -67,7 +67,7 @@ public class SubmitCollectionPollingFtpRouteBuilder {
      * @param nyplWorkDir                  the nypl work dir
      */
     public SubmitCollectionPollingFtpRouteBuilder(CamelContext camelContext,ApplicationContext applicationContext,
-                                                  @Value("${ftp.userName}") String ftpUserName,
+                                                  @Value("${ftp.userName}") String ftpUserName,@Value("${ftp.ftpHost}") String ftpHost,@Value("${ftp.ftpPort}") String ftpPort,
                                                   @Value("${ftp.submitcollection.cgdnotprotected.pul}") String pulFtpCGDNotProtectedFolder, @Value("${ftp.submitcollection.cgdprotected.pul}") String pulFtpCGDProtectedFolder,
                                                   @Value("${ftp.submitcollection.cgdnotprotected.cul}") String culFtpCGDNotProtectedFolder, @Value("${ftp.submitcollection.cgdprotected.cul}") String culFtpCGDProtectedFolder,
                                                   @Value("${ftp.submitcollection.cgdnotprotected.nypl}") String nyplFtpCGDNotProtectedFolder, @Value("${ftp.submitcollection.cgdprotected.nypl}") String nyplFtpCGDProtectedFolder,
@@ -78,7 +78,7 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                 @Override
                 public void configure() throws Exception {
                     camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + pulFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+pulWorkDir)
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + pulFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+pulWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
@@ -102,7 +102,7 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                 @Override
                 public void configure() throws Exception {
                     camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + pulFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+pulWorkDir)
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + pulFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+pulWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_PUL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
@@ -126,7 +126,7 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                 @Override
                 public void configure() throws Exception {
                     camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + culFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+culWorkDir)
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + culFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+culWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
@@ -149,7 +149,7 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                 @Override
                 public void configure() throws Exception {
                     camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + culFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+culWorkDir)
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + culFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+culWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_CUL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
@@ -172,7 +172,7 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                 @Override
                 public void configure() throws Exception {
                     camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + nyplFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+nyplWorkDir)
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + nyplFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+nyplWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
@@ -195,7 +195,7 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                 @Override
                 public void configure() throws Exception {
                     camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + nyplFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+nyplWorkDir)
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + nyplFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+nyplWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
