@@ -54,7 +54,7 @@ public class RequestDataLoadService {
             requestItemEntity = new RequestItemEntity();
             if(!barcodeSet.add(requestDataLoadCSVRecord.getBarcode())){
                 duplicateBarcodes.add(requestDataLoadCSVRecord.getBarcode());
-                logger.info("Barcodes duplicated in the incoming record " + requestDataLoadCSVRecord.getBarcode());
+                logger.info("Barcodes duplicated in the incoming record {}",requestDataLoadCSVRecord.getBarcode());
                 continue;
             }
             Map<String,Integer> itemInfo = getItemInfo(requestDataLoadCSVRecord.getBarcode());
