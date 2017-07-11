@@ -3,8 +3,10 @@ package org.recap.converter;
 import org.junit.Test;
 import org.recap.BaseTestCase;
 import org.recap.model.BibliographicEntity;
+import org.recap.model.InstitutionEntity;
 import org.recap.model.jaxb.JAXBHandler;
 import org.recap.model.jaxb.marc.BibRecords;
+import org.recap.repository.InstitutionDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.bind.JAXBException;
@@ -20,6 +22,9 @@ public class SCSBToBibEntityConverterUT extends BaseTestCase {
 
     @Autowired
     private SCSBToBibEntityConverter scsbToBibEntityConverter;
+
+    @Autowired
+    private InstitutionDetailsRepository institutionDetailsRepository;
 
     private String scsbXmlContent1 = "<bibRecords>\n" +
             "    <bibRecord>\n" +
@@ -125,7 +130,8 @@ public class SCSBToBibEntityConverterUT extends BaseTestCase {
     @Test
     public void convert() throws JAXBException {
         BibRecords bibRecords = (BibRecords) JAXBHandler.getInstance().unmarshal(scsbXmlContent1, BibRecords.class);
-        Map convertedMap = scsbToBibEntityConverter.convert(bibRecords.getBibRecords().get(0));
+        InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode("NYPL");
+        Map convertedMap = scsbToBibEntityConverter.convert(bibRecords.getBibRecords().get(0),institutionEntity);
         BibliographicEntity bibliographicEntity = (BibliographicEntity)convertedMap.get("bibliographicEntity");
         assertNotNull(bibliographicEntity);
         assertEquals(".b100000125",bibliographicEntity.getOwningInstitutionBibId());

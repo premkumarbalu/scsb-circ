@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.marc4j.marc.Record;
 import org.recap.BaseTestCase;
 import org.recap.model.BibliographicEntity;
+import org.recap.model.InstitutionEntity;
+import org.recap.repository.InstitutionDetailsRepository;
 import org.recap.util.MarcUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,6 +28,9 @@ public class MarcToBibEntityConverterUT extends BaseTestCase {
 
     @Autowired
     private MarcUtil marcUtil;
+
+    @Autowired
+    private InstitutionDetailsRepository institutionDetailsRepository;
 
     private String marcXmlContent = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">\n" +
             "<record>\n" +
@@ -141,7 +146,8 @@ public class MarcToBibEntityConverterUT extends BaseTestCase {
     @Test
     public void convert(){
         List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        Map convertedMap = marcToBibEntityConverter.convert(recordList.get(0));
+        InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode("PUL");
+        Map convertedMap = marcToBibEntityConverter.convert(recordList.get(0),institutionEntity);
         BibliographicEntity bibliographicEntity = (BibliographicEntity)convertedMap.get("bibliographicEntity");
         assertNotNull(bibliographicEntity);
         assertEquals("115115",bibliographicEntity.getOwningInstitutionBibId());

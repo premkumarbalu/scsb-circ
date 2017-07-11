@@ -10,8 +10,10 @@ import org.recap.ReCAPConstants;
 import org.recap.converter.MarcToBibEntityConverter;
 import org.recap.model.BibliographicEntity;
 import org.recap.model.HoldingsEntity;
+import org.recap.model.InstitutionEntity;
 import org.recap.model.ItemEntity;
 import org.recap.model.report.SubmitCollectionReportInfo;
+import org.recap.repository.InstitutionDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
@@ -38,12 +40,14 @@ public class SubmitCollectionReportHelperServiceUT extends BaseTestCase {
     private EntityManager entityManager;
     @Autowired
     private MarcToBibEntityConverter marcToBibEntityConverter;
+    @Autowired
+    private InstitutionDetailsRepository institutionDetailsRepository;
 
     @Test
     public void buildSubmitCollectionReportInfoForValidRecord() throws Exception {
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
         BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem(1,"32101095533293","PA","24252","PUL","9919400","9734816", "7453441",true);
-        BibliographicEntity incomingBibliographicEntity = getConvertedBibliographicEntity("MarcRecord.xml");
+        BibliographicEntity incomingBibliographicEntity = getConvertedBibliographicEntity("MarcRecord.xml","PUL");
         submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,bibliographicEntity,incomingBibliographicEntity);
         List<SubmitCollectionReportInfo> submitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST);
         assertEquals(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD,submitCollectionReportInfoList.get(0).getMessage());
@@ -53,7 +57,7 @@ public class SubmitCollectionReportHelperServiceUT extends BaseTestCase {
     public void buildSubmitCollectionReportInfoForValidRecord1BibMultipleItems()  throws Exception {
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
         BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem(1,"32101095533293","PA","24252","PUL","9919400","9734816", "7453441",true);
-        BibliographicEntity incomingBibliographicEntity = getConvertedBibliographicEntity("MarcRecord.xml");
+        BibliographicEntity incomingBibliographicEntity = getConvertedBibliographicEntity("MarcRecord.xml","PUL");
         submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,bibliographicEntity,incomingBibliographicEntity);
         List<SubmitCollectionReportInfo> submitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST);
         assertEquals(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD,submitCollectionReportInfoList.get(0).getMessage());
@@ -63,7 +67,7 @@ public class SubmitCollectionReportHelperServiceUT extends BaseTestCase {
     public void buildSubmitCollectionReportInfoForInvalidOwningInstHoldingId() throws Exception {
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
         BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem(1,"32101095533293","PA","24252","PUL","9919400","222420", "7453441",true);
-        BibliographicEntity incomingBibliographicEntity = getConvertedBibliographicEntity("MarcRecord.xml");
+        BibliographicEntity incomingBibliographicEntity = getConvertedBibliographicEntity("MarcRecord.xml","PUL");
         submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,bibliographicEntity,incomingBibliographicEntity);
         List<SubmitCollectionReportInfo> submitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST);
         assertEquals("Failed record - Owning institution holding id 7453441 for the incoming barcode 32101095533293, owning institution item id 7453441 is unavailable in the existing bib - owning institution bib id - 9919400",submitCollectionReportInfoList.get(0).getMessage());
@@ -73,7 +77,7 @@ public class SubmitCollectionReportHelperServiceUT extends BaseTestCase {
     public void buildSubmitCollectionReportInfoForInvalidRecordOwningInstItemId() throws Exception {
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
         BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem(1,"32101095533293","PA","24252","PUL","9919400","9734816", "7453442",true);
-        BibliographicEntity incomingBibliographicEntity = getConvertedBibliographicEntity("MarcRecord.xml");
+        BibliographicEntity incomingBibliographicEntity = getConvertedBibliographicEntity("MarcRecord.xml","PUL");
         submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,bibliographicEntity,incomingBibliographicEntity);
         List<SubmitCollectionReportInfo> submitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST);
         assertEquals("Failed record - Incoming item 32101095533293, owning institution item id 7453441 is not matched with the existing item 32101095533293, owning institution item id 7453442, owning institution holding id 9734816, owning institution bib id 9919400",submitCollectionReportInfoList.get(0).getMessage());
@@ -83,7 +87,7 @@ public class SubmitCollectionReportHelperServiceUT extends BaseTestCase {
     public void buildSubmitCollectionReportInfoForRejectionRecord() throws Exception {
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
         BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem(1,"32101095533293","PA","24252","PUL","9919400","9734816", "7453441",false);
-        BibliographicEntity incomingBibliographicEntity = getConvertedBibliographicEntity("MarcRecord.xml");
+        BibliographicEntity incomingBibliographicEntity = getConvertedBibliographicEntity("MarcRecord.xml","PUL");
         submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,bibliographicEntity,incomingBibliographicEntity);
         List<SubmitCollectionReportInfo> submitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST);
         assertEquals(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_RECORD,submitCollectionReportInfoList.get(0).getMessage());
@@ -182,11 +186,12 @@ public class SubmitCollectionReportHelperServiceUT extends BaseTestCase {
         return submitCollectionReportInfoMap;
     }
 
-    private BibliographicEntity getConvertedBibliographicEntity(String xmlFileName) throws URISyntaxException, IOException {
+    private BibliographicEntity getConvertedBibliographicEntity(String xmlFileName,String institutionCode) throws URISyntaxException, IOException {
         File bibContentFile = getXmlContent(xmlFileName);
         String marcXmlString = FileUtils.readFileToString(bibContentFile, "UTF-8");
         List<Record> records = readMarcXml(marcXmlString);
-        Map map = marcToBibEntityConverter.convert(records.get(0));
+        InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode(institutionCode);
+        Map map = marcToBibEntityConverter.convert(records.get(0),institutionEntity);
         assertNotNull(map);
         BibliographicEntity convertedBibliographicEntity = (BibliographicEntity) map.get("bibliographicEntity");
         StringBuilder errorMessage = new StringBuilder();
