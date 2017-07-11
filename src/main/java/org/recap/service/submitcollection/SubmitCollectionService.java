@@ -53,6 +53,9 @@ public class SubmitCollectionService {
     private SCSBToBibEntityConverter scsbToBibEntityConverter;
 
     @Autowired
+    private SubmitCollectionValidationService validationService;
+
+    @Autowired
     private MarcUtil marcUtil;
 
     private RestTemplate restTemplate;
@@ -80,34 +83,42 @@ public class SubmitCollectionService {
         stopWatch.start();
         String response = null;
         List<SubmitCollectionResponse> submitColletionResponseList = new ArrayList<>();
-        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
-        InstitutionEntity institutionEntity = repositoryService.getInstitutionDetailsRepository().findByInstitutionCode(institutionCode);
-        try {
-            if (!"".equals(inputRecords)) {
-                if (inputRecords.contains(ReCAPConstants.BIBRECORD_TAG)) {
-                    response = processSCSB(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit,isCGDProtected,institutionEntity);
-                } else {
-                    response = processMarc(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit,isCGDProtected,institutionEntity);
-                }
-                if (response != null){//This happens when there is a failure
-                    setResponse(response, submitColletionResponseList);
-                    submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidXml(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),response);
+        boolean isValidToProcess = validationService.validateInstitution(institutionCode);
+        if (isValidToProcess) {
+            Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportMap();
+            InstitutionEntity institutionEntity = repositoryService.getInstitutionDetailsRepository().findByInstitutionCode(institutionCode);
+            try {
+                if (!"".equals(inputRecords)) {
+                    if (inputRecords.contains(ReCAPConstants.BIBRECORD_TAG)) {
+                        response = processSCSB(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit,isCGDProtected,institutionEntity);
+                    } else {
+                        response = processMarc(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit,isCGDProtected,institutionEntity);
+                    }
+                    if (response != null){//This happens when there is a failure
+                        setResponse(response, submitColletionResponseList);
+                        submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidXml(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),response);
+                        generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT, xmlFileName,reportRecordNumberList);
+                        return submitColletionResponseList;
+                    }
+                    generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_REPORT, xmlFileName,reportRecordNumberList);
                     generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT, xmlFileName,reportRecordNumberList);
-                    return submitColletionResponseList;
+                    generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_REJECTION_REPORT, xmlFileName,reportRecordNumberList);
+                    generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_REPORT, xmlFileName,reportRecordNumberList);
+                    getResponseMessage(submitCollectionReportInfoMap,submitColletionResponseList);
                 }
-                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_REPORT, xmlFileName,reportRecordNumberList);
-                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT, xmlFileName,reportRecordNumberList);
-                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_REJECTION_REPORT, xmlFileName,reportRecordNumberList);
-                generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_REPORT, xmlFileName,reportRecordNumberList);
-                getResponseMessage(submitCollectionReportInfoMap,submitColletionResponseList);
+            }catch (Exception e) {
+                logger.error(ReCAPConstants.LOG_ERROR, e);
+                response = ReCAPConstants.SUBMIT_COLLECTION_INTERNAL_ERROR;
             }
-        }catch (Exception e) {
-            logger.error(ReCAPConstants.LOG_ERROR, e);
-            response = ReCAPConstants.SUBMIT_COLLECTION_INTERNAL_ERROR;
+            setResponse(response, submitColletionResponseList);
+            stopWatch.stop();
+            logger.info("Submit Collection : total time take for processing input record and saving to DB {}", stopWatch.getTotalTimeSeconds());
+        } else {
+            SubmitCollectionResponse submitCollectionResponse = new SubmitCollectionResponse();
+            submitCollectionResponse.setMessage("Please provide valid institution code");
+            submitColletionResponseList.add(submitCollectionResponse);
         }
-        setResponse(response, submitColletionResponseList);
-        stopWatch.stop();
-        logger.info("Submit Collection : total time take for processing input record and saving to DB {}", stopWatch.getTotalTimeSeconds());
+
         return submitColletionResponseList;
     }
 
