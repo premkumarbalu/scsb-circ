@@ -51,6 +51,9 @@ public class ItemRequestDBService {
     @Autowired
     private CustomerCodeDetailsRepository customerCodeDetailsRepository;
 
+    @Autowired
+    private ItemStatusDetailsRepository itemStatusDetailsRepository;
+
     /**
      * Update recap request item integer.
      *
@@ -200,10 +203,10 @@ public class ItemRequestDBService {
      * @param userName     the user name
      */
     public void updateItemAvailabilutyStatus(List<ItemEntity> itemEntities, String userName) {
+        ItemStatusEntity itemStatusEntity = itemStatusDetailsRepository.findByStatusCode(ReCAPConstants.NOT_AVAILABLE);
         for (ItemEntity itemEntity : itemEntities) {
-            itemEntity.setItemAvailabilityStatusId(2); // Not Available
+            itemEntity.setItemAvailabilityStatusId(itemStatusEntity.getItemStatusId()); // Not Available
             itemEntity.setLastUpdatedBy(getUser(userName));
-            itemEntity.setLastUpdatedDate(new Date());
 
             saveItemChangeLogEntity(itemEntity.getItemId(), getUser(userName), ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_UPDATE);
         }
@@ -219,9 +222,9 @@ public class ItemRequestDBService {
      * @param userName   the user name
      */
     public void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity, String userName) {
-        itemEntity.setItemAvailabilityStatusId(1); // Available
+        ItemStatusEntity itemStatusEntity = itemStatusDetailsRepository.findByStatusCode(ReCAPConstants.AVAILABLE);
+        itemEntity.setItemAvailabilityStatusId(itemStatusEntity.getItemStatusId()); // Available
         itemEntity.setLastUpdatedBy(getUser(userName));
-        itemEntity.setLastUpdatedDate(new Date());
         itemDetailsRepository.save(itemEntity);
         saveItemChangeLogEntity(itemEntity.getItemId(), getUser(userName), ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK);
     }
