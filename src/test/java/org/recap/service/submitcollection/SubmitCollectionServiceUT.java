@@ -737,7 +737,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         Set<Integer> processedBibIds = new HashSet<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process(updatedMarcForPUL,processedBibIds,idMapToRemoveIndex, ReCAPConstants.REST,reportRecordNumList, true);
+        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,idMapToRemoveIndex, ReCAPConstants.REST,reportRecordNumList, true,false);
         String response = submitCollectionResponseList.get(0).getMessage();
         assertEquals(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD,response);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
@@ -765,7 +765,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         Set<Integer> processedBibIds = new HashSet<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process(updatedMarcForPUL,processedBibIds,idMapToRemoveIndex, ReCAPConstants.REST,reportRecordNumList, true);
+        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,idMapToRemoveIndex, ReCAPConstants.REST,reportRecordNumList, true,false);
         String response = submitCollectionResponseList.get(0).getMessage();
         assertEquals(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD,response);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
@@ -795,7 +795,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         Set<Integer> processedBibIds = new HashSet<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process(updatedMarcForPULWtihNewItem,processedBibIds,idMapToRemoveIndex, ReCAPConstants.REST,reportRecordNumList, true);
+        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPULWtihNewItem,processedBibIds,idMapToRemoveIndex, ReCAPConstants.REST,reportRecordNumList, true,false);
         String response = submitCollectionResponseList.get(0).getMessage();
         assertEquals(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD,response);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
@@ -812,7 +812,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         Set<Integer> processedBibIds = new HashSet<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process(updatedMarcForPUL,processedBibIds,idMapToRemoveIndex, ReCAPConstants.REST,reportRecordNumList, true);
+        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,idMapToRemoveIndex, ReCAPConstants.REST,reportRecordNumList, true,false);
         String response = submitCollectionResponseList.get(0).getMessage();
         assertEquals(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_RECORD,response);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId("202304");
@@ -841,7 +841,7 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         Set<Integer> processedBibIds = new HashSet<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process(updatedContentForNYPL1,processedBibIds,idMapToRemoveIndex, ReCAPConstants.REST,reportRecordNumList, true);
+        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("NYPL",updatedContentForNYPL1,processedBibIds,idMapToRemoveIndex, ReCAPConstants.REST,reportRecordNumList, true,false);
         String response = submitCollectionResponseList.get(0).getMessage();
         assertEquals(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD,response);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId(".b100000125");

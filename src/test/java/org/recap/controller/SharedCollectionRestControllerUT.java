@@ -1,10 +1,12 @@
 package org.recap.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.map.HashedMap;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.recap.BaseTestCase;
+import org.recap.ReCAPConstants;
 import org.recap.model.deaccession.DeAccessionItem;
 import org.recap.model.deaccession.DeAccessionRequest;
 import org.recap.model.submitcollection.SubmitCollectionResponse;
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -149,9 +152,13 @@ public class SharedCollectionRestControllerUT extends BaseTestCase {
         SubmitCollectionResponse submitCollectionResponse = new SubmitCollectionResponse();
         submitCollectionResponse.setItemBarcode("32101068878931");
         submitCollectionResponse.setMessage("ExceptionRecord");
+        Map<String,Object> requestParameters = new HashedMap();
+        requestParameters.put(ReCAPConstants.INPUT_RECORDS,updatedMarcXml);
+        requestParameters.put(ReCAPConstants.INSTITUTION,"PUL");
+        requestParameters.put(ReCAPConstants.IS_CGD_PROTECTED,false);
         ResponseEntity responseEntity = new ResponseEntity(submitCollectionResponse,HttpStatus.OK);
-        Mockito.when(sharedCollectionRestController.submitCollection(updatedMarcXml)).thenReturn(responseEntity);
-        ResponseEntity response = sharedCollectionRestController.submitCollection(updatedMarcXml);
+        Mockito.when(sharedCollectionRestController.submitCollection(requestParameters)).thenReturn(responseEntity);
+        ResponseEntity response = sharedCollectionRestController.submitCollection(requestParameters);
         SubmitCollectionResponse responseBody = (SubmitCollectionResponse) response.getBody();
         assertEquals(submitCollectionResponse.getItemBarcode(),responseBody.getItemBarcode());
         assertEquals(submitCollectionResponse.getMessage(),responseBody.getMessage());
