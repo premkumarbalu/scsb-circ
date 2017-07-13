@@ -96,7 +96,7 @@ public class SubmitCollectionService {
                     }
                     if (response != null){//This happens when there is a failure
                         setResponse(response, submitColletionResponseList);
-                        submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidXml(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),response);
+                        submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidXml(institutionCode,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),response);
                         generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST), ReCAPConstants.SUBMIT_COLLECTION_REPORT, ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT, xmlFileName,reportRecordNumberList);
                         return submitColletionResponseList;
                     }
@@ -119,7 +119,6 @@ public class SubmitCollectionService {
             submitCollectionResponse.setMessage("Please provide valid institution code");
             submitColletionResponseList.add(submitCollectionResponse);
         }
-
         return submitColletionResponseList;
     }
 

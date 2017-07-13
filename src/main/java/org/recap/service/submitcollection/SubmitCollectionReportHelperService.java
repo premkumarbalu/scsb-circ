@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,13 @@ public class SubmitCollectionReportHelperService {
     private SetupDataService setupDataService;
 
 
+    /**
+     * This method sets submit collection report information based on the given information.
+     *
+     * @param itemEntityList                 the item entity list
+     * @param submitCollectionExceptionInfos the submit collection exception infos
+     * @param message                        the message
+     */
     public void setSubmitCollectionReportInfo(List<ItemEntity> itemEntityList, List<SubmitCollectionReportInfo> submitCollectionExceptionInfos, String message) {
         for (ItemEntity itemEntity : itemEntityList) {
             logger.info("Report data for item {}",itemEntity.getBarcode());
@@ -52,6 +60,13 @@ public class SubmitCollectionReportHelperService {
         }
     }
 
+    /**
+     * This method is to check is barcode already added.
+     *
+     * @param itemEntity                    the item entity
+     * @param submitCollectionReportInfoMap the submit collection report info map
+     * @return the boolean
+     */
     public boolean isBarcodeAlreadyAdded(ItemEntity itemEntity,Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap){
 
         for (Map.Entry<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoIndividualMap : submitCollectionReportInfoMap.entrySet()) {
@@ -67,15 +82,29 @@ public class SubmitCollectionReportHelperService {
         return false;
     }
 
-    public void setSubmitCollectionReportInfoForInvalidXml(List<SubmitCollectionReportInfo> submitCollectionExceptionInfos, String message) {
+    /**
+     * Sets submit collection report info for invalid xml.
+     *
+     * @param submitCollectionExceptionInfos the submit collection exception infos
+     * @param message                        the message
+     */
+    public void setSubmitCollectionReportInfoForInvalidXml(String institutionCode, List<SubmitCollectionReportInfo> submitCollectionExceptionInfos, String message) {
         SubmitCollectionReportInfo submitCollectionExceptionInfo = new SubmitCollectionReportInfo();
         submitCollectionExceptionInfo.setItemBarcode("");
         submitCollectionExceptionInfo.setCustomerCode("");
-        submitCollectionExceptionInfo.setOwningInstitution("");
+        submitCollectionExceptionInfo.setOwningInstitution(institutionCode);
         submitCollectionExceptionInfo.setMessage(message);
         submitCollectionExceptionInfos.add(submitCollectionExceptionInfo);
     }
 
+    /**
+     * Build submit collection report info map.
+     *
+     * @param submitCollectionReportInfoMap the submit collection report info map
+     * @param fetchedBibliographicEntity    the fetched bibliographic entity
+     * @param incomingBibliographicEntity   the incoming bibliographic entity
+     * @return the map
+     */
     public Map<String,List<SubmitCollectionReportInfo>> buildSubmitCollectionReportInfo(Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, BibliographicEntity fetchedBibliographicEntity, BibliographicEntity incomingBibliographicEntity){
         List<SubmitCollectionReportInfo> successSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST);
         List<SubmitCollectionReportInfo> rejectedSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST);
@@ -138,7 +167,7 @@ public class SubmitCollectionReportHelperService {
                     submitCollectionReportInfo.setItemBarcode(incomingItemEntity.getBarcode());
                     submitCollectionReportInfo.setCustomerCode(incomingItemEntity.getCustomerCode());
                     submitCollectionReportInfo.setOwningInstitution(owningInstitution);
-                    submitCollectionReportInfo.setMessage("Failed record - Owning institution holding id "+incomingOwningItemIdBarcodeMapEntry.getKey()+" for the incoming barcode "+incomingItemEntity.getBarcode()
+                    submitCollectionReportInfo.setMessage("Failed record - Owning institution holding id "+incomingHoldingItemMapEntry.getKey()+" for the incoming barcode "+incomingItemEntity.getBarcode()
                             +", owning institution item id "+incomingItemEntity.getOwningInstitutionItemId()+" is unavailable in the existing bib - owning institution bib id - "+incomingBibliographicEntity.getOwningInstitutionBibId());
                     failureSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
                 }
@@ -171,6 +200,21 @@ public class SubmitCollectionReportHelperService {
             }
         }
         return null;
+    }
+
+    /**
+     * Get items which are having complete cataloging status.
+     *
+     * @param itemEntityList the item entity list
+     * @return the list
+     */
+    public List<ItemEntity> getIncomingItemIsIncomplete(List<ItemEntity> itemEntityList){
+        List<String> barcodeList = new ArrayList<>();
+        for(ItemEntity itemEntity:itemEntityList){
+            barcodeList.add(itemEntity.getBarcode());
+        }
+        List<ItemEntity> fetchedItemEntityList = repositoryService.getItemDetailsRepository().findByBarcodeInAndComplete(barcodeList);
+        return fetchedItemEntityList;
     }
 
 }
