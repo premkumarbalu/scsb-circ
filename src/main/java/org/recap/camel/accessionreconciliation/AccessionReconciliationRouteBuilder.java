@@ -1,4 +1,4 @@
-package org.recap.camel.accessionreconcilation;
+package org.recap.camel.accessionreconciliation;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -16,50 +16,53 @@ import org.springframework.stereotype.Component;
  * Created by akulak on 16/5/17.
  */
 @Component
-public class AccessionReconcilationRouteBuilder {
+public class AccessionReconciliationRouteBuilder {
 
-    private static final Logger logger = LoggerFactory.getLogger(AccessionReconcilationRouteBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(AccessionReconciliationRouteBuilder.class);
 
     /**
-     * Instantiates a new Accession reconcilation route builder.
+     * Instantiates a new Accession reconciliation route builder.
      *
      * @param camelContext                           the camel context
      * @param applicationContext                     the application context
      * @param ftpUserName                            the ftp user name
      * @param ftpPrivateKey                          the ftp private key
-     * @param accessionReconcilationPulFtp           the accession reconcilation pul ftp
-     * @param accessionReconcilationCulFtp           the accession reconcilation cul ftp
-     * @param accessionReconcilationNyplFtp          the accession reconcilation nypl ftp
-     * @param accessionReconcilationFtpPulProcessed  the accession reconcilation ftp pul processed
-     * @param accessionReconcilationFtpCulProcessed  the accession reconcilation ftp cul processed
-     * @param accessionReconcilationFtpNyplProcessed the accession reconcilation ftp nypl processed
+     * @param accessionReconciliationPulFtp           the accession reconciliation pul ftp
+     * @param accessionReconciliationCulFtp           the accession reconciliation cul ftp
+     * @param accessionReconciliationNyplFtp          the accession reconciliation nypl ftp
+     * @param accessionReconciliationFtpPulProcessed  the accession reconciliation ftp pul processed
+     * @param accessionReconciliationFtpCulProcessed  the accession reconciliation ftp cul processed
+     * @param accessionReconciliationFtpNyplProcessed the accession reconciliation ftp nypl processed
      * @param ftpKnownHost                           the ftp known host
      * @param filePathPul                            the file path pul
      * @param filePathCul                            the file path cul
      * @param filePathNypl                           the file path nypl
      */
-    public AccessionReconcilationRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
-                                              @Value("${ftp.userName}") String ftpUserName, @Value("${ftp.privateKey}") String ftpPrivateKey,
-                                              @Value("${ftp.accession.reconcilation.pul}") String accessionReconcilationPulFtp,
-                                              @Value("${ftp.accession.reconcilation.cul}") String accessionReconcilationCulFtp,
-                                              @Value("${ftp.accession.reconcilation.nypl}") String accessionReconcilationNyplFtp,
-                                              @Value("${ftp.accession.reconcilation.processed.pul}") String accessionReconcilationFtpPulProcessed,
-                                              @Value("${ftp.accession.reconcilation.processed.cul}") String accessionReconcilationFtpCulProcessed,
-                                              @Value("${ftp.accession.reconcilation.processed.nypl}") String accessionReconcilationFtpNyplProcessed,
-                                              @Value("${ftp.knownHost}") String ftpKnownHost,
-                                              @Value("${accession.reconcilation.filePath.pul}") String filePathPul,
-                                              @Value("${accession.reconcilation.filePath.cul}") String filePathCul,
-                                              @Value("${accession.reconcilation.filePath.nypl}") String filePathNypl) {
+    public AccessionReconciliationRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
+                                               @Value("${ftp.userName}") String ftpUserName, @Value("${ftp.privateKey}") String ftpPrivateKey,
+                                               @Value("${ftp.accession.reconciliation.pul}") String accessionReconciliationPulFtp,
+                                               @Value("${ftp.accession.reconciliation.cul}") String accessionReconciliationCulFtp,
+                                               @Value("${ftp.accession.reconciliation.nypl}") String accessionReconciliationNyplFtp,
+                                               @Value("${ftp.accession.reconciliation.processed.pul}") String accessionReconciliationFtpPulProcessed,
+                                               @Value("${ftp.accession.reconciliation.processed.cul}") String accessionReconciliationFtpCulProcessed,
+                                               @Value("${ftp.accession.reconciliation.processed.nypl}") String accessionReconciliationFtpNyplProcessed,
+                                               @Value("${ftp.knownHost}") String ftpKnownHost,
+                                               @Value("${accession.reconciliation.filePath.pul}") String filePathPul,
+                                               @Value("${accession.reconciliation.filePath.cul}") String filePathCul,
+                                               @Value("${accession.reconciliation.filePath.nypl}") String filePathNypl,
+                                               @Value("${accession.reconciliation.pul.workdir}") String pulWorkDir,
+                                               @Value("${accession.reconciliation.cul.workdir}") String culWorkDir,
+                                               @Value("${accession.reconciliation.nypl.workdir}") String nyplWorkDir) {
         try {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    from(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconcilationPulFtp + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.ACCESSION_RR_FTP_OPTIONS)
+                    from(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconciliationPulFtp + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.ACCESSION_RR_FTP_OPTIONS+pulWorkDir)
                             .routeId(ReCAPConstants.ACCESSION_RECONCILATION_FTP_PUL_ROUTE)
                             .noAutoStartup()
-                            .log("accession reconcilation pul started")
+                            .log("accession reconciliation pul started")
                             .split(body().tokenize("\n",1000,true))
-                            .bean(applicationContext.getBean(AccessionReconcilationProcessor.class,ReCAPConstants.PRINCETON),ReCAPConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(AccessionReconciliationProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_PUL),ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()
                             .process(new Processor() {
@@ -75,12 +78,12 @@ public class AccessionReconcilationRouteBuilder {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    from(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconcilationCulFtp + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.ACCESSION_RR_FTP_OPTIONS)
+                    from(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconciliationCulFtp + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.ACCESSION_RR_FTP_OPTIONS+culWorkDir)
                             .routeId(ReCAPConstants.ACCESSION_RECONCILATION_FTP_CUL_ROUTE)
                             .noAutoStartup()
-                            .log("accession reconcilation cul started")
+                            .log("accession reconciliation cul started")
                             .split(body().tokenize("\n",1000,true))
-                            .bean(applicationContext.getBean(AccessionReconcilationProcessor.class,ReCAPConstants.COLUMBIA),ReCAPConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(AccessionReconciliationProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_CUL),ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()
                             .process(new Processor() {
@@ -96,12 +99,12 @@ public class AccessionReconcilationRouteBuilder {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    from(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconcilationNyplFtp + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.ACCESSION_RR_FTP_OPTIONS)
+                    from(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconciliationNyplFtp + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.ACCESSION_RR_FTP_OPTIONS+nyplWorkDir)
                             .routeId(ReCAPConstants.ACCESSION_RECONCILATION_FTP_NYPL_ROUTE)
                             .noAutoStartup()
-                            .log("accession reconcilation nypl started")
+                            .log("accession reconciliation nypl started")
                             .split(body().tokenize("\n",1000,true))
-                            .bean(applicationContext.getBean(AccessionReconcilationProcessor.class,ReCAPConstants.NYPL),ReCAPConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(AccessionReconciliationProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL),ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()
                             .process(new Processor() {
@@ -120,11 +123,11 @@ public class AccessionReconcilationRouteBuilder {
                     from(ReCAPConstants.DAILY_RR_FS_FILE+filePathPul+ReCAPConstants.DAILY_RR_FS_OPTIONS)
                             .routeId(ReCAPConstants.ACCESSION_RECONCILATION_FS_PUL_ROUTE)
                             .noAutoStartup()
-                            .to(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconcilationFtpPulProcessed + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost)
+                            .to(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconciliationFtpPulProcessed + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost)
                             .onCompletion()
-                            .bean(applicationContext.getBean(AccessionReconcialtionEmailService.class,ReCAPConstants.PRINCETON),ReCAPConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(AccessionReconciliationEmailService.class,ReCAPConstants.PRINCETON),ReCAPConstants.PROCESS_INPUT)
                             .process(new StopRouteProcessor(ReCAPConstants.ACCESSION_RECONCILATION_FS_PUL_ROUTE))
-                            .log("accession reconcilation pul completed");
+                            .log("accession reconciliation pul completed");
 
                 }
             });
@@ -135,11 +138,11 @@ public class AccessionReconcilationRouteBuilder {
                     from(ReCAPConstants.DAILY_RR_FS_FILE+filePathCul+ReCAPConstants.DAILY_RR_FS_OPTIONS)
                             .routeId(ReCAPConstants.ACCESSION_RECONCILATION_FS_CUL_ROUTE)
                             .noAutoStartup()
-                            .to(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconcilationFtpCulProcessed + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost)
+                            .to(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconciliationFtpCulProcessed + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost)
                             .onCompletion()
-                            .bean(applicationContext.getBean(AccessionReconcialtionEmailService.class,ReCAPConstants.COLUMBIA),ReCAPConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(AccessionReconciliationEmailService.class,ReCAPConstants.COLUMBIA),ReCAPConstants.PROCESS_INPUT)
                             .process(new StopRouteProcessor(ReCAPConstants.ACCESSION_RECONCILATION_FS_CUL_ROUTE))
-                            .log("accession reconcilation cul completed");
+                            .log("accession reconciliation cul completed");
                 }
             });
 
@@ -149,17 +152,20 @@ public class AccessionReconcilationRouteBuilder {
                     from(ReCAPConstants.DAILY_RR_FS_FILE+filePathNypl+ReCAPConstants.DAILY_RR_FS_OPTIONS)
                             .routeId(ReCAPConstants.ACCESSION_RECONCILATION_FS_NYPL_ROUTE)
                             .noAutoStartup()
-                            .to(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconcilationFtpNyplProcessed + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost)
+                            .to(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconciliationFtpNyplProcessed + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost)
                             .onCompletion()
-                            .bean(applicationContext.getBean(AccessionReconcialtionEmailService.class,ReCAPConstants.NYPL),ReCAPConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(AccessionReconciliationEmailService.class,ReCAPConstants.NYPL),ReCAPConstants.PROCESS_INPUT)
                             .process(new StopRouteProcessor(ReCAPConstants.ACCESSION_RECONCILATION_FTP_NYPL_ROUTE))
-                            .log("accession reconcilation nypl completed");
+                            .log("accession reconciliation nypl completed");
                 }
             });
 
         } catch (Exception e) {
             logger.info(ReCAPConstants.LOG_ERROR+e);
         }
+
+
+
 
     }
 }

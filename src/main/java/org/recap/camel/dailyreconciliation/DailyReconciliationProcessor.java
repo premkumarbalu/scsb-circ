@@ -1,4 +1,4 @@
-package org.recap.camel.dailyreconcilation;
+package org.recap.camel.dailyreconciliation;
 
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
@@ -31,9 +31,9 @@ import static org.recap.ReCAPConstants.getGFAStatusNotAvailableList;
  */
 @Service
 @Scope("prototype")
-public class DailyReconcilationProcessor {
+public class DailyReconciliationProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(DailyReconcilationProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(DailyReconciliationProcessor.class);
 
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;
@@ -41,7 +41,7 @@ public class DailyReconcilationProcessor {
     @Autowired
     private RequestItemDetailsRepository requestItemDetailsRepository;
 
-    @Value("${daily.reconcilation.file}")
+    @Value("${daily.reconciliation.file}")
     private String filePath;
 
     /**
@@ -50,6 +50,8 @@ public class DailyReconcilationProcessor {
      * @param exchange the exchange
      */
     public void processInput(Exchange exchange) {
+        String fileName = (String) exchange.getIn().getHeaders().get(Exchange.FILE_NAME);
+        logger.info("fileProcessing:{}",fileName);
         try {
             List<DailyReconcilationRecord> dailyReconcilationRecordList = (List<DailyReconcilationRecord>)exchange.getIn().getBody();
             try (XSSFWorkbook xssfWorkbook = new XSSFWorkbook()) {
@@ -93,6 +95,7 @@ public class DailyReconcilationProcessor {
         catch (Exception e){
             logger.error(ReCAPConstants.LOG_ERROR + e);
         }
+        logger.info("fileProcessed:{}",fileName);
     }
 
     private void readValuesFromLasSheet(XSSFWorkbook xssfWorkbook, Sheet readLasSheet, XSSFSheet scsbSheet, XSSFCellStyle dateCellStyle, int j) {

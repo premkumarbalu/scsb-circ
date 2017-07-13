@@ -1,4 +1,4 @@
-package org.recap.camel.accessionreconcilation;
+package org.recap.camel.accessionreconciliation;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -16,29 +16,29 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Scope("prototype")
-public class AccessionReconcialtionEmailService {
+public class AccessionReconciliationEmailService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AccessionReconcialtionEmailService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AccessionReconciliationEmailService.class);
 
     @Autowired
     private ProducerTemplate producerTemplate;
 
-    @Value("${accession.reconcilation.email.pul.to}")
+    @Value("${accession.reconciliation.email.pul.to}")
     private String pulEmailTo;
 
-    @Value("${accession.reconcilation.email.cul.to}")
+    @Value("${accession.reconciliation.email.cul.to}")
     private String culEmailTo;
 
-    @Value("${accession.reconcilation.email.nypl.to}")
+    @Value("${accession.reconciliation.email.nypl.to}")
     private String nyplEmailTo;
 
-    @Value("${ftp.accession.reconcilation.processed.pul}")
+    @Value("${ftp.accession.reconciliation.processed.pul}")
     private String pulReportLocation;
 
-    @Value("${ftp.accession.reconcilation.processed.cul}")
+    @Value("${ftp.accession.reconciliation.processed.cul}")
     private String culReportLocation;
 
-    @Value("${ftp.accession.reconcilation.processed.nypl}")
+    @Value("${ftp.accession.reconciliation.processed.nypl}")
     private String nyplReportLocation;
 
     private String institutionCode;
@@ -48,7 +48,7 @@ public class AccessionReconcialtionEmailService {
      *
      * @param institutionCode the institution code
      */
-    public AccessionReconcialtionEmailService(String institutionCode) {
+    public AccessionReconciliationEmailService(String institutionCode) {
         this.institutionCode = institutionCode;
     }
 
@@ -70,7 +70,7 @@ public class AccessionReconcialtionEmailService {
     public EmailPayLoad getEmailPayLoad(){
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setTo(emailIdTo(institutionCode));
-        logger.info("Email sent to "+emailPayLoad.getTo());
+        logger.info("Accession Reconciliation email sent to "+emailPayLoad.getTo());
         emailPayLoad.setMessageDisplay("Accession reconciliation report had generated for the "+institutionCode+" in the location - "+reportLocation(institutionCode));
         return emailPayLoad;
     }
