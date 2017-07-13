@@ -1,4 +1,4 @@
-package org.recap.camel.accessionreconcilation;
+package org.recap.camel.accessionreconciliation;
 
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
@@ -25,14 +25,14 @@ import java.util.*;
  */
 @Service
 @Scope("prototype")
-public class AccessionReconcilationProcessor {
+public class AccessionReconciliationProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(AccessionReconcilationProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(AccessionReconciliationProcessor.class);
 
     @Value("${scsb.solr.client.url}")
     private String solrSolrClientUrl;
 
-    @Value("${accession.reconcilation.filePath}")
+    @Value("${accession.reconciliation.filePath}")
     private String accessionFilePath;
 
     private String institutionCode;
@@ -42,7 +42,7 @@ public class AccessionReconcilationProcessor {
      *
      * @param institutionCode the institution code
      */
-    public AccessionReconcilationProcessor(String institutionCode) {
+    public AccessionReconciliationProcessor(String institutionCode) {
         this.institutionCode = institutionCode;
     }
 
@@ -70,7 +70,7 @@ public class AccessionReconcilationProcessor {
             if (!filePath.toFile().exists()) {
                 Files.createDirectories(filePath.getParent());
                 Files.createFile(filePath);
-                logger.info("Accession Reconcilation File Created"+filePath);
+                logger.info("Accession Reconciliation File Created"+filePath);
             }
             Files.write(filePath,body,StandardOpenOption.APPEND);
         }

@@ -367,6 +367,7 @@ public final class ReCAPConstants {
     public static final String DELETED_MAIl_TO = "DELETED_MAIl_TO";
     public static final String EMAIL_SUBJECT_DELETED_RECORDS = "List of Deleted Records";
     public static final String EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE = "Total No. of Records Deleted : ";
+    public static final String DAILY_RECONCILIATION = "DailyReconciliation";
 
     private ReCAPConstants() {
     }
@@ -386,7 +387,7 @@ public final class ReCAPConstants {
     //Daily Reconcilation
     public static final String DAILY_RR_FTP_ROUTE_ID = "DailyReconcilationFtpRoute";
     public static final String DAILY_RR_FS_ROUTE_ID = "DailyReconcilationFsRoute";
-    public static final String DAILY_RR_FTP_OPTIONS = "&move=.done&delay=5s";
+    public static final String DAILY_RR_FTP_OPTIONS = "&move=.done&delay=2s&localWorkDirectory=";
     public static final String DAILY_RR_FS_OPTIONS = "?delete=true";
     public static final String DAILY_RR_FS_FILE = "file:";
     public static final String DAILY_RR_LAS = "LAS";
@@ -421,7 +422,7 @@ public final class ReCAPConstants {
 
     public static final String COMPLETED = "Completed";
 
-    public static final String ACCESSION_RR_FTP_OPTIONS = "&move=.done";
+    public static final String ACCESSION_RR_FTP_OPTIONS = "&move=.done&delay=2s&localWorkDirectory=";
     public static final String ACCESSION_RECONCILATION_FTP_PUL_ROUTE = "accessionReconcilationFtpPulRoute";
     public static final String ACCESSION_RECONCILATION_FTP_CUL_ROUTE = "accessionReconcilationFtpCulRoute";
     public static final String ACCESSION_RECONCILATION_FTP_NYPL_ROUTE = "accessionReconcilationFtpNyplRoute";

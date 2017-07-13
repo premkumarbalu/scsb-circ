@@ -1,7 +1,7 @@
 package org.recap.camel;
 
 import org.junit.Test;
-import org.recap.camel.accessionreconcilation.AccessionReconcialtionEmailService;
+import org.recap.camel.accessionreconciliation.AccessionReconciliationEmailService;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -15,9 +15,9 @@ public class AccessionReconciliationEmailServiceUT {
     public void testEmailIdTo() throws Exception{
         String emailAddress = "test@mail.com";
         String institution = "PUL";
-        AccessionReconcialtionEmailService accessionReconcialtionEmailService = new AccessionReconcialtionEmailService(institution);
-        ReflectionTestUtils.setField(accessionReconcialtionEmailService,"pulEmailTo",emailAddress);
-        String email = accessionReconcialtionEmailService.emailIdTo(institution);
+        AccessionReconciliationEmailService accessionReconciliationEmailService = new AccessionReconciliationEmailService(institution);
+        ReflectionTestUtils.setField(accessionReconciliationEmailService,"pulEmailTo",emailAddress);
+        String email = accessionReconciliationEmailService.emailIdTo(institution);
         assertEquals(emailAddress,email);
     }
 
@@ -25,9 +25,9 @@ public class AccessionReconciliationEmailServiceUT {
     public void testReportLocation() throws Exception{
         String reportLocation = "accession-reconcilation/processed/local/pul";
         String institution = "PUL";
-        AccessionReconcialtionEmailService accessionReconcialtionEmailService = new AccessionReconcialtionEmailService(institution);
-        ReflectionTestUtils.setField(accessionReconcialtionEmailService,"pulReportLocation",reportLocation);
-        String location = accessionReconcialtionEmailService.reportLocation(institution);
+        AccessionReconciliationEmailService accessionReconciliationEmailService = new AccessionReconciliationEmailService(institution);
+        ReflectionTestUtils.setField(accessionReconciliationEmailService,"pulReportLocation",reportLocation);
+        String location = accessionReconciliationEmailService.reportLocation(institution);
         assertEquals(reportLocation,location);
     }
 }
