@@ -69,10 +69,15 @@ public class SubmitCollectionReportHelperService {
         for(String barcode:incomingBarcodeItemEntityMap.keySet()){
             ItemEntity incomingEntity = incomingBarcodeItemEntityMap.get(barcode);
             ItemEntity fetchedItemEntity = fetchedBarcodeItemEntityMap.get(barcode);
-            String message = "Failed record - Incoming item barcode "+barcode+ ", incoming owning institution bib id "+
-                    incomingBibliographicEntity.getOwningInstitutionBibId()+", is already attached with existing bib, owning institution bib id "+
-                    fetchedItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId()+", owning institution item id "+
-                    fetchedItemEntity.getOwningInstitutionItemId();
+            String message;
+            if(fetchedItemEntity!=null){
+                message = "Failed record - Incoming item barcode "+barcode+ ", incoming owning institution bib id "+
+                        incomingBibliographicEntity.getOwningInstitutionBibId()+", is already attached with existing bib, owning institution bib id "+
+                        fetchedItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId()+", owning institution item id "+
+                        fetchedItemEntity.getOwningInstitutionItemId();
+            } else {
+                message = ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD;
+            }
             setSubmitCollectionReportInfo(submitCollectionReportInfoList, incomingEntity, message);
         }
     }
