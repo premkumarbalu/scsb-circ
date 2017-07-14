@@ -16,6 +16,6 @@ public interface AccessionDetailsRepository extends JpaRepository<AccessionEntit
 
     @Transactional
     @Modifying(clearAutomatically = true)
-    @Query(value = "DELETE accessionRequest from recap.accession_t accessionRequest where accessionRequest.ACCESSION_STATUS=?1 AND DATEDIFF(?2,accessionRequest.CREATED_DATE)=?3", nativeQuery = true)
+    @Query(value = "DELETE accessionRequest from recap.accession_t accessionRequest where accessionRequest.ACCESSION_STATUS=?1 AND DATEDIFF(?2,accessionRequest.CREATED_DATE)>=?3", nativeQuery = true)
     int purgeAccessionRequests(@Param("accessionStatus") String accessionStatus, @Param("createdDate") Date createdDate, @Param("dateDifference") Integer dateDifference);
 }
