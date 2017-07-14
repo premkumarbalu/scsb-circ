@@ -412,7 +412,7 @@ public final class ReCAPConstants {
     public static final String STATUS_RECONCILIATION_REPORT_ID = "statusReconciliationReportRoute";
     public static final String REPORT_FILE_NAME = "fileName";
 
-    public static final String COMPLETED = "Completed";
+    public static final String COMPLETE = "Complete";
 
     public static final String ACCESSION_RR_FTP_OPTIONS = "&move=.done&delay=2s&localWorkDirectory=";
     public static final String ACCESSION_RECONCILATION_FTP_PUL_ROUTE = "accessionReconcilationFtpPulRoute";

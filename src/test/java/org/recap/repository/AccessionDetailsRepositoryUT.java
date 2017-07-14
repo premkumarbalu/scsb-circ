@@ -23,7 +23,7 @@ public class AccessionDetailsRepositoryUT extends BaseTestCase {
         AccessionEntity accessionEntity = new AccessionEntity();
         accessionEntity.setAccessionRequest("[{\"customerCode\":\"PA\",\"itemBarcode\":\"123\"}]");
         accessionEntity.setCreatedDate(new Date());
-        accessionEntity.setAccessionStatus(ReCAPConstants.COMPLETED);
+        accessionEntity.setAccessionStatus(ReCAPConstants.COMPLETE);
         AccessionEntity savedAccessionEntity = accessionDetailsRepository.save(accessionEntity);
         assertNotNull(savedAccessionEntity);
     }

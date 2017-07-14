@@ -101,7 +101,7 @@ public class PurgeService {
     public Map<String, String> purgeAccessionRequests() {
         Map<String, String> responseMap = new HashMap<>();
         try {
-            Integer countOfPurgedAccessionRequests = accessionDetailsRepository.purgeAccessionRequests(ReCAPConstants.COMPLETED, new Date(), purgeAccessionRequestDayLimit);
+            Integer countOfPurgedAccessionRequests = accessionDetailsRepository.purgeAccessionRequests(ReCAPConstants.COMPLETE, new Date(), purgeAccessionRequestDayLimit);
             logger.info("Total number of accession requests purged : {}", countOfPurgedAccessionRequests);
             responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.SUCCESS);
             responseMap.put(ReCAPConstants.MESSAGE, ReCAPConstants.COUNT_OF_PURGED_ACCESSION_REQUESTS + " : " + String.valueOf(countOfPurgedAccessionRequests));
