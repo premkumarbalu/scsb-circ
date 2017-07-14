@@ -387,4 +387,27 @@ public class NyplDataApiServiceUT extends BaseTestCase {
         RecallResponse recallResponse = responseEntity.getBody();
         assertNotNull(recallResponse);
     }
+
+    @Test
+    public void recapRefileRequest() throws Exception {
+        String itemBarcode = "33433001888415";
+        String apiUrl = nyplDataApiUrl + "/recap/refile-requests";
+        String authorization = "Bearer " + generateAccessTokenForNyplApi();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        headers.set("Authorization", authorization);
+
+        RefileRequest refileRequest = new RefileRequest();
+        refileRequest.setItemBarcode(itemBarcode);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<RefileRequest> requestEntity = new HttpEntity(refileRequest, headers);
+        ResponseEntity<RefileResponse> responseEntity = restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, RefileResponse.class);
+        assertNotNull(responseEntity);
+        assertNotNull(responseEntity.getBody());
+        RefileResponse refileResponse = responseEntity.getBody();
+        assertNotNull(refileResponse);
+    }
 }

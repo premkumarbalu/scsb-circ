@@ -592,4 +592,8 @@ public abstract class JSIPConnector implements IJSIPConnector {
         retMessage = (!screenMessage.isEmpty()) ? screenMessage.get(0) : "";
         return retMessage;
     }
+
+    public Object refileItem(String itemIdentifier) {
+        return null;
+    }
 }

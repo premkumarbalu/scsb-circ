@@ -134,5 +134,13 @@ public interface IJSIPConnector {
      */
     public Object recallItem(String  itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId,String pickupLocation);
 
+    /**
+     * Refile Item object.
+     *
+     * @param itemIdentifier
+     * @return the object
+     */
+    public Object refileItem(String itemIdentifier);
+
 
 }
