@@ -66,22 +66,18 @@ public class SubmitCollectionDAOService {
                         entityManager.refresh(savedBibliographicEntity);
                         submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,savedBibliographicEntity,bibliographicEntity);
                     } catch (Exception e) {
-                        submitCollectionReportHelperService.setSubmitCollectionReportInfo(bibliographicEntity.getItemEntities(),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST), e.getCause().getMessage());
+                        submitCollectionReportHelperService.setSubmitCollectionExceptionReportInfo(bibliographicEntity.getItemEntities(),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST), e.getCause().getMessage());
                         e.printStackTrace();
                     }
                 } else {
-                    String message = "Failed record - Incoming item barcode "+fetchedCompleteItem.get(0).getBarcode()+ ", incoming owning institution bib id "+
-                            bibliographicEntity.getOwningInstitutionBibId()+", is already attached with existing bib, owning institution bib id "+
-                            fetchedCompleteItem.get(0).getBibliographicEntities().get(0).getOwningInstitutionBibId()+", owning institution item id "+
-                            fetchedCompleteItem.get(0).getOwningInstitutionItemId();
-                    submitCollectionReportHelperService.setSubmitCollectionReportInfo(bibliographicEntity.getItemEntities(),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST), message);
+                    submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidDummyRecord(bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),fetchedCompleteItem);
                 }
             }
         } else {//if no record found to update, generate exception info
             savedBibliographicEntity = bibliographicEntity;
             boolean isBarcodeAlreadyAdded = submitCollectionReportHelperService.isBarcodeAlreadyAdded(bibliographicEntity.getItemEntities().get(0),submitCollectionReportInfoMap);
             if (!isBarcodeAlreadyAdded) {//This is to avoid repeated error message for non-existing boundwith records
-                submitCollectionReportHelperService.setSubmitCollectionReportInfo(bibliographicEntity.getItemEntities(),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
+                submitCollectionReportHelperService.setSubmitCollectionExceptionReportInfo(bibliographicEntity.getItemEntities(),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
             }
         }
         return savedBibliographicEntity;
@@ -123,7 +119,7 @@ public class SubmitCollectionDAOService {
             submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,fetchBibliographicEntity,incomingBibliographicEntity);
             return savedOrUnsavedBibliographicEntity;
         } catch (Exception e) {
-            submitCollectionReportHelperService.setSubmitCollectionReportInfo(updatedItemEntityList,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST), ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD);
+            submitCollectionReportHelperService.setSubmitCollectionExceptionReportInfo(updatedItemEntityList,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST), ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD);
             logger.error(ReCAPConstants.LOG_ERROR,e);
             return null;
         }
