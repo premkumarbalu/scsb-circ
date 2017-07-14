@@ -118,11 +118,11 @@ public class CancelItemControllerUT extends BaseTestCase{
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
         itemEntity.setOwningInstitutionId(1);
-        itemEntity.setBarcode("123");
+        itemEntity.setBarcode("8956");
         itemEntity.setCallNumber("x.12321");
         itemEntity.setCollectionGroupId(1);
         itemEntity.setCallNumberType("1");
-        itemEntity.setCustomerCode("123");
+        itemEntity.setCustomerCode("4598");
         itemEntity.setCreatedDate(new Date());
         itemEntity.setCreatedBy("tst");
         itemEntity.setLastUpdatedBy("tst");

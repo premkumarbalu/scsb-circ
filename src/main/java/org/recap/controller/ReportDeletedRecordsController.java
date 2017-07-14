@@ -24,6 +24,10 @@ public class ReportDeletedRecordsController {
     @Autowired
     private DeletedRecordsService deletedRecordsService;
 
+    public DeletedRecordsService getDeletedRecordsService() {
+        return deletedRecordsService;
+    }
+
     /**
      * This method processes, the deleted records, by sending email notification and then updating record status
      *
@@ -31,7 +35,7 @@ public class ReportDeletedRecordsController {
      */
     @RequestMapping(value = "/records", method = RequestMethod.GET)
     public ResponseEntity deletedRecords() {
-        String responseMsg = (deletedRecordsService.deletedRecords())? ReCAPConstants.DELETED_RECORDS_SUCCESS_MSG : ReCAPConstants.DELETED_RECORDS_FAILURE_MSG;
+        String responseMsg = (getDeletedRecordsService().deletedRecords())? ReCAPConstants.DELETED_RECORDS_SUCCESS_MSG : ReCAPConstants.DELETED_RECORDS_FAILURE_MSG;
         return new ResponseEntity(responseMsg, HttpStatus.OK);
     }
 }

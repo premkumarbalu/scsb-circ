@@ -6,9 +6,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.recap.BaseTestCase;
-import org.recap.gfa.model.Dsitem;
-import org.recap.gfa.model.GFAItemStatusCheckResponse;
-import org.recap.gfa.model.Ttitem;
+import org.recap.gfa.model.*;
 import org.recap.model.ItemEntity;
 import org.recap.repository.ItemChangeLogDetailsRepository;
 import org.recap.repository.ItemDetailsRepository;
@@ -38,8 +36,8 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
     @Mock
     GFAService gfaService;
 
-    @Value("${status.reconciliation.batch.size}")
-    private Integer batchSize;
+
+    private Integer batchSize = 100;
 
     @Value("${status.reconciliation.day.limit}")
     private Integer statusReconciliationDayLimit;
@@ -50,8 +48,8 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
     @Mock
     private ItemDetailsRepository itemDetailsRepository;
 
-    @Value("${status.reconciliation.las.barcode.limit}")
-    private Integer statusReconciliationLasBarcodeLimit;
+
+    private Integer statusReconciliationLasBarcodeLimit = 100;
 
     @Mock
     private ProducerTemplate producer;
@@ -106,6 +104,88 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
         ResponseEntity responseEntity = statusReconciliationController.itemStatusReconciliation();
         assertNotNull(responseEntity);
         assertEquals(responseEntity.getBody().toString(),"Success");
+    }
+
+    @Test
+    public void testTtitem(){
+        Ttitem ttitem = new Ttitem();
+        ttitem.setItemBarcode("332445645758458");
+        ttitem.setCustomerCode("AD");
+        ttitem.setRequestId(1);
+        ttitem.setRequestor("Test");
+        ttitem.setRequestorFirstName("test");
+        ttitem.setRequestorLastName("test");
+        ttitem.setRequestorMiddleName("test");
+        ttitem.setRequestorEmail("hemalatha.s@htcindia.com");
+        ttitem.setRequestorOther("test");
+        ttitem.setBiblioTitle("test");
+        ttitem.setBiblioLocation("Discovery");
+        ttitem.setBiblioAuthor("John");
+        ttitem.setBiblioVolume("V1");
+        ttitem.setBiblioCode("A1");
+        ttitem.setArticleTitle("Title");
+        ttitem.setArticleDate(new Date().toString());
+        ttitem.setArticleAuthor("john");
+        ttitem.setArticleIssue("Test");
+        ttitem.setArticleVolume("V1");
+        ttitem.setStartPage("1");
+        ttitem.setEndPage("10");
+        ttitem.setPages("9");
+        ttitem.setOther("test");
+        ttitem.setPriority("test");
+        ttitem.setNotes("notes");
+        ttitem.setRequestDate(new Date().toString());
+        ttitem.setRequestTime("06:05:00");
+        ttitem.setErrorCode("test");
+        ttitem.setErrorNote("test");
+        ttitem.setItemStatus("Available");
+        ttitem.setDestination("Discovery");
+        ttitem.setDeliveryMethod("test");
+
+        RetrieveItem retrieveItem = new RetrieveItem();
+        retrieveItem.setTtitem(Arrays.asList(ttitem));
+
+        GFARetrieveItemResponse gfaRetrieveItemResponse = new GFARetrieveItemResponse();
+        gfaRetrieveItemResponse.setScrenMessage("Success");
+        gfaRetrieveItemResponse.setSuccess(true);
+        gfaRetrieveItemResponse.setRetrieveItem(retrieveItem);
+
+        assertNotNull(ttitem.getItemBarcode());
+        assertNotNull(ttitem.getCustomerCode());
+        assertNotNull(ttitem.getRequestor());
+        assertNotNull(ttitem.getRequestorFirstName());
+        assertNotNull(ttitem.getRequestorLastName());
+        assertNotNull(ttitem.getRequestorMiddleName());
+        assertNotNull(ttitem.getRequestorEmail());
+        assertNotNull(ttitem.getRequestorOther());
+        assertNotNull(ttitem.getBiblioTitle());
+        assertNotNull(ttitem.getBiblioLocation());
+        assertNotNull(ttitem.getBiblioAuthor());
+        assertNotNull(ttitem.getBiblioVolume());
+        assertNotNull(ttitem.getBiblioCode());
+        assertNotNull(ttitem.getArticleTitle());
+        assertNotNull(ttitem.getArticleAuthor());
+        assertNotNull(ttitem.getArticleVolume());
+        assertNotNull(ttitem.getArticleIssue());
+        assertNotNull(ttitem.getArticleDate());
+        assertNotNull(ttitem.getStartPage());
+        assertNotNull(ttitem.getEndPage());
+        assertNotNull(ttitem.getPages());
+        assertNotNull(ttitem.getOther());
+        assertNotNull(ttitem.getPriority());
+        assertNotNull(ttitem.getNotes());
+        assertNotNull(ttitem.getRequestDate());
+        assertNotNull(ttitem.getRequestTime());
+        assertNotNull(ttitem.getErrorCode());
+        assertNotNull(ttitem.getErrorNote());
+        assertNotNull(ttitem.getRequestId());
+        assertNotNull(ttitem.getItemStatus());
+        assertNotNull(ttitem.getDeliveryMethod());
+        assertNotNull(ttitem.getDestination());
+        assertNotNull(retrieveItem.getTtitem());
+        assertNotNull(gfaRetrieveItemResponse.getRetrieveItem());
+        assertNotNull(gfaRetrieveItemResponse.getScrenMessage());
+        assertNotNull(gfaRetrieveItemResponse.isSuccess());
     }
 
 }

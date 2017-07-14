@@ -12,6 +12,10 @@ import org.recap.ReCAPConstants;
 import org.recap.gfa.model.*;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
+import org.recap.repository.ItemChangeLogDetailsRepository;
+import org.recap.repository.ItemDetailsRepository;
+import org.recap.repository.ItemStatusDetailsRepository;
+import org.recap.repository.RequestItemDetailsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +66,42 @@ public class GFAServiceUT extends BaseTestCase{
     @Value("${gfa.item.permanent.withdrawl.indirect}")
     private String gfaItemPermanentWithdrawlInDirect;
 
+    @Value("${gfa.item.edd.retrieval.order}")
+    private String gfaItemEDDRetrival;
+
+    @Value("${las.use.queue}")
+    private boolean useQueueLasCall;
+
+    @Value("${status.reconciliation.batch.size}")
+    private Integer batchSize;
+
+    @Value("${status.reconciliation.day.limit}")
+    private Integer statusReconciliationDayLimit;
+
+    @Value("${status.reconciliation.las.barcode.limit}")
+    private Integer statusReconciliationLasBarcodeLimit;
+
+    @Value("${gfa.server.response.timeout.milliseconds}")
+    private Integer gfaServerResponseTimeOutMilliseconds;
+
+    @Mock
+    private EmailService emailService;
+
+    @Mock
+    private ItemDetailsRepository itemDetailsRepository;
+
+    @Mock
+    private RequestItemDetailsRepository requestItemDetailsRepository;
+
+    @Mock
+    private ItemRequestService itemRequestService;
+
+    @Mock
+    private ItemStatusDetailsRepository itemStatusDetailsRepository;
+
+    @Mock
+    private ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
+
     @Test
     public void testGFAService(){
         GFARetrieveItemRequest gfaRetrieveItemRequest = new GFARetrieveItemRequest();
@@ -73,7 +113,6 @@ public class GFAServiceUT extends BaseTestCase{
         ttitemRequest.setItemStatus("Available");
         retrieveItemRequest.setTtitem(Arrays.asList(ttitemRequest));
         gfaRetrieveItemRequest.setRetrieveItem(retrieveItemRequest);
-
 
         RetrieveItem retrieveItem = null;
         GFARetrieveItemResponse gfaRetrieveItemResponse = new GFARetrieveItemResponse();
@@ -91,6 +130,40 @@ public class GFAServiceUT extends BaseTestCase{
         GFARetrieveItemResponse response = gfaService.itemRetrival(gfaRetrieveItemRequest);
         assertNotNull(response);
         assertNull(response.getRetrieveItem());
+    }
+
+    @Test
+    public void checkGetterServices(){
+        Mockito.when(gfaService.getGFARetrieveEDDItemRequest()).thenCallRealMethod();
+        Mockito.when(gfaService.getItemChangeLogDetailsRepository()).thenCallRealMethod();
+        Mockito.when(gfaService.getItemDetailsRepository()).thenCallRealMethod();
+        Mockito.when(gfaService.getItemStatusDetailsRepository()).thenCallRealMethod();
+        Mockito.when(gfaService.getRestTemplate()).thenCallRealMethod();
+        Mockito.when(gfaService.getGfaItemEDDRetrival()).thenCallRealMethod();
+        Mockito.when(gfaService.getGfaItemPermanentWithdrawlDirect()).thenCallRealMethod();
+        Mockito.when(gfaService.getGfaItemPermanentWithdrawlInDirect()).thenCallRealMethod();
+        Mockito.when(gfaService.getProducer()).thenCallRealMethod();
+        Mockito.when(gfaService.getObjectMapper()).thenCallRealMethod();
+        Mockito.when(gfaService.isUseQueueLasCall()).thenCallRealMethod();
+        Mockito.when(gfaService.getGfaServerResponseTimeOutMilliseconds()).thenCallRealMethod();
+        Mockito.when(gfaService.getGfaItemStatus()).thenCallRealMethod();
+        Mockito.when(gfaService.getGfaItemRetrival()).thenCallRealMethod();
+
+        assertNotEquals(gfaService.getGFARetrieveEDDItemRequest(),gfaRetrieveEDDItemRequest);
+        assertNotEquals(gfaService.getItemChangeLogDetailsRepository(),itemChangeLogDetailsRepository);
+        assertNotEquals(gfaService.getItemDetailsRepository(),itemDetailsRepository);
+        assertNotEquals(gfaService.getItemStatusDetailsRepository(),itemStatusDetailsRepository);
+        assertNotEquals(gfaService.getRestTemplate(),restTemplate);
+        assertNotEquals(gfaService.getGfaItemEDDRetrival(),gfaItemEDDRetrival);
+        assertNotEquals(gfaService.getGfaItemPermanentWithdrawlDirect(),gfaItemPermanentWithdrawlDirect);
+        assertNotEquals(gfaService.getGfaItemPermanentWithdrawlInDirect(),gfaItemPermanentWithdrawlInDirect);
+        assertNotEquals(gfaService.getProducer(),producer);
+        assertNotEquals(gfaService.getObjectMapper(),objectMapper);
+        assertNotEquals(gfaService.isUseQueueLasCall(),true);
+        assertNotEquals(gfaService.getGfaServerResponseTimeOutMilliseconds(),gfaServerResponseTimeOutMilliseconds);
+        assertNotEquals(gfaService.getGfaItemStatus(),gfaItemStatus);
+        assertNotEquals(gfaService.getGfaItemRetrival(),gfaItemRetrival);
+
     }
 
     private HttpHeaders getHttpHeaders() {
@@ -193,6 +266,11 @@ public class GFAServiceUT extends BaseTestCase{
         assertNotNull(gfaPwdTtItemResponse.getRequestTime());
         assertNotNull(gfaPwdTtItemResponse.getErrorCode());
         assertNotNull(gfaPwdTtItemResponse.getErrorNote());
+    }
+
+    @Test
+    public void testGfaEddItemResponse(){
+
     }
 
     public GFAPwdTtItemResponse getGFAPwdTtItemResponse(){

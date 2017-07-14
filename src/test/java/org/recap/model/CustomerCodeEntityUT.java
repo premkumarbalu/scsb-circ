@@ -6,6 +6,8 @@ import org.recap.repository.CustomerCodeDetailsRepository;
 import org.recap.repository.InstitutionDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 /**
@@ -28,19 +30,27 @@ public class CustomerCodeEntityUT extends BaseTestCase{
         assertNotNull(entity);
 
         CustomerCodeEntity customerCodeEntity = new CustomerCodeEntity();
+        customerCodeEntity.setCustomerCodeId(1);
         customerCodeEntity.setCustomerCode("AB");
         customerCodeEntity.setDeliveryRestrictions("AC,BC");
+        customerCodeEntity.setRecapDeliveryRestrictions("No Restriction");
+        customerCodeEntity.setPwdDeliveryRestrictions("Others");
         customerCodeEntity.setDescription("test");
         customerCodeEntity.setOwningInstitutionId(entity.getInstitutionId());
         customerCodeEntity.setInstitutionEntity(entity);
-        CustomerCodeEntity savedCustomerCodeEntity = customerCodeDetailsRepository.save(customerCodeEntity);
-        assertNotNull(savedCustomerCodeEntity);
-        assertNotNull(savedCustomerCodeEntity.getCustomerCodeId());
-        assertEquals(savedCustomerCodeEntity.getCustomerCode(),"AB");
-        assertEquals(savedCustomerCodeEntity.getDeliveryRestrictions(),"AC,BC");
-        assertEquals(savedCustomerCodeEntity.getDescription(),"test");
-        assertNotNull(savedCustomerCodeEntity.getOwningInstitutionId());
-        assertNotNull(savedCustomerCodeEntity.getInstitutionEntity());
+        customerCodeEntity.setPickupLocation("Discovery");
+        customerCodeEntity.setDeliveryRestrictionEntityList(Arrays.asList(new DeliveryRestrictionEntity()));
+
+        assertNotNull(customerCodeEntity.getCustomerCodeId());
+        assertEquals(customerCodeEntity.getCustomerCode(),"AB");
+        assertEquals(customerCodeEntity.getDeliveryRestrictions(),"AC,BC");
+        assertEquals(customerCodeEntity.getDescription(),"test");
+        assertEquals(customerCodeEntity.getPickupLocation(),"Discovery");
+        assertNotNull(customerCodeEntity.getOwningInstitutionId());
+        assertNotNull(customerCodeEntity.getInstitutionEntity());
+        assertNotNull(customerCodeEntity.getRecapDeliveryRestrictions());
+        assertNotNull(customerCodeEntity.getPwdDeliveryRestrictions());
+        assertNotNull(customerCodeEntity.getDeliveryRestrictionEntityList());
     }
 
 }
