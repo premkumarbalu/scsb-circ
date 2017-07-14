@@ -6,6 +6,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.camel.route.StopRouteProcessor;
+import org.recap.camel.submitcollection.processor.StartNextRoute;
 import org.recap.camel.submitcollection.processor.SubmitCollectionProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,140 +78,218 @@ public class SubmitCollectionPollingFtpRouteBuilder {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + pulFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+pulWorkDir)
+                    /*
+                     --> OnCompletion() is called when a file is processed , if there are many files then for each file processed it is called.
+                     --> parallelProcessing() is used to create a thread pool to process asynchronously,here it is used to stop the route and start the next route in sequence.
+                     */
+                    onCompletion().parallelProcessing()
+                            .choice()
+                                /*
+                                --> "CamelCompleteBatch"-exchange property is used to indicate that all the files received are processed,
+                                when this condition is satisfied stopping route and starting next route processes are called.
+                                */
+                                .when(exchangeProperty(ReCAPConstants.CAMEL_BATCH_COMPLETE))
+                                    .log("OnCompletion executing for PUL cgd protected")
+                                    .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE))
+                                    //To wait for the shutdown of current route and then start the next route.
+                                    .delay(10)
+                                    .log("ShuttingDownRoute")
+                                    .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE), ReCAPConstants.PROCESS);
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + pulFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + pulWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE)
+                            /*ShutDownStrategy to wait until all files are processed ie until no inflight messages and then shutdown,
+                                This is also used when the routes are dependent on each other.
+                             */
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
-                            .log("Submit collection route started")
                             .choice()
                                 .when(gzipFile)
                                     .unmarshal()
                                     .gzip()
                                     .log("PUL Submit Collection FTP Route Unzip Complete")
-                                .end()
-                            .log("submit collection for PUL started")
-                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class,ReCAPConstants.PRINCETON,true),ReCAPConstants.PROCESS_INPUT)
-                            .log("PUL Submit Collection FTP Route Record Processing completed")
-                            .end()
-                            .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE));
-
+                                .when(body().isNull())//This condition is satisfied when there are no files in the directory(parameter-sendEmptyMessageWhenIdle=true)
+                                    .log("PUL CGD Protected Directory is empty")
+                                    .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE), ReCAPConstants.SEND_EMAIL_FOR_EMPTY_DIRECTORY)
+                                .otherwise()
+                                    .log("submit collection for PUL cgd protected started")
+                                    .bean(applicationContext.getBean(SubmitCollectionProcessor.class, ReCAPConstants.PRINCETON, true), ReCAPConstants.PROCESS_INPUT)
+                                    .log("PUL Submit Collection cgd protected FTP Route Record Processing completed")
+                            .end();
                 }
             });
 
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + pulFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+pulWorkDir)
+                    onCompletion().parallelProcessing()
+                            .choice()
+                                .when(exchangeProperty(ReCAPConstants.CAMEL_BATCH_COMPLETE))
+                                    .log("OnCompletion executing for PUL cgd not protected")
+                                    .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_PUL_ROUTE))
+                                    .delay(10)
+                                    .log("ShuttingDownRoute")
+                                    .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_PUL_ROUTE), ReCAPConstants.PROCESS);
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + pulFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + pulWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_PUL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
-                            .log("Submit collection route started")
                             .choice()
                                 .when(gzipFile)
                                     .unmarshal()
                                     .gzip()
                                     .log("PUL Submit Collection FTP Route Unzip Complete")
-                                .end()
-                            .log("submit collection for PUL started")
-                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class,ReCAPConstants.PRINCETON,false),ReCAPConstants.PROCESS_INPUT)
-                            .log("PUL Submit Collection FTP Route Record Processing completed")
-                            .end()
-                            .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_PUL_ROUTE));
-
+                                .when(body().isNull())
+                                    .log("PUL cgd not protected Directory is empty")
+                                    .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_PUL_ROUTE), ReCAPConstants.SEND_EMAIL_FOR_EMPTY_DIRECTORY)
+                                .otherwise()
+                                    .log("submit collection for PUL cgd not protected started")
+                                    .bean(applicationContext.getBean(SubmitCollectionProcessor.class, ReCAPConstants.PRINCETON, false), ReCAPConstants.PROCESS_INPUT)
+                                    .log("PUL Submit Collection cgd not protected FTP Route Record Processing completed")
+                            .end();
                 }
             });
 
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + culFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+culWorkDir)
+                    onCompletion().parallelProcessing()
+                            .choice()
+                                .when(exchangeProperty(ReCAPConstants.CAMEL_BATCH_COMPLETE))
+                                    .log("OnCompletion executing for CUL cgd protected")
+                                    .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE))
+                                    .delay(10)
+                                    .log("ShuttingDownRoute")
+                                    .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE), ReCAPConstants.PROCESS);
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + culFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + culWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
-                            .log("Submit collection route started")
                             .choice()
                                 .when(gzipFile)
                                     .unmarshal()
                                     .gzip()
                                     .log("CUL Submit Collection FTP Route Unzip Complete")
-                                .end()
-                            .log("submit collection for CUL started")
-                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class,ReCAPConstants.COLUMBIA,true),ReCAPConstants.PROCESS_INPUT)
-                            .log("CUL Submit Collection FTP Route Record Processing completed")
-                            .end()
-                            .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE));
+                                .when(body().isNull())
+                                    .log("CUL cgd protected Directory is empty")
+                                    .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE), ReCAPConstants.SEND_EMAIL_FOR_EMPTY_DIRECTORY)
+                                .otherwise()
+                                    .log("submit collection for CUL cgd protected started")
+                                    .bean(applicationContext.getBean(SubmitCollectionProcessor.class, ReCAPConstants.COLUMBIA, true), ReCAPConstants.PROCESS_INPUT)
+                                    .log("CUL cgd protected Submit Collection FTP Route Record Processing completed")
+                            .end();
                 }
             });
 
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + culFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+culWorkDir)
+                    onCompletion().parallelProcessing()
+                            .choice()
+                                .when(exchangeProperty(ReCAPConstants.CAMEL_BATCH_COMPLETE))
+                                    .log("OnCompletion executing for CUL cgd not protected")
+                                    .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_CUL_ROUTE))
+                                    .delay(10)
+                                    .log("ShuttingDownRoute")
+                                    .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_CUL_ROUTE), ReCAPConstants.PROCESS);
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + culFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + culWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_CUL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
-                            .log("Submit collection route started")
                             .choice()
                                 .when(gzipFile)
                                     .unmarshal()
                                     .gzip()
                                     .log("CUL Submit Collection FTP Route Unzip Complete")
-                                .end()
-                            .log("submit collection for CUL started")
-                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class,ReCAPConstants.COLUMBIA,false),ReCAPConstants.PROCESS_INPUT)
-                            .log("CUL Submit Collection FTP Route Record Processing completed")
-                            .end()
-                            .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_CUL_ROUTE));
+                                .when(body().isNull())
+                                    .log("CUL CGD not protected Directory is empty")
+                                    .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_CUL_ROUTE), ReCAPConstants.SEND_EMAIL_FOR_EMPTY_DIRECTORY)
+                                .otherwise()
+                                    .log("submit collection for CUL cgd not protected started")
+                                    .bean(applicationContext.getBean(SubmitCollectionProcessor.class, ReCAPConstants.COLUMBIA, false), ReCAPConstants.PROCESS_INPUT)
+                                    .log("CUL cgd not protected Submit Collection FTP Route Record Processing completed")
+                            .end();
                 }
             });
 
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + nyplFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+nyplWorkDir)
+                    onCompletion().parallelProcessing()
+                            .choice()
+                                .when(exchangeProperty(ReCAPConstants.CAMEL_BATCH_COMPLETE))
+                                    .log("OnCompletion executing for NYPL cgd protected")
+                                    .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE))
+                                    .delay(10)
+                                    .log("ShuttingDownRoute")
+                                    .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE), ReCAPConstants.PROCESS);
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + nyplFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + nyplWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
-                            .log("Submit collection route started")
                             .choice()
                                 .when(gzipFile)
                                     .unmarshal()
                                     .gzip()
-                                    .log("NLYP Submit Collection FTP Route Unzip Complete")
-                                .end()
-                            .log("submit collection for NYPL started")
-                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class,ReCAPConstants.NYPL,true),ReCAPConstants.PROCESS_INPUT)
-                            .log("NYPL Submit Collection FTP Route Record Processing completed")
-                            .end()
-                            .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE));
+                                    .log("NYPL cgd protected Submit Collection FTP Route Unzip Complete")
+                                .when(body().isNull())
+                                    .log("NYPL cgd protected Directory is empty")
+                                    .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE), ReCAPConstants.SEND_EMAIL_FOR_EMPTY_DIRECTORY)
+                                .otherwise()
+                                    .log("submit collection for NYPL cgd protected started")
+                                    .bean(applicationContext.getBean(SubmitCollectionProcessor.class, ReCAPConstants.NYPL, true), ReCAPConstants.PROCESS_INPUT)
+                                    .log("NYPL cgd protected Submit Collection FTP Route Record Processing completed")
+                            .end();
+
+                }
+            });
+
+            //This route is used to send message to queue which is used in controller to identify the completion of submit collection process
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.SUBMIT_COLLECTION_COMPLETION_QUEUE_FROM)
+                            .routeId(ReCAPConstants.SUBMIT_COLLECTION_COMPLETED_ROUTE)
+                            .log("Completed Submit Collection Process")
+                            .process(new Processor() {
+                                @Override
+                                public void process(Exchange exchange) throws Exception {
+                                    exchange.getIn().setBody("Submit collection process completed sucessfully in sequential order");
+                                }
+                            })
+                            .to(ReCAPConstants.SUBMIT_COLLECTION_COMPLETION_QUEUE_TO)
+                            .end();
                 }
             });
 
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    camelContext.getShutdownStrategy().setTimeout(600);
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + nyplFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS+nyplWorkDir)
+                    onCompletion().parallelProcessing()
+                            .choice()
+                                .when(exchangeProperty(ReCAPConstants.CAMEL_BATCH_COMPLETE))
+                                    .log("OnCompletion executing for NYPL cgd not protected")
+                                    .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE))
+                                    .delay(10)
+                                    .log("ShuttingDownRoute");
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + nyplFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + nyplWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
                             .noAutoStartup()
-                            .log("Submit collection route started")
                             .choice()
                                 .when(gzipFile)
                                     .unmarshal()
                                     .gzip()
-                                    .log("NLYP Submit Collection FTP Route Unzip Complete")
-                                .end()
-                            .log("submit collection for NYPL started")
-                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class,ReCAPConstants.NYPL,false),ReCAPConstants.PROCESS_INPUT)
-                            .log("NYPL Submit Collection FTP Route Record Processing completed")
+                                    .log("NYPL Submit Collection FTP Route Unzip Complete")
+                                .when(body().isNull())
+                                    .log("NYPL cgd not protected Directory is empty")
+                                    .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE), ReCAPConstants.SEND_EMAIL_FOR_EMPTY_DIRECTORY)
+                                .otherwise()
+                                    .log("Submit collection for NYPL cgd not protected started")
+                                    .bean(applicationContext.getBean(SubmitCollectionProcessor.class, ReCAPConstants.NYPL, false), ReCAPConstants.PROCESS_INPUT)
+                                    .log("NYPL cgd not protected Submit Collection FTP Route Record Processing completed")
                             .end()
-                            .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE));
+                            .to(ReCAPConstants.SUBMIT_COLLECTION_COMPLETION_QUEUE_FROM);
+
                 }
             });
 
