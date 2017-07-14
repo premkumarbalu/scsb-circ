@@ -8,6 +8,7 @@ import org.recap.ils.model.nypl.*;
 import org.recap.ils.model.nypl.response.*;
 import org.recap.ils.model.response.*;
 import org.recap.model.ItemEntity;
+import org.recap.model.ItemRefileResponse;
 import org.recap.repository.ItemDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -168,6 +169,20 @@ public class NyplApiResponseUtil {
         itemRecallResponse.setItemBarcode(recallData.getItemBarcode());
         itemRecallResponse.setJobId(recallData.getJobId());
         return itemRecallResponse;
+    }
+
+    /**
+     * Build item refile response from refileResponse object.
+     *
+     * @param refileResponse the refile response
+     * @return the item refile response
+     */
+    public ItemRefileResponse buildItemRefileResponse(RefileResponse refileResponse) {
+        ItemRefileResponse itemRefileResponse = new ItemRefileResponse();
+        RefileData refileData = refileResponse.getData();
+        itemRefileResponse.setItemBarcode(refileData.getItemBarcode());
+        itemRefileResponse.setJobId(refileData.getJobId());
+        return itemRefileResponse;
     }
 
     /**

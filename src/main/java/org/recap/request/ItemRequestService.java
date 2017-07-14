@@ -331,6 +331,8 @@ public class ItemRequestService {
                     if (itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON) || itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
                         itemRequestInfo.setPatronBarcode(requestItemEntity.getPatronId());
                         getRequestItemController().checkinItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                    } else if (itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.NYPL)) {
+                        getRequestItemController().getJsipConectorFactory().getJSIPConnector(itemRequestInfo.getRequestingInstitution()).refileItem(itemBarcode);
                     }
                     if (!itemRequestInfo.isOwningInstitutionItem() && (itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.NYPL) || itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON))) {
                         itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getItemOwningInstitution()));

@@ -9,6 +9,7 @@ import org.recap.ils.model.nypl.response.*;
 import org.recap.ils.model.response.*;
 import org.recap.ils.service.NyplApiResponseUtil;
 import org.recap.ils.service.NyplOauthTokenApiService;
+import org.recap.model.ItemRefileResponse;
 import org.recap.processor.NyplJobResponsePollingProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -660,5 +661,58 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
             itemRecallResponse.setScreenMessage(e.getMessage());
         }
         return itemRecallResponse;
+    }
+
+    /**
+     * Creates a refile request for the item in NYPL.
+     *
+     * @param itemIdentifier the item identifier
+     * @return ItemRefileResponse
+     */
+    @Override
+    public ItemRefileResponse refileItem(String itemIdentifier) {
+        ItemRefileResponse itemRefileResponse = new ItemRefileResponse();
+        try {
+            String apiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_RECAP_REFILE_REQUEST_URL;
+
+            RefileRequest refileRequest = new RefileRequest();
+            refileRequest.setItemBarcode(itemIdentifier);
+
+            HttpEntity<RefileRequest> requestEntity = new HttpEntity(refileRequest, getHttpHeaders());
+            ResponseEntity<RefileResponse> responseEntity = getRestTemplate().exchange(apiUrl, HttpMethod.POST, requestEntity, RefileResponse.class);
+            RefileResponse refileResponse = responseEntity.getBody();
+            itemRefileResponse = getNyplApiResponseUtil().buildItemRefileResponse(refileResponse);
+            RefileData refileData = refileResponse.getData();
+            if (null != refileData) {
+                String jobId = refileData.getJobId();
+                itemRefileResponse.setJobId(jobId);
+                getLogger().info("Initiated refile request on NYPL");
+                getLogger().info("Nypl refile request job id -> {}" , jobId);
+                JobResponse jobResponse = getNyplJobResponsePollingProcessor().pollNyplRequestItemJobResponse(itemRefileResponse.getJobId());
+                String statusMessage = jobResponse.getStatusMessage();
+                itemRefileResponse.setScreenMessage(statusMessage);
+                JobData jobData = jobResponse.getData();
+                if (null != jobData) {
+                    itemRefileResponse.setSuccess(jobData.getSuccess());
+                    getLogger().info("Refile request Finished -> " + jobData.getFinished());
+                    getLogger().info("Refile request Success -> " + jobData.getSuccess());
+                    getLogger().info(statusMessage);
+                } else {
+                    itemRefileResponse.setSuccess(false);
+                    getLogger().info("Refile request Finished -> " + false);
+                    getLogger().info("Refile request Success -> " + false);
+                    getLogger().info(statusMessage);
+                }
+            }
+        } catch (HttpClientErrorException httpException) {
+            getLogger().error(ReCAPConstants.LOG_ERROR,httpException);
+            itemRefileResponse.setSuccess(false);
+            itemRefileResponse.setScreenMessage(httpException.getStatusText());
+        } catch (Exception e) {
+            getLogger().error(ReCAPConstants.LOG_ERROR,e);
+            itemRefileResponse.setSuccess(false);
+            itemRefileResponse.setScreenMessage(e.getMessage());
+        }
+        return itemRefileResponse;
     }
 }
