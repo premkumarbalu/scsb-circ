@@ -153,6 +153,13 @@ public final class ReCAPConstants {
     public static final String SUMBIT_COLLECTION_UPDATE_MESSAGE = "One or more record(s) updated.";
     public static final String SUMBIT_COLLECTION_NOT_UPDATED_MESSAGE = "No record(s) updated.";
 
+    public static final String SUBMIT_COLLECTION_COMPLETION_QUEUE_FROM = "scsbactivemq:queue:submitCollectionCompletionFromQueue";
+    public static final String SUBMIT_COLLECTION_COMPLETION_QUEUE_TO = "scsbactivemq:queue:submitCollectionCompletionToQueue";
+    public static final String CAMEL_BATCH_COMPLETE = "CamelBatchComplete";
+    public static final String PROCESS ="process";
+    public static final String SEND_EMAIL_FOR_EMPTY_DIRECTORY = "sendEmailForEmptyDirectory";
+
+
     public static final String ITEM_STATUS_AVAILABLE = "Available";
     public static final String INVALID_SCSB_XML_FORMAT_MESSAGE = "Invalid SCSB xml format";
     public static final String INVALID_MARC_XML_FORMAT_MESSAGE = "Invalid Marc xml format";
@@ -339,7 +346,7 @@ public final class ReCAPConstants {
     public static final String PRIVATE_KEY_FILE = "?privateKeyFile=";
     public static final String KNOWN_HOST_FILE = "&knownHostsFile=";
     public static final String PROCESS_INPUT = "processInput";
-    public static final String SUBMIT_COLLECTION_SFTP_OPTIONS = "&move=.done&delay=10m&localWorkDirectory=";
+    public static final String SUBMIT_COLLECTION_SFTP_OPTIONS = "&sendEmptyMessageWhenIdle=true&move=.done&localWorkDirectory=";
     public static final String SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE = "Complete item record info updated through submit collection";
     public static final String SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE = "Dummy item record removed and actual record added through submit collection";
 
@@ -368,21 +375,6 @@ public final class ReCAPConstants {
     public static final String EMAIL_SUBJECT_DELETED_RECORDS = "List of Deleted Records";
     public static final String EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE = "Total No. of Records Deleted : ";
     public static final String DAILY_RECONCILIATION = "DailyReconciliation";
-
-    private ReCAPConstants() {
-    }
-
-    public static final List getGFAStatusAvailableList() {
-        return GFA_STATUS_AVAILABLE_LIST;
-    }
-
-    public static final List getGFAStatusNotAvailableList() {
-        return GFA_STATUS_NOT_AVAILABLE_LIST;
-    }
-
-    public static final List getRequestTypeList() {
-        return REQUEST_TYPE_LIST;
-    }
 
     //Daily Reconcilation
     public static final String DAILY_RR_FTP_ROUTE_ID = "DailyReconcilationFtpRoute";
@@ -442,6 +434,7 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_FTP_NYPL_ROUTE = "nyplSubmitCollectionFTPRoute";
     public static final String SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdProtectedRoute";
     public static final String SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdNotProtectedRoute";
+    public static final String SUBMIT_COLLECTION_COMPLETED_ROUTE = "submitCollectionCompletedRoute";
 
     public static final String DELETED_MAIL_QUEUE = "deletedRecordsMailSendQueue";
     public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
@@ -478,4 +471,19 @@ public final class ReCAPConstants {
     public static final String INPUT_RECORDS = "inputRecords";
     public static final String INSTITUTION = "institution";
     public static final String IS_CGD_PROTECTED = "isCGDProtected";
+
+    private ReCAPConstants() {
+    }
+
+    public static final List getGFAStatusAvailableList() {
+        return GFA_STATUS_AVAILABLE_LIST;
+    }
+
+    public static final List getGFAStatusNotAvailableList() {
+        return GFA_STATUS_NOT_AVAILABLE_LIST;
+    }
+
+    public static final List getRequestTypeList() {
+        return REQUEST_TYPE_LIST;
+    }
 }
