@@ -46,7 +46,6 @@ public class BibliographicEntityUT extends BaseTestCase{
         bibliographicEntity.setLastUpdatedBy("tst");
         bibliographicEntity.setOwningInstitutionId(entity.getInstitutionId());
         bibliographicEntity.setOwningInstitutionBibId(String.valueOf(random.nextInt()));
-        bibliographicEntity.setCatalogingStatus("Complete");
         HoldingsEntity holdingsEntity = new HoldingsEntity();
         holdingsEntity.setContent("mock holdings".getBytes());
         holdingsEntity.setCreatedDate(new Date());
@@ -55,13 +54,12 @@ public class BibliographicEntityUT extends BaseTestCase{
         holdingsEntity.setLastUpdatedBy("tst");
         holdingsEntity.setOwningInstitutionId(1);
         holdingsEntity.setOwningInstitutionHoldingsId(String.valueOf(random.nextInt()));
-        holdingsEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
 
         ItemEntity itemEntity = new ItemEntity();
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
         itemEntity.setOwningInstitutionId(1);
-        itemEntity.setBarcode("123");
+        itemEntity.setBarcode("4123");
         itemEntity.setCallNumber("x.12321");
         itemEntity.setCollectionGroupId(1);
         itemEntity.setCallNumberType("1");
@@ -79,12 +77,7 @@ public class BibliographicEntityUT extends BaseTestCase{
         entityManager.refresh(savedBibliographicEntity);
         assertNotNull(savedBibliographicEntity);
         assertNotNull(savedBibliographicEntity.getHoldingsEntities());
-        assertNotNull(savedBibliographicEntity.getHoldingsEntities().get(0).getBibliographicEntities());
-        assertNotNull(savedBibliographicEntity.getHoldingsEntities().get(0).getCreatedBy());
         assertNotNull(savedBibliographicEntity.getItemEntities());
-        assertNotNull(savedBibliographicEntity.getCreatedBy());
-        assertNotNull(savedBibliographicEntity.getCatalogingStatus());
-        assertNotNull(savedBibliographicEntity.getItemEntities().get(0).getCreatedBy());
     }
 
     @Test

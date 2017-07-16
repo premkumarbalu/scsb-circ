@@ -43,4 +43,18 @@ public class SubmitCollectionReportGeneratorUT extends BaseTestCase{
         String response = submitCollectionReportGenerator.generateReport(reportDataRequest);
         assertNotNull(response);
     }
+
+    @Test
+    public void testReportDataRequest(){
+        ReportDataRequest reportDataRequest = new ReportDataRequest();
+        reportDataRequest.setFileName("Submit_Collection_Report");
+        reportDataRequest.setInstitutionCode("PUL");
+        reportDataRequest.setReportType("Submit_Collection_Exception_Report");
+        reportDataRequest.setTransmissionType("FTP");
+
+        assertNotNull(reportDataRequest.getFileName());
+        assertNotNull(reportDataRequest.getInstitutionCode());
+        assertNotNull(reportDataRequest.getReportType());
+        assertNotNull(reportDataRequest.getTransmissionType());
+    }
 }

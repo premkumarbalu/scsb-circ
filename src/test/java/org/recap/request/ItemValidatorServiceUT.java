@@ -54,7 +54,7 @@ public class ItemValidatorServiceUT extends BaseTestCase{
     public void testValidItem() throws Exception{
         saveBibSingleHoldingsMultipleItem();
         List<String> itemBarcodes = new ArrayList<>();
-        itemBarcodes.add("100");
+        itemBarcodes.add("10123");
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         itemRequestInformation.setItemBarcodes(itemBarcodes);
         itemRequestInformation.setDeliveryLocation("PB");
@@ -69,9 +69,9 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         saveBibSingleHoldingsMultipleItem();
         saveBibSingleHoldingsSingleItem();
         List<String> itemBarcodes = new ArrayList<>();
-        itemBarcodes.add("100");
-        itemBarcodes.add("101");
-        itemBarcodes.add("123");
+        itemBarcodes.add("10123");
+        itemBarcodes.add("11123");
+        itemBarcodes.add("0325");
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         itemRequestInformation.setRequestType(ReCAPConstants.RETRIEVAL);
         itemRequestInformation.setItemBarcodes(itemBarcodes);
@@ -96,7 +96,7 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemEntity1.setItemAvailabilityStatusId(1);
         itemEntity1.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
         itemEntity1.setOwningInstitutionId(1);
-        itemEntity1.setBarcode("100");
+        itemEntity1.setBarcode("10123");
         itemEntity1.setCallNumber("x.12321");
         itemEntity1.setCollectionGroupId(1);
         itemEntity1.setCallNumberType("1");
@@ -111,7 +111,7 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemEntity2.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
         itemEntity2.setOwningInstitutionId(1);
         itemEntity2.setCustomerCode("PB");
-        itemEntity2.setBarcode("101");
+        itemEntity2.setBarcode("11123");
         itemEntity2.setItemAvailabilityStatusId(1);
         itemEntity2.setCallNumber("x.12321");
         itemEntity2.setCollectionGroupId(1);
@@ -151,7 +151,7 @@ public class ItemValidatorServiceUT extends BaseTestCase{
         itemEntity.setCreatedBy("etl");
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setLastUpdatedBy("etl");
-        itemEntity.setBarcode("123");
+        itemEntity.setBarcode("0325");
         itemEntity.setCallNumber("x.12321");
         itemEntity.setCollectionGroupId(1);
         itemEntity.setCallNumberType("1");

@@ -1,6 +1,5 @@
 package org.recap.ils;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -19,7 +18,6 @@ import org.recap.ils.service.NyplApiResponseUtil;
 import org.recap.ils.service.NyplOauthTokenApiService;
 import org.recap.model.BibliographicEntity;
 import org.recap.model.HoldingsEntity;
-import org.recap.model.InstitutionEntity;
 import org.recap.model.ItemEntity;
 import org.recap.processor.NyplJobResponsePollingProcessor;
 import org.recap.repository.BibliographicDetailsRepository;
@@ -37,7 +35,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
@@ -357,13 +354,8 @@ public class NyplApiServiceConnectorUT extends BaseTestCase {
         return itemInformationResponse;
     }
 
-    public BibliographicEntity getBibEntity() throws Exception {
 
-        InstitutionEntity institutionEntity = new InstitutionEntity();
-        institutionEntity.setInstitutionCode("UC");
-        institutionEntity.setInstitutionName("University of Chicago");
-        InstitutionEntity entity = institutionDetailsRepository.save(institutionEntity);
-        assertNotNull(entity);
+    public BibliographicEntity getBibEntity() throws Exception {
 
         Random random = new Random();
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
@@ -372,7 +364,7 @@ public class NyplApiServiceConnectorUT extends BaseTestCase {
         bibliographicEntity.setLastUpdatedDate(new Date());
         bibliographicEntity.setCreatedBy("tst");
         bibliographicEntity.setLastUpdatedBy("tst");
-        bibliographicEntity.setOwningInstitutionId(entity.getInstitutionId());
+        bibliographicEntity.setOwningInstitutionId(2);
         bibliographicEntity.setOwningInstitutionBibId(String.valueOf(random.nextInt()));
         bibliographicEntity.setCatalogingStatus("Complete");
         HoldingsEntity holdingsEntity = new HoldingsEntity();
@@ -381,15 +373,15 @@ public class NyplApiServiceConnectorUT extends BaseTestCase {
         holdingsEntity.setLastUpdatedDate(new Date());
         holdingsEntity.setCreatedBy("tst");
         holdingsEntity.setLastUpdatedBy("tst");
-        holdingsEntity.setOwningInstitutionId(1);
+        holdingsEntity.setOwningInstitutionId(2);
         holdingsEntity.setOwningInstitutionHoldingsId(String.valueOf(random.nextInt()));
         holdingsEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
 
         ItemEntity itemEntity = new ItemEntity();
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
-        itemEntity.setOwningInstitutionId(1);
-        itemEntity.setBarcode("123");
+        itemEntity.setOwningInstitutionId(2);
+        itemEntity.setBarcode("0002");
         itemEntity.setCallNumber("x.12321");
         itemEntity.setCollectionGroupId(1);
         itemEntity.setCallNumberType("1");
@@ -403,9 +395,7 @@ public class NyplApiServiceConnectorUT extends BaseTestCase {
         bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
 
-        BibliographicEntity savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(bibliographicEntity);
-        entityManager.refresh(savedBibliographicEntity);
-        return savedBibliographicEntity;
+        return bibliographicEntity;
     }
 
     private HttpHeaders getHttpHeaders() throws Exception {

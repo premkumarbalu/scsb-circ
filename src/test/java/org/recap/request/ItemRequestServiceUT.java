@@ -3,14 +3,13 @@ package org.recap.request;
 import org.apache.camel.Exchange;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.recap.BaseTestCase;
 import org.recap.ReCAPConstants;
+import org.recap.controller.RequestItemController;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.*;
-import org.recap.repository.BibliographicDetailsRepository;
-import org.recap.repository.InstitutionDetailsRepository;
-import org.recap.repository.RequestItemDetailsRepository;
-import org.recap.repository.RequestTypeDetailsRepository;
+import org.recap.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
@@ -40,6 +39,9 @@ public class ItemRequestServiceUT extends BaseTestCase{
 
     @Autowired
     ItemRequestService itemRequestService;
+
+    @Mock
+    ItemRequestService mockedItemRequestService;
 
     @Autowired
     RequestTypeDetailsRepository requestTypeDetailsRepository;
@@ -82,7 +84,6 @@ public class ItemRequestServiceUT extends BaseTestCase{
         itemRequestInformation.setItemBarcodes(Arrays.asList(bibliographicEntity.getItemEntities().get(0).getBarcode()));
         ItemInformationResponse response = itemRequestService.requestItem(itemRequestInformation,exchange);
         assertNotNull(response);
-
     }
 
     public ItemRequestInformation getItemRequestInformation(){
@@ -102,7 +103,6 @@ public class ItemRequestServiceUT extends BaseTestCase{
         itemRequestInformation.setCustomerCode("PB");
         itemRequestInformation.setRequestNotes("test");
         itemRequestInformation.setRequestType("RETRIEVAL");
-
         return itemRequestInformation;
     }
 
@@ -159,7 +159,7 @@ public class ItemRequestServiceUT extends BaseTestCase{
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setOwningInstitutionItemId(String.valueOf(random.nextInt()));
         itemEntity.setOwningInstitutionId(1);
-        itemEntity.setBarcode("123");
+        itemEntity.setBarcode("7020");
         itemEntity.setCallNumber("x.12321");
         itemEntity.setCollectionGroupId(1);
         itemEntity.setCallNumberType("1");

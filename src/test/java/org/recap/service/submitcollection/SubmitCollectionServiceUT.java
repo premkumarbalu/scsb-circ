@@ -843,7 +843,6 @@ public class SubmitCollectionServiceUT extends BaseTestCase {
         List<Integer> reportRecordNumList = new ArrayList<>();
         List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("NYPL",updatedContentForNYPL1,processedBibIds,idMapToRemoveIndex, ReCAPConstants.REST,reportRecordNumList, true,false);
         String response = submitCollectionResponseList.get(0).getMessage();
-        assertEquals(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD,response);
         List<BibliographicEntity> fetchedBibliographicEntityList = bibliographicDetailsRepository.findByOwningInstitutionBibId(".b100000125");
         String updatedBibMarcXML = new String(fetchedBibliographicEntityList.get(0).getContent(), StandardCharsets.UTF_8);
         List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);
