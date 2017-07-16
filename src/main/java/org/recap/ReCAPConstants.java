@@ -146,12 +146,9 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_REJECTION_REPORT = "Submit_Collection_Rejection_Report";
     public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT = "Submit_Collection_Exception_Report";
     public static final String SUBMIT_COLLECTION_SUCCESS_REPORT = "Submit_Collection_Success_Report";
+    public static final String SUBMIT_COLLECTION_FAILURE_REPORT = "SubmitCollection_Failure_Report";
     public static final String SUBMIT_COLLECTION_ITEM_BARCODE = "ItemBarcode";
     public static final String SUBMIT_COLLECTION_CUSTOMER_CODE = CUSTOMER_CODE;
-    public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT_MESSAGE = "Exception report generated";
-    public static final String SUBMIT_COLLECTION_REJECTION_REPORT_MESSAGE = "Rejection report generated";
-    public static final String SUMBIT_COLLECTION_UPDATE_MESSAGE = "One or more record(s) updated.";
-    public static final String SUMBIT_COLLECTION_NOT_UPDATED_MESSAGE = "No record(s) updated.";
 
     public static final String SUBMIT_COLLECTION_COMPLETION_QUEUE_FROM = "scsbactivemq:queue:submitCollectionCompletionFromQueue";
     public static final String SUBMIT_COLLECTION_COMPLETION_QUEUE_TO = "scsbactivemq:queue:submitCollectionCompletionToQueue";
@@ -286,10 +283,6 @@ public final class ReCAPConstants {
 
     public static final String REQUEST_REFILE_BODY = "The following item has been requested and was found to be under Refile in LAS.";
     public static final String REQUEST_REFILE_SUBJECT = "Request for Item on Refile WO - ";
-
-
-    public static final String SUBMIT_COLLECTION_FAILURE_REPORT = "SubmitCollection_Failure_Report";
-
 
     //Deaccession
     public static final String REQUESTED_ITEM_DEACCESSIONED = "The requested item has already been deaccessioned.";
