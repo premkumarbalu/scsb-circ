@@ -59,6 +59,7 @@ public class RequestInitialDataLoadProcessor {
      */
     public void processInput(Exchange exchange) throws ParseException {
         List<RequestDataLoadCSVRecord> requestDataLoadCSVRecordList = (List<RequestDataLoadCSVRecord>)exchange.getIn().getBody();
+        Integer index = (Integer) exchange.getProperty(ReCAPConstants.CAMEL_SPLIT_INDEX);
         logger.info("count from ftp" + requestDataLoadCSVRecordList.size());
         try {
             Set<String> barcodesNotInScsb = requestDataLoadService.process(requestDataLoadCSVRecordList,barcodeSet);
@@ -69,6 +70,12 @@ public class RequestInitialDataLoadProcessor {
                 Files.createFile(filePath);
                 logger.info("Request Initial Load File Created--->{}",filePath);
             }
+            if(index == 0){
+                Set<String> headerSet = new HashSet<>();
+                headerSet.add(ReCAPConstants.REQUEST_INITIAL_LOAD_HEADER);
+                Files.write(filePath,headerSet, StandardOpenOption.APPEND);
+            }
+
             Files.write(filePath,barcodesNotInScsb, StandardOpenOption.APPEND);
         }
         catch (Exception e){
