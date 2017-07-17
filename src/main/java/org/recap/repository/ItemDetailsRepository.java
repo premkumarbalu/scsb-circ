@@ -145,7 +145,7 @@ public interface ItemDetailsRepository extends PagingAndSortingRepository<ItemEn
      * @param isDeleted                the is deleted
      * @return the not available items count
      */
-    @Query(value = "SELECT count(*) FROM recap.item_t where date(LAST_UPDATED_DATE) <= DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY) and ITEM_AVAIL_STATUS_ID=:itemAvailabilityStatusId and CATALOGING_STATUS=:catalogingStatus and IS_DELETED=:isDeleted", nativeQuery = true)
+    @Query(value = "SELECT count(*) FROM recap.item_t where date(LAST_UPDATED_DATE) < DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY) and ITEM_AVAIL_STATUS_ID=:itemAvailabilityStatusId and CATALOGING_STATUS=:catalogingStatus and IS_DELETED=:isDeleted", nativeQuery = true)
     Long getNotAvailableItemsCount(@Param("dateDifference") Integer dateDifference,@Param("itemAvailabilityStatusId") Integer itemAvailabilityStatusId,@Param("catalogingStatus") String catalogingStatus,@Param("isDeleted") boolean isDeleted);
 
     /**
@@ -159,7 +159,7 @@ public interface ItemDetailsRepository extends PagingAndSortingRepository<ItemEn
      * @param batchSize                the batch size
      * @return the not available items
      */
-    @Query(value = "SELECT * FROM recap.item_t where date(LAST_UPDATED_DATE) <= DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY) and ITEM_AVAIL_STATUS_ID=:itemAvailabilityStatusId and CATALOGING_STATUS=:catalogingStatus and IS_DELETED=:isDeleted order by ITEM_ID limit :getFrom , :batchSize", nativeQuery = true)
+    @Query(value = "SELECT * FROM recap.item_t where date(LAST_UPDATED_DATE) < DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY) and ITEM_AVAIL_STATUS_ID=:itemAvailabilityStatusId and CATALOGING_STATUS=:catalogingStatus and IS_DELETED=:isDeleted order by ITEM_ID limit :getFrom , :batchSize", nativeQuery = true)
     List<ItemEntity> getNotAvailableItems(@Param("dateDifference") Integer dateDifference,@Param("itemAvailabilityStatusId") Integer itemAvailabilityStatusId,@Param("catalogingStatus") String catalogingStatus,@Param("isDeleted") boolean isDeleted,@Param("getFrom") long getFrom , @Param("batchSize") long batchSize);
 
     /**
