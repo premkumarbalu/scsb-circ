@@ -70,7 +70,7 @@ public class SubmitCollectionReportHelperServiceUT extends BaseTestCase {
         BibliographicEntity incomingBibliographicEntity = getConvertedBibliographicEntity("MarcRecord.xml","PUL");
         submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,bibliographicEntity,incomingBibliographicEntity);
         List<SubmitCollectionReportInfo> submitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST);
-        assertEquals("Failed record - Owning institution holding id 7453441 for the incoming barcode 32101095533293, owning institution item id 7453441 is unavailable in the existing bib - owning institution bib id - 9919400",submitCollectionReportInfoList.get(0).getMessage());
+        assertEquals("Failed record - Owning institution holding id 9734816 for the incoming barcode 32101095533293, owning institution item id 7453441 is unavailable in the existing bib - owning institution bib id - 9919400",submitCollectionReportInfoList.get(0).getMessage());
     }
 
     @Test
