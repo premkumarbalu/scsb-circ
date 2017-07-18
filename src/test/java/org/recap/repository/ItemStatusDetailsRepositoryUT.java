@@ -21,23 +21,7 @@ public class ItemStatusDetailsRepositoryUT extends BaseTestCase{
 
     @Test
     public void testItemStatus(){
-
         ItemStatusEntity itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(1);
-        itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(4);
-        logger.info(itemStatusEntity.getStatusCode());
-        itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(4);
-        logger.info(itemStatusEntity.getStatusCode());
-        itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(3);
-        logger.info(itemStatusEntity.getStatusCode());
-        itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(3);
-        logger.info(itemStatusEntity.getStatusCode());
-        itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(2);
-        logger.info(itemStatusEntity.getStatusCode());
-        itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(2);
-        logger.info(itemStatusEntity.getStatusCode());
-        itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(1);
-        logger.info(itemStatusEntity.getStatusCode());
-        itemStatusEntity = itemStatusDetailsRepository.findByItemStatusId(1);
         logger.info(itemStatusEntity.getStatusCode());
         assertNotNull(itemStatusEntity);
         assertEquals(itemStatusEntity.getStatusCode(),"Available");
