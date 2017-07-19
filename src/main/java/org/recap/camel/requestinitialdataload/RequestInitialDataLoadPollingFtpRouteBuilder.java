@@ -85,8 +85,9 @@ public class RequestInitialDataLoadPollingFtpRouteBuilder {
                     from(ReCAPConstants.REQUEST_INITIAL_LOAD_FS_FILE+requestLoadPulFilePath+"?delete=true")
                             .routeId(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_FS_ROUTE)
                             .noAutoStartup()
-                            .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestInvalidPulFile +  ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey +  ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost)
+                            .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestInvalidPulFile +  ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey +  ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+"&fileName=Request-data-invalid_PUL_${date:now:yyyyMMdd_HHmmss}.csv")
                             .onCompletion()
+                            .bean(applicationContext.getBean(RequestDataLoadEmailService.class,ReCAPConstants.PRINCETON),ReCAPConstants.PROCESS_INPUT)
                             .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_FS_ROUTE))
                             .log("Request data load completed for PUL");
                 }
@@ -120,8 +121,9 @@ public class RequestInitialDataLoadPollingFtpRouteBuilder {
                     from(ReCAPConstants.REQUEST_INITIAL_LOAD_FS_FILE+requestLoadCulFilePath+"?delete=true")
                             .routeId(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_FS_ROUTE)
                             .noAutoStartup()
-                            .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestInvalidCulFile +  ReCAPConstants.PRIVATE_KEY_FILE  + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost)
+                            .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestInvalidCulFile +  ReCAPConstants.PRIVATE_KEY_FILE  + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ "&fileName=Request-data-invalid_CUL_${date:now:yyyyMMdd_HHmmss}.csv")
                             .onCompletion()
+                            .bean(applicationContext.getBean(RequestDataLoadEmailService.class,ReCAPConstants.COLUMBIA),ReCAPConstants.PROCESS_INPUT)
                             .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_FS_ROUTE))
                             .log("Request data load completed for CUL");
                 }
@@ -155,8 +157,9 @@ public class RequestInitialDataLoadPollingFtpRouteBuilder {
                     from(ReCAPConstants.REQUEST_INITIAL_LOAD_FS_FILE+requestLoadNyplFilePath+"?delete=true")
                             .routeId(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_FS_ROUTE)
                             .noAutoStartup()
-                            .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestInvalidNyplFile +  ReCAPConstants.PRIVATE_KEY_FILE  + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost)
+                            .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestInvalidNyplFile +  ReCAPConstants.PRIVATE_KEY_FILE  + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+"&fileName=Request-data-invalid_NYPL_${date:now:yyyyMMdd_HHmmss}.csv")
                             .onCompletion()
+                            .bean(applicationContext.getBean(RequestDataLoadEmailService.class,ReCAPConstants.NYPL),ReCAPConstants.PROCESS_INPUT)
                             .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_FS_ROUTE))
                             .log("Request data load completed for NYPL");
                 }
