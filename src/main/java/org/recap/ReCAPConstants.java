@@ -443,7 +443,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_INITIAL_LOAD_PUL_FTP_ROUTE = "requestInitialLoadPulFtpRoute";
     public static final String REQUEST_INITIAL_LOAD_CUL_FTP_ROUTE = "requestInitialLoadCulFtpRoute";
     public static final String REQUEST_INITIAL_LOAD_NYPL_FTP_ROUTE = "requestInitialLoadNyplFtpRoute";
-    public static final String REQUEST_INITIAL_FILE_NAME = "Request-data-invalid";
+    public static final String REQUEST_INITIAL_FILE_NAME = "InitialRequestLoadBarcodeFail_";
 
     public static final String FOR = "for";
     public static final String STATUS_RECONCILIATION = "StatusReconciliation";

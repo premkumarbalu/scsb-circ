@@ -88,7 +88,7 @@ public class RequestDataLoadEmailService {
     public String messageDisplayForInstitution(String institution){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ReCAPConstants.FILE_DATE_FORMAT);
         if (ReCAPConstants.PRINCETON.equalsIgnoreCase(institution) || ReCAPConstants.COLUMBIA.equalsIgnoreCase(institution) || ReCAPConstants.NYPL.equalsIgnoreCase(institution) )
-            return "A report Request-data-invalid_" + institution + "_" + simpleDateFormat.format(new Date()) + ".csv containing barcodes that have requests in GFA but which are not in SCSB has been created and can be found at "+reportLocation(institutionCode)+".";
+            return "A report InitialRequestLoadBarcodeFail_" + institution + "_" + simpleDateFormat.format(new Date()) + ".csv containing barcodes that have requests in GFA but which are not in SCSB has been created and can be found at "+reportLocation(institutionCode)+".";
         return null;
     }
 
