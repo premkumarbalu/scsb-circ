@@ -313,8 +313,8 @@ public final class ReCAPConstants {
     public static final String LAS_REJECTED = "LAS has rejected";
     public static final String CREATING_A_BIB_RECORD_FAILED_IN_ILS = "Creating a Bib record failed in ILS";
     public static final String INVALID_NO_RESPONSE_FROM_ILS = "Invalid/No Response from ILS";
-    public static final String LOGIN_FAILED = "Login Failed";
-    public static final String PATRON_VALIDATION_FAILED = "Patron Validation Failed";
+    public static final String CHECK_IN_REQUEST_FAILED = "Check In Request Failed";
+    public static final String ILS_LOGIN_FAILED = "Login Failed";
     public static final String ITEM_STATUS_REQUEST_FAILED = "Item Status Request Failed";
     public static final String RECALL_FAILED_NO_MESSAGE_RETURNED = "Recall failed, no message returned";
     public static final String RECALL_CANNOT_BE_PROCESSED_THE_ITEM_IS_NOT_CHECKED_OUT_IN_ILS = "Recall Cannot be processed, the item is not checked out in ILS";
@@ -471,6 +471,12 @@ public final class ReCAPConstants {
 
     //Date Pattern
     public static final String FILE_DATE_FORMAT="yyyyMMdd_HHmmss";
+    public static final String CHECK_IN_REQUEST_SUCCESSFUL = "Check In Request Successful";
+    public static final String SCREEN_MESSAGE_ITEM_BARCODE_NOT_FOUND = "Item barcode not found";
+    public static final String ITEM_BARCODE_NOT_FOUND = "ITEM_BARCODE_NOT_FOUND";
+    public static final String ITEM_REQUEST_FAILED = "Item Request Failed";
+    public static final String PATRON_VALIDATION_FAILED = "Patron Validation Failed: ";
+    public static final String ILS_CONNECTION_FAILED = "ILS Connection Failed";
 
     private ReCAPConstants() {
     }
