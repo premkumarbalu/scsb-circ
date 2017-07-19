@@ -50,6 +50,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_RECALL_MAIL_QUEUE = "requestRecallMailSendQueue";
     public static final String REQUEST_LAS_STATUS_MAIL_QUEUE = "requestLASStatusMailSendQueue";
     public static final String REQUEST_ACCESSION_RECONCILATION_MAIL_QUEUE = "AccessionReconcilation";
+    public static final String REQUEST_INITIAL_DATA_LOAD ="requestInitialDataLoad";
 
     public static final String REQUEST_RECALL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
     public static final String REQUEST_LAS_STATUS_EMAIL_TEMPLATE = "request_las_status_email_body.vm";
@@ -442,7 +443,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_INITIAL_LOAD_PUL_FTP_ROUTE = "requestInitialLoadPulFtpRoute";
     public static final String REQUEST_INITIAL_LOAD_CUL_FTP_ROUTE = "requestInitialLoadCulFtpRoute";
     public static final String REQUEST_INITIAL_LOAD_NYPL_FTP_ROUTE = "requestInitialLoadNyplFtpRoute";
-    public static final String REQUEST_INITIAL_FILE_NAME = "RequestInvalidItem_";
+    public static final String REQUEST_INITIAL_FILE_NAME = "Request-data-invalid";
 
     public static final String FOR = "for";
     public static final String STATUS_RECONCILIATION = "StatusReconciliation";
@@ -467,6 +468,9 @@ public final class ReCAPConstants {
     public static final String INPUT_RECORDS = "inputRecords";
     public static final String INSTITUTION = "institution";
     public static final String IS_CGD_PROTECTED = "isCGDProtected";
+
+    //Date Pattern
+    public static final String FILE_DATE_FORMAT="yyyyMMdd_HHmmss";
 
     private ReCAPConstants() {
     }

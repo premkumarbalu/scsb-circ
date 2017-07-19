@@ -114,6 +114,13 @@ public class EmailRouteBuilder {
                                     .setHeader("from", simple(from))
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.REQUEST_INITIAL_DATA_LOAD))
+                                    .setHeader("subject", simple("${header.emailPayLoad.subject}"))
+                                    .setBody(simple("${header.emailPayLoad.messageDisplay}"))
+                                    .setHeader("from", simple(from))
+                                    .setHeader("to", simple("${header.emailPayLoad.to}"))
+                                    .log("Email for request initial data load")
+                                    .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
                     ;
                 }
 
