@@ -1,5 +1,6 @@
 package org.recap.service.requestdataload;
 
+import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.camel.requestinitialdataload.RequestDataLoadCSVRecord;
 import org.recap.model.ItemEntity;
@@ -80,19 +81,24 @@ public class RequestDataLoadService {
         List<RequestItemEntity> requestAlreadyPlacedList = requestItemDetailsRepository.findByitemId(itemId,Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED,ReCAPConstants.REQUEST_STATUS_RECALLED,ReCAPConstants.REQUEST_STATUS_EDD,ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD));
         if (CollectionUtils.isEmpty(requestAlreadyPlacedList)) {
             requestItemEntity.setItemId(itemId);
-            requestItemEntity.setRequestTypeId(getRequestTypeId(requestDataLoadCSVRecord.getDeliveryMethod()));
             requestItemEntity.setRequestingInstitutionId(requestingInstitutionId);
             SimpleDateFormat formatter = new SimpleDateFormat(ReCAPConstants.REQUEST_DATA_LOAD_DATE_FORMAT);
             requestItemEntity.setCreatedBy(ReCAPConstants.REQUEST_DATA_LOAD_CREATED_BY);
-            Date createdDate = getDateFormat(requestDataLoadCSVRecord.getCreatedDate());
-            requestItemEntity.setCreatedDate(formatter.parse(formatter.format(createdDate)));
-            Date updatedDate = getDateFormat(requestDataLoadCSVRecord.getLastUpdatedDate());
-            requestItemEntity.setLastUpdatedDate(formatter.parse(formatter.format(updatedDate)));
-            requestItemEntity.setStopCode(requestDataLoadCSVRecord.getStopCode());
+            setValuesFromOutReportToRequestItemEntity(requestItemEntity, requestDataLoadCSVRecord, formatter);
             requestItemEntity.setRequestStatusId(9);
             requestItemEntity.setPatronId(ReCAPConstants.REQUEST_DATA_LOAD_PATRON_ID);
             requestItemEntityList.add(requestItemEntity);
         }
+    }
+
+    private void setValuesFromOutReportToRequestItemEntity(RequestItemEntity requestItemEntity, RequestDataLoadCSVRecord requestDataLoadCSVRecord, SimpleDateFormat formatter) throws ParseException {
+        requestItemEntity.setRequestTypeId(getRequestTypeId(requestDataLoadCSVRecord.getDeliveryMethod()));
+        Date createdDate = getDateFormat(requestDataLoadCSVRecord.getCreatedDate());
+        requestItemEntity.setCreatedDate(formatter.parse(formatter.format(createdDate)));
+        Date updatedDate = getDateFormat(requestDataLoadCSVRecord.getLastUpdatedDate());
+        requestItemEntity.setLastUpdatedDate(formatter.parse(formatter.format(updatedDate)));
+        String stopCode=requestDataLoadCSVRecord.getStopCode() != null ? requestDataLoadCSVRecord.getStopCode() : "Stop Code Not Found";
+        requestItemEntity.setStopCode(stopCode);
     }
 
     private void savingRequestItemEntities(List<RequestItemEntity> requestItemEntityList) {
@@ -105,7 +111,13 @@ public class RequestDataLoadService {
 
     private Date getDateFormat(String date) throws ParseException {
         SimpleDateFormat formatter=new SimpleDateFormat(ReCAPConstants.REQUEST_DATA_LOAD_DATE_FORMAT);
-        return formatter.parse(date);
+        if (StringUtils.isNotBlank(date)){
+            return formatter.parse(date);
+        }
+        else {
+            String currentDate = formatter.format(new Date());
+            return formatter.parse(currentDate);
+        }
     }
 
     private Map<String,Integer> getItemInfo(String barcode){
