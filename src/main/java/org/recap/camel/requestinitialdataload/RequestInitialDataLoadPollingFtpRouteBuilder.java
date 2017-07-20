@@ -2,11 +2,14 @@ package org.recap.camel.requestinitialdataload;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
+import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.BindyType;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.camel.requestinitialdataload.processor.RequestInitialDataLoadProcessor;
+import org.recap.camel.route.StartRouteProcessor;
 import org.recap.camel.route.StopRouteProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,26 +60,50 @@ public class RequestInitialDataLoadPollingFtpRouteBuilder {
                                                         @Value("${request.initial.load.cul.workdir}") String culWorkDirectory,
                                                         @Value("${request.initial.load.nypl.workdir}") String nyplWorkDirectory){
 
+        /**
+         * Predicate to idenitify is the input file is gz
+         */
+        Predicate gzipFile = new Predicate() {
+            @Override
+            public boolean matches(Exchange exchange) {
+                String fileName = (String) exchange.getIn().getHeader(Exchange.FILE_NAME);
+                return StringUtils.equalsIgnoreCase("gz", FilenameUtils.getExtension(fileName));
+            }
+        };
+
         try{
             camelContext.addRoutes(new RouteBuilder(){
                 @Override
                 public void configure() throws Exception {
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestAccessionPulFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+"&move=.done&delay=3s&localWorkDirectory="+pulWorkDirectory)
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestAccessionPulFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.ACCESSION_RR_FTP_OPTIONS+pulWorkDirectory)
                             .routeId(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_FTP_ROUTE)
                             .noAutoStartup()
+                            .choice()
+                            .when(gzipFile)
+                                .unmarshal()
+                                .gzip()
+                                .log("PUL Request Initial load FTP Route Unzip Complete")
+                                .process(new StartRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_DIRECT_ROUTE))
+                                .to(ReCAPConstants.DIRECT+ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_DIRECT_ROUTE)
+                            .when(body().isNull())
+                                .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_FTP_ROUTE))
+                                .log("No File To Process PUL Request Initial load")
+                            .otherwise()
+                                .process(new StartRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_DIRECT_ROUTE))
+                                .to(ReCAPConstants.DIRECT+ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_DIRECT_ROUTE)
+                            .endChoice();
+
+                    from(ReCAPConstants.DIRECT+ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_DIRECT_ROUTE)
+                            .routeId(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_DIRECT_ROUTE)
+                            .noAutoStartup()
+                            .log("Request data load started for PUL")
                             .split(body().tokenize("\n",1000,true))
                             .unmarshal().bindy(BindyType.Csv, RequestDataLoadCSVRecord.class)
                             .bean(applicationContext.getBean(RequestInitialDataLoadProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_PUL), ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()
-                            .process(new Processor() {
-                                @Override
-                                public void process(Exchange exchange) throws Exception {
-                                    logger.info(ReCAPConstants.STARTING+ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_FS_ROUTE);
-                                    camelContext.startRoute(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_FS_ROUTE);
-                                }
-                            })
-                            .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_FTP_ROUTE));
+                            .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_DIRECT_ROUTE));
+
                 }
             });
             camelContext.addRoutes(new RouteBuilder() {
@@ -97,22 +124,34 @@ public class RequestInitialDataLoadPollingFtpRouteBuilder {
             camelContext.addRoutes(new RouteBuilder(){
                 @Override
                 public void configure() throws Exception {
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestAccessionCulFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+"&move=.done&delay=3s&localWorkDirectory="+culWorkDirectory)
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestAccessionCulFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.ACCESSION_RR_FTP_OPTIONS+culWorkDirectory)
                             .routeId(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_FTP_ROUTE)
                             .noAutoStartup()
+                            .choice()
+                                .when(gzipFile)
+                                    .unmarshal()
+                                    .gzip()
+                                    .log("CUL Request Initial load FTP Route Unzip Complete")
+                                    .process(new StartRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE))
+                                    .to(ReCAPConstants.DIRECT+ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE)
+                                .when(body().isNull())
+                                    .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_FTP_ROUTE))
+                                    .log("No File To Process CUL Request Initial load")
+                                .otherwise()
+                                    .process(new StartRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE))
+                                    .to(ReCAPConstants.DIRECT+ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE)
+                            .endChoice();
+
+                    from(ReCAPConstants.DIRECT+ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE)
+                            .routeId(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE)
+                            .noAutoStartup()
+                            .log("Request data load started for CUL")
                             .split(body().tokenize("\n",1000,true))
                             .unmarshal().bindy(BindyType.Csv, RequestDataLoadCSVRecord.class)
                             .bean(applicationContext.getBean(RequestInitialDataLoadProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_CUL), ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()
-                            .process(new Processor() {
-                                @Override
-                                public void process(Exchange exchange) throws Exception {
-                                    logger.info(ReCAPConstants.STARTING+ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_FS_ROUTE);
-                                    camelContext.startRoute(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_FS_ROUTE);
-                                }
-                            })
-                            .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_FTP_ROUTE));
+                            .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE));
                 }
             });
             camelContext.addRoutes(new RouteBuilder() {
@@ -133,22 +172,35 @@ public class RequestInitialDataLoadPollingFtpRouteBuilder {
             camelContext.addRoutes(new RouteBuilder(){
                 @Override
                 public void configure() throws Exception {
-                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestAccessionNyplFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+"&move=.done&delay=3s&localWorkDirectory="+nyplWorkDirectory)
+                    from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + requestAccessionNyplFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+ReCAPConstants.ACCESSION_RR_FTP_OPTIONS+nyplWorkDirectory)
                             .routeId(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_FTP_ROUTE)
                             .noAutoStartup()
+                            .choice()
+                                .when(gzipFile)
+                                .unmarshal()
+                                .gzip()
+                                .log("Nypl Request Initial load FTP Route Unzip Complete")
+                                .process(new StartRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE))
+                                .to(ReCAPConstants.DIRECT+ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE)
+                            .when(body().isNull())
+                                .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_FTP_ROUTE))
+                                .log("No File To Process Nypl Request Initial load")
+                            .otherwise()
+                                .process(new StartRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE))
+                                .to(ReCAPConstants.DIRECT+ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE)
+                            .endChoice();
+
+                    from(ReCAPConstants.DIRECT+ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE)
+                            .routeId(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE)
+                            .noAutoStartup()
+                            .log("Request data load started for NYPL")
                             .split(body().tokenize("\n",1000,true))
                             .unmarshal().bindy(BindyType.Csv, RequestDataLoadCSVRecord.class)
                             .bean(applicationContext.getBean(RequestInitialDataLoadProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL), ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()
-                            .process(new Processor() {
-                                @Override
-                                public void process(Exchange exchange) throws Exception {
-                                    logger.info(ReCAPConstants.STARTING+ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_FS_ROUTE);
-                                    camelContext.startRoute(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_FS_ROUTE);
-                                }
-                            })
-                            .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_FTP_ROUTE));
+                            .process(new StopRouteProcessor(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE));
+
                 }
             });
             camelContext.addRoutes(new RouteBuilder() {
