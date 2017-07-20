@@ -408,7 +408,7 @@ public final class ReCAPConstants {
 
     public static final String COMPLETE = "Complete";
 
-    public static final String ACCESSION_RR_FTP_OPTIONS = "&move=.done&delay=2s&localWorkDirectory=";
+    public static final String ACCESSION_RR_FTP_OPTIONS = "&sendEmptyMessageWhenIdle=true&move=.done&delay=2s&localWorkDirectory=";
     public static final String ACCESSION_RECONCILATION_FTP_PUL_ROUTE = "accessionReconcilationFtpPulRoute";
     public static final String ACCESSION_RECONCILATION_FTP_CUL_ROUTE = "accessionReconcilationFtpCulRoute";
     public static final String ACCESSION_RECONCILATION_FTP_NYPL_ROUTE = "accessionReconcilationFtpNyplRoute";
@@ -417,7 +417,7 @@ public final class ReCAPConstants {
     public static final String ACCESSION_RECONCILATION_FS_NYPL_ROUTE = "accessionReconcilationFsNyplRoute";
     public static final String ACCESSION_RECONCILATION_FILE_NAME = "AccessionReconcilation";
     public static final String ACCESSION_RECONCILATION_SOLR_CLIENT_URL = "accessionReconcilationService/startAccessionReconcilation";
-    public static final String STARTING = "Starting";
+    public static final String STARTING = "Starting {} ";
 
     public static final String SUBMIT_COLLECTION_FTP_PUL_ROUTE = "pulSubmitCollectionFTPRoute";
     public static final String SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE = "pulSubmitCollectionFTPCgdProtectedRoute";
@@ -477,6 +477,15 @@ public final class ReCAPConstants {
     public static final String ITEM_REQUEST_FAILED = "Item Request Failed";
     public static final String PATRON_VALIDATION_FAILED = "Patron Validation Failed: ";
     public static final String ILS_CONNECTION_FAILED = "ILS Connection Failed";
+
+    public static final String CAMEL_SPLIT_COMPLETE = "CamelSplitComplete";
+    public static final String DIRECT = "direct:";
+    public static final String ACCESSION_RECONCILATION_DIRECT_PUL_ROUTE = "accessionReconciliationDirectPulRoute";
+    public static final String ACCESSION_RECONCILATION_DIRECT_CUL_ROUTE = "accessionReconciliationDirectCulRoute";
+    public static final String ACCESSION_RECONCILATION_DIRECT_NYPL_ROUTE = "accessionReconciliationDirectNyplRoute";
+    public static final String REQUEST_INITIAL_LOAD_PUL_DIRECT_ROUTE = "requestInitialLoadPulDirectRoute";
+    public static final String REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE = "requestInitialLoadCulDirectRoute";
+    public static final String REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE = "requestInitialLoadNyplDirectRoute";
 
     private ReCAPConstants() {
     }
