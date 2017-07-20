@@ -49,7 +49,8 @@ public class SubmitCollectionDAOService {
                 savedBibliographicEntity = updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
             } else {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
                 List<ItemEntity> fetchedCompleteItem = submitCollectionReportHelperService.getIncomingItemIsIncomplete(bibliographicEntity.getItemEntities());//To verify the incoming barcode is complete for dummy record, if it is complete record and update will not happen.
-                if (fetchedCompleteItem.isEmpty()) {
+                List<ItemEntity> fetchedItemBasedOnOwningInstitutionItemId = submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(bibliographicEntity.getItemEntities());
+                if (fetchedCompleteItem.isEmpty() && fetchedItemBasedOnOwningInstitutionItemId.isEmpty()) {
                     updateCustomerCode(fetchBibliographicEntity,bibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it, this happens mostly for CUL
                     removeDummyRecord(idMapToRemoveIndex, fetchBibliographicEntity);
                     BibliographicEntity fetchedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(),bibliographicEntity.getOwningInstitutionBibId());
@@ -70,7 +71,12 @@ public class SubmitCollectionDAOService {
                         e.printStackTrace();
                     }
                 } else {
-                    submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidDummyRecord(bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),fetchedCompleteItem);
+                    if (!fetchedCompleteItem.isEmpty()) {
+                        submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidDummyRecordBasedOnBarcode(bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),fetchedCompleteItem);
+                    }
+                    if (!fetchedItemBasedOnOwningInstitutionItemId.isEmpty()) {
+                        submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidDummyRecordBasedOnOwnInstItemId(bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),fetchedItemBasedOnOwningInstitutionItemId);
+                    }
                 }
             }
         } else {//if no record found to update, generate exception info
