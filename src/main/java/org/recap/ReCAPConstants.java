@@ -340,7 +340,7 @@ public final class ReCAPConstants {
     public static final String PRIVATE_KEY_FILE = "?privateKeyFile=";
     public static final String KNOWN_HOST_FILE = "&knownHostsFile=";
     public static final String PROCESS_INPUT = "processInput";
-    public static final String SUBMIT_COLLECTION_SFTP_OPTIONS = "&sendEmptyMessageWhenIdle=true&move=.done&localWorkDirectory=";
+    public static final String SUBMIT_COLLECTION_SFTP_OPTIONS = "&sendEmptyMessageWhenIdle=true&move=.done&sortBy=file:modified&localWorkDirectory=";
     public static final String SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE = "Complete item record info updated through submit collection";
     public static final String SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE = "Dummy item record removed and actual record added through submit collection";
 
