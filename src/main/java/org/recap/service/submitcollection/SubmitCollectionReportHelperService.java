@@ -99,8 +99,7 @@ public class SubmitCollectionReportHelperService {
             if(fetchedItemEntity!=null){
                 message = "Failed record - Incoming item owning institution item id "+owningInstitutionItemId+ ", incoming owning institution bib id "+
                         incomingBibliographicEntity.getOwningInstitutionBibId()+", is already attached with existing barcode "+ fetchedItemEntity.getBarcode() +", owning institution bib id "+
-                        fetchedItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId()+
-                        fetchedItemEntity.getOwningInstitutionItemId();
+                        fetchedItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId();
             } else {
                 message = ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD;
             }
