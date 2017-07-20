@@ -184,4 +184,14 @@ public interface ItemDetailsRepository extends PagingAndSortingRepository<ItemEn
      * @return the list
      */
     List<ItemEntity> findByBarcodeAndItemStatusEntity_StatusCode(@Param("barcode") String barcode,@Param("statusCode") String statusCode);
+
+
+    /**
+     * Gets list of itementity based on list of owning institution item id and owning institution id.
+     *
+     * @param owningInstitutionItemIdList the owning institution item id list
+     * @param owningInstitutionId         the owning institution id
+     * @return the list
+     */
+    List<ItemEntity> findByOwningInstitutionItemIdInAndOwningInstitutionId(List<String> owningInstitutionItemIdList, Integer owningInstitutionId);
 }
