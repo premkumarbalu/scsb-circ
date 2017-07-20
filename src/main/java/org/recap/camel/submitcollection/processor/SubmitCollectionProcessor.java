@@ -77,6 +77,7 @@ public class SubmitCollectionProcessor {
         logger.info("Submit Collection : Route started and started processing the records from ftp for submitcollection");
         String inputXml = exchange.getIn().getBody(String.class);
         String xmlFileName = exchange.getIn().toString();
+        logger.info("Processing xmlFileName----->{}",xmlFileName);
         Set<Integer> processedBibIds = new HashSet<>();
         Map<String,String> idMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();

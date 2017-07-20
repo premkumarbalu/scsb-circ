@@ -66,7 +66,7 @@ public final class ReCAPConstants {
 
 
     // MQ URI
-    public static final String REQUEST_ITEM_QUEUE = "scsbactivemq:queue:RequestItemQ?concurrentConsumers=5";
+    public static final String REQUEST_ITEM_QUEUE = "scsbactivemq:queue:RequestItemQ?asyncConsumer=true&concurrentConsumers=10&destination.consumer.prefetchSize=20";
     public static final String EMAIL_Q = "scsbactivemq:queue:CircEmailQ";
     public static final String SCSB_OUTGOING_QUEUE = "scsbactivemq:queue:scsbOutgoingQ";
     public static final String LAS_OUTGOING_QUEUE = "scsbactivemq:queue:lasOutgoingQ";
@@ -313,8 +313,8 @@ public final class ReCAPConstants {
     public static final String LAS_REJECTED = "LAS has rejected";
     public static final String CREATING_A_BIB_RECORD_FAILED_IN_ILS = "Creating a Bib record failed in ILS";
     public static final String INVALID_NO_RESPONSE_FROM_ILS = "Invalid/No Response from ILS";
-    public static final String LOGIN_FAILED = "Login Failed";
-    public static final String PATRON_VALIDATION_FAILED = "Patron Validation Failed";
+    public static final String CHECK_IN_REQUEST_FAILED = "Check In Request Failed";
+    public static final String ILS_LOGIN_FAILED = "Login Failed";
     public static final String ITEM_STATUS_REQUEST_FAILED = "Item Status Request Failed";
     public static final String RECALL_FAILED_NO_MESSAGE_RETURNED = "Recall failed, no message returned";
     public static final String RECALL_CANNOT_BE_PROCESSED_THE_ITEM_IS_NOT_CHECKED_OUT_IN_ILS = "Recall Cannot be processed, the item is not checked out in ILS";
@@ -340,7 +340,7 @@ public final class ReCAPConstants {
     public static final String PRIVATE_KEY_FILE = "?privateKeyFile=";
     public static final String KNOWN_HOST_FILE = "&knownHostsFile=";
     public static final String PROCESS_INPUT = "processInput";
-    public static final String SUBMIT_COLLECTION_SFTP_OPTIONS = "&sendEmptyMessageWhenIdle=true&move=.done&localWorkDirectory=";
+    public static final String SUBMIT_COLLECTION_SFTP_OPTIONS = "&sendEmptyMessageWhenIdle=true&move=.done&sortBy=file:modified&localWorkDirectory=";
     public static final String SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE = "Complete item record info updated through submit collection";
     public static final String SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE = "Dummy item record removed and actual record added through submit collection";
 
@@ -408,7 +408,7 @@ public final class ReCAPConstants {
 
     public static final String COMPLETE = "Complete";
 
-    public static final String ACCESSION_RR_FTP_OPTIONS = "&move=.done&delay=2s&localWorkDirectory=";
+    public static final String ACCESSION_RR_FTP_OPTIONS = "&sendEmptyMessageWhenIdle=true&move=.done&delay=2s&localWorkDirectory=";
     public static final String ACCESSION_RECONCILATION_FTP_PUL_ROUTE = "accessionReconcilationFtpPulRoute";
     public static final String ACCESSION_RECONCILATION_FTP_CUL_ROUTE = "accessionReconcilationFtpCulRoute";
     public static final String ACCESSION_RECONCILATION_FTP_NYPL_ROUTE = "accessionReconcilationFtpNyplRoute";
@@ -417,7 +417,7 @@ public final class ReCAPConstants {
     public static final String ACCESSION_RECONCILATION_FS_NYPL_ROUTE = "accessionReconcilationFsNyplRoute";
     public static final String ACCESSION_RECONCILATION_FILE_NAME = "AccessionReconcilation";
     public static final String ACCESSION_RECONCILATION_SOLR_CLIENT_URL = "accessionReconcilationService/startAccessionReconcilation";
-    public static final String STARTING = "Starting";
+    public static final String STARTING = "Starting {} ";
 
     public static final String SUBMIT_COLLECTION_FTP_PUL_ROUTE = "pulSubmitCollectionFTPRoute";
     public static final String SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE = "pulSubmitCollectionFTPCgdProtectedRoute";
@@ -471,6 +471,21 @@ public final class ReCAPConstants {
 
     //Date Pattern
     public static final String FILE_DATE_FORMAT="yyyyMMdd_HHmmss";
+    public static final String CHECK_IN_REQUEST_SUCCESSFUL = "Check In Request Successful";
+    public static final String SCREEN_MESSAGE_ITEM_BARCODE_NOT_FOUND = "Item barcode not found";
+    public static final String ITEM_BARCODE_NOT_FOUND = "ITEM_BARCODE_NOT_FOUND";
+    public static final String ITEM_REQUEST_FAILED = "Item Request Failed";
+    public static final String PATRON_VALIDATION_FAILED = "Patron Validation Failed: ";
+    public static final String ILS_CONNECTION_FAILED = "ILS Connection Failed";
+
+    public static final String CAMEL_SPLIT_COMPLETE = "CamelSplitComplete";
+    public static final String DIRECT = "direct:";
+    public static final String ACCESSION_RECONCILATION_DIRECT_PUL_ROUTE = "accessionReconciliationDirectPulRoute";
+    public static final String ACCESSION_RECONCILATION_DIRECT_CUL_ROUTE = "accessionReconciliationDirectCulRoute";
+    public static final String ACCESSION_RECONCILATION_DIRECT_NYPL_ROUTE = "accessionReconciliationDirectNyplRoute";
+    public static final String REQUEST_INITIAL_LOAD_PUL_DIRECT_ROUTE = "requestInitialLoadPulDirectRoute";
+    public static final String REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE = "requestInitialLoadCulDirectRoute";
+    public static final String REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE = "requestInitialLoadNyplDirectRoute";
 
     private ReCAPConstants() {
     }

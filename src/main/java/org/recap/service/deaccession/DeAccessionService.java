@@ -16,6 +16,7 @@ import org.recap.model.deaccession.DeAccessionRequest;
 import org.recap.model.deaccession.DeAccessionSolrRequest;
 import org.recap.repository.*;
 import org.recap.request.GFAService;
+import org.recap.request.ItemRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -87,6 +88,11 @@ public class DeAccessionService {
      */
     @Autowired
     GFAService gfaService;
+    /**
+     * The Item Request Service.
+     */
+    @Autowired
+    ItemRequestService itemRequestService;
 
     /**
      * The Scsb solr client url.
@@ -392,8 +398,12 @@ public class DeAccessionService {
         if (itemCancelHoldResponse.isSuccess()) {
             RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+            if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
+                requestItemEntity.getItemEntity().setItemAvailabilityStatusId(1);
+            }
             RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
             saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), username, ReCAPConstants.REQUEST_ITEM_CANCEL_DEACCESSION_ITEM, ReCAPConstants.REQUEST_ITEM_CANCELED_FOR_DEACCESSION + savedRequestItemEntity.getItemId());
+            itemRequestService.updateSolrIndex(savedRequestItemEntity.getItemEntity());
             itemCancelHoldResponse.setSuccess(true);
             itemCancelHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_SUCCCESS);
         }

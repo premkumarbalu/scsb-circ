@@ -1,5 +1,6 @@
 package org.recap.camel.requestinitialdataload.processor;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.recap.ReCAPConstants;
 import org.recap.camel.requestinitialdataload.RequestDataLoadCSVRecord;
@@ -38,6 +39,9 @@ public class RequestInitialDataLoadProcessor {
     private String requestInitialLoadFilePath;
 
     private String institutionCode;
+
+    @Autowired
+    private CamelContext camelContext;
 
     /**
      * Instantiates a new request initial data load processor.
@@ -87,6 +91,30 @@ public class RequestInitialDataLoadProcessor {
         totalCount = totalCount + requestDataLoadCSVRecordList.size();
         logger.info("Total count from las report---->{}",totalCount);
         totalCount = 0;
+
+        startFileSystemRoutesForAccessionReconciliation(exchange,index);
+    }
+
+    private void startFileSystemRoutesForAccessionReconciliation(Exchange exchange, Integer index) {
+        if ((boolean)exchange.getProperty(ReCAPConstants.CAMEL_SPLIT_COMPLETE)){
+            logger.info("split last index-->{}",index);
+            try {
+                if(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL.equalsIgnoreCase(institutionCode)){
+                    logger.info(ReCAPConstants.STARTING+ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_FS_ROUTE);
+                    camelContext.startRoute(ReCAPConstants.REQUEST_INITIAL_LOAD_PUL_FS_ROUTE);
+                }
+                if(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL.equalsIgnoreCase(institutionCode)){
+                    logger.info(ReCAPConstants.STARTING+ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_FS_ROUTE);
+                    camelContext.startRoute(ReCAPConstants.REQUEST_INITIAL_LOAD_CUL_FS_ROUTE);
+                }
+                if(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL.equalsIgnoreCase(institutionCode)){
+                    logger.info(ReCAPConstants.STARTING+ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_FS_ROUTE);
+                    camelContext.startRoute(ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL_FS_ROUTE);
+                }
+            } catch (Exception e) {
+                logger.error(ReCAPConstants.LOG_ERROR+e);
+            }
+        }
     }
 
     /**

@@ -63,7 +63,7 @@ public class SubmitCollectionReportHelperService {
      * @param submitCollectionReportInfoList the submit collection report info list
      * @param fetchedCompleteItem            the fetched complete item
      */
-    public void setSubmitCollectionReportInfoForInvalidDummyRecord(BibliographicEntity incomingBibliographicEntity, List<SubmitCollectionReportInfo> submitCollectionReportInfoList, List<ItemEntity> fetchedCompleteItem){
+    public void setSubmitCollectionReportInfoForInvalidDummyRecordBasedOnBarcode(BibliographicEntity incomingBibliographicEntity, List<SubmitCollectionReportInfo> submitCollectionReportInfoList, List<ItemEntity> fetchedCompleteItem){
         Map<String,ItemEntity> incomingBarcodeItemEntityMap = getBarcodeItemEntityMap(incomingBibliographicEntity.getItemEntities());
         Map<String,ItemEntity> fetchedBarcodeItemEntityMap = getBarcodeItemEntityMap(fetchedCompleteItem);
         for(String barcode:incomingBarcodeItemEntityMap.keySet()){
@@ -75,6 +75,31 @@ public class SubmitCollectionReportHelperService {
                         incomingBibliographicEntity.getOwningInstitutionBibId()+", is already attached with existing bib, owning institution bib id "+
                         fetchedItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId()+", owning institution item id "+
                         fetchedItemEntity.getOwningInstitutionItemId();
+            } else {
+                message = ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD;
+            }
+            setSubmitCollectionReportInfo(submitCollectionReportInfoList, incomingEntity, message);
+        }
+    }
+
+    /**
+     * Set submit collection report info for invalid dummy record.
+     *
+     * @param incomingBibliographicEntity    the incoming bibliographic entity
+     * @param submitCollectionReportInfoList the submit collection report info list
+     * @param fetchedCompleteItem            the fetched complete item
+     */
+    public void setSubmitCollectionReportInfoForInvalidDummyRecordBasedOnOwnInstItemId(BibliographicEntity incomingBibliographicEntity, List<SubmitCollectionReportInfo> submitCollectionReportInfoList, List<ItemEntity> fetchedCompleteItem){
+        Map<String,ItemEntity> incomingOwningInstitutionItemIdItemEntityMap = getOwningInstitutionItemIdItemEntityMap(incomingBibliographicEntity.getItemEntities());
+        Map<String,ItemEntity> fetchedOwningInstitutionItemIdItemEntityMap = getOwningInstitutionItemIdItemEntityMap(fetchedCompleteItem);
+        for(String owningInstitutionItemId:incomingOwningInstitutionItemIdItemEntityMap.keySet()){
+            ItemEntity incomingEntity = incomingOwningInstitutionItemIdItemEntityMap.get(owningInstitutionItemId);
+            ItemEntity fetchedItemEntity = fetchedOwningInstitutionItemIdItemEntityMap.get(owningInstitutionItemId);
+            String message;
+            if(fetchedItemEntity!=null){
+                message = "Failed record - Incoming item owning institution item id "+owningInstitutionItemId+ ", incoming owning institution bib id "+
+                        incomingBibliographicEntity.getOwningInstitutionBibId()+", is already attached with existing barcode "+ fetchedItemEntity.getBarcode() +", owning institution bib id "+
+                        fetchedItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId();
             } else {
                 message = ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD;
             }
@@ -97,6 +122,14 @@ public class SubmitCollectionReportHelperService {
             barcodeItemEntityMap.put(itemEntity.getBarcode(),itemEntity);
         }
         return  barcodeItemEntityMap;
+    }
+
+    private Map<String,ItemEntity> getOwningInstitutionItemIdItemEntityMap(List<ItemEntity> itemEntityList){
+        Map<String,ItemEntity> owningInstitutionItemIdItemEntityMap = new HashedMap();
+        for(ItemEntity itemEntity:itemEntityList){
+            owningInstitutionItemIdItemEntityMap.put(itemEntity.getOwningInstitutionItemId(),itemEntity);
+        }
+        return  owningInstitutionItemIdItemEntityMap;
     }
 
     /**
@@ -257,4 +290,12 @@ public class SubmitCollectionReportHelperService {
         return fetchedItemEntityList;
     }
 
+    public List<ItemEntity> getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(List<ItemEntity> itemEntityList){
+        List<String> owningInstitutionItemIdList = new ArrayList<>();
+        for(ItemEntity itemEntity:itemEntityList){
+            owningInstitutionItemIdList.add(itemEntity.getOwningInstitutionItemId());
+        }
+        List<ItemEntity> fetchedItemEntityList = repositoryService.getItemDetailsRepository().findByOwningInstitutionItemIdInAndOwningInstitutionId(owningInstitutionItemIdList,itemEntityList.get(0).getOwningInstitutionId());
+        return fetchedItemEntityList;
+    }
 }
