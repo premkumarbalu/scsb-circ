@@ -17,6 +17,7 @@ import org.recap.model.deaccession.DeAccessionSolrRequest;
 import org.recap.repository.*;
 import org.recap.request.GFAService;
 import org.recap.request.ItemRequestService;
+import org.recap.service.RestHeaderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -93,6 +94,13 @@ public class DeAccessionService {
      */
     @Autowired
     ItemRequestService itemRequestService;
+
+    @Autowired
+    RestHeaderService restHeaderService;
+
+    public RestHeaderService getRestHeaderService(){
+        return restHeaderService;
+    }
 
     /**
      * The Scsb solr client url.
@@ -682,7 +690,7 @@ public class DeAccessionService {
                     deAccessionSolrRequest.setItemIds(itemIds);
 
                     RestTemplate restTemplate = new RestTemplate();
-                    HttpEntity<DeAccessionSolrRequest> requestEntity = new HttpEntity(deAccessionSolrRequest, getHttpHeaders());
+                    HttpEntity<DeAccessionSolrRequest> requestEntity = new HttpEntity(deAccessionSolrRequest, getRestHeaderService().getHttpHeaders());
                     ResponseEntity<String> responseEntity = restTemplate.exchange(deAccessionSolrClientUrl, HttpMethod.POST, requestEntity, String.class);
                     logger.info("Deaccession Item Solr update status : " + responseEntity.getBody());
                 }
@@ -690,12 +698,5 @@ public class DeAccessionService {
         } catch (Exception e) {
             logger.error("Exception : ", e);
         }
-    }
-
-    private HttpHeaders getHttpHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set(ReCAPConstants.API_KEY, ReCAPConstants.RECAP);
-        return headers;
     }
 }
