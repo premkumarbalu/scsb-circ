@@ -47,10 +47,10 @@ public class StatusReconciliationFtpRouteBuilder {
                             .choice()
                                 .when(header(ReCAPConstants.FOR).isEqualTo(ReCAPConstants.STATUS_RECONCILIATION))
                                     .marshal().bindy(BindyType.Csv, StatusReconciliationCSVRecord.class)
-                                    .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + statusReconciliation + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + "&fileName=StatusReconciliation-${date:now:ddMMMyyyy-HH:mm:ss}.csv")
+                                    .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + statusReconciliation + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + "&fileName=StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv")
                                 .when(header(ReCAPConstants.FOR).isEqualTo(ReCAPConstants.STATUS_RECONCILIATION_FAILURE))
                                     .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
-                                    .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + statusReconciliation + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + "&fileName=StatusReconciliationFailure-${date:now:ddMMMyyyy-HH:mm:ss}.csv")
+                                    .to(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + statusReconciliation + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + "&fileName=StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv")
                                     .log("status reconciliation failure report generated in ftp");
                 }
             });
