@@ -17,6 +17,7 @@ import org.recap.repository.CustomerCodeDetailsRepository;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.RequestItemDetailsRepository;
 import org.recap.repository.RequestItemStatusDetailsRepository;
+import org.recap.service.RestHeaderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +88,13 @@ public class ItemRequestService {
 
     @Autowired
     private CustomerCodeDetailsRepository customerCodeDetailsRepository;
+
+    @Autowired
+    private RestHeaderService restHeaderService;
+
+    public RestHeaderService getRestHeaderService(){
+        return restHeaderService;
+    }
 
     public EmailService getEmailService() {
         return emailService;
@@ -636,7 +644,7 @@ public class ItemRequestService {
     public void updateSolrIndex(ItemEntity itemEntity) {
         try {
             RestTemplate restTemplate = new RestTemplate();
-            HttpEntity requestEntity = new HttpEntity<>(getHttpHeaders());
+            HttpEntity requestEntity = new HttpEntity<>(getRestHeaderService().getHttpHeaders());
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(scsbSolrClientUrl + ReCAPConstants.UPDATE_ITEM_STATUS_SOLR).queryParam(ReCAPConstants.UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID, itemEntity.getBarcode());
             ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
             logger.info(responseEntity.getBody());
@@ -656,7 +664,7 @@ public class ItemRequestService {
         SearchResultRow searchResultRow = null;
         try {
             RestTemplate restTemplate = new RestTemplate();
-            HttpEntity requestEntity = new HttpEntity<>(getHttpHeaders());
+            HttpEntity requestEntity = new HttpEntity<>(getRestHeaderService().getHttpHeaders());
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(scsbSolrClientUrl + ReCAPConstants.SEARCH_RECORDS_SOLR)
                     .queryParam(ReCAPConstants.SEARCH_RECORDS_SOLR_PARAM_FIELD_NAME, ReCAPConstants.SEARCH_RECORDS_SOLR_PARAM_FIELD_NAME_VALUE)
                     .queryParam(ReCAPConstants.SEARCH_RECORDS_SOLR_PARAM_FIELD_VALUE, itemEntity.getBarcode());
@@ -745,13 +753,6 @@ public class ItemRequestService {
             notes += screenMessage;
         }
         return notes;
-    }
-
-    private HttpHeaders getHttpHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set(ReCAPConstants.API_KEY, ReCAPConstants.RECAP);
-        return headers;
     }
 
     /**
