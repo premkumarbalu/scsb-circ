@@ -33,13 +33,13 @@ public class AccessionReconciliationEmailService {
     private String nyplEmailTo;
 
     @Value("${accession.reconciliation.email.pul.cc}")
-    private String pulEmailCc;
+    private String pulEmailCC;
 
     @Value("${accession.reconciliation.email.cul.cc}")
-    private String culEmailCc;
+    private String culEmailCC;
 
     @Value("${accession.reconciliation.email.nypl.cc}")
-    private String nyplEmailCc;
+    private String nyplEmailCC;
 
     private String institutionCode;
 
@@ -85,13 +85,13 @@ public class AccessionReconciliationEmailService {
      */
     public String emailIdTo(String institution, EmailPayLoad emailPayLoad) {
         if (ReCAPConstants.NYPL.equalsIgnoreCase(institution)) {
-            emailPayLoad.setCc(nyplEmailCc);
+            emailPayLoad.setCc(nyplEmailCC);
             emailPayLoad.setTo(nyplEmailTo);
         } else if (ReCAPConstants.COLUMBIA.equalsIgnoreCase(institution)) {
-            emailPayLoad.setCc(culEmailCc);
+            emailPayLoad.setCc(culEmailCC);
             emailPayLoad.setTo(culEmailTo);
         } else if (ReCAPConstants.PRINCETON.equalsIgnoreCase(institution)) {
-            emailPayLoad.setCc(pulEmailCc);
+            emailPayLoad.setCc(pulEmailCC);
             emailPayLoad.setTo(pulEmailTo);
         }
         return null;

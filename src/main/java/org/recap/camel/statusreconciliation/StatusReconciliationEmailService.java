@@ -26,7 +26,7 @@ public class StatusReconciliationEmailService {
     private String statusReconciliationEmailTo;
 
     @Value("${status.reconciliation.email.cc}")
-    private String statusReconciliationEmailCc;
+    private String statusReconciliationEmailCC;
 
     /**
      * Sets the email payload for the status reconciliation.
@@ -40,7 +40,7 @@ public class StatusReconciliationEmailService {
 
     private EmailPayLoad getEmailPayLoad(String FileLocation){
         EmailPayLoad emailPayLoad = new EmailPayLoad();
-        emailPayLoad.setCc(statusReconciliationEmailCc);
+        emailPayLoad.setCc(statusReconciliationEmailCC);
         emailPayLoad.setTo(statusReconciliationEmailTo);
         logger.info("Status Reconciliation : email sent to : {} and cc : {} ",emailPayLoad.getTo(),emailPayLoad.getCc());
         emailPayLoad.setMessageDisplay("The \"Out\" Status Reconciliation report is available at the FTP location "+FileLocation);

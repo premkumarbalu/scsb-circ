@@ -19,7 +19,7 @@ public class AccessionReconciliationEmailServiceUT {
         String institution = "PUL";
         AccessionReconciliationEmailService accessionReconciliationEmailService = new AccessionReconciliationEmailService(institution);
         ReflectionTestUtils.setField(accessionReconciliationEmailService,"pulEmailTo",emailAddress);
-        ReflectionTestUtils.setField(accessionReconciliationEmailService,"pulEmailCc",ccEmailAddress);
+        ReflectionTestUtils.setField(accessionReconciliationEmailService,"pulEmailCC",ccEmailAddress);
         accessionReconciliationEmailService.emailIdTo(institution, emailPayLoad);
         assertEquals(emailAddress,emailPayLoad.getTo());
         assertEquals(ccEmailAddress,emailPayLoad.getCc());
