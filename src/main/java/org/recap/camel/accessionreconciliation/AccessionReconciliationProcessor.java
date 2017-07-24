@@ -82,7 +82,7 @@ public class AccessionReconciliationProcessor {
             }
             if(index == 0){
                 Set<String> headerSet = new HashSet<>();
-                headerSet.add(ReCAPConstants.REQUEST_INITIAL_LOAD_HEADER);
+                headerSet.add(ReCAPConstants.ACCESSION_RECONCILIATION_HEADER);
                 Files.write(filePath,headerSet, StandardOpenOption.APPEND);
             }
             Files.write(filePath,body,StandardOpenOption.APPEND);

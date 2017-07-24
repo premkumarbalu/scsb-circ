@@ -25,6 +25,8 @@ public class StatusReconciliationEmailService {
     @Value("${status.reconciliation.email.to}")
     private String statusReconciliationEmailTo;
 
+    @Value("${status.reconciliation.email.cc}")
+    private String statusReconciliationEmailCc;
 
     /**
      * Sets the email payload for the status reconciliation.
@@ -38,9 +40,10 @@ public class StatusReconciliationEmailService {
 
     private EmailPayLoad getEmailPayLoad(String FileLocation){
         EmailPayLoad emailPayLoad = new EmailPayLoad();
+        emailPayLoad.setCc(statusReconciliationEmailCc);
         emailPayLoad.setTo(statusReconciliationEmailTo);
-        logger.info("Status Reconciliatiion : email sent to "+emailPayLoad.getTo());
-        emailPayLoad.setMessageDisplay("Status Recocilation report has Generated in the ftp location - "+FileLocation);
+        logger.info("Status Reconciliation : email sent to : {} and cc : {} ",emailPayLoad.getTo(),emailPayLoad.getCc());
+        emailPayLoad.setMessageDisplay("The \"Out\" Status Reconciliation report is available at the FTP location "+FileLocation);
         return emailPayLoad;
     }
 }

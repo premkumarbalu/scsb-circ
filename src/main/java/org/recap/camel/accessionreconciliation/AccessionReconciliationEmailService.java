@@ -32,19 +32,19 @@ public class AccessionReconciliationEmailService {
     @Value("${accession.reconciliation.email.nypl.to}")
     private String nyplEmailTo;
 
-    @Value("${ftp.accession.reconciliation.processed.pul}")
-    private String pulReportLocation;
+    @Value("${accession.reconciliation.email.pul.cc}")
+    private String pulEmailCc;
 
-    @Value("${ftp.accession.reconciliation.processed.cul}")
-    private String culReportLocation;
+    @Value("${accession.reconciliation.email.cul.cc}")
+    private String culEmailCc;
 
-    @Value("${ftp.accession.reconciliation.processed.nypl}")
-    private String nyplReportLocation;
+    @Value("${accession.reconciliation.email.nypl.cc}")
+    private String nyplEmailCc;
 
     private String institutionCode;
 
     /**
-     * Instantiates a new Accession reconcialtion email service.
+     * Instantiates a new Accession reconciliation email service.
      *
      * @param institutionCode the institution code
      */
@@ -53,58 +53,46 @@ public class AccessionReconciliationEmailService {
     }
 
     /**
-     * Process input for accession reconcialtion email service.
+     * Process input for accession reconciliation email service.
      *
      * @param exchange the exchange
      */
     public void processInput(Exchange exchange) {
         logger.info("accession email started for"+institutionCode);
-        producerTemplate.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(), ReCAPConstants.EMAIL_BODY_FOR,"AccessionReconcilation");
+        producerTemplate.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(exchange), ReCAPConstants.EMAIL_BODY_FOR,"AccessionReconcilation");
     }
 
     /**
-     * Get email pay load for accession reconcialtion email service.
+     * Get email pay load for accession reconciliation email service.
      *
      * @return the email pay load
      */
-    public EmailPayLoad getEmailPayLoad(){
+    public EmailPayLoad getEmailPayLoad(Exchange exchange){
         EmailPayLoad emailPayLoad = new EmailPayLoad();
-        emailPayLoad.setTo(emailIdTo(institutionCode));
-        logger.info("Accession Reconciliation email sent to "+emailPayLoad.getTo());
-        emailPayLoad.setMessageDisplay("Accession reconciliation report had generated for the "+institutionCode+" in the location - "+reportLocation(institutionCode));
+        String fileNameWithPath = (String)exchange.getIn().getHeader("CamelFileNameProduced");
+        emailIdTo(institutionCode,emailPayLoad);
+        logger.info("Accession Reconciliation email sent to : {} and cc : {} ",emailPayLoad.getTo(),emailPayLoad.getCc());
+        emailPayLoad.setMessageDisplay("Barcode Reconciliation has been completed for "+institutionCode.toUpperCase()+". The report is at the FTP location "+fileNameWithPath);
         return emailPayLoad;
     }
 
     /**
-     * Generate Email To id for accession reconcialtion email service.
+     * Generate Email To id for accession reconciliation email service.
      *
      * @param institution the institution
+     * @param emailPayLoad
      * @return the string
      */
-    public String emailIdTo(String institution) {
+    public String emailIdTo(String institution, EmailPayLoad emailPayLoad) {
         if (ReCAPConstants.NYPL.equalsIgnoreCase(institution)) {
-            return nyplEmailTo;
+            emailPayLoad.setCc(nyplEmailCc);
+            emailPayLoad.setTo(nyplEmailTo);
         } else if (ReCAPConstants.COLUMBIA.equalsIgnoreCase(institution)) {
-            return culEmailTo;
+            emailPayLoad.setCc(culEmailCc);
+            emailPayLoad.setTo(culEmailTo);
         } else if (ReCAPConstants.PRINCETON.equalsIgnoreCase(institution)) {
-            return pulEmailTo;
-        }
-        return null;
-    }
-
-    /**
-     * Generate report location for accession reconcialtion email service.
-     *
-     * @param institution the institution
-     * @return the string
-     */
-    public String reportLocation(String institution) {
-        if (ReCAPConstants.PRINCETON.equalsIgnoreCase(institution)) {
-            return pulReportLocation;
-        } else if (ReCAPConstants.COLUMBIA.equalsIgnoreCase(institution)) {
-            return culReportLocation;
-        } else if (ReCAPConstants.NYPL.equalsIgnoreCase(institution)) {
-            return nyplReportLocation;
+            emailPayLoad.setCc(pulEmailCc);
+            emailPayLoad.setTo(pulEmailTo);
         }
         return null;
     }
