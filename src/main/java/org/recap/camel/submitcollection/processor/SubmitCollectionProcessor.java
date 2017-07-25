@@ -124,20 +124,30 @@ public class SubmitCollectionProcessor {
         emailPayLoad.setXmlFileName(xmlFileName);
         if(ReCAPConstants.PRINCETON.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToPUL);
-            emailPayLoad.setLocation(submitCollectionPULReportLocation);
+            emailPayLoad.setLocation(getFtpLocation(submitCollectionPULReportLocation));
             emailPayLoad.setInstitution(ReCAPConstants.PRINCETON);
             emailPayLoad.setCc(emailCCForPul);
         } else if(ReCAPConstants.COLUMBIA.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToCUL);
-            emailPayLoad.setLocation(submitCollectionCULReportLocation);
+            emailPayLoad.setLocation(getFtpLocation(submitCollectionCULReportLocation));
             emailPayLoad.setInstitution(ReCAPConstants.COLUMBIA);
             emailPayLoad.setCc(emailCCForCul);
         } else if(ReCAPConstants.NYPL.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToNYPL);
-            emailPayLoad.setLocation(submitCollectionNYPLReportLocation);
+            emailPayLoad.setLocation(getFtpLocation(submitCollectionNYPLReportLocation));
             emailPayLoad.setInstitution(ReCAPConstants.NYPL);
             emailPayLoad.setCc(emailCCForNypl);
         }
         return  emailPayLoad;
+    }
+
+    private String getFtpLocation(String ftpLocation) {
+        if (ftpLocation.contains(ReCAPConstants.FTP_PORT)){
+            String[] splittedFtpLocation = ftpLocation.split(ReCAPConstants.FTP_PORT);
+            return splittedFtpLocation[1];
+        }else {
+            return ftpLocation;
+        }
+
     }
 }

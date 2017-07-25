@@ -116,15 +116,25 @@ public class StartNextRoute implements Processor{
         emailPayLoad.setSubject(submitCollectionEmailSubjectForEmptyDirectory);
         if(ReCAPConstants.PRINCETON.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToPUL);
-            emailPayLoad.setLocation(submitCollectionPULReportLocation);
+            emailPayLoad.setLocation(getFtpLocation(submitCollectionPULReportLocation));
         } else if(ReCAPConstants.COLUMBIA.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToCUL);
-            emailPayLoad.setLocation(submitCollectionCULReportLocation);
+            emailPayLoad.setLocation(getFtpLocation(submitCollectionCULReportLocation));
         } else if(ReCAPConstants.NYPL.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToNYPL);
-            emailPayLoad.setLocation(submitCollectionNYPLReportLocation);
+            emailPayLoad.setLocation(getFtpLocation(submitCollectionNYPLReportLocation));
         }
         return  emailPayLoad;
+    }
+
+    private String getFtpLocation(String ftpLocation) {
+        if (ftpLocation.contains(ReCAPConstants.FTP_PORT)){
+            String[] splittedFtpLocation = ftpLocation.split(ReCAPConstants.FTP_PORT);
+            return splittedFtpLocation[1];
+        }else {
+            return ftpLocation;
+        }
+
     }
 
 }
