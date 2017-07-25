@@ -182,7 +182,7 @@ public class SubmitCollectionDAOService {
         for (ItemEntity itemEntity : bibliographicEntity.getItemEntities()) {
             itemBarcodeList.add(itemEntity.getBarcode());
         }
-        List<ItemEntity> itemEntityList = repositoryService.getItemDetailsRepository().findByBarcodeIn(itemBarcodeList);
+        List<ItemEntity> itemEntityList = repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,bibliographicEntity.getOwningInstitutionId());
         BibliographicEntity fetchedBibliographicEntity = null;
         if (itemEntityList != null && !itemEntityList.isEmpty() && itemEntityList.get(0).getBibliographicEntities() != null) {
             boolean isBoundWith = isBoundWithItem(itemEntityList.get(0));

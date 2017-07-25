@@ -84,6 +84,15 @@ public interface ItemDetailsRepository extends PagingAndSortingRepository<ItemEn
     List<ItemEntity> findByBarcodeIn(List<String> barcodes);
 
     /**
+     * Find list of ItemEntity based on the give list of barcodes and owning institution id.
+     *
+     * @param barcodes            the barcodes
+     * @param owningInstitutionId the owning institution id
+     * @return the list
+     */
+    List<ItemEntity> findByBarcodeInAndOwningInstitutionId(List<String> barcodes, Integer owningInstitutionId);
+
+    /**
      * Find by barcode in and complete list.
      *
      * @param barcodes the barcodes
