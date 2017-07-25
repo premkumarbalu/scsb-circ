@@ -8,6 +8,7 @@ import org.recap.service.common.SetupDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -32,6 +33,9 @@ public class SubmitCollectionDAOService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Value("${nonholdingid.institution}")
+    private String nonHoldingIdInstitution;
 
     /**
      * This method updates the Bib, Holding and Item information for the given input xml
@@ -115,17 +119,25 @@ public class SubmitCollectionDAOService {
 
     private BibliographicEntity updateCompleteRecord(BibliographicEntity fetchBibliographicEntity, BibliographicEntity incomingBibliographicEntity,
                                                      Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
-        BibliographicEntity savedOrUnsavedBibliographicEntity;
+        BibliographicEntity savedOrUnsavedBibliographicEntity = null;
         copyBibliographicEntity(fetchBibliographicEntity, incomingBibliographicEntity);
         List<HoldingsEntity> fetchedHoldingsEntityList = fetchBibliographicEntity.getHoldingsEntities();
         List<HoldingsEntity> incomingHoldingsEntityList = new ArrayList<>(incomingBibliographicEntity.getHoldingsEntities());
         List<ItemEntity> updatedItemEntityList = new ArrayList<>();
+        boolean isValidHoldingToUpdate = false;
+        boolean isValidItemToUpdate = false;
+        String[] nonHoldingIdInstitutionArray = nonHoldingIdInstitution.split(",");
+        String institutionCode = (String) setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId());
+        boolean isNonHoldingIdInstitution = Arrays.asList(nonHoldingIdInstitutionArray).contains(institutionCode);
+
         for(HoldingsEntity incomingHoldingsEntity:incomingHoldingsEntityList){
             for(HoldingsEntity fetchedHoldingsEntity:fetchedHoldingsEntityList){
                 if (fetchedHoldingsEntity.getOwningInstitutionHoldingsId().equalsIgnoreCase(incomingHoldingsEntity.getOwningInstitutionHoldingsId())) {
                     copyHoldingsEntity(fetchedHoldingsEntity, incomingHoldingsEntity,false);
-                } else {//Added to handle bound with records
+                    isValidHoldingToUpdate = true;
+                } else if(isNonHoldingIdInstitution){//Added to handle non holding id institution
                     manageHoldingWithItem(incomingHoldingsEntity, fetchedHoldingsEntity);
+                    isValidHoldingToUpdate = true;
                 }
             }
         }
@@ -136,6 +148,7 @@ public class SubmitCollectionDAOService {
             for(ItemEntity fetchedItemEntity:fetchItemEntityList){
                 if (fetchedItemEntity.getOwningInstitutionItemId().equalsIgnoreCase(incomingItemEntity.getOwningInstitutionItemId())) {
                     copyItemEntity(fetchedItemEntity, incomingItemEntity,updatedItemEntityList);
+                    isValidItemToUpdate = true;
                 }
             }
         }
@@ -144,8 +157,10 @@ public class SubmitCollectionDAOService {
         fetchBibliographicEntity.setItemEntities(fetchItemEntityList);
         try {
             updateCatalogingStatusForBib(fetchBibliographicEntity);
-            savedOrUnsavedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().saveAndFlush(fetchBibliographicEntity);
-            saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, ReCAPConstants.SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE,updatedItemEntityList);
+            if (isValidHoldingToUpdate && isValidItemToUpdate) {
+                savedOrUnsavedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().saveAndFlush(fetchBibliographicEntity);
+                saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, ReCAPConstants.SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE,updatedItemEntityList);
+            }
             submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,fetchBibliographicEntity,incomingBibliographicEntity);
             return savedOrUnsavedBibliographicEntity;
         } catch (Exception e) {
