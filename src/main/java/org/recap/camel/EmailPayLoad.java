@@ -8,13 +8,17 @@ import java.io.Serializable;
 public class EmailPayLoad implements Serializable{
 
     private String to;
+    private String cc;
     private String subject;
     private String itemBarcode;
     private String patronBarcode;
     private String customerCode;
     private String messageDisplay;
     private String location;
-    private String cc;
+    private String institution;
+    private String reportFileName;
+    private String xmlFileName;
+
 
     /**
      * Gets to.
@@ -32,6 +36,24 @@ public class EmailPayLoad implements Serializable{
      */
     public void setTo(String to) {
         this.to = to;
+    }
+
+    /**
+     * Gets cc.
+     *
+     * @return the cc
+     */
+    public String getCc() {
+        return cc;
+    }
+
+    /**
+     * Sets cc.
+     *
+     * @param cc the cc
+     */
+    public void setCc(String cc) {
+        this.cc = cc;
     }
 
     /**
@@ -142,11 +164,57 @@ public class EmailPayLoad implements Serializable{
         this.location = location;
     }
 
-    public String getCc() {
-        return cc;
+    /**
+     * Gets institution.
+     *
+     * @return the institution
+     */
+    public String getInstitution() {
+        return institution;
     }
 
-    public void setCc(String cc) {
-        this.cc = cc;
+    /**
+     * Sets institution.
+     *
+     * @param institution the institution
+     */
+    public void setInstitution(String institution) {
+        this.institution = institution;
+    }
+
+    /**
+     * Gets file name.
+     *
+     * @return the file name
+     */
+    public String getReportFileName() {
+        return reportFileName;
+    }
+
+    /**
+     * Sets file name.
+     *
+     * @param reportFileName the file name
+     */
+    public void setReportFileName(String reportFileName) {
+        this.reportFileName = reportFileName;
+    }
+
+    /**
+     * Gets xml file name.
+     *
+     * @return the xml file name
+     */
+    public String getXmlFileName() {
+        return xmlFileName;
+    }
+
+    /**
+     * Sets xml file name.
+     *
+     * @param xmlFileName the xml file name
+     */
+    public void setXmlFileName(String xmlFileName) {
+        this.xmlFileName = xmlFileName;
     }
 }

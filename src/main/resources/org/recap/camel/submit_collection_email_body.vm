@@ -1,3 +1,1 @@
-Submit collection completed successfully.
-
-Report have been generated and ftp to ${header.emailPayLoad.location}
+Submit Collection has been completed for ${header.emailPayLoad.xmlFileName} ${header.emailPayLoad.institution}. The report ${header.emailPayLoad.reportFileName} is at the FTP location ${header.emailPayLoad.location}.
