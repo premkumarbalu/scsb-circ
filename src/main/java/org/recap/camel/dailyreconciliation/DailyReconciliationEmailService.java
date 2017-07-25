@@ -38,7 +38,7 @@ public class DailyReconciliationEmailService{
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setTo(emailTo);
         logger.info("Daily Reconciliation email sent to "+emailPayLoad.getTo());
-        emailPayLoad.setMessageDisplay("Daily reconciliation report has generated in the FTP location : "+fileLocation);
+        emailPayLoad.setMessageDisplay("Daily reconciliation report is available at the FTP location "+fileLocation);
         return emailPayLoad;
     }
 }

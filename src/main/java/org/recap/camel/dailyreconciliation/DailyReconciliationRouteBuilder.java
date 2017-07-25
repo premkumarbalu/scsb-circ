@@ -59,7 +59,7 @@ public class DailyReconciliationRouteBuilder {
                     from(ReCAPConstants.DAILY_RR_FS_FILE+filePath+ReCAPConstants.DAILY_RR_FS_OPTIONS)
                             .routeId(ReCAPConstants.DAILY_RR_FS_ROUTE_ID)
                             .noAutoStartup()
-                            .to(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + dailyReconciliationFtpProcessed + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost)
+                            .to(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + dailyReconciliationFtpProcessed + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+"&fileName=DailyReconciliation_${date:now:yyyyMMdd_HHmmss}.xlsx")
                             .onCompletion()
                             .bean(applicationContext.getBean(DailyReconciliationEmailService.class))
                             .process(new StopRouteProcessor(ReCAPConstants.DAILY_RR_FS_ROUTE_ID))
