@@ -143,7 +143,7 @@ public final class ReCAPConstants {
     public static final String FORMAT_MARC = "marc";
     public static final String FORMAT_SCSB = "scsb";
 
-    public static final String SUBMIT_COLLECTION_REPORT = "Submit_Collection_Report";
+    public static final String SUBMIT_COLLECTION_REPORT = "Submit_Coll";
     public static final String SUBMIT_COLLECTION_REJECTION_REPORT = "Submit_Collection_Rejection_Report";
     public static final String SUBMIT_COLLECTION_EXCEPTION_REPORT = "Submit_Collection_Exception_Report";
     public static final String SUBMIT_COLLECTION_SUCCESS_REPORT = "Submit_Collection_Success_Report";
@@ -303,6 +303,8 @@ public final class ReCAPConstants {
     public static final String REQUEST_ITEM_CANCELED_FOR_DEACCESSION = "The request for this item has been canceled because the item has been deaccessioned.";
     public static final String REASON_CANCEL_REQUEST_FAILED = "Canceling hold for the requested item failed for the reason";
     public static final String DISCOVERY = "Discovery";
+
+    public static final String DATE_FORMAT_FOR_FILE_NAME = "yyyyMMdd_HHmmss";
 
 
     //Logger

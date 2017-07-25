@@ -59,6 +59,12 @@ public class SubmitCollectionProcessor {
     private String institutionCode;
 
     private boolean isCGDProtection;
+    @Value("${submit.collection.email.pul.cc}")
+    private String emailCCForPul;
+    @Value("${submit.collection.email.cul.cc}")
+    private String emailCCForCul;
+    @Value("${submit.collection.email.nypl.cc}")
+    private String emailCCForNypl;
 
     public SubmitCollectionProcessor(String inputInstitutionCode,boolean isCGDProtection) {
         this.institutionCode = inputInstitutionCode;
@@ -92,8 +98,8 @@ public class SubmitCollectionProcessor {
                 }
             }
             ReportDataRequest reportRequest = getReportDataRequest(xmlFileName);
-            submitCollectionReportGenerator.generateReport(reportRequest);
-            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION);
+            String generatedReportFileName = submitCollectionReportGenerator.generateReport(reportRequest);
+            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(xmlFileName,generatedReportFileName), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION);
             stopWatch.stop();
             logger.info("Submit Collection : Total time taken for processing through ftp---> {}",stopWatch.getTotalTimeSeconds());
         } catch (Exception e) {
@@ -111,18 +117,26 @@ public class SubmitCollectionProcessor {
         return reportRequest;
     }
 
-    private EmailPayLoad getEmailPayLoad() {
+    private EmailPayLoad getEmailPayLoad(String xmlFileName,String reportFileName) {
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setSubject(submitCollectionEmailSubject);
+        emailPayLoad.setReportFileName(reportFileName);
+        emailPayLoad.setXmlFileName(xmlFileName);
         if(ReCAPConstants.PRINCETON.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToPUL);
             emailPayLoad.setLocation(submitCollectionPULReportLocation);
+            emailPayLoad.setInstitution(ReCAPConstants.PRINCETON);
+            emailPayLoad.setCc(emailCCForPul);
         } else if(ReCAPConstants.COLUMBIA.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToCUL);
             emailPayLoad.setLocation(submitCollectionCULReportLocation);
+            emailPayLoad.setInstitution(ReCAPConstants.COLUMBIA);
+            emailPayLoad.setCc(emailCCForCul);
         } else if(ReCAPConstants.NYPL.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToNYPL);
             emailPayLoad.setLocation(submitCollectionNYPLReportLocation);
+            emailPayLoad.setInstitution(ReCAPConstants.NYPL);
+            emailPayLoad.setCc(emailCCForNypl);
         }
         return  emailPayLoad;
     }
