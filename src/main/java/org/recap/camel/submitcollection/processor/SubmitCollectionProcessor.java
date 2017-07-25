@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -142,8 +143,8 @@ public class SubmitCollectionProcessor {
     }
 
     private String getFtpLocation(String ftpLocation) {
-        if (ftpLocation.contains(ReCAPConstants.FTP_PORT)){
-            String[] splittedFtpLocation = ftpLocation.split(ReCAPConstants.FTP_PORT);
+        if (ftpLocation.contains(File.separator)){
+            String[] splittedFtpLocation = ftpLocation.split(File.separator,2);
             return splittedFtpLocation[1];
         }else {
             return ftpLocation;

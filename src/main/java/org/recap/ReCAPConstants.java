@@ -489,7 +489,6 @@ public final class ReCAPConstants {
     public static final String REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE = "requestInitialLoadCulDirectRoute";
     public static final String REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE = "requestInitialLoadNyplDirectRoute";
     public static final String ACCESSION_RECONCILIATION_HEADER = "Barcodes not present in SCSB";
-    public static final String FTP_PORT = "2222";
 
     private ReCAPConstants() {
     }
