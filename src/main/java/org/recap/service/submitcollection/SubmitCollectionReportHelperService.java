@@ -2,6 +2,9 @@ package org.recap.service.submitcollection;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
+import org.marc4j.marc.DataField;
+import org.marc4j.marc.Record;
+import org.marc4j.marc.Subfield;
 import org.recap.ReCAPConstants;
 import org.recap.model.BibliographicEntity;
 import org.recap.model.HoldingsEntity;
@@ -10,15 +13,14 @@ import org.recap.model.ItemStatusEntity;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.service.common.RepositoryService;
 import org.recap.service.common.SetupDataService;
+import org.recap.util.MarcUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by premkb on 11/6/17.
@@ -34,6 +36,11 @@ public class SubmitCollectionReportHelperService {
     @Autowired
     private SetupDataService setupDataService;
 
+    @Autowired
+    private MarcUtil marcUtil;
+
+    @Value("${nonholdingid.institution}")
+    private String nonHoldingIdInstitution;
 
     /**
      * This method sets submit collection report information based on the given information.
@@ -254,15 +261,42 @@ public class SubmitCollectionReportHelperService {
     }
 
     private Map<String,Map<String,ItemEntity>> getHoldingItemIdMap(BibliographicEntity bibliographicEntity){
+        String[] nonHoldingIdInstitutionArray = nonHoldingIdInstitution.split(",");
+        String institutionCode = (String) setupDataService.getInstitutionIdCodeMap().get(bibliographicEntity.getOwningInstitutionId());
         Map<String,Map<String,ItemEntity>> holdingItemMap = new HashMap<>();
         Map<String,ItemEntity> itemEntityMap = new HashMap<>();
         for(HoldingsEntity holdingsEntity:bibliographicEntity.getHoldingsEntities()){
             for(ItemEntity itemEntity:holdingsEntity.getItemEntities()){
                 itemEntityMap.put(itemEntity.getOwningInstitutionItemId(),itemEntity);
             }
-            holdingItemMap.put(holdingsEntity.getOwningInstitutionHoldingsId(),itemEntityMap);
+            if(Arrays.asList(nonHoldingIdInstitutionArray).contains(institutionCode)){
+                holdingItemMap.put(get852b(holdingsEntity),itemEntityMap);
+            } else {
+                holdingItemMap.put(holdingsEntity.getOwningInstitutionHoldingsId(),itemEntityMap);
+            }
         }
         return holdingItemMap;
+    }
+
+    private String get852b(HoldingsEntity holdingsEntity) {
+        byte[] holdingContent = holdingsEntity.getContent();
+        List<Record> holdingRecordList = marcUtil.readMarcXml(new String(holdingContent));
+        DataField incoming852DataField = get852(holdingRecordList);
+        Subfield incomingSubFieldb = incoming852DataField != null ? incoming852DataField.getSubfield('b') : null;
+        String value = incomingSubFieldb.getData();
+        return value;
+    }
+
+    private DataField get852(List<Record> recordList){
+        for(Record record:recordList){
+            List<DataField> dataFieldList = record.getDataFields();
+            for (DataField dataField:dataFieldList){
+                if (dataField.getTag().equals("852")) {
+                    return dataField;
+                }
+            }
+        }
+        return null;
     }
 
     private ItemEntity getMismatchedItemEntity(ItemEntity incomingItemEntity, Map<String,ItemEntity> fetchedOwningItemIdBarcodeMap){
