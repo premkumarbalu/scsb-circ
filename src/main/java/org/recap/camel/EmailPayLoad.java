@@ -14,6 +14,7 @@ public class EmailPayLoad implements Serializable{
     private String customerCode;
     private String messageDisplay;
     private String location;
+    private String cc;
 
     /**
      * Gets to.
@@ -139,5 +140,13 @@ public class EmailPayLoad implements Serializable{
      */
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public String getCc() {
+        return cc;
+    }
+
+    public void setCc(String cc) {
+        this.cc = cc;
     }
 }

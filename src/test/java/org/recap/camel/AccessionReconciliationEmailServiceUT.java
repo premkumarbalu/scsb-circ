@@ -13,21 +13,16 @@ public class AccessionReconciliationEmailServiceUT {
 
     @Test
     public void testEmailIdTo() throws Exception{
+        EmailPayLoad emailPayLoad = new EmailPayLoad();
         String emailAddress = "test@mail.com";
+        String ccEmailAddress = "testcc@mail.com";
         String institution = "PUL";
         AccessionReconciliationEmailService accessionReconciliationEmailService = new AccessionReconciliationEmailService(institution);
         ReflectionTestUtils.setField(accessionReconciliationEmailService,"pulEmailTo",emailAddress);
-        String email = accessionReconciliationEmailService.emailIdTo(institution);
-        assertEquals(emailAddress,email);
+        ReflectionTestUtils.setField(accessionReconciliationEmailService,"pulEmailCC",ccEmailAddress);
+        accessionReconciliationEmailService.emailIdTo(institution, emailPayLoad);
+        assertEquals(emailAddress,emailPayLoad.getTo());
+        assertEquals(ccEmailAddress,emailPayLoad.getCc());
     }
 
-    @Test
-    public void testReportLocation() throws Exception{
-        String reportLocation = "accession-reconcilation/processed/local/pul";
-        String institution = "PUL";
-        AccessionReconciliationEmailService accessionReconciliationEmailService = new AccessionReconciliationEmailService(institution);
-        ReflectionTestUtils.setField(accessionReconciliationEmailService,"pulReportLocation",reportLocation);
-        String location = accessionReconciliationEmailService.reportLocation(institution);
-        assertEquals(reportLocation,location);
-    }
 }
