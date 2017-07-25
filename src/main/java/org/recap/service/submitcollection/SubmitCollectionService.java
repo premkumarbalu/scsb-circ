@@ -160,9 +160,10 @@ public class SubmitCollectionService {
         }
         if (CollectionUtils.isNotEmpty(records)) {
             int count = 1;
+            Set<String> processedBarcodeSet = new HashSet<>();
             for (Record record : records) {
                 logger.info("Processing record no: {}",count);
-                BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndex,isCGDProtection,institutionEntity);
+                BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndex,isCGDProtection,institutionEntity,processedBarcodeSet);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
@@ -194,10 +195,11 @@ public class SubmitCollectionService {
             return ReCAPConstants.INVALID_SCSB_XML_FORMAT_MESSAGE;
         }
         int count = 1;
+        Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
         for (BibRecord bibRecord : bibRecords.getBibRecords()) {
             logger.info("Processing Bib record no: {}",count);
             try {
-                BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndex,isCGDProtected,institutionEntity);
+                BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndex,isCGDProtected,institutionEntity,processedBarcodeSetForDummyRecords);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
@@ -216,7 +218,7 @@ public class SubmitCollectionService {
     }
 
     private BibliographicEntity loadData(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String,String> idMapToRemoveIndex
-            ,boolean isCGDProtected,InstitutionEntity institutionEntity){
+            ,boolean isCGDProtected,InstitutionEntity institutionEntity,Set<String> processedBarcodeSetForDummyRecords){
         BibliographicEntity savedBibliographicEntity = null;
         Map responseMap = getConverter(format).convert(record,institutionEntity);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) responseMap.get("bibliographicEntity");
@@ -226,7 +228,7 @@ public class SubmitCollectionService {
             repositoryService.getReportDetailRepository().save(reportEntityList);
         }
         if (bibliographicEntity != null) {
-            savedBibliographicEntity = submitCollectionDAOService.updateBibliographicEntity(bibliographicEntity, submitCollectionReportInfoMap,idMapToRemoveIndex);
+            savedBibliographicEntity = submitCollectionDAOService.updateBibliographicEntity(bibliographicEntity, submitCollectionReportInfoMap,idMapToRemoveIndex,processedBarcodeSetForDummyRecords);
         }
         return savedBibliographicEntity;
     }
