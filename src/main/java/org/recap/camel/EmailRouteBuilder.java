@@ -111,7 +111,7 @@ public class EmailRouteBuilder {
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.DAILY_RECONCILIATION))
                                     .log("email for Daily Reconciliation")
-                                    .setHeader("subject", simple("Daily Reconciliation"))
+                                    .setHeader("subject", simple("Daily Reconciliation Report"))
                                     .setBody(simple("${header.emailPayLoad.messageDisplay}"))
                                     .setHeader("from", simple(from))
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
