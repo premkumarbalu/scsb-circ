@@ -25,20 +25,8 @@ public class StartNextRoute implements Processor{
     @Autowired
     private ProducerTemplate producer;
 
-    @Value("${submit.collection.email.subject}")
-    private String submitCollectionEmailSubject;
-
     @Value("${submit.collection.email.subject.for.empty.directory}")
     private String submitCollectionEmailSubjectForEmptyDirectory;
-
-    @Value("${ftp.submit.collection.pul.report}")
-    private String submitCollectionPULReportLocation;
-
-    @Value("${ftp.submit.collection.cul.report}")
-    private String submitCollectionCULReportLocation;
-
-    @Value("${ftp.submit.collection.nypl.report}")
-    private String submitCollectionNYPLReportLocation;
 
     @Value("${submit.collection.email.pul.to}")
     private String emailToPUL;
@@ -90,51 +78,40 @@ public class StartNextRoute implements Processor{
      * @throws Exception
      */
     public void sendEmailForEmptyDirectory(Exchange exchange) throws Exception {
+        String ftpLocationPath = (String) exchange.getFromEndpoint().getEndpointConfiguration().getParameter("path");
         if(routeId.equalsIgnoreCase(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE )){
-            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.PRINCETON), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
+            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.PRINCETON,ftpLocationPath), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
             logger.info("Email Sent");
         }
         else if(routeId.equalsIgnoreCase(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_PUL_ROUTE)){
-            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.PRINCETON), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
+            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.PRINCETON, ftpLocationPath), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
         }
         else if(routeId.equalsIgnoreCase(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE)){
-            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.COLUMBIA), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
+            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.COLUMBIA, ftpLocationPath), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
         }
         else if(routeId.equalsIgnoreCase(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_CUL_ROUTE)){
-            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.COLUMBIA), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
+            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.COLUMBIA, ftpLocationPath), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
         }
         else if(routeId.equalsIgnoreCase(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE)){
-            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.NYPL), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
+            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.NYPL, ftpLocationPath), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
         }
         else if(routeId.equalsIgnoreCase(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE)){
-            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.NYPL), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
+            producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(ReCAPConstants.NYPL, ftpLocationPath), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
         }
     }
 
-    private EmailPayLoad getEmailPayLoad(String institutionCode) {
+    private EmailPayLoad getEmailPayLoad(String institutionCode, String ftpLocationPath) {
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setSubject(submitCollectionEmailSubjectForEmptyDirectory);
+        emailPayLoad.setLocation(ftpLocationPath);
         if(ReCAPConstants.PRINCETON.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToPUL);
-            emailPayLoad.setLocation(getFtpLocation(submitCollectionPULReportLocation));
         } else if(ReCAPConstants.COLUMBIA.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToCUL);
-            emailPayLoad.setLocation(getFtpLocation(submitCollectionCULReportLocation));
         } else if(ReCAPConstants.NYPL.equalsIgnoreCase(institutionCode)){
             emailPayLoad.setTo(emailToNYPL);
-            emailPayLoad.setLocation(getFtpLocation(submitCollectionNYPLReportLocation));
         }
         return  emailPayLoad;
-    }
-
-    private String getFtpLocation(String ftpLocation) {
-        if (ftpLocation.contains(ReCAPConstants.FTP_PORT)){
-            String[] splittedFtpLocation = ftpLocation.split(ReCAPConstants.FTP_PORT);
-            return splittedFtpLocation[1];
-        }else {
-            return ftpLocation;
-        }
-
     }
 
 }
