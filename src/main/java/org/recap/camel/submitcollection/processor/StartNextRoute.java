@@ -28,13 +28,13 @@ public class StartNextRoute implements Processor{
     @Value("${submit.collection.email.subject.for.empty.directory}")
     private String submitCollectionEmailSubjectForEmptyDirectory;
 
-    @Value("${submit.collection.email.pul.to}")
+    @Value("${submit.collection.nofiles.email.pul.to}")
     private String emailToPUL;
 
-    @Value("${submit.collection.email.cul.to}")
+    @Value("${submit.collection.nofiles.email.cul.to}")
     private String emailToCUL;
 
-    @Value("${submit.collection.email.nypl.to}")
+    @Value("${submit.collection.nofiles.email.nypl.to}")
     private String emailToNYPL;
 
 
