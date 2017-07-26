@@ -57,12 +57,16 @@ public class SubmitCollectionDAOService {
             }
         } else {//if no record found to update, generate exception info
             savedBibliographicEntity = bibliographicEntity;
-            boolean isBarcodeAlreadyAdded = submitCollectionReportHelperService.isBarcodeAlreadyAdded(bibliographicEntity.getItemEntities().get(0),submitCollectionReportInfoMap);
-            if (!isBarcodeAlreadyAdded) {//This is to avoid repeated error message for non-existing boundwith records
-                submitCollectionReportHelperService.setSubmitCollectionExceptionReportInfo(bibliographicEntity.getItemEntities(),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
-            }
+            addExceptionReport(bibliographicEntity.getItemEntities(), submitCollectionReportInfoMap);
         }
         return savedBibliographicEntity;
+    }
+
+    private void addExceptionReport(List<ItemEntity> itemEntityList, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
+        boolean isBarcodeAlreadyAdded = submitCollectionReportHelperService.isBarcodeAlreadyAdded(itemEntityList.get(0),submitCollectionReportInfoMap);
+        if (!isBarcodeAlreadyAdded) {//This is to avoid repeated error message for non-existing boundwith records
+            submitCollectionReportHelperService.setSubmitCollectionExceptionReportInfo(itemEntityList,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
+        }
     }
 
     private BibliographicEntity updateDummyRecord(BibliographicEntity bibliographicEntity, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String, String> idMapToRemoveIndex, Set<String> processedBarcodeSet, BibliographicEntity savedBibliographicEntity, BibliographicEntity fetchBibliographicEntity) {
@@ -145,11 +149,20 @@ public class SubmitCollectionDAOService {
         List<ItemEntity> fetchItemEntityList = fetchBibliographicEntity.getItemEntities();
         List<ItemEntity> incomingItemEntityList = new ArrayList<>(incomingBibliographicEntity.getItemEntities());
         for(ItemEntity incomingItemEntity:incomingItemEntityList){
+            boolean isItemUpdated = false;
             for(ItemEntity fetchedItemEntity:fetchItemEntityList){
                 if (fetchedItemEntity.getOwningInstitutionItemId().equalsIgnoreCase(incomingItemEntity.getOwningInstitutionItemId())) {
-                    copyItemEntity(fetchedItemEntity, incomingItemEntity,updatedItemEntityList);
-                    isValidItemToUpdate = true;
+                    if (fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode())) {
+                        copyItemEntity(fetchedItemEntity, incomingItemEntity,updatedItemEntityList);
+                        isItemUpdated = true;
+                        isValidItemToUpdate = true;
+                    } else {//Owning institution id matched but barcode not matched
+                        addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap);
+                    }
                 }
+            }
+            if(!isItemUpdated){//Add to exception report when barcode is unavailable
+                addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap);
             }
         }
 
@@ -314,7 +327,6 @@ public class SubmitCollectionDAOService {
     }
 
     private ItemEntity copyItemEntity(ItemEntity fetchItemEntity, ItemEntity itemEntity, List<ItemEntity> itemEntityList) {
-        fetchItemEntity.setBarcode(itemEntity.getBarcode());
         fetchItemEntity.setLastUpdatedBy(itemEntity.getLastUpdatedBy());
         fetchItemEntity.setLastUpdatedDate(itemEntity.getLastUpdatedDate());
         fetchItemEntity.setCallNumber(itemEntity.getCallNumber());
