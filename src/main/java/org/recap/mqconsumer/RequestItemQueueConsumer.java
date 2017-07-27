@@ -322,18 +322,20 @@ public class RequestItemQueueConsumer {
     }
 
     private void setTopicMessageToDb(String body, String operationType) {
-        ObjectMapper om = new ObjectMapper();
-        ItemInformationResponse itemInformationResponse = null;
-        try {
-            itemInformationResponse = om.readValue(body, ItemInformationResponse.class);
-            Integer intRecordId = 0;
-            if (itemInformationResponse.getRequestId() != null && itemInformationResponse.getRequestId() > 0) {
-                intRecordId = itemInformationResponse.getRequestId();
+        if (!itemRequestService.isUseQueueLasCall()) {
+            ObjectMapper om = new ObjectMapper();
+            ItemInformationResponse itemInformationResponse = null;
+            try {
+                itemInformationResponse = om.readValue(body, ItemInformationResponse.class);
+                Integer intRecordId = 0;
+                if (itemInformationResponse.getRequestId() != null && itemInformationResponse.getRequestId() > 0) {
+                    intRecordId = itemInformationResponse.getRequestId();
+                }
+                itemRequestService.saveItemChangeLogEntity(intRecordId, itemRequestService.getUser(itemInformationResponse.getUsername()), operationType, itemInformationResponse.getRequestNotes());
+                itemRequestService.updateRecapRequestItem(itemInformationResponse);
+            } catch (Exception e) {
+                logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
             }
-            itemRequestService.saveItemChangeLogEntity(intRecordId, itemRequestService.getUser(itemInformationResponse.getUsername()), operationType, itemInformationResponse.getRequestNotes());
-            itemRequestService.updateRecapRequestItem(itemInformationResponse);
-        } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
     }
 }

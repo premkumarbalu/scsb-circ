@@ -730,6 +730,10 @@ public class ItemRequestService {
 
     private void rollbackAfterGFA(ItemInformationResponse itemResponseInformation) {
         ItemRequestInformation itemRequestInformation = itemRequestDBService.rollbackAfterGFA(itemResponseInformation);
+        RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemResponseInformation.getRequestId());
+        if (null != requestItemEntity) {
+            updateSolrIndex(requestItemEntity.getItemEntity());
+        }
         requestItemController.cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
     }
 
@@ -789,5 +793,14 @@ public class ItemRequestService {
     private String getPickupLocation(String deliveryLocation) {
         CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(deliveryLocation);
         return customerCodeEntity.getPickupLocation();
+    }
+
+    /**
+     * Is use queue las call boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isUseQueueLasCall() {
+        return gfaService.isUseQueueLasCall();
     }
 }

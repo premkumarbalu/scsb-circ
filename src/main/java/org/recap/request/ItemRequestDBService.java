@@ -191,6 +191,7 @@ public class ItemRequestDBService {
                 requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
             }
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+            requestItemEntity.setNotes(requestItemEntity.getNotes() + "\n" + "LAS : " + ReCAPConstants.REQUEST_ITEM_GFA_FAILURE + " with error note - " + itemInformationResponse.getScreenMessage());
             requestItemDetailsRepository.save(requestItemEntity);
         }
         return itemInformationResponse;
@@ -285,11 +286,13 @@ public class ItemRequestDBService {
         if(requestItemEntity != null) {
             CustomerCodeEntity customerCodeEntity= customerCodeDetailsRepository.findByCustomerCode(requestItemEntity.getItemEntity().getCustomerCode());
             rollbackUpdateItemAvailabilutyStatus(requestItemEntity.getItemEntity(), ReCAPConstants.GUEST_USER);
-            saveItemChangeLogEntity(itemInformationResponse.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_GFA_FAILURE, ReCAPConstants.GFA_ITEM_STATUS_CHECK_FAILED);
+            saveItemChangeLogEntity(itemInformationResponse.getRequestId(), requestItemEntity.getCreatedBy(), ReCAPConstants.REQUEST_ITEM_GFA_FAILURE, ReCAPConstants.REQUEST_ITEM_GFA_FAILURE + itemInformationResponse.getScreenMessage());
             itemRequestInformation.setBibId(requestItemEntity.getItemEntity().getBibliographicEntities().get(0).getOwningInstitutionBibId());
             itemRequestInformation.setPatronBarcode(requestItemEntity.getPatronId());
             itemRequestInformation.setItemBarcodes(Arrays.asList(requestItemEntity.getItemEntity().getBarcode()));
             itemRequestInformation.setPickupLocation(customerCodeEntity.getPickupLocation());
+            itemRequestInformation.setItemOwningInstitution(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
+            itemRequestInformation.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
         }
         return itemRequestInformation;
     }
