@@ -51,6 +51,8 @@ public final class ReCAPConstants {
     public static final String REQUEST_LAS_STATUS_MAIL_QUEUE = "requestLASStatusMailSendQueue";
     public static final String REQUEST_ACCESSION_RECONCILATION_MAIL_QUEUE = "AccessionReconcilation";
     public static final String REQUEST_INITIAL_DATA_LOAD ="requestInitialDataLoad";
+    public static final String SUBMIT_COLLECTION_EXCEPTION="Exception";
+    public static final String SUBJECT_FOR_SUBMIT_COL_EXCEPTION="Exception Occured during Submit collection";
 
     public static final String REQUEST_RECALL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
     public static final String REQUEST_LAS_STATUS_EMAIL_TEMPLATE = "request_las_status_email_body.vm";
@@ -431,6 +433,8 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdProtectedRoute";
     public static final String SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdNotProtectedRoute";
     public static final String SUBMIT_COLLECTION_COMPLETED_ROUTE = "submitCollectionCompletedRoute";
+    public static final String SUBMIT_COLLECTION__CAUGHT_EXCEPTION_METHOD="caughtException";
+    public static final String SUBMIT_COLLECTION_EXCEPTION_BODY_VM = "submit_collection_exception_body.vm";
 
     public static final String DELETED_MAIL_QUEUE = "deletedRecordsMailSendQueue";
     public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
@@ -489,6 +493,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE = "requestInitialLoadCulDirectRoute";
     public static final String REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE = "requestInitialLoadNyplDirectRoute";
     public static final String ACCESSION_RECONCILIATION_HEADER = "Barcodes not present in SCSB";
+    public static final String DIRECT_ROUTE_FOR_EXCEPTION="direct:Exception";
 
     public static final String LAS = "LAS";
     public static final String USER = "User";
