@@ -3,6 +3,7 @@ package org.recap.request;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.ProducerTemplate;
+import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.camel.statusreconciliation.StatusReconciliationCSVRecord;
 import org.recap.camel.statusreconciliation.StatusReconciliationErrorCSVRecord;
@@ -441,7 +442,7 @@ public class GFAService {
         if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
             List<Ttitem> titemList = gfaRetrieveItemResponse.getRetrieveItem().getTtitem();
             for (Ttitem ttitem : titemList) {
-                if(!ttitem.getErrorCode().isEmpty()) {
+                if(StringUtils.isNotBlank(ttitem.getErrorCode())) {
                     gfaRetrieveItemResponse.setSuccess(false);
                     gfaRetrieveItemResponse.setScrenMessage(ttitem.getErrorNote());
                 }else{
@@ -781,6 +782,7 @@ public class GFAService {
                 itemInformationResponse.setSuccess(true);
                 itemInformationResponse.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
             } else {
+                itemInformationResponse.setRequestId(gfaRetrieveItemResponse.getRetrieveItem().getTtitem().get(0).getRequestId());
                 itemInformationResponse.setSuccess(false);
                 itemInformationResponse.setScreenMessage(gfaRetrieveItemResponse.getScrenMessage());
             }
