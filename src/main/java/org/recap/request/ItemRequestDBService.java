@@ -189,9 +189,9 @@ public class ItemRequestDBService {
                 }
             } else {
                 requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
+                requestItemEntity.setNotes(requestItemEntity.getNotes() + "\n" + "LAS : " + ReCAPConstants.REQUEST_ITEM_GFA_FAILURE + " with error note - " + itemInformationResponse.getScreenMessage());
             }
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-            requestItemEntity.setNotes(requestItemEntity.getNotes() + "\n" + "LAS : " + ReCAPConstants.REQUEST_ITEM_GFA_FAILURE + " with error note - " + itemInformationResponse.getScreenMessage());
             requestItemDetailsRepository.save(requestItemEntity);
         }
         return itemInformationResponse;
