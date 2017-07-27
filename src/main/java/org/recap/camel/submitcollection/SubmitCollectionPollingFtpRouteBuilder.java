@@ -95,6 +95,11 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                                     .delay(10)
                                     .log("ShuttingDownRoute")
                                     .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE), ReCAPConstants.PROCESS);
+                    onException(Exception.class)
+                            .log("Exception caught during submit collection process - PUL CGD PROTECTED")
+                            .handled(true)
+                            .setHeader(ReCAPConstants.INSTITUTION,constant(ReCAPConstants.PRINCETON))
+                            .to(ReCAPConstants.DIRECT_ROUTE_FOR_EXCEPTION);
                     from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + pulFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + pulWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE)
                             /*ShutDownStrategy to wait until all files are processed ie until no inflight messages and then shutdown,
@@ -130,6 +135,11 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                                     .delay(10)
                                     .log("ShuttingDownRoute")
                                     .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_PUL_ROUTE), ReCAPConstants.PROCESS);
+                    onException(Exception.class)
+                            .log("Exception caught during submit collection process - PUL CGD NOT PROTECTED")
+                            .handled(true)
+                            .setHeader(ReCAPConstants.INSTITUTION,constant(ReCAPConstants.PRINCETON))
+                            .to(ReCAPConstants.DIRECT_ROUTE_FOR_EXCEPTION);
                     from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + pulFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + pulWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_PUL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
@@ -162,6 +172,11 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                                     .delay(10)
                                     .log("ShuttingDownRoute")
                                     .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE), ReCAPConstants.PROCESS);
+                    onException(Exception.class)
+                            .log("Exception caught during submit collection process - CUL CGD PROTECTED")
+                            .handled(true)
+                            .setHeader(ReCAPConstants.INSTITUTION,constant(ReCAPConstants.COLUMBIA))
+                            .to(ReCAPConstants.DIRECT_ROUTE_FOR_EXCEPTION);
                     from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + culFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + culWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_CUL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
@@ -194,6 +209,11 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                                     .delay(10)
                                     .log("ShuttingDownRoute")
                                     .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_CUL_ROUTE), ReCAPConstants.PROCESS);
+                    onException(Exception.class)
+                            .log("Exception caught during submit collection process - CUL CGD NOT PROTECTED")
+                            .handled(true)
+                            .setHeader(ReCAPConstants.INSTITUTION,constant(ReCAPConstants.COLUMBIA))
+                            .to(ReCAPConstants.DIRECT_ROUTE_FOR_EXCEPTION);
                     from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + culFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + culWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_CUL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
@@ -226,6 +246,11 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                                     .delay(10)
                                     .log("ShuttingDownRoute")
                                     .bean(applicationContext.getBean(StartNextRoute.class, ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE), ReCAPConstants.PROCESS);
+                    onException(Exception.class)
+                            .log("Exception caught during submit collection process - NYPL CGD PROTECTED")
+                            .handled(true)
+                            .setHeader(ReCAPConstants.INSTITUTION,constant(ReCAPConstants.NYPL))
+                            .to(ReCAPConstants.DIRECT_ROUTE_FOR_EXCEPTION);
                     from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + nyplFtpCGDProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + nyplWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
@@ -276,6 +301,11 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                                     .process(new StopRouteProcessor(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE))
                                     .delay(10)
                                     .log("ShuttingDownRoute");
+                    onException(Exception.class)
+                            .log("Exception caught during submit collection process - NYPL CGD NOT PROTECTED")
+                            .handled(true)
+                            .setHeader(ReCAPConstants.INSTITUTION,constant(ReCAPConstants.NYPL))
+                            .to(ReCAPConstants.DIRECT_ROUTE_FOR_EXCEPTION);
                     from(ReCAPConstants.SFTP + ftpUserName + ReCAPConstants.AT + ftpHost + ":" + ftpPort + nyplFtpCGDNotProtectedFolder + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost + ReCAPConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + nyplWorkDir)
                             .routeId(ReCAPConstants.SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE)
                             .shutdownRoute(ShutdownRoute.Defer)
@@ -298,6 +328,17 @@ public class SubmitCollectionPollingFtpRouteBuilder {
 
                 }
             });
+
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.DIRECT_ROUTE_FOR_EXCEPTION)
+                            .log("Calling direct route for exception")
+                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class), ReCAPConstants.SUBMIT_COLLECTION__CAUGHT_EXCEPTION_METHOD);
+
+                }
+            });
+
 
         } catch (Exception e){
             logger.error(ReCAPConstants.LOG_ERROR,e);
