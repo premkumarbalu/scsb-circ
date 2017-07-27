@@ -36,9 +36,6 @@ public class SubmitCollectionReportHelperService {
     @Autowired
     private SetupDataService setupDataService;
 
-    @Autowired
-    private MarcUtil marcUtil;
-
     @Value("${nonholdingid.institution}")
     private String nonHoldingIdInstitution;
 
@@ -322,6 +319,13 @@ public class SubmitCollectionReportHelperService {
         return fetchedItemEntityList;
     }
 
+
+    /**
+     * Get item based on owning institution item id and list of owning institution id.
+     *
+     * @param itemEntityList the item entity list
+     * @return the list
+     */
     public List<ItemEntity> getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(List<ItemEntity> itemEntityList){
         List<String> owningInstitutionItemIdList = new ArrayList<>();
         for(ItemEntity itemEntity:itemEntityList){
@@ -329,5 +333,19 @@ public class SubmitCollectionReportHelperService {
         }
         List<ItemEntity> fetchedItemEntityList = repositoryService.getItemDetailsRepository().findByOwningInstitutionItemIdInAndOwningInstitutionId(owningInstitutionItemIdList,itemEntityList.get(0).getOwningInstitutionId());
         return fetchedItemEntityList;
+    }
+
+
+    /**
+     * Sets submit collection failure report for unexpected exception .
+     *
+     * @param bibliographicEntity            the bibliographic entity
+     * @param submitCollectionReportInfoList the submit collection report info list
+     * @param message                        the message
+     */
+    public void setSubmitCollectionFailureReportForUnexpectedException(BibliographicEntity bibliographicEntity, List<SubmitCollectionReportInfo> submitCollectionReportInfoList, String message ) {
+        for (ItemEntity itemEntity:bibliographicEntity.getItemEntities()) {
+            setSubmitCollectionReportInfo(submitCollectionReportInfoList,itemEntity,message);
+        }
     }
 }

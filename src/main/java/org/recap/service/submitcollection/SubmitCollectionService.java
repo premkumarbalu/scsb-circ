@@ -220,15 +220,22 @@ public class SubmitCollectionService {
     private BibliographicEntity loadData(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String,String> idMapToRemoveIndex
             ,boolean isCGDProtected,InstitutionEntity institutionEntity,Set<String> processedBarcodeSetForDummyRecords){
         BibliographicEntity savedBibliographicEntity = null;
-        Map responseMap = getConverter(format).convert(record,institutionEntity);
-        BibliographicEntity bibliographicEntity = (BibliographicEntity) responseMap.get("bibliographicEntity");
-        List<ReportEntity> reportEntityList = (List<ReportEntity>) responseMap.get("reportEntities");
-        setCGDProtectionForItems(bibliographicEntity,isCGDProtected);
-        if (CollectionUtils.isNotEmpty(reportEntityList)) {
-            repositoryService.getReportDetailRepository().save(reportEntityList);
-        }
-        if (bibliographicEntity != null) {
-            savedBibliographicEntity = submitCollectionDAOService.updateBibliographicEntity(bibliographicEntity, submitCollectionReportInfoMap,idMapToRemoveIndex,processedBarcodeSetForDummyRecords);
+        BibliographicEntity bibliographicEntity = null;
+        try {
+            Map responseMap = getConverter(format).convert(record,institutionEntity);
+            bibliographicEntity = (BibliographicEntity) responseMap.get("bibliographicEntity");
+            List<ReportEntity> reportEntityList = (List<ReportEntity>) responseMap.get("reportEntities");
+            setCGDProtectionForItems(bibliographicEntity,isCGDProtected);
+            if (CollectionUtils.isNotEmpty(reportEntityList)) {
+                repositoryService.getReportDetailRepository().save(reportEntityList);
+            }
+            if (bibliographicEntity != null) {
+                savedBibliographicEntity = submitCollectionDAOService.updateBibliographicEntity(bibliographicEntity, submitCollectionReportInfoMap,idMapToRemoveIndex,processedBarcodeSetForDummyRecords);
+            }
+        } catch (Exception e) {
+            submitCollectionReportHelperService.setSubmitCollectionFailureReportForUnexpectedException(bibliographicEntity,
+                    submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),"Failed record - Item not updated, unexpected exception - "+e.getMessage());
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         }
         return savedBibliographicEntity;
     }
