@@ -490,6 +490,9 @@ public final class ReCAPConstants {
     public static final String REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE = "requestInitialLoadNyplDirectRoute";
     public static final String ACCESSION_RECONCILIATION_HEADER = "Barcodes not present in SCSB";
 
+    public static final String LAS = "LAS";
+    public static final String USER = "User";
+
     private ReCAPConstants() {
     }
 

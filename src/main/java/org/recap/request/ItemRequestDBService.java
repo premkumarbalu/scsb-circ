@@ -181,6 +181,8 @@ public class ItemRequestDBService {
         RequestStatusEntity requestStatusEntity=null;
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
         if(requestItemEntity != null) {
+            String notes = ReCAPConstants.USER + " : " + requestItemEntity.getNotes();
+            requestItemEntity.setNotes(notes);
             if (itemInformationResponse.isSuccess()) {
                 if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
                     requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
@@ -189,7 +191,7 @@ public class ItemRequestDBService {
                 }
             } else {
                 requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
-                requestItemEntity.setNotes(requestItemEntity.getNotes() + "\n" + "LAS : " + ReCAPConstants.REQUEST_ITEM_GFA_FAILURE + " with error note - " + itemInformationResponse.getScreenMessage());
+                requestItemEntity.setNotes(notes + "\n" + ReCAPConstants.LAS + " : " + ReCAPConstants.REQUEST_ITEM_GFA_FAILURE + " with error note - " + itemInformationResponse.getScreenMessage());
             }
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
             requestItemDetailsRepository.save(requestItemEntity);
