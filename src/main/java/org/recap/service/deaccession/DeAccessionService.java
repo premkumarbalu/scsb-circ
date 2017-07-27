@@ -255,7 +255,7 @@ public class DeAccessionService {
                                 GFAPwdTtItemResponse gfaPwdTtItemResponse = gfaPwdTtItemResponses.get(0);
                                 String errorCode = (String) gfaPwdTtItemResponse.getErrorCode();
                                 String errorNote = (String) gfaPwdTtItemResponse.getErrorNote();
-                                if (StringUtils.isNotBlank(errorCode) && StringUtils.isNotBlank(errorNote)) {
+                                if (StringUtils.isNotBlank(errorCode) || StringUtils.isNotBlank(errorNote)) {
                                     deAccessionDBResponseEntity.setStatus(ReCAPConstants.FAILURE);
                                     deAccessionDBResponseEntity.setReasonForFailure(MessageFormat.format(ReCAPConstants.LAS_DEACCESSION_REJECT_ERROR, ReCAPConstants.REQUEST_TYPE_PW_DIRECT, errorCode, errorNote));
                                 }
@@ -279,7 +279,7 @@ public class DeAccessionService {
                                 GFAPwiTtItemResponse gfaPwiTtItemResponse = gfaPwiTtItemResponses.get(0);
                                 String errorCode = gfaPwiTtItemResponse.getErrorCode();
                                 String errorNote = gfaPwiTtItemResponse.getErrorNote();
-                                if (StringUtils.isNotBlank(errorCode) && StringUtils.isNotBlank(errorNote)) {
+                                if (StringUtils.isNotBlank(errorCode) || StringUtils.isNotBlank(errorNote)) {
                                     deAccessionDBResponseEntity.setStatus(ReCAPConstants.FAILURE);
                                     deAccessionDBResponseEntity.setReasonForFailure(MessageFormat.format(ReCAPConstants.LAS_DEACCESSION_REJECT_ERROR, ReCAPConstants.REQUEST_TYPE_PW_INDIRECT, errorCode, errorNote));
                                 }
