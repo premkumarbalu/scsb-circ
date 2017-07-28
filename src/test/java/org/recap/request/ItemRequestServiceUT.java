@@ -10,10 +10,13 @@ import org.recap.controller.RequestItemController;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.*;
 import org.recap.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
@@ -23,7 +26,9 @@ import static org.junit.Assert.*;
 /**
  * Created by hemalathas on 20/3/17.
  */
-public class ItemRequestServiceUT extends BaseTestCase{
+public class ItemRequestServiceUT extends BaseTestCase {
+
+    private static final Logger logger = LoggerFactory.getLogger(ItemRequestServiceUT.class);
 
     @Autowired
     BibliographicDetailsRepository bibliographicDetailsRepository;
@@ -55,7 +60,7 @@ public class ItemRequestServiceUT extends BaseTestCase{
     @Test
     public void testUpdateRecapRequestItem() throws Exception {
         BibliographicEntity bibliographicEntity = getBibliographicEntity();
-        Integer response = itemRequestService.updateRecapRequestItem(getItemRequestInformation(),bibliographicEntity.getItemEntities().get(0),"REFILED");
+        Integer response = itemRequestService.updateRecapRequestItem(getItemRequestInformation(), bibliographicEntity.getItemEntities().get(0), "REFILED");
         assertTrue(response != 0);
     }
 
@@ -82,11 +87,11 @@ public class ItemRequestServiceUT extends BaseTestCase{
         ItemRequestInformation itemRequestInformation = getItemRequestInformation();
         BibliographicEntity bibliographicEntity = getBibliographicEntity();
         itemRequestInformation.setItemBarcodes(Arrays.asList(bibliographicEntity.getItemEntities().get(0).getBarcode()));
-        ItemInformationResponse response = itemRequestService.requestItem(itemRequestInformation,exchange);
+        ItemInformationResponse response = itemRequestService.requestItem(itemRequestInformation, exchange);
         assertNotNull(response);
     }
 
-    public ItemRequestInformation getItemRequestInformation(){
+    public ItemRequestInformation getItemRequestInformation() {
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         itemRequestInformation.setItemBarcodes(Arrays.asList("123"));
         itemRequestInformation.setPatronBarcode("45678915");
@@ -106,7 +111,7 @@ public class ItemRequestServiceUT extends BaseTestCase{
         return itemRequestInformation;
     }
 
-    public ItemInformationResponse getItemInformationResponse(){
+    public ItemInformationResponse getItemInformationResponse() {
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
         itemInformationResponse.setCirculationStatus("test");
         itemInformationResponse.setSecurityMarker("test");
@@ -212,6 +217,33 @@ public class ItemRequestServiceUT extends BaseTestCase{
         requestItemEntity.setRequestStatusEntity(requestStatusEntity);
         RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
         return savedRequestItemEntity;
+    }
+
+    @Test
+    public void removeDia() {
+        String input = "[No Restrictions] Afghānistān / |c nivīsandah, Aḥmad Shāh Farzān [RECAP] أَبَنَ فُلانًا: عَابَه ورَمَاه بخَلَّة سَوء.";
+        logger.info(input);
+
+        logger.info(input.replaceAll("[^\\p{ASCII}]", ""));
+
+        logger.info(input.replaceAll("[^\\u0000-\\uFFFF]", ""));
+        logger.info(input.replaceAll("[^\\x20-\\x7e]", ""));
+
+        String normailzed = Normalizer.normalize(input, Normalizer.Form.NFD);
+
+        logger.info("Normailzed : " + normailzed);
+        logger.info(normailzed.replaceAll("\\p{InCombiningDiacriticalMarks}+", ""));
+
+        normailzed = Normalizer.normalize(input, Normalizer.Form.NFKD);
+        logger.info(normailzed.replaceAll("\\p{InCombiningDiacriticalMarks}+", ""));
+
+        logger.info(normailzed.replaceAll("[^\\x20-\\x7e]", ""));
+
+        logger.info("removeDiacritical: " + itemRequestService.removeDiacritical(input));
+
+        logger.info(Normalizer.normalize(input, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", ""));
+
+
     }
 
 }
