@@ -783,7 +783,7 @@ public class ItemRequestService {
     }
 
     public String removeDiacritical(String text) {
-        return text == null ? null : Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        return text == null ? null : Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
     }
 
     private void sendEmail(String customerCode, String itemBarcode, String patronBarcode, String toInstitution) {
