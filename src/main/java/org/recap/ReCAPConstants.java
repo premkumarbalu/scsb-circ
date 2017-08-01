@@ -497,6 +497,8 @@ public final class ReCAPConstants {
 
     public static final String LAS = "LAS";
     public static final String USER = "User";
+    public static final String REQUEST_RECALL = "RequestItem-Recall";
+    public static final String REQUEST_RETRIEVAL = "RequestItem-Retrieval";
 
     private ReCAPConstants() {
     }

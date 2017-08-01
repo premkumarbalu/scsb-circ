@@ -809,6 +809,7 @@ public class GFAService {
                 itemInformationResponse.setSuccess(true);
                 itemInformationResponse.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
             } else {
+                itemInformationResponse.setRequestId(gfaEddItemResponse.getRetrieveEDD().getTtitem().get(0).getRequestId());
                 itemInformationResponse.setSuccess(false);
                 itemInformationResponse.setScreenMessage(gfaEddItemResponse.getScrenMessage());
             }
