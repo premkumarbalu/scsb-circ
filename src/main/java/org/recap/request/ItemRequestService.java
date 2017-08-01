@@ -145,6 +145,11 @@ public class ItemRequestService {
                 itemResponseInformation.setSuccess(false);
             }
             itemResponseInformation = setItemResponseInformation(itemRequestInfo, itemResponseInformation);
+
+            if (isUseQueueLasCall() && (StringUtils.containsIgnoreCase(itemResponseInformation.getScreenMessage(), ReCAPConstants.REQUEST_ILS_EXCEPTION)
+                    || StringUtils.containsIgnoreCase(itemResponseInformation.getScreenMessage(), ReCAPConstants.REQUEST_SCSB_EXCEPTION))) {
+                updateChangesToDb(itemResponseInformation, ReCAPConstants.REQUEST_RETRIEVAL + "-" + itemResponseInformation.getRequestingInstitution());
+            }
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
             logger.info(ReCAPConstants.FINISH_PROCESSING);
@@ -154,6 +159,20 @@ public class ItemRequestService {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, ex);
         }
         return itemResponseInformation;
+    }
+
+    /**
+     * Update request status based on success message from ILS
+     * @param itemResponseInformation
+     * @param operationType
+     */
+    public void updateChangesToDb(ItemInformationResponse itemResponseInformation, String operationType) {
+        Integer intRecordId = 0;
+        if (itemResponseInformation.getRequestId() != null && itemResponseInformation.getRequestId() > 0) {
+            intRecordId = itemResponseInformation.getRequestId();
+        }
+        saveItemChangeLogEntity(intRecordId, getUser(itemResponseInformation.getUsername()), operationType, itemResponseInformation.getRequestNotes());
+        updateRecapRequestItem(itemResponseInformation);
     }
 
     /**
@@ -190,6 +209,10 @@ public class ItemRequestService {
             }
             logger.info(ReCAPConstants.FINISH_PROCESSING);
             itemResponseInformation = setItemResponseInformation(itemRequestInfo, itemResponseInformation);
+
+            if (isUseQueueLasCall()) {
+                updateChangesToDb(itemResponseInformation, ReCAPConstants.REQUEST_RECALL + "-" + itemResponseInformation.getRequestingInstitution());
+            }
             // Update Topics
             sendMessageToTopic(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);
         } catch (RestClientException ex) {
