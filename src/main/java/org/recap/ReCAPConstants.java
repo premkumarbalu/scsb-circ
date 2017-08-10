@@ -315,6 +315,8 @@ public final class ReCAPConstants {
     public static final String GFA_SERVER_DOWN = "LAS item status check failed to give valid response or LAS is down. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
     public static final String LAS_DEACCESSION_REJECT_ERROR = "LAS has rejected the {0} request with Error code : \"{1}\" and Error note : \"{2}\".";
     public static final String LAS_REJECTED = "LAS has rejected";
+    public static final String LAS_SERVER_NOT_REACHABLE_ERROR = "LAS server is not reachable. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
+    public static final String LAS_SERVER_NOT_REACHABLE = "LAS server is not reachable";
     public static final String CREATING_A_BIB_RECORD_FAILED_IN_ILS = "Creating a Bib record failed in ILS";
     public static final String INVALID_NO_RESPONSE_FROM_ILS = "Invalid/No Response from ILS";
     public static final String CHECK_IN_REQUEST_FAILED = "Check In Request Failed";

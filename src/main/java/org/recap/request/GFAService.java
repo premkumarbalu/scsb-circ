@@ -247,9 +247,10 @@ public class GFAService {
             filterParamValue = objectMapper.writeValueAsString(gfaItemStatusCheckRequest);
             logger.info(filterParamValue);
 
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = getRestTemplate();
             HttpEntity requestEntity = new HttpEntity<>(new HttpHeaders());
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(gfaItemStatus).queryParam(ReCAPConstants.GFA_SERVICE_PARAM, filterParamValue);
+            ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setConnectTimeout(getGfaServerResponseTimeOutMilliseconds());
             ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setReadTimeout(getGfaServerResponseTimeOutMilliseconds());
             ResponseEntity<GFAItemStatusCheckResponse> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, GFAItemStatusCheckResponse.class);
             if (responseEntity != null && responseEntity.getBody() != null) {
@@ -732,7 +733,10 @@ public class GFAService {
         try {
             HttpEntity<GFAPwdRequest> requestEntity = new HttpEntity(gfaPwdRequest, getHttpHeaders());
             logger.info("GFA PWD Request : {}", convertJsontoString(requestEntity.getBody()));
-            ResponseEntity<GFAPwdResponse> responseEntity = getRestTemplate().exchange(getGfaItemPermanentWithdrawlDirect(), HttpMethod.POST, requestEntity, GFAPwdResponse.class);
+            RestTemplate restTemplate = getRestTemplate();
+            ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setConnectTimeout(getGfaServerResponseTimeOutMilliseconds());
+            ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setReadTimeout(getGfaServerResponseTimeOutMilliseconds());
+            ResponseEntity<GFAPwdResponse> responseEntity = restTemplate.exchange(getGfaItemPermanentWithdrawlDirect(), HttpMethod.POST, requestEntity, GFAPwdResponse.class);
             gfaPwdResponse = responseEntity.getBody();
             logger.info("GFA PWD Response Status Code : {}", responseEntity.getStatusCode().toString());
             logger.info("GFA PWD Response : {}", convertJsontoString(responseEntity.getBody()));
@@ -754,7 +758,10 @@ public class GFAService {
         try {
             HttpEntity<GFAPwiRequest> requestEntity = new HttpEntity(gfaPwiRequest, getHttpHeaders());
             logger.info("GFA PWI Request : {}", convertJsontoString(requestEntity.getBody()));
-            ResponseEntity<GFAPwiResponse> responseEntity = getRestTemplate().exchange(getGfaItemPermanentWithdrawlInDirect(), HttpMethod.POST, requestEntity, GFAPwiResponse.class);
+            RestTemplate restTemplate = getRestTemplate();
+            ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setConnectTimeout(getGfaServerResponseTimeOutMilliseconds());
+            ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setReadTimeout(getGfaServerResponseTimeOutMilliseconds());
+            ResponseEntity<GFAPwiResponse> responseEntity = restTemplate.exchange(getGfaItemPermanentWithdrawlInDirect(), HttpMethod.POST, requestEntity, GFAPwiResponse.class);
             gfaPwiResponse = responseEntity.getBody();
             logger.info("GFA PWI Response Status Code : {}", responseEntity.getStatusCode().toString());
             logger.info("GFA PWI Response : {}", convertJsontoString(responseEntity.getBody()));
