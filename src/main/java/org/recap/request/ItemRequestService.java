@@ -31,6 +31,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -289,9 +290,10 @@ public class ItemRequestService {
                         }
                     }
                 }
+                logger.info("Refile = "+ itemBarcode);
                 if (requestItemEntity != null) {
                     ItemRequestInformation itemRequestInfo = new ItemRequestInformation();
-                    itemRequestInfo.setItemBarcodes(itemRefileRequest.getItemBarcodes());
+                    itemRequestInfo.setItemBarcodes(Arrays.asList(itemBarcode));
 
                     itemRequestInfo.setItemOwningInstitution(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
                     itemRequestInfo.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
