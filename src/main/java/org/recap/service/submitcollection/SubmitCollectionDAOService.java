@@ -124,6 +124,7 @@ public class SubmitCollectionDAOService {
     private BibliographicEntity updateCompleteRecord(BibliographicEntity fetchBibliographicEntity, BibliographicEntity incomingBibliographicEntity,
                                                      Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
         BibliographicEntity savedOrUnsavedBibliographicEntity = null;
+        logger.info("Processing bib owning institution bibid - ",incomingBibliographicEntity.getOwningInstitutionBibId());
         copyBibliographicEntity(fetchBibliographicEntity, incomingBibliographicEntity);
         List<HoldingsEntity> fetchedHoldingsEntityList = fetchBibliographicEntity.getHoldingsEntities();
         List<HoldingsEntity> incomingHoldingsEntityList = new ArrayList<>(incomingBibliographicEntity.getHoldingsEntities());
@@ -212,7 +213,7 @@ public class SubmitCollectionDAOService {
         }
         List<ItemEntity> itemEntityList = repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,bibliographicEntity.getOwningInstitutionId());
         BibliographicEntity fetchedBibliographicEntity = null;
-        if (itemEntityList != null && !itemEntityList.isEmpty() && itemEntityList.get(0).getBibliographicEntities() != null) {
+        if (itemEntityList != null && !itemEntityList.isEmpty() && (itemEntityList.get(0).getBibliographicEntities() != null && !itemEntityList.get(0).getBibliographicEntities().isEmpty())) {
             boolean isBoundWith = isBoundWithItem(itemEntityList.get(0));
             if (isBoundWith) {//To handle boundwith item
                 for (BibliographicEntity resultBibliographicEntity : itemEntityList.get(0).getBibliographicEntities()) {
@@ -221,7 +222,7 @@ public class SubmitCollectionDAOService {
                     }
                 }
             }
-            if(fetchedBibliographicEntity==null){//To handle invalid incoming boundwith item and ordinary item
+            if((fetchedBibliographicEntity==null) && (itemEntityList.get(0).getBibliographicEntities() != null && !itemEntityList.get(0).getBibliographicEntities().isEmpty())){//To handle invalid incoming bound-with item and non bound-with item
                 fetchedBibliographicEntity = itemEntityList.get(0).getBibliographicEntities().get(0);
             }
         }
