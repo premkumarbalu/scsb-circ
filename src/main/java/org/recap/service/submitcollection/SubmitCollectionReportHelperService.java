@@ -203,18 +203,27 @@ public class SubmitCollectionReportHelperService {
                 Map<String,ItemEntity> incomingItemEntityMap = getItemIdEntityMap(incomingBibliographicEntity);
                 Map<String,ItemEntity> fetchedItemEntityMap = getItemIdEntityMap(fetchedBibliographicEntity);
                 for(Map.Entry<String,ItemEntity> incomingItemEntityMapEntry:incomingItemEntityMap.entrySet()){
-                    setReportForMatchedAndUnmatchedRecords(submitCollectionReportInfoMap, successSubmitCollectionReportInfoList, rejectedSubmitCollectionReportInfoList, failureSubmitCollectionReportInfoList, owningInstitution, fetchedItemEntityMap, incomingItemEntityMapEntry);
-                }
-            } else {//Failure report - holding id mismatch
+                    setReportForMatchedAndUnmatchedRecords(submitCollectionReportInfoMap, successSubmitCollectionReportInfoList, rejectedSubmitCollectionReportInfoList, failureSubmitCollectionReportInfoList, owningInstitution, fetchedItemEntityMap, incomingItemEntityMapEntry);}
+            } else {//Failure report - holding id mismatch and for dummy record not having CGD in the incoming data
                 for(Map.Entry<String,ItemEntity> incomingOwningItemIdBarcodeMapEntry:incomingOwningItemIdEntityMap.entrySet()) {
                     ItemEntity incomingItemEntity = incomingOwningItemIdBarcodeMapEntry.getValue();
-                    SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
-                    submitCollectionReportInfo.setItemBarcode(incomingItemEntity.getBarcode());
-                    submitCollectionReportInfo.setCustomerCode(incomingItemEntity.getCustomerCode());
-                    submitCollectionReportInfo.setOwningInstitution(owningInstitution);
-                    submitCollectionReportInfo.setMessage("Failed record - Owning institution holding id "+incomingHoldingItemMapEntry.getKey()+" for the incoming barcode "+incomingItemEntity.getBarcode()
-                            +", owning institution item id "+incomingItemEntity.getOwningInstitutionItemId()+" is unavailable in the existing bib - owning institution bib id - "+incomingBibliographicEntity.getOwningInstitutionBibId());
-                    failureSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
+                    if (incomingItemEntity.getCollectionGroupId()==null) {
+                        SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
+                        submitCollectionReportInfo.setItemBarcode(incomingItemEntity.getBarcode());
+                        submitCollectionReportInfo.setCustomerCode(incomingItemEntity.getCustomerCode());
+                        submitCollectionReportInfo.setOwningInstitution(owningInstitution);
+                        submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD+" - "+"Unable to update dummy record, CGD is unavailable in the incoming xml record - incoming owning institution bib id - "+incomingBibliographicEntity.getOwningInstitutionBibId()
+                                +", incoming owning institution item id - "+incomingItemEntity.getOwningInstitutionItemId());
+                        failureSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
+                    } else {
+                        SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
+                        submitCollectionReportInfo.setItemBarcode(incomingItemEntity.getBarcode());
+                        submitCollectionReportInfo.setCustomerCode(incomingItemEntity.getCustomerCode());
+                        submitCollectionReportInfo.setOwningInstitution(owningInstitution);
+                        submitCollectionReportInfo.setMessage("Failed record - Owning institution holding id " + incomingHoldingItemMapEntry.getKey() + " for the incoming barcode " + incomingItemEntity.getBarcode()
+                                + ", owning institution item id " + incomingItemEntity.getOwningInstitutionItemId() + " is unavailable in the existing bib - owning institution bib id - " + incomingBibliographicEntity.getOwningInstitutionBibId());
+                        failureSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
+                    }
                 }
             }
         }
