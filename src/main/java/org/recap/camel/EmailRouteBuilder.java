@@ -26,6 +26,7 @@ public class EmailRouteBuilder {
     private String emailPassword;
     private String emailBodyForSubmitCollection;
     private String emailBodyForSubmitCollectionEmptyDirectory;
+    private String emailBodyForExceptionInSubmitColletion;
 
     /**
      * Instantiates a new Email route builder.
@@ -48,6 +49,7 @@ public class EmailRouteBuilder {
                     loadEmailPassword();
                     loadEmailBodyTemplateForNoData();
                     loadEmailBodyTemplateForSubmitCollectionEmptyDirectory();
+                    loadEmailBodyTemplateForExceptionInSubmitCollection();
                     emailBodyRecall = loadEmailLasStatus(ReCAPConstants.REQUEST_RECALL_EMAIL_TEMPLATE);
                     emailBodyLasStatus = loadEmailLasStatus(ReCAPConstants.REQUEST_LAS_STATUS_EMAIL_TEMPLATE);
                     emailBodyDeletedRecords=loadEmailLasStatus(ReCAPConstants.DELETED_RECORDS_EMAIL_TEMPLATE);
@@ -124,6 +126,14 @@ public class EmailRouteBuilder {
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
                                     .log("Email for request initial data load")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION))
+                                    .setHeader("subject", simple("${header.emailPayLoad.subject}"))
+                                    .setBody(simple(emailBodyForExceptionInSubmitColletion))
+                                    .setHeader("from", simple(from))
+                                    .setHeader("to", simple("${header.emailPayLoad.to}"))
+                                    .setHeader("cc", simple("${header.emailPayLoad.cc}"))
+                                    .log("Email sent for exception in submit collection")
+                                    .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
                     ;
                 }
 
@@ -185,6 +195,26 @@ public class EmailRouteBuilder {
                         logger.error(ReCAPConstants.LOG_ERROR,e);
                     }
                     emailBodyForSubmitCollectionEmptyDirectory = out.toString();
+                }
+
+                private void loadEmailBodyTemplateForExceptionInSubmitCollection() {
+                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_BODY_VM);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    StringBuilder out = new StringBuilder();
+                    String line;
+                    try {
+                        while ((line = reader.readLine()) != null) {
+                            if (line.isEmpty()) {
+                                out.append("\n");
+                            } else {
+                                out.append(line);
+                                out.append("\n");
+                            }
+                        }
+                    } catch (IOException e) {
+                        logger.error(ReCAPConstants.LOG_ERROR,e);
+                    }
+                    emailBodyForExceptionInSubmitColletion = out.toString();
                 }
 
                 private void loadEmailPassword() {

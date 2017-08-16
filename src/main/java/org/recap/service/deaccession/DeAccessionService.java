@@ -152,7 +152,9 @@ public class DeAccessionService {
             List<Integer> holdingsIds = new ArrayList<>();
             List<Integer> itemIds = new ArrayList<>();
             for (DeAccessionDBResponseEntity deAccessionDBResponseEntity : deAccessionDBResponseEntities) {
-                if (deAccessionDBResponseEntity.getStatus().equalsIgnoreCase(ReCAPConstants.FAILURE) && deAccessionDBResponseEntity.getReasonForFailure().contains(ReCAPConstants.LAS_REJECTED)) {
+                if (deAccessionDBResponseEntity.getStatus().equalsIgnoreCase(ReCAPConstants.FAILURE)
+                        && (deAccessionDBResponseEntity.getReasonForFailure().contains(ReCAPConstants.LAS_REJECTED)
+                        || deAccessionDBResponseEntity.getReasonForFailure().contains(ReCAPConstants.LAS_SERVER_NOT_REACHABLE))) {
                     bibIds.addAll(deAccessionDBResponseEntity.getBibliographicIds());
                     holdingsIds.addAll(deAccessionDBResponseEntity.getHoldingIds());
                     itemIds.add(deAccessionDBResponseEntity.getItemId());
@@ -255,12 +257,15 @@ public class DeAccessionService {
                                 GFAPwdTtItemResponse gfaPwdTtItemResponse = gfaPwdTtItemResponses.get(0);
                                 String errorCode = (String) gfaPwdTtItemResponse.getErrorCode();
                                 String errorNote = (String) gfaPwdTtItemResponse.getErrorNote();
-                                if (StringUtils.isNotBlank(errorCode) && StringUtils.isNotBlank(errorNote)) {
+                                if (StringUtils.isNotBlank(errorCode) || StringUtils.isNotBlank(errorNote)) {
                                     deAccessionDBResponseEntity.setStatus(ReCAPConstants.FAILURE);
                                     deAccessionDBResponseEntity.setReasonForFailure(MessageFormat.format(ReCAPConstants.LAS_DEACCESSION_REJECT_ERROR, ReCAPConstants.REQUEST_TYPE_PW_DIRECT, errorCode, errorNote));
                                 }
                             }
                         }
+                    } else {
+                        deAccessionDBResponseEntity.setStatus(ReCAPConstants.FAILURE);
+                        deAccessionDBResponseEntity.setReasonForFailure(MessageFormat.format(ReCAPConstants.LAS_SERVER_NOT_REACHABLE_ERROR, recapAssistanceEmailTo, recapAssistanceEmailTo));
                     }
                 } else if (ReCAPConstants.SUCCESS.equalsIgnoreCase(deAccessionDBResponseEntity.getStatus()) && ReCAPConstants.NOT_AVAILABLE.equalsIgnoreCase(deAccessionDBResponseEntity.getItemStatus())) {
                     GFAPwiRequest gfaPwiRequest = new GFAPwiRequest();
@@ -279,12 +284,15 @@ public class DeAccessionService {
                                 GFAPwiTtItemResponse gfaPwiTtItemResponse = gfaPwiTtItemResponses.get(0);
                                 String errorCode = gfaPwiTtItemResponse.getErrorCode();
                                 String errorNote = gfaPwiTtItemResponse.getErrorNote();
-                                if (StringUtils.isNotBlank(errorCode) && StringUtils.isNotBlank(errorNote)) {
+                                if (StringUtils.isNotBlank(errorCode) || StringUtils.isNotBlank(errorNote)) {
                                     deAccessionDBResponseEntity.setStatus(ReCAPConstants.FAILURE);
                                     deAccessionDBResponseEntity.setReasonForFailure(MessageFormat.format(ReCAPConstants.LAS_DEACCESSION_REJECT_ERROR, ReCAPConstants.REQUEST_TYPE_PW_INDIRECT, errorCode, errorNote));
                                 }
                             }
                         }
+                    } else {
+                        deAccessionDBResponseEntity.setStatus(ReCAPConstants.FAILURE);
+                        deAccessionDBResponseEntity.setReasonForFailure(MessageFormat.format(ReCAPConstants.LAS_SERVER_NOT_REACHABLE_ERROR, recapAssistanceEmailTo, recapAssistanceEmailTo));
                     }
                 }
             }

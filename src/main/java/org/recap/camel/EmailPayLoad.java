@@ -18,6 +18,8 @@ public class EmailPayLoad implements Serializable{
     private String institution;
     private String reportFileName;
     private String xmlFileName;
+    private Exception exception;
+    private String exceptionMessage;
 
 
     /**
@@ -216,5 +218,41 @@ public class EmailPayLoad implements Serializable{
      */
     public void setXmlFileName(String xmlFileName) {
         this.xmlFileName = xmlFileName;
+    }
+
+    /**
+     * Gets exception.
+     *
+     * @return the exception
+     */
+    public Exception getException() {
+        return exception;
+    }
+
+    /**
+     * Sets exception.
+     *
+     * @param exception the exception
+     */
+    public void setException(Exception exception) {
+        this.exception = exception;
+    }
+
+    /**
+     * Gets exception message.
+     *
+     * @return the exception message
+     */
+    public String getExceptionMessage() {
+        return exceptionMessage;
+    }
+
+    /**
+     * Sets exception message.
+     *
+     * @param exceptionMessage the exception message
+     */
+    public void setExceptionMessage(String exceptionMessage) {
+        this.exceptionMessage = exceptionMessage;
     }
 }

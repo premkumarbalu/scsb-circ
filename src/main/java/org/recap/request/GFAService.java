@@ -3,6 +3,7 @@ package org.recap.request;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.ProducerTemplate;
+import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.camel.statusreconciliation.StatusReconciliationCSVRecord;
 import org.recap.camel.statusreconciliation.StatusReconciliationErrorCSVRecord;
@@ -246,9 +247,10 @@ public class GFAService {
             filterParamValue = objectMapper.writeValueAsString(gfaItemStatusCheckRequest);
             logger.info(filterParamValue);
 
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = getRestTemplate();
             HttpEntity requestEntity = new HttpEntity<>(new HttpHeaders());
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(gfaItemStatus).queryParam(ReCAPConstants.GFA_SERVICE_PARAM, filterParamValue);
+            ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setConnectTimeout(getGfaServerResponseTimeOutMilliseconds());
             ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setReadTimeout(getGfaServerResponseTimeOutMilliseconds());
             ResponseEntity<GFAItemStatusCheckResponse> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, GFAItemStatusCheckResponse.class);
             if (responseEntity != null && responseEntity.getBody() != null) {
@@ -441,7 +443,7 @@ public class GFAService {
         if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
             List<Ttitem> titemList = gfaRetrieveItemResponse.getRetrieveItem().getTtitem();
             for (Ttitem ttitem : titemList) {
-                if(!ttitem.getErrorCode().isEmpty()) {
+                if(StringUtils.isNotBlank(ttitem.getErrorCode())) {
                     gfaRetrieveItemResponse.setSuccess(false);
                     gfaRetrieveItemResponse.setScrenMessage(ttitem.getErrorNote());
                 }else{
@@ -731,7 +733,10 @@ public class GFAService {
         try {
             HttpEntity<GFAPwdRequest> requestEntity = new HttpEntity(gfaPwdRequest, getHttpHeaders());
             logger.info("GFA PWD Request : {}", convertJsontoString(requestEntity.getBody()));
-            ResponseEntity<GFAPwdResponse> responseEntity = getRestTemplate().exchange(getGfaItemPermanentWithdrawlDirect(), HttpMethod.POST, requestEntity, GFAPwdResponse.class);
+            RestTemplate restTemplate = getRestTemplate();
+            ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setConnectTimeout(getGfaServerResponseTimeOutMilliseconds());
+            ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setReadTimeout(getGfaServerResponseTimeOutMilliseconds());
+            ResponseEntity<GFAPwdResponse> responseEntity = restTemplate.exchange(getGfaItemPermanentWithdrawlDirect(), HttpMethod.POST, requestEntity, GFAPwdResponse.class);
             gfaPwdResponse = responseEntity.getBody();
             logger.info("GFA PWD Response Status Code : {}", responseEntity.getStatusCode().toString());
             logger.info("GFA PWD Response : {}", convertJsontoString(responseEntity.getBody()));
@@ -753,7 +758,10 @@ public class GFAService {
         try {
             HttpEntity<GFAPwiRequest> requestEntity = new HttpEntity(gfaPwiRequest, getHttpHeaders());
             logger.info("GFA PWI Request : {}", convertJsontoString(requestEntity.getBody()));
-            ResponseEntity<GFAPwiResponse> responseEntity = getRestTemplate().exchange(getGfaItemPermanentWithdrawlInDirect(), HttpMethod.POST, requestEntity, GFAPwiResponse.class);
+            RestTemplate restTemplate = getRestTemplate();
+            ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setConnectTimeout(getGfaServerResponseTimeOutMilliseconds());
+            ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory()).setReadTimeout(getGfaServerResponseTimeOutMilliseconds());
+            ResponseEntity<GFAPwiResponse> responseEntity = restTemplate.exchange(getGfaItemPermanentWithdrawlInDirect(), HttpMethod.POST, requestEntity, GFAPwiResponse.class);
             gfaPwiResponse = responseEntity.getBody();
             logger.info("GFA PWI Response Status Code : {}", responseEntity.getStatusCode().toString());
             logger.info("GFA PWI Response : {}", convertJsontoString(responseEntity.getBody()));
@@ -781,6 +789,7 @@ public class GFAService {
                 itemInformationResponse.setSuccess(true);
                 itemInformationResponse.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
             } else {
+                itemInformationResponse.setRequestId(gfaRetrieveItemResponse.getRetrieveItem().getTtitem().get(0).getRequestId());
                 itemInformationResponse.setSuccess(false);
                 itemInformationResponse.setScreenMessage(gfaRetrieveItemResponse.getScrenMessage());
             }
@@ -807,6 +816,7 @@ public class GFAService {
                 itemInformationResponse.setSuccess(true);
                 itemInformationResponse.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ORDER_SUCCESSFUL);
             } else {
+                itemInformationResponse.setRequestId(gfaEddItemResponse.getRetrieveEDD().getTtitem().get(0).getRequestId());
                 itemInformationResponse.setSuccess(false);
                 itemInformationResponse.setScreenMessage(gfaEddItemResponse.getScrenMessage());
             }

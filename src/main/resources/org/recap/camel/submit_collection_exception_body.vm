@@ -1,0 +1,4 @@
+Error Occurred during submit collection process for the given file ${header.emailPayLoad.xmlFileName} of ${header.emailPayLoad.institution}.
+File path : ${header.emailPayLoad.location}
+Exception Message : ${header.emailPayLoad.exceptionMessage}
+Exception stack trace : ${header.emailPayLoad.exception}.

@@ -51,6 +51,8 @@ public final class ReCAPConstants {
     public static final String REQUEST_LAS_STATUS_MAIL_QUEUE = "requestLASStatusMailSendQueue";
     public static final String REQUEST_ACCESSION_RECONCILATION_MAIL_QUEUE = "AccessionReconcilation";
     public static final String REQUEST_INITIAL_DATA_LOAD ="requestInitialDataLoad";
+    public static final String SUBMIT_COLLECTION_EXCEPTION="Exception";
+    public static final String SUBJECT_FOR_SUBMIT_COL_EXCEPTION="Exception Occured during Submit collection";
 
     public static final String REQUEST_RECALL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
     public static final String REQUEST_LAS_STATUS_EMAIL_TEMPLATE = "request_las_status_email_body.vm";
@@ -313,6 +315,8 @@ public final class ReCAPConstants {
     public static final String GFA_SERVER_DOWN = "LAS item status check failed to give valid response or LAS is down. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
     public static final String LAS_DEACCESSION_REJECT_ERROR = "LAS has rejected the {0} request with Error code : \"{1}\" and Error note : \"{2}\".";
     public static final String LAS_REJECTED = "LAS has rejected";
+    public static final String LAS_SERVER_NOT_REACHABLE_ERROR = "LAS server is not reachable. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
+    public static final String LAS_SERVER_NOT_REACHABLE = "LAS server is not reachable";
     public static final String CREATING_A_BIB_RECORD_FAILED_IN_ILS = "Creating a Bib record failed in ILS";
     public static final String INVALID_NO_RESPONSE_FROM_ILS = "Invalid/No Response from ILS";
     public static final String CHECK_IN_REQUEST_FAILED = "Check In Request Failed";
@@ -431,6 +435,8 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdProtectedRoute";
     public static final String SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdNotProtectedRoute";
     public static final String SUBMIT_COLLECTION_COMPLETED_ROUTE = "submitCollectionCompletedRoute";
+    public static final String SUBMIT_COLLECTION__CAUGHT_EXCEPTION_METHOD="caughtException";
+    public static final String SUBMIT_COLLECTION_EXCEPTION_BODY_VM = "submit_collection_exception_body.vm";
 
     public static final String DELETED_MAIL_QUEUE = "deletedRecordsMailSendQueue";
     public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
@@ -489,6 +495,12 @@ public final class ReCAPConstants {
     public static final String REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE = "requestInitialLoadCulDirectRoute";
     public static final String REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE = "requestInitialLoadNyplDirectRoute";
     public static final String ACCESSION_RECONCILIATION_HEADER = "Barcodes not present in SCSB";
+    public static final String DIRECT_ROUTE_FOR_EXCEPTION="direct:Exception";
+
+    public static final String LAS = "LAS";
+    public static final String USER = "User";
+    public static final String REQUEST_RECALL = "RequestItem-Recall";
+    public static final String REQUEST_RETRIEVAL = "RequestItem-Retrieval";
 
     private ReCAPConstants() {
     }
