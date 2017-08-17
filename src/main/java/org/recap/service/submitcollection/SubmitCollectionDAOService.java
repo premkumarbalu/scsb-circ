@@ -347,6 +347,17 @@ public class SubmitCollectionDAOService {
         if(null != itemEntity.getCustomerCode()){
             fetchItemEntity.setCustomerCode(itemEntity.getCustomerCode());
         }
+        if((fetchItemEntity.getUseRestrictions() == null && itemEntity.getUseRestrictions() == null )
+                || (fetchItemEntity.getCollectionGroupEntity().getCollectionGroupCode().equals(ReCAPConstants.NOT_AVAILABLE_CGD)
+                && itemEntity.getCollectionGroupId()==null)){
+            fetchItemEntity.setCatalogingStatus(ReCAPConstants.INCOMPLETE_STATUS);
+        } else{
+            if (fetchItemEntity.getCatalogingStatus().equals(ReCAPConstants.INCOMPLETE_STATUS)) {//To  update the item available status to available for existing incomplete record which is turning as complete record
+                fetchItemEntity.setItemAvailabilityStatusId((Integer) setupDataService.getItemStatusCodeIdMap().get("Available"));
+            }
+            fetchItemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
+        }
+
         if (isAvailableItem(fetchItemEntity.getItemAvailabilityStatusId())) {
             if (itemEntity.getCollectionGroupId() != null && !itemEntity.isCgdProtection()) {
                 fetchItemEntity.setCollectionGroupId(itemEntity.getCollectionGroupId());
@@ -355,13 +366,7 @@ public class SubmitCollectionDAOService {
         }
         fetchItemEntity.setCopyNumber(itemEntity.getCopyNumber());
         fetchItemEntity.setVolumePartYear(itemEntity.getVolumePartYear());
-        if((fetchItemEntity.getUseRestrictions() == null && itemEntity.getUseRestrictions() == null )
-                || (fetchItemEntity.getCollectionGroupEntity().getCollectionGroupCode().equals(ReCAPConstants.NOT_AVAILABLE_CGD)
-                && itemEntity.getCollectionGroupId()==null)){
-            fetchItemEntity.setCatalogingStatus(ReCAPConstants.INCOMPLETE_STATUS);
-        } else{
-            fetchItemEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
-        }
+
         fetchItemEntity.setCgdProtection(itemEntity.isCgdProtection());
         logger.info("updating existing barcode - "+fetchItemEntity.getBarcode());
         itemEntityList.add(fetchItemEntity);
