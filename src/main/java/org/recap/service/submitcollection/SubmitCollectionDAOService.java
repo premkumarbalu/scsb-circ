@@ -1,5 +1,6 @@
 package org.recap.service.submitcollection;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.recap.ReCAPConstants;
 import org.recap.model.*;
 import org.recap.model.report.SubmitCollectionReportInfo;
@@ -42,10 +43,10 @@ public class SubmitCollectionDAOService {
      *
      * @param bibliographicEntity           the bibliographic entity
      * @param submitCollectionReportInfoMap the submit collection report info map
-     * @param idMapToRemoveIndex            the id map to remove index
+     * @param idMapToRemoveIndexList            the id map to remove index
      * @return the bibliographic entity
      */
-    public BibliographicEntity updateBibliographicEntity(BibliographicEntity bibliographicEntity, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String,String> idMapToRemoveIndex,
+    public BibliographicEntity updateBibliographicEntity(BibliographicEntity bibliographicEntity, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String,String>> idMapToRemoveIndexList,
                                                          Set<String> processedBarcodeSetForDummyRecords) {
         BibliographicEntity savedBibliographicEntity = null;
         BibliographicEntity fetchBibliographicEntity = getBibEntityUsingBarcode(bibliographicEntity);
@@ -53,7 +54,7 @@ public class SubmitCollectionDAOService {
             if(fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId())){//update existing complete record
                 savedBibliographicEntity = updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
             } else {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
-                savedBibliographicEntity = updateDummyRecord(bibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndex, processedBarcodeSetForDummyRecords, savedBibliographicEntity, fetchBibliographicEntity);
+                savedBibliographicEntity = updateDummyRecord(bibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, savedBibliographicEntity, fetchBibliographicEntity);
             }
         } else {//if no record found to update, generate exception info
             savedBibliographicEntity = bibliographicEntity;
@@ -69,7 +70,7 @@ public class SubmitCollectionDAOService {
         }
     }
 
-    private BibliographicEntity updateDummyRecord(BibliographicEntity bibliographicEntity, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String, String> idMapToRemoveIndex, Set<String> processedBarcodeSet, BibliographicEntity savedBibliographicEntity, BibliographicEntity fetchBibliographicEntity) {
+    private BibliographicEntity updateDummyRecord(BibliographicEntity bibliographicEntity, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, Set<String> processedBarcodeSet, BibliographicEntity savedBibliographicEntity, BibliographicEntity fetchBibliographicEntity) {
         List<ItemEntity> fetchedCompleteItem = submitCollectionReportHelperService.getIncomingItemIsIncomplete(bibliographicEntity.getItemEntities());//To verify the incoming barcode is complete for dummy record, if it is complete record and update will not happen.
         List<ItemEntity> fetchedItemBasedOnOwningInstitutionItemId = submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(bibliographicEntity.getItemEntities());
         boolean boundWith = isBoundWithItem(bibliographicEntity,processedBarcodeSet);
@@ -77,7 +78,7 @@ public class SubmitCollectionDAOService {
             boolean isCheckCGDNotNull = checkIsCGDNotNull(bibliographicEntity);
             if (isCheckCGDNotNull) {
                 updateCustomerCode(fetchBibliographicEntity, bibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it, this happens mostly for CUL
-                removeDummyRecord(idMapToRemoveIndex, fetchBibliographicEntity);
+                removeDummyRecord(idMapToRemoveIndexList, fetchBibliographicEntity);
                 BibliographicEntity fetchedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(), bibliographicEntity.getOwningInstitutionBibId());
                 BibliographicEntity bibliographicEntityToSave = bibliographicEntity;
                 setItemAvailabilityStatus(bibliographicEntity.getItemEntities().get(0));
@@ -311,11 +312,15 @@ public class SubmitCollectionDAOService {
         return bibliographicEntity;
     }
 
-    private void removeDummyRecord(Map<String, String> idMapToRemoveIndex, BibliographicEntity fetchBibliographicEntity) {
+    private void removeDummyRecord(List<Map<String, String>> idMapToRemoveIndexList, BibliographicEntity fetchBibliographicEntity) {
         if (isNonCompleteBib(fetchBibliographicEntity)) {//This check is to not delete the existing bib which is complete for bound with (This happens when accession done for boundwith item which created as dummy and submit collection done for this boundwith item)
+            Map<String,String> idMapToRemoveIndex = new HashedMap();
             idMapToRemoveIndex.put(ReCAPConstants.BIB_ID,String.valueOf(fetchBibliographicEntity.getBibliographicId()));
             idMapToRemoveIndex.put(ReCAPConstants.HOLDING_ID,String.valueOf(fetchBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId()));
             idMapToRemoveIndex.put(ReCAPConstants.ITEM_ID,String.valueOf(fetchBibliographicEntity.getItemEntities().get(0).getItemId()));
+            idMapToRemoveIndexList.add(idMapToRemoveIndex);
+            logger.info("Added id to remove from solr - bib id - {}, holding id - {}, item id - {}",fetchBibliographicEntity.getBibliographicId(),fetchBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId(),
+                    fetchBibliographicEntity.getItemEntities().get(0).getItemId());
             logger.info("Delete dummy record - barcode - {}",fetchBibliographicEntity.getItemEntities().get(0).getBarcode());
             repositoryService.getBibliographicDetailsRepository().delete(fetchBibliographicEntity);
             repositoryService.getBibliographicDetailsRepository().flush();

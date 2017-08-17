@@ -71,13 +71,13 @@ public class SubmitCollectionService {
      *
      * @param inputRecords       the input records
      * @param processedBibIds the processed bib id list
-     * @param idMapToRemoveIndex the id map to remove index
+     * @param idMapToRemoveIndexList the id map to remove index
      * @param xmlFileName        the xml file name
      * @param checkLimit
      * @return the string
      */
     @Transactional
-    public List<SubmitCollectionResponse> process(String institutionCode, String inputRecords, Set<Integer> processedBibIds, Map<String, String> idMapToRemoveIndex, String xmlFileName, List<Integer> reportRecordNumberList, boolean checkLimit,boolean isCGDProtected) {
+    public List<SubmitCollectionResponse> process(String institutionCode, String inputRecords, Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList, String xmlFileName, List<Integer> reportRecordNumberList, boolean checkLimit,boolean isCGDProtected) {
         logger.info("Submit Collection : Input record processing started");
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -90,9 +90,9 @@ public class SubmitCollectionService {
             try {
                 if (!"".equals(inputRecords)) {
                     if (inputRecords.contains(ReCAPConstants.BIBRECORD_TAG)) {
-                        response = processSCSB(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit,isCGDProtected,institutionEntity);
+                        response = processSCSB(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndexList, checkLimit,isCGDProtected,institutionEntity);
                     } else {
-                        response = processMarc(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndex, checkLimit,isCGDProtected,institutionEntity);
+                        response = processMarc(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndexList, checkLimit,isCGDProtected,institutionEntity);
                     }
                     if (response != null){//This happens when there is a failure
                         setResponse(response, submitColletionResponseList);
@@ -141,7 +141,7 @@ public class SubmitCollectionService {
         return submitColletionResponseList;
     }
 
-    private String processMarc(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String, String> idMapToRemoveIndex, boolean checkLimit
+    private String processMarc(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit
             ,boolean isCGDProtection,InstitutionEntity institutionEntity) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -163,7 +163,7 @@ public class SubmitCollectionService {
             Set<String> processedBarcodeSet = new HashSet<>();
             for (Record record : records) {
                 logger.info("Processing record no: {}",count);
-                BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndex,isCGDProtection,institutionEntity,processedBarcodeSet);
+                BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndexList,isCGDProtection,institutionEntity,processedBarcodeSet);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
@@ -177,7 +177,7 @@ public class SubmitCollectionService {
     }
 
     private String processSCSB(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,
-                               Map<String, String> idMapToRemoveIndex, boolean checkLimit,boolean isCGDProtected,InstitutionEntity institutionEntity) {
+                               List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit,boolean isCGDProtected,InstitutionEntity institutionEntity) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String format;
@@ -199,7 +199,7 @@ public class SubmitCollectionService {
         for (BibRecord bibRecord : bibRecords.getBibRecords()) {
             logger.info("Processing Bib record no: {}",count);
             try {
-                BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndex,isCGDProtected,institutionEntity,processedBarcodeSetForDummyRecords);
+                BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndexList,isCGDProtected,institutionEntity,processedBarcodeSetForDummyRecords);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
@@ -217,7 +217,7 @@ public class SubmitCollectionService {
         return null;
     }
 
-    private BibliographicEntity loadData(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String,String> idMapToRemoveIndex
+    private BibliographicEntity loadData(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String,String>> idMapToRemoveIndexList
             ,boolean isCGDProtected,InstitutionEntity institutionEntity,Set<String> processedBarcodeSetForDummyRecords){
         BibliographicEntity savedBibliographicEntity = null;
         BibliographicEntity bibliographicEntity = null;
@@ -230,7 +230,7 @@ public class SubmitCollectionService {
                 repositoryService.getReportDetailRepository().save(reportEntityList);
             }
             if (bibliographicEntity != null) {
-                savedBibliographicEntity = submitCollectionDAOService.updateBibliographicEntity(bibliographicEntity, submitCollectionReportInfoMap,idMapToRemoveIndex,processedBarcodeSetForDummyRecords);
+                savedBibliographicEntity = submitCollectionDAOService.updateBibliographicEntity(bibliographicEntity, submitCollectionReportInfoMap,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
             }
         } catch (Exception e) {
             submitCollectionReportHelperService.setSubmitCollectionFailureReportForUnexpectedException(bibliographicEntity,
@@ -265,11 +265,11 @@ public class SubmitCollectionService {
     /**
      * Remove solr index string.
      *
-     * @param idMapToRemoveIndex the id map to remove index
+     * @param idMapToRemoveIndexList the id map to remove index
      * @return the string
      */
-    public String removeSolrIndex(Map idMapToRemoveIndex){
-        return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/deleteByBibHoldingItemId", idMapToRemoveIndex, String.class);
+    public String removeSolrIndex(List<Map<String,String> >idMapToRemoveIndexList){
+        return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/deleteByBibHoldingItemId", idMapToRemoveIndexList, String.class);
     }
 
     private void setSubmitCollectionResponse(SubmitCollectionReportInfo submitCollectionReportInfo, List<SubmitCollectionResponse> submitColletionResponseList, SubmitCollectionResponse submitCollectionResponse){
