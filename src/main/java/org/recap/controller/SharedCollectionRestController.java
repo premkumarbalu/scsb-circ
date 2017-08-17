@@ -51,17 +51,18 @@ public class SharedCollectionRestController {
 
         List<Integer> reportRecordNumberList = new ArrayList<>();
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
+        List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
         List<SubmitCollectionResponse> submitCollectionResponseList;
         try {
-            submitCollectionResponseList = submitCollectionService.process(institution,inputRecords,processedBibIds,idMapToRemoveIndex,"",reportRecordNumberList, true,isCGDProtection);
+            submitCollectionResponseList = submitCollectionService.process(institution,inputRecords,processedBibIds,idMapToRemoveIndexList,"",reportRecordNumberList, true,isCGDProtection);
             if (!processedBibIds.isEmpty()) {
                 logger.info("Calling indexing service to update data");
                 submitCollectionService.indexData(processedBibIds);
             }
-            if (!idMapToRemoveIndex.isEmpty()) {//remove the incomplete record from solr index
-                logger.info("Calling indexing to remove dummy record");
-                submitCollectionService.removeSolrIndex(idMapToRemoveIndex);
+            if (!idMapToRemoveIndexList.isEmpty()) {//remove the incomplete record from solr index
+                logger.info("Calling indexing to remove dummy records");
+                submitCollectionService.removeSolrIndex(idMapToRemoveIndexList);
+                logger.info("Removed dummy records from solr");
             }
             submitCollectionService.generateSubmitCollectionReportFile(reportRecordNumberList);
             responseEntity = new ResponseEntity(submitCollectionResponseList,getHttpHeaders(), HttpStatus.OK);

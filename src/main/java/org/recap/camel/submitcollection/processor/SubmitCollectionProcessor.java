@@ -88,16 +88,19 @@ public class SubmitCollectionProcessor {
         String xmlFileName = exchange.getIn().toString();
         logger.info("Processing xmlFileName----->{}",xmlFileName);
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
+        List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
         try {
-            submitCollectionService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndex,xmlFileName,reportRecordNumList, false, isCGDProtection);
+            submitCollectionService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndexList,xmlFileName,reportRecordNumList, false, isCGDProtection);
             logger.info("Submit Collection : Solr indexing started for {} records", processedBibIds.size());
+            logger.info("idMapToRemoveIndex--->"+idMapToRemoveIndexList.size());
             if (processedBibIds.size()>0) {
                 submitCollectionService.indexData(processedBibIds);
-                logger.info("Submit Collection : Solr indexing completed and remove the incomplete record from solr index for {} records", idMapToRemoveIndex.size());
-                if (idMapToRemoveIndex.size()>0) {//remove the incomplete record from solr index
-                    submitCollectionService.removeSolrIndex(idMapToRemoveIndex);
+                logger.info("Submit Collection : Solr indexing completed and remove the incomplete record from solr index for {} records", idMapToRemoveIndexList.size());
+                if (idMapToRemoveIndexList.size()>0) {//remove the incomplete record from solr index
+                    logger.info("Calling indexing to remove dummy records");
+                    submitCollectionService.removeSolrIndex(idMapToRemoveIndexList);
+                    logger.info("Removed dummy records from solr");
                 }
             }
             ReportDataRequest reportRequest = getReportDataRequest(xmlFileName);
