@@ -115,6 +115,7 @@ public class SubmitCollectionProcessor {
     }
 
     public void caughtException(Exchange exchange){
+        logger.info("inside caught exception..........");
         Exception exception = (Exception) exchange.getProperty(Exchange.EXCEPTION_CAUGHT);
         if(exception!=null){
             String fileName = (String)exchange.getIn().getHeader(Exchange.FILE_NAME);
