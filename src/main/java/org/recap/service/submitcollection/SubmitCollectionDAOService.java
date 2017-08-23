@@ -52,7 +52,7 @@ public class SubmitCollectionDAOService {
         BibliographicEntity fetchBibliographicEntity = getBibEntityUsingBarcode(bibliographicEntity);
         if(fetchBibliographicEntity != null ){//update existing record
             if(fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId())){//update existing complete record
-                savedBibliographicEntity = updateCompleteRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
+                savedBibliographicEntity = updateExistingRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
             } else {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
                 savedBibliographicEntity = updateDummyRecord(bibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, savedBibliographicEntity, fetchBibliographicEntity);
             }
@@ -134,7 +134,7 @@ public class SubmitCollectionDAOService {
         }
     }
 
-    private BibliographicEntity updateCompleteRecord(BibliographicEntity fetchBibliographicEntity, BibliographicEntity incomingBibliographicEntity,
+    private BibliographicEntity updateExistingRecord(BibliographicEntity fetchBibliographicEntity, BibliographicEntity incomingBibliographicEntity,
                                                      Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
         BibliographicEntity savedOrUnsavedBibliographicEntity = null;
         logger.info("Processing bib owning institution bibid - ",incomingBibliographicEntity.getOwningInstitutionBibId());
@@ -199,24 +199,29 @@ public class SubmitCollectionDAOService {
 
     private BibliographicEntity updateExistingRecordForDummy(BibliographicEntity fetchBibliographicEntity, BibliographicEntity bibliographicEntity) {
         copyBibliographicEntity(fetchBibliographicEntity, bibliographicEntity);
-        List<HoldingsEntity> fetchedHoldingsEntityList = fetchBibliographicEntity.getHoldingsEntities();
-        List<HoldingsEntity> holdingsEntityList = new ArrayList<>(bibliographicEntity.getHoldingsEntities());
-        boolean isHoldingMatched = false;
-        for (HoldingsEntity holdingsEntity : holdingsEntityList) {
-            for (HoldingsEntity fetchedHoldingEntity : fetchedHoldingsEntityList) {
-                if (fetchedHoldingEntity.getOwningInstitutionHoldingsId().equalsIgnoreCase(holdingsEntity.getOwningInstitutionHoldingsId())) {
-                    copyHoldingsEntity(fetchedHoldingEntity, holdingsEntity,true);
-                    isHoldingMatched = true;
-                } else {
-                    isHoldingMatched = false;
-                }
+        Map<String,HoldingsEntity> fetchedOwningInstHoldingIdHoldingsEntityMap = getOwningInstHoldingIdHoldingsEntityMap(fetchBibliographicEntity.getHoldingsEntities());
+        Map<String,HoldingsEntity> incomingOwningInstHoldingIdHoldingsEntityMap = getOwningInstHoldingIdHoldingsEntityMap(bibliographicEntity.getHoldingsEntities());
+        boolean isMatchingHoldingAvailable = false;
+        for (Map.Entry<String,HoldingsEntity> incomingOwningInstHoldingIdHoldingsEntityMapEntry:incomingOwningInstHoldingIdHoldingsEntityMap.entrySet()){//To verify is there existing holding, if it is there then copy or add the new holding
+            isMatchingHoldingAvailable = fetchedOwningInstHoldingIdHoldingsEntityMap.containsKey(incomingOwningInstHoldingIdHoldingsEntityMapEntry.getKey());
+            if(isMatchingHoldingAvailable){
+                HoldingsEntity fetchedHoldingEntity = fetchedOwningInstHoldingIdHoldingsEntityMap.get(incomingOwningInstHoldingIdHoldingsEntityMapEntry.getKey());
+                copyHoldingsEntity(fetchedHoldingEntity, incomingOwningInstHoldingIdHoldingsEntityMapEntry.getValue(),true);
+            } else {
+                fetchBibliographicEntity.getHoldingsEntities().addAll(bibliographicEntity.getHoldingsEntities());
             }
         }
-        if (!isHoldingMatched) {
-            fetchBibliographicEntity.getHoldingsEntities().addAll(bibliographicEntity.getHoldingsEntities());
-        }
+
         fetchBibliographicEntity.getItemEntities().addAll(bibliographicEntity.getItemEntities());
         return fetchBibliographicEntity;
+    }
+
+    private Map<String,HoldingsEntity> getOwningInstHoldingIdHoldingsEntityMap(List<HoldingsEntity> holdingsEntityList){
+        Map<String,HoldingsEntity> owningInstHoldingIdHoldingsEntityMap = new HashedMap();
+        for(HoldingsEntity holdingsEntity:holdingsEntityList){
+            owningInstHoldingIdHoldingsEntityMap.put(holdingsEntity.getOwningInstitutionHoldingsId(),holdingsEntity);
+        }
+        return owningInstHoldingIdHoldingsEntityMap;
     }
 
     private BibliographicEntity getBibEntityUsingBarcode(BibliographicEntity bibliographicEntity) {
@@ -267,7 +272,6 @@ public class SubmitCollectionDAOService {
 
     private HoldingsEntity copyHoldingsEntity(HoldingsEntity fetchHoldingsEntity, HoldingsEntity holdingsEntity, boolean isForDummyRecord){
         fetchHoldingsEntity.setContent(holdingsEntity.getContent());
-        fetchHoldingsEntity.setDeleted(holdingsEntity.isDeleted());
         fetchHoldingsEntity.setLastUpdatedBy(holdingsEntity.getLastUpdatedBy());
         fetchHoldingsEntity.setLastUpdatedDate(holdingsEntity.getLastUpdatedDate());
         if(isForDummyRecord){
@@ -337,7 +341,6 @@ public class SubmitCollectionDAOService {
 
     private BibliographicEntity copyBibliographicEntity(BibliographicEntity fetchBibliographicEntity, BibliographicEntity bibliographicEntity){
         fetchBibliographicEntity.setContent(bibliographicEntity.getContent());
-        fetchBibliographicEntity.setDeleted(bibliographicEntity.isDeleted());
         fetchBibliographicEntity.setLastUpdatedBy(bibliographicEntity.getLastUpdatedBy());
         fetchBibliographicEntity.setLastUpdatedDate(bibliographicEntity.getLastUpdatedDate());
         logger.info("updating existing bib - owning inst bibid - "+fetchBibliographicEntity.getOwningInstitutionBibId());
