@@ -3,6 +3,8 @@ package org.recap.camel;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.xssf.usermodel.*;
 import org.junit.Test;
 import org.recap.BaseTestCase;
@@ -45,7 +47,10 @@ public class DailyReconciliationProcessorUT extends BaseTestCase {
         XSSFWorkbook xssfWorkbook = new XSSFWorkbook();
         XSSFSheet testSheet = xssfWorkbook.createSheet("test");
         XSSFRow row = testSheet.createRow(0);
-        dailyReconciliationProcessor.createCell(xssfWorkbook,row,"test",0);
+        CellStyle cellStyle = xssfWorkbook.createCellStyle();
+        cellStyle.setAlignment(HorizontalAlignment.LEFT);
+
+        dailyReconciliationProcessor.createCell(xssfWorkbook,row,cellStyle,"test",0);
         XSSFSheet test = xssfWorkbook.getSheet("test");
         XSSFRow testRow = test.getRow(0);
         assertNotNull(testRow);
@@ -118,8 +123,9 @@ public class DailyReconciliationProcessorUT extends BaseTestCase {
         XSSFSheet testSheet1 = xssfWorkbook.createSheet("test1");
         testSheet1.createRow(1).createCell(0).setCellValue("1");
         xssfWorkbook.setSheetOrder("test",0);
-        xssfWorkbook.setSheetOrder("test1",1);
-        dailyReconciliationProcessor.compareLasAndScsbSheets(xssfWorkbook);
+        xssfWorkbook.setSheetOrder("test1",1); CellStyle cellStyle = xssfWorkbook.createCellStyle();
+        cellStyle.setAlignment(HorizontalAlignment.LEFT);
+        dailyReconciliationProcessor.compareLasAndScsbSheets(xssfWorkbook,cellStyle);
         XSSFSheet compareSheet = xssfWorkbook.getSheetAt(2);
         assertEquals("1",compareSheet.getRow(2).getCell(0).getStringCellValue());
         assertEquals("1",compareSheet.getRow(2).getCell(3).getStringCellValue());

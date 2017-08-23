@@ -59,23 +59,25 @@ public class DailyReconciliationProcessor {
                 xssfWorkbook.setSheetOrder(ReCAPConstants.DAILY_RR_LAS, 0);
                 int i = 0;
                 setColumnWidthForSheet(lasSheet);
+                CellStyle cellStyle = xssfWorkbook.createCellStyle();
+                cellStyle.setAlignment(HorizontalAlignment.LEFT);
                 for (DailyReconcilationRecord dailyReconcilationRecord : dailyReconcilationRecordList) {
                     XSSFRow row = lasSheet.createRow(i);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getRequestId(), 0);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getBarcode(), 1);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getCustomerCode(), 2);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getStopCode(), 3);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getPatronId(), 4);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getCreateDate(), 5);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getLastUpdatedDate(), 6);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getRequestingInst(), 7);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getOwningInst(), 8);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getDeliveryMethod(), 9);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getStatus(), 10);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getEmail(), 11);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getErrorCode(), 12);
-                    createCell(xssfWorkbook, row, dailyReconcilationRecord.getErrorNote(), 13);
-                    i++;
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getRequestId(), 0);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getBarcode(), 1);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getCustomerCode(), 2);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getStopCode(), 3);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getPatronId(), 4);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getCreateDate(), 5);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getLastUpdatedDate(), 6);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getRequestingInst(), 7);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getOwningInst(), 8);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getDeliveryMethod(), 9);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getStatus(), 10);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getEmail(), 11);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getErrorCode(), 12);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getErrorNote(), 13);
+                    i++;                         
                 }
                 Sheet readLasSheet = xssfWorkbook.getSheetAt(0);
                 XSSFSheet scsbSheet = xssfWorkbook.createSheet(ReCAPConstants.DAILY_RR_SCSB);
@@ -85,7 +87,7 @@ public class DailyReconciliationProcessor {
                 for (int j = 1; j <= readLasSheet.getLastRowNum(); j++) {
                     readValuesFromLasSheet(xssfWorkbook, readLasSheet, scsbSheet, dateCellStyle, j);
                 }
-                compareLasAndScsbSheets(xssfWorkbook);
+                compareLasAndScsbSheets(xssfWorkbook,cellStyle);
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ReCAPConstants.DAILY_RR_FILE_DATE_FORMAT);
                 FileOutputStream fileOutputStream = new FileOutputStream(filePath + "/" + ReCAPConstants.DAILY_RR + simpleDateFormat.format(new Date()) + ".xlsx");
                 xssfWorkbook.write(fileOutputStream);
@@ -119,12 +121,10 @@ public class DailyReconciliationProcessor {
      * @param cellValue    the cell value
      * @param cellNum      the cell num
      */
-    public void createCell(XSSFWorkbook xssfWorkbook, XSSFRow row, String cellValue, int cellNum) {
+    public void createCell(XSSFWorkbook xssfWorkbook, XSSFRow row,CellStyle cellStyle, String cellValue, int cellNum) {
         if (StringUtils.isNotBlank(cellValue)){
             XSSFCell cell = row.createCell(cellNum);
             cell.setCellValue(cellValue);
-            CellStyle cellStyle = xssfWorkbook.createCellStyle();
-            cellStyle.setAlignment(HorizontalAlignment.LEFT);
             cell.setCellStyle(cellStyle);
         }
     }
@@ -140,21 +140,23 @@ public class DailyReconciliationProcessor {
      */
     public void buildRequestsRows(XSSFWorkbook xssfWorkbook, XSSFSheet xssfSheet, XSSFCellStyle dateCellStyle, int rowNum, String requestId){
         XSSFRow row = xssfSheet.createRow(rowNum);
+        CellStyle cellStyle = xssfWorkbook.createCellStyle();
+        cellStyle.setAlignment(HorizontalAlignment.LEFT);
         if(StringUtils.isNotBlank(requestId)){
             RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(Integer.valueOf(requestId));
             if(requestItemEntity != null){
                 ItemEntity itemEntity = requestItemEntity.getItemEntity();
-                createCell(xssfWorkbook, row, String.valueOf(requestItemEntity.getRequestId()), 0);
-                createCell(xssfWorkbook, row, itemEntity.getBarcode(), 1);
-                createCell(xssfWorkbook, row, itemEntity.getCustomerCode(), 2);
-                createCell(xssfWorkbook, row, requestItemEntity.getStopCode(), 3);
-                createCell(xssfWorkbook, row, requestItemEntity.getPatronId(), 4);
+                createCell(xssfWorkbook, row,cellStyle, String.valueOf(requestItemEntity.getRequestId()), 0);
+                createCell(xssfWorkbook, row,cellStyle, itemEntity.getBarcode(), 1);
+                createCell(xssfWorkbook, row,cellStyle, itemEntity.getCustomerCode(), 2);
+                createCell(xssfWorkbook, row,cellStyle, requestItemEntity.getStopCode(), 3);
+                createCell(xssfWorkbook, row,cellStyle, requestItemEntity.getPatronId(), 4);
                 getCreatedAndLastUpdatedDate(dateCellStyle, requestItemEntity.getCreatedDate(), requestItemEntity.getLastUpdatedDate(), row);
-                createCell(xssfWorkbook, row, String.valueOf(requestItemEntity.getInstitutionEntity().getInstitutionCode()), 7);
-                createCell(xssfWorkbook, row, String.valueOf(itemEntity.getInstitutionEntity().getInstitutionCode()), 8);
-                createCell(xssfWorkbook, row, requestItemEntity.getRequestTypeEntity().getRequestTypeCode(), 9);
-                createCell(xssfWorkbook, row, itemEntity.getItemStatusEntity().getStatusCode(), 10);
-                createCell(xssfWorkbook, row, requestItemEntity.getEmailId(), 11);
+                createCell(xssfWorkbook, row,cellStyle, String.valueOf(requestItemEntity.getInstitutionEntity().getInstitutionCode()), 7);
+                createCell(xssfWorkbook, row,cellStyle, String.valueOf(itemEntity.getInstitutionEntity().getInstitutionCode()), 8);
+                createCell(xssfWorkbook, row,cellStyle, requestItemEntity.getRequestTypeEntity().getRequestTypeCode(), 9);
+                createCell(xssfWorkbook, row,cellStyle, itemEntity.getItemStatusEntity().getStatusCode(), 10);
+                createCell(xssfWorkbook, row,cellStyle, requestItemEntity.getEmailId(), 11);
             }
         }
     }
@@ -170,13 +172,15 @@ public class DailyReconciliationProcessor {
      */
     public void buildDeacessionRows(XSSFWorkbook xssfWorkbook,XSSFSheet xssfSheet, XSSFCellStyle dateCellStyle,int rowNum,String barcode){
         List<ItemEntity> itemEntityList = itemDetailsRepository.findByBarcode(barcode);
+        CellStyle cellStyle = xssfWorkbook.createCellStyle();
+        cellStyle.setAlignment(HorizontalAlignment.LEFT);
         if(itemEntityList != null){
             for (ItemEntity itemEntity : itemEntityList) {
                 XSSFRow row = xssfSheet.createRow(rowNum);
-                createCell(xssfWorkbook, row, itemEntity.getBarcode(), 1);
-                createCell(xssfWorkbook, row, itemEntity.getCustomerCode(), 2);
-                createCell(xssfWorkbook, row, itemEntity.getInstitutionEntity().getInstitutionCode(), 8);
-                createCell(xssfWorkbook, row, itemEntity.getItemStatusEntity().getStatusCode(),10);
+                createCell(xssfWorkbook, row,cellStyle, itemEntity.getBarcode(), 1);
+                createCell(xssfWorkbook, row,cellStyle, itemEntity.getCustomerCode(), 2);
+                createCell(xssfWorkbook, row,cellStyle, itemEntity.getInstitutionEntity().getInstitutionCode(), 8);
+                createCell(xssfWorkbook, row,cellStyle, itemEntity.getItemStatusEntity().getStatusCode(),10);
                 getCreatedAndLastUpdatedDate(dateCellStyle, itemEntity.getCreatedDate(),itemEntity.getLastUpdatedDate(), row);
             }
         }
@@ -241,13 +245,13 @@ public class DailyReconciliationProcessor {
      *
      * @param xssfWorkbook the xssf workbook
      */
-    public void compareLasAndScsbSheets(XSSFWorkbook xssfWorkbook) {
+    public void compareLasAndScsbSheets(XSSFWorkbook xssfWorkbook,CellStyle cellStyle) {
             XSSFSheet sheet1 = xssfWorkbook.getSheetAt(0);
             XSSFSheet sheet2 = xssfWorkbook.getSheetAt(1);
             XSSFSheet sheet3 = xssfWorkbook.createSheet(ReCAPConstants.DAILY_RR_COMPARISON);
             xssfWorkbook.setSheetOrder(ReCAPConstants.DAILY_RR_COMPARISON,2);
             createHeaderForCompareSheet(sheet3);
-            compareTwoSheets(sheet1, sheet2, sheet3,xssfWorkbook);
+            compareTwoSheets(sheet1, sheet2, sheet3,xssfWorkbook,cellStyle);
     }
 
     /**
@@ -258,7 +262,7 @@ public class DailyReconciliationProcessor {
      * @param sheet3       the sheet 3
      * @param xssfWorkbook the xssf workbook
      */
-    public void compareTwoSheets(XSSFSheet sheet1, XSSFSheet sheet2, XSSFSheet sheet3,XSSFWorkbook xssfWorkbook) {
+    public void compareTwoSheets(XSSFSheet sheet1, XSSFSheet sheet2, XSSFSheet sheet3,XSSFWorkbook xssfWorkbook,CellStyle cellStyle) {
         int firstRow1 = 1;
         int lastRow1 = sheet1.getLastRowNum();
         int createRowSheet3 = 2;
@@ -267,7 +271,7 @@ public class DailyReconciliationProcessor {
             XSSFRow row2 = sheet2.getRow(i);
             XSSFRow row3 = sheet3.createRow(createRowSheet3);
             createRowSheet3++;
-            compareTwoRows(row1, row2, row3,xssfWorkbook);
+            compareTwoRows(row1, row2, row3,xssfWorkbook,cellStyle);
         }
     }
 
@@ -279,7 +283,7 @@ public class DailyReconciliationProcessor {
      * @param row3         the row 3
      * @param xssfWorkbook the xssf workbook
      */
-    public void compareTwoRows(XSSFRow row1, XSSFRow row2, XSSFRow row3,XSSFWorkbook xssfWorkbook) {
+    public void compareTwoRows(XSSFRow row1, XSSFRow row2, XSSFRow row3,XSSFWorkbook xssfWorkbook,CellStyle cellStyle) {
         Cell sheet1RequestId = null;
         Cell sheet1Barcode = null;
         Cell sheet1Status = null;
@@ -318,26 +322,26 @@ public class DailyReconciliationProcessor {
             sheet2[2] = sheet2Status.getStringCellValue();
         }
         boolean equalRow = Arrays.equals(sheet1, sheet2);
-        buidComparisionSheet(row3, xssfWorkbook, sheet1LasStatus, sheet1, sheet2, equalRow);
+        buidComparisionSheet(row3, xssfWorkbook, sheet1LasStatus, sheet1, sheet2, equalRow,cellStyle);
     }
 
-    private void buidComparisionSheet(XSSFRow row3, XSSFWorkbook xssfWorkbook, String sheet1LasStatus, String[] sheet1, String[] sheet2, boolean equalRow) {
+    private void buidComparisionSheet(XSSFRow row3, XSSFWorkbook xssfWorkbook, String sheet1LasStatus, String[] sheet1, String[] sheet2, boolean equalRow,CellStyle cellStyle) {
         if (equalRow){
-            createCell(xssfWorkbook,row3,sheet1[0],0);
-            createCell(xssfWorkbook,row3,sheet1[1],1);
-            createCell(xssfWorkbook,row3,sheet1LasStatus,2);
-            createCell(xssfWorkbook,row3,sheet2[0],3);
-            createCell(xssfWorkbook,row3,sheet2[1],4);
-            createCell(xssfWorkbook,row3,sheet2[2],5);
-            createCell(xssfWorkbook,row3,ReCAPConstants.DAILY_RR_MATCHED,6);
+            createCell(xssfWorkbook,row3,cellStyle,sheet1[0],0);
+            createCell(xssfWorkbook,row3,cellStyle,sheet1[1],1);
+            createCell(xssfWorkbook,row3,cellStyle,sheet1LasStatus,2);
+            createCell(xssfWorkbook,row3,cellStyle,sheet2[0],3);
+            createCell(xssfWorkbook,row3,cellStyle,sheet2[1],4);
+            createCell(xssfWorkbook,row3,cellStyle,sheet2[2],5);
+            createCell(xssfWorkbook,row3,cellStyle,ReCAPConstants.DAILY_RR_MATCHED,6);
         }
         else {
-            createCell(xssfWorkbook,row3,sheet1[0],0);
-            createCell(xssfWorkbook,row3,sheet1[1],1);
-            createCell(xssfWorkbook,row3,sheet1LasStatus,2);
-            createCell(xssfWorkbook,row3,sheet2[0],3);
-            createCell(xssfWorkbook,row3,sheet2[1],4);
-            createCell(xssfWorkbook,row3,sheet2[2],5);
+            createCell(xssfWorkbook,row3,cellStyle,sheet1[0],0);
+            createCell(xssfWorkbook,row3,cellStyle,sheet1[1],1);
+            createCell(xssfWorkbook,row3,cellStyle,sheet1LasStatus,2);
+            createCell(xssfWorkbook,row3,cellStyle,sheet2[0],3);
+            createCell(xssfWorkbook,row3,cellStyle,sheet2[1],4);
+            createCell(xssfWorkbook,row3,cellStyle,sheet2[2],5);
             if (StringUtils.isBlank(sheet1LasStatus) && StringUtils.isNotBlank(sheet2[2])){
                 createCellForNotEqualCells(xssfWorkbook,row3,ReCAPConstants.DAILY_RR_LAS_NOT_GIVEN_STATUS,6);
             }
