@@ -98,16 +98,26 @@ public class SubmitCollectionProcessor {
                 submitCollectionService.indexData(processedBibIds);
                 logger.info("Submit Collection : Solr indexing completed and remove the incomplete record from solr index for {} records", idMapToRemoveIndexList.size());
                 if (idMapToRemoveIndexList.size()>0) {//remove the incomplete record from solr index
+                    StopWatch stopWatchRemovingDummy = new StopWatch();
+                    stopWatchRemovingDummy.start();
                     logger.info("Calling indexing to remove dummy records");
-                    submitCollectionService.removeSolrIndex(idMapToRemoveIndexList);
+                    new Thread(() -> {
+                        try {
+                            submitCollectionService.removeSolrIndex(idMapToRemoveIndexList);
+                        } catch (Exception e) {
+                            logger.error(ReCAPConstants.LOG_ERROR,e);
+                        }
+                    }).start();
                     logger.info("Removed dummy records from solr");
+                    stopWatchRemovingDummy.stop();
+                    logger.info("Time take to call and execute solr call to remove dummy-->{} sec",stopWatchRemovingDummy.getTotalTimeSeconds());
                 }
             }
             ReportDataRequest reportRequest = getReportDataRequest(xmlFileName);
             String generatedReportFileName = submitCollectionReportGenerator.generateReport(reportRequest);
             producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(xmlFileName,generatedReportFileName), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.SUBMIT_COLLECTION);
             stopWatch.stop();
-            logger.info("Submit Collection : Total time taken for processing through ftp---> {}",stopWatch.getTotalTimeSeconds());
+            logger.info("Submit Collection : Total time taken for processing through ftp---> {} sec",stopWatch.getTotalTimeSeconds());
         } catch (Exception e) {
             logger.error(ReCAPConstants.LOG_ERROR,e);
             exchange.setException(e);
