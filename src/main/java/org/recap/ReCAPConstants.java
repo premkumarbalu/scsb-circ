@@ -385,8 +385,8 @@ public final class ReCAPConstants {
     public static final String DAILY_RR_LAS = "LAS";
     public static final String DAILY_RR_SCSB = "SCSB";
     public static final String DAILY_RR_COMPARISON = "Comparison";
-    public static final String DAILY_RR_FILE_DATE_FORMAT = "yyyyMMdd";
-    public static final String DAILY_RR = "DailyRR";
+    public static final String DAILY_RR_FILE_DATE_FORMAT = "yyyyMMdd_HHmmss";
+    public static final String DAILY_RR = "DailyReconciliation_";
     public static final String DATE_CELL_STYLE_FORMAT = "MM/dd/yyyy HH:mm:ss.S";
     public static final String DAILY_RR_REQUEST_ID = "RequestId";
     public static final String DAILY_RR_BARCODE = BARCODE;
