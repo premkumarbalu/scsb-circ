@@ -1,5 +1,6 @@
 package org.recap.camel.dailyreconciliation;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
@@ -44,6 +45,9 @@ public class DailyReconciliationProcessor {
     @Value("${daily.reconciliation.file}")
     private String filePath;
 
+    @Autowired
+    private CamelContext camelContext;
+
     /**
      * Process input for daily reconciliation report.
      *
@@ -61,6 +65,7 @@ public class DailyReconciliationProcessor {
                 setColumnWidthForSheet(lasSheet);
                 CellStyle cellStyle = xssfWorkbook.createCellStyle();
                 cellStyle.setAlignment(HorizontalAlignment.LEFT);
+                logger.info("started creating las sheet");
                 for (DailyReconcilationRecord dailyReconcilationRecord : dailyReconcilationRecordList) {
                     XSSFRow row = lasSheet.createRow(i);
                     createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getRequestId(), 0);
@@ -79,19 +84,26 @@ public class DailyReconciliationProcessor {
                     createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getErrorNote(), 13);
                     i++;                         
                 }
+                logger.info("completed creating las sheet");
                 Sheet readLasSheet = xssfWorkbook.getSheetAt(0);
                 XSSFSheet scsbSheet = xssfWorkbook.createSheet(ReCAPConstants.DAILY_RR_SCSB);
                 xssfWorkbook.setSheetOrder(ReCAPConstants.DAILY_RR_SCSB, 1);
                 createHeader(scsbSheet);
                 XSSFCellStyle dateCellStyle = getXssfCellStyleForDate(xssfWorkbook);
+                logger.info("started creating scsb sheet");
                 for (int j = 1; j <= readLasSheet.getLastRowNum(); j++) {
                     readValuesFromLasSheet(xssfWorkbook, readLasSheet, scsbSheet, dateCellStyle, j);
                 }
+                logger.info("completed creating scsb sheet");
                 compareLasAndScsbSheets(xssfWorkbook,cellStyle);
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ReCAPConstants.DAILY_RR_FILE_DATE_FORMAT);
                 FileOutputStream fileOutputStream = new FileOutputStream(filePath + "/" + ReCAPConstants.DAILY_RR + simpleDateFormat.format(new Date()) + ".xlsx");
                 xssfWorkbook.write(fileOutputStream);
+                fileOutputStream.flush();
                 fileOutputStream.close();
+                logger.info("total number of sheets created {}",xssfWorkbook.getNumberOfSheets());
+                camelContext.startRoute(ReCAPConstants.DAILY_RR_FS_ROUTE_ID);
+                logger.info("started "+ReCAPConstants.DAILY_RR_FS_ROUTE_ID);
             }
         }
         catch (Exception e){
@@ -246,12 +258,14 @@ public class DailyReconciliationProcessor {
      * @param xssfWorkbook the xssf workbook
      */
     public void compareLasAndScsbSheets(XSSFWorkbook xssfWorkbook,CellStyle cellStyle) {
+            logger.info("started comparing las and scsb sheets");
             XSSFSheet sheet1 = xssfWorkbook.getSheetAt(0);
             XSSFSheet sheet2 = xssfWorkbook.getSheetAt(1);
             XSSFSheet sheet3 = xssfWorkbook.createSheet(ReCAPConstants.DAILY_RR_COMPARISON);
             xssfWorkbook.setSheetOrder(ReCAPConstants.DAILY_RR_COMPARISON,2);
             createHeaderForCompareSheet(sheet3);
             compareTwoSheets(sheet1, sheet2, sheet3,xssfWorkbook,cellStyle);
+            logger.info("completed comparing las and scsb sheets");
     }
 
     /**
@@ -266,6 +280,7 @@ public class DailyReconciliationProcessor {
         int firstRow1 = 1;
         int lastRow1 = sheet1.getLastRowNum();
         int createRowSheet3 = 2;
+        logger.info("started row wise comparison");
         for (int i = firstRow1; i <= lastRow1; i++) {
             XSSFRow row1 = sheet1.getRow(i);
             XSSFRow row2 = sheet2.getRow(i);
@@ -273,6 +288,7 @@ public class DailyReconciliationProcessor {
             createRowSheet3++;
             compareTwoRows(row1, row2, row3,xssfWorkbook,cellStyle);
         }
+        logger.info("completed row wise comparison");
     }
 
     /**
@@ -429,5 +445,6 @@ public class DailyReconciliationProcessor {
         xssfSheet.setColumnWidth(4, 4000);
         xssfSheet.setColumnWidth(5, 5000);
         xssfSheet.setColumnWidth(6, 7000);
+        logger.info("created headers for comparison sheets");
     }
 }

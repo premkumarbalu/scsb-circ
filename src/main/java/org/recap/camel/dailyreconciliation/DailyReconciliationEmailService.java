@@ -32,6 +32,7 @@ public class DailyReconciliationEmailService{
     public void process(Exchange exchange) throws Exception {
         fileLocation = (String) exchange.getIn().getHeaders().get("CamelFileNameProduced");
         producerTemplate.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, getEmailPayLoad(), ReCAPConstants.EMAIL_BODY_FOR,ReCAPConstants.DAILY_RECONCILIATION);
+        logger.info("Daily Reconciliation file created in the path {}",fileLocation);
     }
 
     private EmailPayLoad getEmailPayLoad(){

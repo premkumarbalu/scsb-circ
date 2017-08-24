@@ -26,7 +26,6 @@ public class DailyReconcilationJobController {
     @RequestMapping(value = "/startDailyReconcilation",method = RequestMethod.POST)
     public String statCamel() throws Exception{
         camelContext.startRoute(ReCAPConstants.DAILY_RR_FTP_ROUTE_ID);
-        camelContext.startRoute(ReCAPConstants.DAILY_RR_FS_ROUTE_ID);
         return ReCAPConstants.SUCCESS;
     }
 }
