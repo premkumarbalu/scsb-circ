@@ -352,9 +352,6 @@ public class SubmitCollectionDAOService {
         fetchItemEntity.setLastUpdatedDate(itemEntity.getLastUpdatedDate());
         fetchItemEntity.setCallNumber(itemEntity.getCallNumber());
         fetchItemEntity.setCallNumberType(itemEntity.getCallNumberType());
-        if(null != itemEntity.getCustomerCode()){
-            fetchItemEntity.setCustomerCode(itemEntity.getCustomerCode());
-        }
         if((fetchItemEntity.getUseRestrictions() == null && itemEntity.getUseRestrictions() == null )
                 || (fetchItemEntity.getCollectionGroupEntity().getCollectionGroupCode().equals(ReCAPConstants.NOT_AVAILABLE_CGD)
                 && itemEntity.getCollectionGroupId()==null)){
