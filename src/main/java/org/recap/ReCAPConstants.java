@@ -502,6 +502,8 @@ public final class ReCAPConstants {
     public static final String REQUEST_RECALL = "RequestItem-Recall";
     public static final String REQUEST_RETRIEVAL = "RequestItem-Retrieval";
 
+    public static final String NYPL_NO_RESTRICTIONS = "Standard NYPL restrictions apply";
+
     private ReCAPConstants() {
     }
 

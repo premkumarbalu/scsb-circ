@@ -366,7 +366,9 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
             createHoldRequest.setItemBarcode(itemIdentifier);
             createHoldRequest.setPatronBarcode(patronIdentifier);
             Description description = new Description();
-            description.setTitle(title);
+            String titleIdentifier = title.replace("[" + ReCAPConstants.REQUEST_USE_RESTRICTIONS + "]", "[" + ReCAPConstants.NYPL_NO_RESTRICTIONS + "]");
+            logger.info("Nypl title identifier : " + titleIdentifier);
+            description.setTitle(titleIdentifier);
             description.setAuthor(author);
             description.setCallNumber(callNumber);
             createHoldRequest.setDescription(description);
