@@ -488,6 +488,7 @@ public final class ReCAPConstants {
 
     public static final String CAMEL_SPLIT_COMPLETE = "CamelSplitComplete";
     public static final String DIRECT = "direct:";
+    public static final String PROCESS_DAILY_RECONCILIATION = "processDailyReconciliaion";
     public static final String ACCESSION_RECONCILATION_DIRECT_PUL_ROUTE = "accessionReconciliationDirectPulRoute";
     public static final String ACCESSION_RECONCILATION_DIRECT_CUL_ROUTE = "accessionReconciliationDirectCulRoute";
     public static final String ACCESSION_RECONCILATION_DIRECT_NYPL_ROUTE = "accessionReconciliationDirectNyplRoute";

@@ -37,7 +37,7 @@ public class SubmitCollectionPollingFtpRouteBuilder {
     private String ftpPrivateKey;
 
     /**
-     * Predicate to idenitify is the input file is gz
+     * Predicate to identify is the input file is gz
      */
     Predicate gzipFile = new Predicate() {
         @Override
