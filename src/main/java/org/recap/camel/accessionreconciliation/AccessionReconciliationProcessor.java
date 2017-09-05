@@ -72,7 +72,7 @@ public class AccessionReconciliationProcessor {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Set> responseEntity = restTemplate.exchange(solrSolrClientUrl+ReCAPConstants.ACCESSION_RECONCILATION_SOLR_CLIENT_URL, HttpMethod.POST, httpEntity,Set.class);
         Set<String> body = responseEntity.getBody();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ReCAPConstants.DAILY_RR_FILE_DATE_FORMAT);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ReCAPConstants.BARCODE_RECONCILIATION_FILE_DATE_FORMAT);
         try {
             Path filePath = Paths.get(accessionFilePath+"/"+institutionCode+"/"+ReCAPConstants.ACCESSION_RECONCILATION_FILE_NAME+institutionCode+simpleDateFormat.format(new Date())+".csv");
             if (!filePath.toFile().exists()) {

@@ -505,6 +505,8 @@ public final class ReCAPConstants {
 
     public static final String NYPL_NO_RESTRICTIONS = "Standard NYPL restrictions apply";
 
+    public static final String BARCODE_RECONCILIATION_FILE_DATE_FORMAT = "yyyyMMdd";
+
     private ReCAPConstants() {
     }
 
