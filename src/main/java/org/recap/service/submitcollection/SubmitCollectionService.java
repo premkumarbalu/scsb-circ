@@ -223,18 +223,20 @@ public class SubmitCollectionService {
         BibliographicEntity bibliographicEntity = null;
         try {
             Map responseMap = getConverter(format).convert(record,institutionEntity);
-            bibliographicEntity = (BibliographicEntity) responseMap.get("bibliographicEntity");
-            List<ReportEntity> reportEntityList = (List<ReportEntity>) responseMap.get("reportEntities");
-            setCGDProtectionForItems(bibliographicEntity,isCGDProtected);
-            if (CollectionUtils.isNotEmpty(reportEntityList)) {
-                repositoryService.getReportDetailRepository().save(reportEntityList);
-            }
-            if (bibliographicEntity != null) {
-                savedBibliographicEntity = submitCollectionDAOService.updateBibliographicEntity(bibliographicEntity, submitCollectionReportInfoMap,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+            StringBuilder errorMessage = (StringBuilder)responseMap.get("errorMessage");
+            if (errorMessage != null && errorMessage.length()==0) {
+                bibliographicEntity = (BibliographicEntity) responseMap.get("bibliographicEntity");
+                setCGDProtectionForItems(bibliographicEntity,isCGDProtected);
+                if (bibliographicEntity != null) {
+                    savedBibliographicEntity = submitCollectionDAOService.updateBibliographicEntity(bibliographicEntity, submitCollectionReportInfoMap,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+                }
+            } else {
+                submitCollectionReportHelperService.setSubmitCollectionFailureReportForUnexpectedException(bibliographicEntity,
+                        submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),"Failed record - Item not updated - "+errorMessage.toString(),institutionEntity);
             }
         } catch (Exception e) {
             submitCollectionReportHelperService.setSubmitCollectionFailureReportForUnexpectedException(bibliographicEntity,
-                    submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),"Failed record - Item not updated, unexpected exception - "+e.getMessage());
+                    submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),"Failed record - Item not updated - "+e.getMessage(),institutionEntity);
             logger.error(ReCAPConstants.LOG_ERROR,e);
         }
         return savedBibliographicEntity;
