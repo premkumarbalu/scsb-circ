@@ -65,70 +65,75 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         getDbReportUtil().setInstitutionEntitiesMap(getInstitutionEntityMap());
         getDbReportUtil().setCollectionGroupMap(getCollectionGroupMap());
 
-        BibMarcRecord bibMarcRecord = marcUtil.buildBibMarcRecord(record);
-        Record bibRecord = bibMarcRecord.getBibRecord();
-        Integer owningInstitutionId;
-        if(institutionEntity == null){
-            owningInstitutionId = getOwningInstitutionId(bibMarcRecord);
-            institutionEntity = institutionDetailsRepository.findByInstitutionId(owningInstitutionId);
-        }
-        Date currentDate = new Date();
-        Map<String, Object> bibMap = processAndValidateBibliographicEntity(bibRecord, institutionEntity,currentDate);
-        BibliographicEntity bibliographicEntity = (BibliographicEntity) bibMap.get(ReCAPConstants.BIBLIOGRAPHIC_ENTITY);
-        ReportEntity bibReportEntity = (ReportEntity) bibMap.get("bibReportEntity");
-        if (bibReportEntity != null) {
-            reportEntities.add(bibReportEntity);
-        } else {
-            processBib = true;
-        }
+        StringBuilder errorMessage = new StringBuilder();
 
-        List<HoldingsMarcRecord> holdingsMarcRecords = bibMarcRecord.getHoldingsMarcRecords();
-        if (CollectionUtils.isNotEmpty(holdingsMarcRecords)) {
-            for (HoldingsMarcRecord holdingsMarcRecord : holdingsMarcRecords) {
-                boolean processHoldings = false;
-                Record holdingsRecord = holdingsMarcRecord.getHoldingsRecord();
-                Map<String, Object> holdingsMap = processAndValidateHoldingsEntity(bibliographicEntity, institutionEntity, holdingsRecord, bibRecord,currentDate);
-                HoldingsEntity holdingsEntity = (HoldingsEntity) holdingsMap.get("holdingsEntity");
-                ReportEntity holdingsReportEntity = (ReportEntity) holdingsMap.get("holdingsReportEntity");
-                if (holdingsReportEntity != null) {
-                    reportEntities.add(holdingsReportEntity);
-                } else {
-                    processHoldings = true;
-                    holdingsEntities.add(holdingsEntity);
-                }
-                String holdingsCallNumber = marcUtil.getDataFieldValue(holdingsRecord, "852", 'h');
-                Character holdingsCallNumberType = marcUtil.getInd1(holdingsRecord, "852", 'h');
+        try {
+            BibMarcRecord bibMarcRecord = marcUtil.buildBibMarcRecord(record);
+            Record bibRecord = bibMarcRecord.getBibRecord();
+            Integer owningInstitutionId;
+            if(institutionEntity == null){
+                owningInstitutionId = getOwningInstitutionId(bibMarcRecord);
+                institutionEntity = institutionDetailsRepository.findByInstitutionId(owningInstitutionId);
+            }
+            Date currentDate = new Date();
+            Map<String, Object> bibMap = processAndValidateBibliographicEntity(bibRecord, institutionEntity,currentDate);
+            BibliographicEntity bibliographicEntity = (BibliographicEntity) bibMap.get(ReCAPConstants.BIBLIOGRAPHIC_ENTITY);
+            ReportEntity bibReportEntity = (ReportEntity) bibMap.get("bibReportEntity");
+            if (bibReportEntity != null) {
+                reportEntities.add(bibReportEntity);
+            } else {
+                processBib = true;
+            }
 
-                List<ItemMarcRecord> itemMarcRecordList = holdingsMarcRecord.getItemMarcRecordList();
-                if (CollectionUtils.isNotEmpty(itemMarcRecordList)) {
-                    for (ItemMarcRecord itemMarcRecord : itemMarcRecordList) {
-                        Record itemRecord = itemMarcRecord.getItemRecord();
-                        Map<String, Object> itemMap = processAndValidateItemEntity(institutionEntity, holdingsCallNumber, holdingsCallNumberType, itemRecord,currentDate);
-                        ItemEntity itemEntity = (ItemEntity) itemMap.get("itemEntity");
-                        ReportEntity itemReportEntity = (ReportEntity) itemMap.get("itemReportEntity");
-                        if (itemReportEntity != null) {
-                            reportEntities.add(itemReportEntity);
-                        } else if (processHoldings) {
-                            if (holdingsEntity.getItemEntities() == null) {
-                                holdingsEntity.setItemEntities(new ArrayList<>());
+            List<HoldingsMarcRecord> holdingsMarcRecords = bibMarcRecord.getHoldingsMarcRecords();
+            if (CollectionUtils.isNotEmpty(holdingsMarcRecords)) {
+                for (HoldingsMarcRecord holdingsMarcRecord : holdingsMarcRecords) {
+                    boolean processHoldings = false;
+                    Record holdingsRecord = holdingsMarcRecord.getHoldingsRecord();
+                    Map<String, Object> holdingsMap = processAndValidateHoldingsEntity(bibliographicEntity, holdingsRecord, currentDate,errorMessage);
+                    HoldingsEntity holdingsEntity = (HoldingsEntity) holdingsMap.get("holdingsEntity");
+                    ReportEntity holdingsReportEntity = (ReportEntity) holdingsMap.get("holdingsReportEntity");
+                    if (holdingsReportEntity != null) {
+                        reportEntities.add(holdingsReportEntity);
+                    } else {
+                        processHoldings = true;
+                        holdingsEntities.add(holdingsEntity);
+                    }
+                    String holdingsCallNumber = marcUtil.getDataFieldValue(holdingsRecord, "852", 'h');
+                    Character holdingsCallNumberType = marcUtil.getInd1(holdingsRecord, "852", 'h');
+
+                    List<ItemMarcRecord> itemMarcRecordList = holdingsMarcRecord.getItemMarcRecordList();
+                    if (CollectionUtils.isNotEmpty(itemMarcRecordList)) {
+                        for (ItemMarcRecord itemMarcRecord : itemMarcRecordList) {
+                            Record itemRecord = itemMarcRecord.getItemRecord();
+                            Map<String, Object> itemMap = processAndValidateItemEntity(institutionEntity, holdingsCallNumber, holdingsCallNumberType, itemRecord,currentDate,errorMessage);
+                            ItemEntity itemEntity = (ItemEntity) itemMap.get("itemEntity");
+                            ReportEntity itemReportEntity = (ReportEntity) itemMap.get("itemReportEntity");
+                            if (itemReportEntity != null) {
+                                reportEntities.add(itemReportEntity);
+                            } else if (processHoldings) {
+                                if (holdingsEntity.getItemEntities() == null) {
+                                    holdingsEntity.setItemEntities(new ArrayList<>());
+                                }
+                                holdingsEntity.getItemEntities().add(itemEntity);
+                                itemEntities.add(itemEntity);
                             }
-                            holdingsEntity.getItemEntities().add(itemEntity);
-                            itemEntities.add(itemEntity);
                         }
                     }
+
                 }
-
+                bibliographicEntity.setHoldingsEntities(holdingsEntities);
+                bibliographicEntity.setItemEntities(itemEntities);
             }
-            bibliographicEntity.setHoldingsEntities(holdingsEntities);
-            bibliographicEntity.setItemEntities(itemEntities);
-        }
 
-        if (CollectionUtils.isNotEmpty(reportEntities)) {
-            map.put("reportEntities", reportEntities);
+            if (processBib) {
+                map.put(ReCAPConstants.BIBLIOGRAPHIC_ENTITY, bibliographicEntity);
+            }
+        } catch (Exception e) {
+            logger.error(ReCAPConstants.LOG_ERROR,e);
+            errorMessage.append(e.getMessage());
         }
-        if (processBib) {
-            map.put(ReCAPConstants.BIBLIOGRAPHIC_ENTITY, bibliographicEntity);
-        }
+        map.put("errorMessage",errorMessage);
         return map;
     }
 
@@ -176,29 +181,12 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
                 errorMessage.append("Leader Field value should be 24 characters");
             }
         }
-        List<ReportDataEntity> reportDataEntities = null;
-
-        if (errorMessage.toString().length() > 1) {
-            reportDataEntities = getDbReportUtil().generateBibFailureReportEntity(bibliographicEntity, bibRecord);
-            ReportDataEntity errorReportDataEntity = new ReportDataEntity();
-            errorReportDataEntity.setHeaderName(ReCAPConstants.ERROR_DESCRIPTION);
-            errorReportDataEntity.setHeaderValue(errorMessage.toString());
-            reportDataEntities.add(errorReportDataEntity);
-
-            ReportEntity reportEntity = new ReportEntity();
-            reportEntity.setFileName(ReCAPConstants.SUBMIT_COLLECTION);
-            reportEntity.setInstitutionName(institutionEntity.getInstitutionCode());
-            reportEntity.setType(org.recap.ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT);
-            reportEntity.setCreatedDate(new Date());
-            reportEntity.addAll(reportDataEntities);
-            map.put("bibReportEntity", reportEntity);
-        }
         map.put(ReCAPConstants.BIBLIOGRAPHIC_ENTITY, bibliographicEntity);
         return map;
     }
 
-    private Map<String, Object> processAndValidateHoldingsEntity(BibliographicEntity bibliographicEntity, InstitutionEntity institutionEntity, Record holdingsRecord, Record bibRecord,Date currentDate) {
-        StringBuilder errorMessage = new StringBuilder();
+    private Map<String, Object> processAndValidateHoldingsEntity(BibliographicEntity bibliographicEntity, Record holdingsRecord, Date currentDate
+    ,StringBuilder errorMessage) {
         Map<String, Object> map = new HashMap<>();
         HoldingsEntity holdingsEntity = new HoldingsEntity();
 
@@ -221,30 +209,12 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
             owningInstitutionHoldingsId = UUID.randomUUID().toString();
         }
         holdingsEntity.setOwningInstitutionHoldingsId(owningInstitutionHoldingsId);
-        List<ReportDataEntity> reportDataEntities = null;
-        if (errorMessage.toString().length() > 1) {
-            reportDataEntities = getDbReportUtil().generateBibHoldingsFailureReportEntity(bibliographicEntity, holdingsEntity, institutionEntity.getInstitutionCode(), bibRecord);
-            ReportDataEntity errorReportDataEntity = new ReportDataEntity();
-            errorReportDataEntity.setHeaderName(ReCAPConstants.ERROR_DESCRIPTION);
-            errorReportDataEntity.setHeaderValue(errorMessage.toString());
-            reportDataEntities.add(errorReportDataEntity);
-        }
-
-        if (!org.springframework.util.CollectionUtils.isEmpty(reportDataEntities)) {
-            ReportEntity reportEntity = new ReportEntity();
-            reportEntity.setFileName(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT);
-            reportEntity.setInstitutionName(institutionEntity.getInstitutionCode());
-            reportEntity.setType(org.recap.ReCAPConstants.FAILURE);
-            reportEntity.setCreatedDate(new Date());
-            reportEntity.addAll(reportDataEntities);
-            map.put("holdingsReportEntity", reportEntity);
-        }
         map.put("holdingsEntity", holdingsEntity);
         return map;
     }
 
-    private Map<String, Object> processAndValidateItemEntity(InstitutionEntity institutionEntity, String holdingsCallNumber, Character holdingsCallNumberType, Record itemRecord, Date currentDate) {
-        StringBuilder errorMessage = new StringBuilder();
+    private Map<String, Object> processAndValidateItemEntity(InstitutionEntity institutionEntity, String holdingsCallNumber, Character holdingsCallNumberType, Record itemRecord, Date currentDate,
+                                                             StringBuilder errorMessage) {
         Map<String, Object> map = new HashMap<>();
         ItemEntity itemEntity = new ItemEntity();
         String itemBarcode = marcUtil.getDataFieldValue(itemRecord, "876", 'p');
@@ -294,16 +264,6 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         itemEntity.setLastUpdatedDate(currentDate);
         itemEntity.setLastUpdatedBy(ReCAPConstants.SUBMIT_COLLECTION);
 
-        List<ReportDataEntity> reportDataEntities = null;
-        if (!org.springframework.util.CollectionUtils.isEmpty(reportDataEntities)) {
-            ReportEntity reportEntity = new ReportEntity();
-            reportEntity.setFileName(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_REPORT);
-            reportEntity.setInstitutionName(institutionEntity.getInstitutionCode());
-            reportEntity.setType(org.recap.ReCAPConstants.FAILURE);
-            reportEntity.setCreatedDate(new Date());
-            reportEntity.addAll(reportDataEntities);
-            map.put("itemReportEntity", reportEntity);
-        }
         map.put("itemEntity", itemEntity);
         return map;
     }

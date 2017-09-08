@@ -2,18 +2,11 @@ package org.recap.service.submitcollection;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
-import org.marc4j.marc.DataField;
-import org.marc4j.marc.Record;
-import org.marc4j.marc.Subfield;
 import org.recap.ReCAPConstants;
-import org.recap.model.BibliographicEntity;
-import org.recap.model.HoldingsEntity;
-import org.recap.model.ItemEntity;
-import org.recap.model.ItemStatusEntity;
+import org.recap.model.*;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.service.common.RepositoryService;
 import org.recap.service.common.SetupDataService;
-import org.recap.util.MarcUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +49,7 @@ public class SubmitCollectionReportHelperService {
                     sbMessage.append("-").append(ReCAPConstants.RECORD_INCOMPLETE).append(ReCAPConstants.USE_RESTRICTION_UNAVAILABLE);
                 }
             }
-            setSubmitCollectionReportInfo(submitCollectionExceptionInfos,itemEntity,sbMessage.toString());
+            setSubmitCollectionReportInfo(submitCollectionExceptionInfos,itemEntity,sbMessage.toString(),null);
         }
     }
 
@@ -82,7 +75,7 @@ public class SubmitCollectionReportHelperService {
             } else {
                 message = ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD;
             }
-            setSubmitCollectionReportInfo(submitCollectionReportInfoList, incomingEntity, message);
+            setSubmitCollectionReportInfo(submitCollectionReportInfoList, incomingEntity, message,null);
         }
     }
 
@@ -107,16 +100,22 @@ public class SubmitCollectionReportHelperService {
             } else {
                 message = ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD;
             }
-            setSubmitCollectionReportInfo(submitCollectionReportInfoList, incomingEntity, message);
+            setSubmitCollectionReportInfo(submitCollectionReportInfoList, incomingEntity, message,null);
         }
     }
 
-    private void setSubmitCollectionReportInfo(List<SubmitCollectionReportInfo> submitCollectionReportInfoList, ItemEntity incomingEntity, String message) {
+    private void setSubmitCollectionReportInfo(List<SubmitCollectionReportInfo> submitCollectionReportInfoList, ItemEntity incomingItemEntity, String message,InstitutionEntity institutionEntity) {
         SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
         submitCollectionReportInfo.setMessage(message);
-        submitCollectionReportInfo.setItemBarcode(incomingEntity.getBarcode());
-        submitCollectionReportInfo.setCustomerCode(incomingEntity.getCustomerCode());
-        submitCollectionReportInfo.setOwningInstitution((String) setupDataService.getInstitutionIdCodeMap().get(incomingEntity.getOwningInstitutionId()));
+        if (incomingItemEntity != null) {
+            submitCollectionReportInfo.setItemBarcode(incomingItemEntity.getBarcode());
+            submitCollectionReportInfo.setCustomerCode(incomingItemEntity.getCustomerCode());
+            submitCollectionReportInfo.setOwningInstitution((String) setupDataService.getInstitutionIdCodeMap().get(incomingItemEntity.getOwningInstitutionId()));
+        } else {
+            submitCollectionReportInfo.setItemBarcode("");
+            submitCollectionReportInfo.setCustomerCode("");
+            submitCollectionReportInfo.setOwningInstitution(institutionEntity !=null ? institutionEntity.getInstitutionCode():"");
+        }
         submitCollectionReportInfoList.add(submitCollectionReportInfo);
     }
 
@@ -352,9 +351,13 @@ public class SubmitCollectionReportHelperService {
      * @param submitCollectionReportInfoList the submit collection report info list
      * @param message                        the message
      */
-    public void setSubmitCollectionFailureReportForUnexpectedException(BibliographicEntity bibliographicEntity, List<SubmitCollectionReportInfo> submitCollectionReportInfoList, String message ) {
-        for (ItemEntity itemEntity:bibliographicEntity.getItemEntities()) {
-            setSubmitCollectionReportInfo(submitCollectionReportInfoList,itemEntity,message);
+    public void setSubmitCollectionFailureReportForUnexpectedException(BibliographicEntity bibliographicEntity, List<SubmitCollectionReportInfo> submitCollectionReportInfoList, String message, InstitutionEntity institutionEntity) {
+        if (bibliographicEntity != null) {
+            for (ItemEntity itemEntity:bibliographicEntity.getItemEntities()) {
+                setSubmitCollectionReportInfo(submitCollectionReportInfoList,itemEntity,message,null);
+            }
+        } else {
+            setSubmitCollectionReportInfo(submitCollectionReportInfoList,null,message,institutionEntity);
         }
     }
 }

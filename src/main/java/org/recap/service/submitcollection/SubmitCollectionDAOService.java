@@ -164,18 +164,22 @@ public class SubmitCollectionDAOService {
         List<ItemEntity> incomingItemEntityList = new ArrayList<>(incomingBibliographicEntity.getItemEntities());
         for(ItemEntity incomingItemEntity:incomingItemEntityList){
             boolean isItemUpdated = false;
+            boolean isBarcodeMatched = false;
             for(ItemEntity fetchedItemEntity:fetchItemEntityList){
                 if (fetchedItemEntity.getOwningInstitutionItemId().equalsIgnoreCase(incomingItemEntity.getOwningInstitutionItemId())) {
                     if (fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode())) {
                         copyItemEntity(fetchedItemEntity, incomingItemEntity,updatedItemEntityList);
                         isItemUpdated = true;
                         isValidItemToUpdate = true;
+                        isBarcodeMatched = true;
                     } else {//Owning institution id matched but barcode not matched
                         addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap);
                     }
+                } else if(fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode())){
+                    isBarcodeMatched = true;
                 }
             }
-            if(!isItemUpdated){//Add to exception report when barcode is unavailable
+            if(!isItemUpdated && !isBarcodeMatched){//Add to exception report when barcode is unavailable
                 addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap);
             }
         }
