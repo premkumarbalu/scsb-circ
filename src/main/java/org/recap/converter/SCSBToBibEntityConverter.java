@@ -166,13 +166,12 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         if (StringUtils.isNotBlank(owningInstitutionBibId)) {
             bibliographicEntity.setOwningInstitutionBibId(owningInstitutionBibId);
         } else {
-            errorMessage.append("Owning Institution Bib Id cannot be null");
+            errorMessage.append(" Owning Institution Bib Id cannot be null");
         }
         if (owningInstitutionId != null) {
             bibliographicEntity.setOwningInstitutionId(owningInstitutionId);
         } else {
-            errorMessage.append("\n");
-            errorMessage.append("Owning Institution Id cannot be null");
+            errorMessage.append(" Owning Institution Id cannot be null");
         }
         bibliographicEntity.setCreatedDate(currentDate);
         bibliographicEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
@@ -184,21 +183,18 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         if (StringUtils.isNotBlank(bibXmlStringContent)) {
             bibliographicEntity.setContent(bibXmlStringContent.getBytes());
         } else {
-            errorMessage.append("\n");
-            errorMessage.append("Bib Content cannot be empty");
+            errorMessage.append(" Bib Content cannot be empty");
         }
 
         boolean subFieldExistsFor245 = marcUtil.isSubFieldExists(bibRecord, "245");
         if (!subFieldExistsFor245) {
-            errorMessage.append("\n");
-            errorMessage.append("Atleast one subfield should be there for 245 tag");
+            errorMessage.append(" Atleast one subfield should be there for 245 tag");
         }
         Leader leader = bibRecord.getLeader();
         if (leader != null) {
             String leaderValue = bibRecord.getLeader().toString();
             if (!(StringUtils.isNotBlank(leaderValue) && leaderValue.length() == 24)) {
-                errorMessage.append("\n");
-                errorMessage.append("Leader Field value should be 24 characters");
+                errorMessage.append(" Leader Field value should be 24 characters");
             }
         }
         map.put(ReCAPConstants.BIBLIOGRAPHIC_ENTITY, bibliographicEntity);
@@ -222,7 +218,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         if (StringUtils.isNotBlank(holdingsContent)) {
             holdingsEntity.setContent(holdingsContent.getBytes());
         } else {
-            errorMessage.append("Holdings Content cannot be empty");
+            errorMessage.append(" Holdings Content cannot be empty");
         }
         holdingsEntity.setCreatedDate(currentDate);
         holdingsEntity.setCreatedBy(ReCAPConstants.SUBMIT_COLLECTION);
@@ -257,7 +253,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
             itemEntity.setBarcode(itemBarcode);
             map.put("itemBarcode",itemBarcode);
         } else {
-            errorMessage.append("Item Barcode cannot be null");
+            errorMessage.append(" Item Barcode cannot be null");
         }
         String customerCode = marcUtil.getDataFieldValue(itemRecord, "900", 'b');
         if (StringUtils.isNotBlank(customerCode)) {
@@ -272,8 +268,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         if (owningInstitutionId != null) {
             itemEntity.setOwningInstitutionId(owningInstitutionId);
         } else {
-            errorMessage.append("\n");
-            errorMessage.append("Owning Institution Id cannot be null");
+            errorMessage.append(" Owning Institution Id cannot be null");
         }
         String collectionGroupCode = marcUtil.getDataFieldValue(itemRecord, "900", 'a');
         if (StringUtils.isNotBlank(collectionGroupCode) && getCollectionGroupMap().containsKey(collectionGroupCode)) {
@@ -290,8 +285,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
         if (StringUtils.isNotBlank(owningInstitutionItemId)) {
             itemEntity.setOwningInstitutionItemId(owningInstitutionItemId);
         } else {
-            errorMessage.append("\n");
-            errorMessage.append("Item Owning Institution Id cannot be null");
+            errorMessage.append(" Item Owning Institution Id cannot be null");
         }
 
         itemEntity.setCreatedDate(currentDate);

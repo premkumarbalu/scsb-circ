@@ -224,13 +224,14 @@ public class SubmitCollectionService {
         try {
             Map responseMap = getConverter(format).convert(record,institutionEntity);
             StringBuilder errorMessage = (StringBuilder)responseMap.get("errorMessage");
+            bibliographicEntity = responseMap.get("bibliographicEntity") != null ? (BibliographicEntity) responseMap.get("bibliographicEntity"):null;
             if (errorMessage != null && errorMessage.length()==0) {
-                bibliographicEntity = (BibliographicEntity) responseMap.get("bibliographicEntity");
                 setCGDProtectionForItems(bibliographicEntity,isCGDProtected);
                 if (bibliographicEntity != null) {
                     savedBibliographicEntity = submitCollectionDAOService.updateBibliographicEntity(bibliographicEntity, submitCollectionReportInfoMap,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
                 }
             } else {
+                logger.error("Error while parsing xml for a barcode in submit collection");
                 submitCollectionReportHelperService.setSubmitCollectionFailureReportForUnexpectedException(bibliographicEntity,
                         submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),"Failed record - Item not updated - "+errorMessage.toString(),institutionEntity);
             }
