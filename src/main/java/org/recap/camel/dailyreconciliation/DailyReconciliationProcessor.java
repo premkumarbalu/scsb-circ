@@ -377,7 +377,7 @@ public class DailyReconciliationProcessor {
         List<String> lasNotAvailableStatusList = getGFAStatusNotAvailableList();
         boolean statusFound = false;
         for (String lasAvailableStatus : lasAvailableStatusList) {
-            if(StringUtils.containsIgnoreCase(sheet1LasStatus,lasAvailableStatus)){
+            if(StringUtils.startsWithIgnoreCase(sheet1LasStatus,lasAvailableStatus)){
                 sheet1[2] = ReCAPConstants.AVAILABLE;
                 statusFound = true;
                 break;
@@ -385,7 +385,7 @@ public class DailyReconciliationProcessor {
         }
         if(!statusFound){
             for (String lasNotAvailableStatus : lasNotAvailableStatusList) {
-                if(StringUtils.containsIgnoreCase(sheet1LasStatus,lasNotAvailableStatus)){
+                if(StringUtils.startsWithIgnoreCase(sheet1LasStatus,lasNotAvailableStatus)){
                     sheet1[2] = ReCAPConstants.NOT_AVAILABLE;
                     break;
                 }
