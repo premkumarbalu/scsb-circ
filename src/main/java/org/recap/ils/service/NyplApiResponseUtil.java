@@ -10,10 +10,14 @@ import org.recap.ils.model.response.*;
 import org.recap.model.ItemEntity;
 import org.recap.model.ItemRefileResponse;
 import org.recap.repository.ItemDetailsRepository;
+import org.recap.request.ItemRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -25,6 +29,8 @@ import java.util.List;
  */
 @Service
 public class NyplApiResponseUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(NyplApiResponseUtil.class);
 
     @Value("${ils.nypl.source.nypl.item}")
     private String nyplSourceNYPL;
@@ -65,12 +71,12 @@ public class NyplApiResponseUtil {
         itemInformationResponse.setCallNumber((String) itemData.getCallNumber());
         itemInformationResponse.setItemType((String) itemData.getItemType());
         itemInformationResponse.setSource(itemData.getNyplSource());
-        itemInformationResponse.setUpdatedDate(itemData.getUpdatedDate());
-        itemInformationResponse.setCreatedDate(itemData.getCreatedDate());
-        itemInformationResponse.setDeletedDate((String) itemData.getDeletedDate());
+        itemInformationResponse.setUpdatedDate(formatFromSipDate(itemData.getUpdatedDate()));
+        itemInformationResponse.setCreatedDate(formatFromSipDate(itemData.getCreatedDate()));
+        itemInformationResponse.setDeletedDate(formatFromSipDate((String) itemData.getDeletedDate()));
         itemInformationResponse.setDeleted(itemData.getDeleted() != null ? (Boolean) itemData.getDeleted() : false);
         if (null != itemData.getStatus()) {
-            itemInformationResponse.setDueDate((String) ((LinkedHashMap) itemData.getStatus()).get("dueDate"));
+            itemInformationResponse.setDueDate(formatFromSipDate((String) ((LinkedHashMap) itemData.getStatus()).get("dueDate")));
             itemInformationResponse.setCirculationStatus((String) ((LinkedHashMap) itemData.getStatus()).get("display"));
         }
         if (null != itemData.getLocation()) {
@@ -78,6 +84,20 @@ public class NyplApiResponseUtil {
         }
         itemInformationResponse.setSuccess(true);
         return itemInformationResponse;
+    }
+
+    private String formatFromSipDate(String sipDate) {
+        SimpleDateFormat sipFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        SimpleDateFormat requiredFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+        String reformattedStr = "";
+        try {
+            if (sipDate != null && sipDate.trim().length() > 0) {
+                reformattedStr = requiredFormat.format(sipFormat.parse(sipDate));
+            }
+        } catch (ParseException e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+        }
+        return reformattedStr;
     }
 
     /**
@@ -91,9 +111,9 @@ public class NyplApiResponseUtil {
         CheckoutData checkoutData = checkoutResponse.getData();
         itemCheckoutResponse.setItemBarcode(checkoutData.getItemBarcode());
         itemCheckoutResponse.setPatronIdentifier(checkoutData.getPatronBarcode());
-        itemCheckoutResponse.setCreatedDate(checkoutData.getCreatedDate());
-        itemCheckoutResponse.setUpdatedDate((String) checkoutData.getUpdatedDate());
-        itemCheckoutResponse.setDueDate(checkoutData.getDesiredDateDue());
+        itemCheckoutResponse.setCreatedDate(formatFromSipDate(checkoutData.getCreatedDate()));
+        itemCheckoutResponse.setUpdatedDate(formatFromSipDate((String) checkoutData.getUpdatedDate()));
+        itemCheckoutResponse.setDueDate(formatFromSipDate(checkoutData.getDesiredDateDue()));
         itemCheckoutResponse.setProcessed(checkoutData.getProcessed());
         itemCheckoutResponse.setJobId(checkoutData.getJobId());
         itemCheckoutResponse.setSuccess(checkoutData.getSuccess());
@@ -110,8 +130,8 @@ public class NyplApiResponseUtil {
         ItemCheckinResponse itemCheckinResponse = new ItemCheckinResponse();
         CheckinData checkinData = checkinResponse.getData();
         itemCheckinResponse.setItemBarcode(checkinData.getItemBarcode());
-        itemCheckinResponse.setCreatedDate(checkinData.getCreatedDate());
-        itemCheckinResponse.setUpdatedDate((String) checkinData.getUpdatedDate());
+        itemCheckinResponse.setCreatedDate(formatFromSipDate(checkinData.getCreatedDate()));
+        itemCheckinResponse.setUpdatedDate(formatFromSipDate((String) checkinData.getUpdatedDate()));
         itemCheckinResponse.setProcessed(checkinData.getProcessed());
         itemCheckinResponse.setJobId(checkinData.getJobId());
         itemCheckinResponse.setSuccess(checkinData.getSuccess());
@@ -132,9 +152,9 @@ public class NyplApiResponseUtil {
         itemHoldResponse.setItemBarcode(holdData.getItemBarcode());
         itemHoldResponse.setPatronIdentifier(holdData.getPatronBarcode());
         itemHoldResponse.setTrackingId(holdData.getTrackingId());
-        itemHoldResponse.setCreatedDate(holdData.getCreatedDate());
-        itemHoldResponse.setUpdatedDate((String) holdData.getUpdatedDate());
-        itemHoldResponse.setExpirationDate(getExpirationDateForNypl());
+        itemHoldResponse.setCreatedDate(formatFromSipDate(holdData.getCreatedDate()));
+        itemHoldResponse.setUpdatedDate(formatFromSipDate((String) holdData.getUpdatedDate()));
+        itemHoldResponse.setExpirationDate(expirationDateForNypl());
         return itemHoldResponse;
     }
 
@@ -151,8 +171,8 @@ public class NyplApiResponseUtil {
         itemHoldResponse.setItemBarcode(holdData.getItemBarcode());
         itemHoldResponse.setPatronIdentifier(holdData.getPatronBarcode());
         itemHoldResponse.setTrackingId(holdData.getTrackingId());
-        itemHoldResponse.setCreatedDate(holdData.getCreatedDate());
-        itemHoldResponse.setUpdatedDate((String) holdData.getUpdatedDate());
+        itemHoldResponse.setCreatedDate(formatFromSipDate(holdData.getCreatedDate()));
+        itemHoldResponse.setUpdatedDate(formatFromSipDate((String) holdData.getUpdatedDate()));
         return itemHoldResponse;
     }
 
@@ -256,6 +276,12 @@ public class NyplApiResponseUtil {
     public String getExpirationDateForNypl() throws Exception {
         Date expirationDate = DateUtils.addYears(new Date(), 1);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ReCAPConstants.NYPL_HOLD_DATE_FORMAT);
+        return simpleDateFormat.format(expirationDate);
+    }
+
+    public String expirationDateForNypl() throws Exception {
+        Date expirationDate = DateUtils.addYears(new Date(), 1);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
         return simpleDateFormat.format(expirationDate);
     }
 

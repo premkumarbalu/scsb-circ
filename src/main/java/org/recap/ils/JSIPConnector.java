@@ -573,7 +573,7 @@ public abstract class JSIPConnector implements IJSIPConnector {
 
     private String formatFromSipDate(String sipDate) {
         SimpleDateFormat sipFormat = new SimpleDateFormat("yyyyMMdd    HHmmss");
-        SimpleDateFormat requiredFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        SimpleDateFormat requiredFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
         String reformattedStr = "";
         try {
             if (sipDate != null && sipDate.trim().length() > 0) {
