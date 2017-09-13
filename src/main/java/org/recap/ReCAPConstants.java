@@ -41,7 +41,7 @@ public final class ReCAPConstants {
     public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Item not available for request.";
     public static final String RECALL_NOT_FOR_AVAILABLE_ITEM = "Recall not available for this item.";
     public static final String RECALL_FOR_ITEM_EXISTS = "Recall for this item already exists.";
-    public static final String INITIAL_LOAD_ITEM_EXISTS = "Initial load item(s) cannot be recalled.";
+    public static final String INITIAL_LOAD_ITEM_EXISTS = "Initial load item(s) cannot be requested/recalled.";
     public static final String EDD_REQUEST_NOT_ALLOWED = "EDD request is not allowed for this customer code";
 
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
