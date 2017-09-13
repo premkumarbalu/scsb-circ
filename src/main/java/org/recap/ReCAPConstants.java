@@ -276,8 +276,9 @@ public final class ReCAPConstants {
     public static final String REQUEST_CANCELLATION_DOES_NOT_EXIST = "RequestId does not exist";
 
     public static final String GFA_RETRIVAL_ORDER_SUCCESSFUL = "Retrieval order successfully created in LAS.";
-    public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "Item not available in LAS";
-    public static final String GFA_ITEM_STATUS_CHECK_FAILED = "SCSB: Item status check failed to return valid response.";
+    public static final String GFA_RETRIVAL_ITEM_NOT_AVAILABLE = "LAS Exception : Item not available in LAS";
+    public static final String GFA_ITEM_STATUS_CHECK_FAILED = "LAS Exception : Item status check failed to return valid response.";
+    public static final String SCSB_REQUEST_EXCEPTION = "SCSB Exception : Error occurred at SCSB - ";
     public static final String REQUEST_CANCELLED_NO_REFILED = "canceled";
     public static final String REQUEST_CANCELLED_SUBJECT = "Cancel Request - ";
 

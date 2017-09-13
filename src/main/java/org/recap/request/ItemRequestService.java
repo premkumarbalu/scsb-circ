@@ -148,7 +148,8 @@ public class ItemRequestService {
             itemResponseInformation = setItemResponseInformation(itemRequestInfo, itemResponseInformation);
 
             if (isUseQueueLasCall() && (StringUtils.containsIgnoreCase(itemResponseInformation.getScreenMessage(), ReCAPConstants.REQUEST_ILS_EXCEPTION)
-                    || StringUtils.containsIgnoreCase(itemResponseInformation.getScreenMessage(), ReCAPConstants.REQUEST_SCSB_EXCEPTION))) {
+                    || StringUtils.containsIgnoreCase(itemResponseInformation.getScreenMessage(), ReCAPConstants.REQUEST_SCSB_EXCEPTION)
+                    || StringUtils.containsIgnoreCase(itemResponseInformation.getScreenMessage(), ReCAPConstants.REQUEST_LAS_EXCEPTION))) {
                 updateChangesToDb(itemResponseInformation, ReCAPConstants.REQUEST_RETRIEVAL + "-" + itemResponseInformation.getRequestingInstitution());
             }
             // Update Topics
