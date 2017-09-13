@@ -683,7 +683,7 @@ public class GFAService {
 
             ttitem001.setArticleTitle(itemRequestInfo.getChapterTitle());
             ttitem001.setArticleAuthor(itemRequestInfo.getAuthor());
-            ttitem001.setArticleVolume(itemRequestInfo.getVolume());
+            ttitem001.setArticleVolume(itemRequestInfo.getVolume() + ", " + itemRequestInfo.getIssue());
             ttitem001.setArticleIssue(itemRequestInfo.getIssue());
 
             ttitem001.setNotes(itemRequestInfo.getRequestNotes());
