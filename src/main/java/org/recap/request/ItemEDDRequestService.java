@@ -131,7 +131,8 @@ public class ItemEDDRequestService {
             itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
             itemResponseInformation.setUsername(itemRequestInfo.getUsername());
             if (!itemResponseInformation.isSuccess()) {
-                itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes() + "\nException" + itemResponseInformation.getScreenMessage());
+                itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes() + "\nException - " + itemResponseInformation.getScreenMessage());
+                getItemRequestService().updateChangesToDb(itemResponseInformation, ReCAPConstants.REQUEST_TYPE_EDD + "-" + itemResponseInformation.getRequestingInstitution());
             } else {
                 itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes());
             }
