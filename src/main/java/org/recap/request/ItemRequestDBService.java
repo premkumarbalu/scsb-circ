@@ -25,7 +25,7 @@ public class ItemRequestDBService {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemRequestDBService.class);
 
-    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;
@@ -266,12 +266,7 @@ public class ItemRequestDBService {
 
     private Date getExpirationDate(String expirationDate, String requestingInstitutionId) throws ParseException {
         if (StringUtils.isNotBlank(expirationDate)) {
-            if (ReCAPConstants.NYPL.equalsIgnoreCase(requestingInstitutionId)) {
-                DateFormat dateFormatter = new SimpleDateFormat(ReCAPConstants.NYPL_HOLD_DATE_FORMAT);
-                return dateFormatter.parse(expirationDate);
-            } else {
                 return simpleDateFormat.parse(expirationDate);
-            }
         }
         return null;
     }
