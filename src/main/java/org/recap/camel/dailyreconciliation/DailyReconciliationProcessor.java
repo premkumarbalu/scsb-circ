@@ -323,7 +323,7 @@ public class DailyReconciliationProcessor {
             sheet1[0] = sheet1RequestId.getStringCellValue();
         }
         if (checkCellIsNotEmpty(sheet1Barcode)){
-            sheet1[1] = sheet1Barcode.getStringCellValue();
+            sheet1[1] = sheet1Barcode.getStringCellValue().toUpperCase();
         }
         if (checkCellIsNotEmpty(sheet2RequestId)){
             sheet2[0] = sheet2RequestId.getStringCellValue();
