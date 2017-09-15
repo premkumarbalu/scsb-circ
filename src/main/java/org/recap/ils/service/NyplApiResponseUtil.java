@@ -76,7 +76,7 @@ public class NyplApiResponseUtil {
         itemInformationResponse.setDeletedDate(formatFromSipDate((String) itemData.getDeletedDate()));
         itemInformationResponse.setDeleted(itemData.getDeleted() != null ? (Boolean) itemData.getDeleted() : false);
         if (null != itemData.getStatus()) {
-            itemInformationResponse.setDueDate(formatFromSipDate((String) ((LinkedHashMap) itemData.getStatus()).get("dueDate")));
+            itemInformationResponse.setDueDate(formatDueDate((String) ((LinkedHashMap) itemData.getStatus()).get("dueDate")));
             itemInformationResponse.setCirculationStatus((String) ((LinkedHashMap) itemData.getStatus()).get("display"));
         }
         if (null != itemData.getLocation()) {
@@ -88,6 +88,20 @@ public class NyplApiResponseUtil {
 
     private String formatFromSipDate(String sipDate) {
         SimpleDateFormat sipFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        SimpleDateFormat requiredFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+        String reformattedStr = "";
+        try {
+            if (sipDate != null && sipDate.trim().length() > 0) {
+                reformattedStr = requiredFormat.format(sipFormat.parse(sipDate));
+            }
+        } catch (ParseException e) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+        }
+        return reformattedStr;
+    }
+
+    private String formatDueDate(String sipDate) {
+        SimpleDateFormat sipFormat = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat requiredFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
         String reformattedStr = "";
         try {
@@ -113,7 +127,7 @@ public class NyplApiResponseUtil {
         itemCheckoutResponse.setPatronIdentifier(checkoutData.getPatronBarcode());
         itemCheckoutResponse.setCreatedDate(formatFromSipDate(checkoutData.getCreatedDate()));
         itemCheckoutResponse.setUpdatedDate(formatFromSipDate((String) checkoutData.getUpdatedDate()));
-        itemCheckoutResponse.setDueDate(formatFromSipDate(checkoutData.getDesiredDateDue()));
+        itemCheckoutResponse.setDueDate(formatDueDate(checkoutData.getDesiredDateDue()));
         itemCheckoutResponse.setProcessed(checkoutData.getProcessed());
         itemCheckoutResponse.setJobId(checkoutData.getJobId());
         itemCheckoutResponse.setSuccess(checkoutData.getSuccess());
