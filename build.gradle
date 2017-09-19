@@ -75,3 +75,12 @@ jacocoTestReport {
 		html.destination "${buildDir}/jacocoHtml"
 	}
 }
+
+task scsbCircJavadocs(type: Javadoc) {
+	source = sourceSets.main.java
+	classpath = configurations.compile
+	options.addStringOption('Xdoclint:none', '-quiet')
+	String home = System.getProperty("user.home");
+	destinationDir = new File(home+"/scsb-javadocs/scsb-circ");
+
+}
