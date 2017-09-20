@@ -463,6 +463,8 @@ public final class ReCAPConstants {
     public static final String REQUEST_INITIAL_LOAD_NYPL = "nypl";
     public static final String CAMEL_SPLIT_INDEX = "CamelSplitIndex";
     public static final String REQUEST_INITIAL_LOAD_HEADER = "Barcodes Not Exist In SCSB";
+    public static final String EMAIL_HEADER_REQUEST_PENDING ="Request_Pending";
+    public static final String REQUEST_PENDING_EMAIL_BODY_VM = "requestPendingEmailBody.vm";
 
     // NYPL API URL
     public static final String NYPL_CHECKOUT_REQUEST_URL = "/checkout-requests";
