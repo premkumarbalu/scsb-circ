@@ -20,6 +20,7 @@ public class EmailPayLoad implements Serializable{
     private String xmlFileName;
     private Exception exception;
     private String exceptionMessage;
+    private String pendingRequestLimit;
 
 
     /**
@@ -254,5 +255,23 @@ public class EmailPayLoad implements Serializable{
      */
     public void setExceptionMessage(String exceptionMessage) {
         this.exceptionMessage = exceptionMessage;
+    }
+
+    /**
+     * Gets pending request limit.
+     *
+     * @return the pending request limit
+     */
+    public String getPendingRequestLimit() {
+        return pendingRequestLimit;
+    }
+
+    /**
+     * Sets pending request limit.
+     *
+     * @param pendingRequestLimit the pending request limit
+     */
+    public void setPendingRequestLimit(String pendingRequestLimit) {
+        this.pendingRequestLimit = pendingRequestLimit;
     }
 }

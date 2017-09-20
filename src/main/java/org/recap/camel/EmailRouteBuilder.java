@@ -24,6 +24,7 @@ public class EmailRouteBuilder {
     private String emailBodyRecall;
     private String emailBodyDeletedRecords;
     private String emailPassword;
+    private String emailBodyForRequestPending;
     private String emailBodyForSubmitCollection;
     private String emailBodyForSubmitCollectionEmptyDirectory;
     private String emailBodyForExceptionInSubmitColletion;
@@ -36,17 +37,19 @@ public class EmailRouteBuilder {
      * @param passwordDirectory the password directory
      * @param from              the from
      * @param subject           the subject
+     * @param requestPendingTo  the request pending to
      * @param smtpServer        the smtp server
      */
     @Autowired
     public EmailRouteBuilder(CamelContext context, @Value("${scsb.email.username}") String username, @Value("${scsb.email.password.file}") String passwordDirectory,
                              @Value("${scsb.email.from}") String from, @Value("${request.recall.email.subject}") String subject,
-                             @Value("${smtpServer}") String smtpServer) {
+                             @Value("${recap.assist.email.to}") String requestPendingTo, @Value("${smtpServer}") String smtpServer) {
         try {
             context.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
                     loadEmailPassword();
+                    loadEmailBodyForRequestPending();
                     loadEmailBodyTemplateForNoData();
                     loadEmailBodyTemplateForSubmitCollectionEmptyDirectory();
                     loadEmailBodyTemplateForExceptionInSubmitCollection();
@@ -133,6 +136,13 @@ public class EmailRouteBuilder {
                                     .setHeader("to", simple("${header.emailPayLoad.to}"))
                                     .setHeader("cc", simple("${header.emailPayLoad.cc}"))
                                     .log("Email sent for exception in submit collection")
+                                    .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                                .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.EMAIL_HEADER_REQUEST_PENDING))
+                                    .setHeader("subject", simple("LAS Pending Request Queue"))
+                                    .setBody(simple(emailBodyForRequestPending))
+                                    .setHeader("from", simple(from))
+                                    .setHeader("to", simple(requestPendingTo))
+                                    .log("Email for request pending")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
                     ;
                 }
@@ -226,6 +236,26 @@ public class EmailRouteBuilder {
                             logger.error(ReCAPConstants.LOG_ERROR,e);
                         }
                     }
+                }
+
+                private void loadEmailBodyForRequestPending() {
+                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.REQUEST_PENDING_EMAIL_BODY_VM);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    StringBuilder out = new StringBuilder();
+                    String line;
+                    try {
+                        while ((line = reader.readLine()) != null) {
+                            if (line.isEmpty()) {
+                                out.append("\n");
+                            } else {
+                                out.append(line);
+                                out.append("\n");
+                            }
+                        }
+                    } catch (IOException e) {
+                        logger.error(ReCAPConstants.LOG_ERROR,e);
+                    }
+                    emailBodyForRequestPending = out.toString();
                 }
             });
         } catch (Exception e) {
