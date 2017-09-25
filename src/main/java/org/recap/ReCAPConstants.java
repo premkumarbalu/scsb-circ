@@ -333,6 +333,7 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_REJECTION_LIST = "submitCollectionRejectionList";
     public static final String SUBMIT_COLLECTION_EXCEPTION_LIST = "submitCollectionExceptionList";
     public static final String SUBMIT_COLLECTION_EXCEPTION_RECORD = "Exception record - Item is unavailable in scsb to update";
+    public static final String SUBMIT_COLLECTION_DEACCESSION_EXCEPTION_RECORD = "Exception record - Item not updated, it is a deaccessioned item";
     public static final String SUBMIT_COLLECTION_REJECTION_RECORD = "Rejection record - Only use restriction and cgd not updated because the item is in use";
     public static final String SUBMIT_COLLECTION_SUCCESS_RECORD = "Success record";
     public static final String SUBMIT_COLLECTION_FAILED_RECORD = "Failed record";
