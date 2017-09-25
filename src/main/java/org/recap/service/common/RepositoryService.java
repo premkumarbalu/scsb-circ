@@ -28,6 +28,9 @@ public class RepositoryService {
     @Autowired
     private ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
 
+    @Autowired
+    private CollectionGroupDetailsRepository collectionGroupDetailsRepository;
+
     /**
      * Gets bibliographic details repository.
      *
@@ -81,4 +84,9 @@ public class RepositoryService {
     public ItemChangeLogDetailsRepository getItemChangeLogDetailsRepository() {
         return itemChangeLogDetailsRepository;
     }
+
+    public CollectionGroupDetailsRepository getCollectionGroupDetailsRepository() {
+        return collectionGroupDetailsRepository;
+    }
+
 }

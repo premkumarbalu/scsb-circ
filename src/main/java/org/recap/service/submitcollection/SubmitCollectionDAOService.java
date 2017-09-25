@@ -381,7 +381,8 @@ public class SubmitCollectionDAOService {
         }
 
         if (isAvailableItem(fetchItemEntity.getItemAvailabilityStatusId())) {
-            if (itemEntity.getCollectionGroupId() != null && !itemEntity.isCgdProtection()) {
+            if (itemEntity.getCollectionGroupId() != null &&
+                    (!itemEntity.isCgdProtection() || fetchItemEntity.getCollectionGroupId()==setupDataService.getCollectionGroupMap().get(ReCAPConstants.NOT_AVAILABLE_CGD))) {//Added condition to update CGD even if it is CGD protected when existing records cgd is NA
                 fetchItemEntity.setCollectionGroupId(itemEntity.getCollectionGroupId());
             }
             fetchItemEntity.setUseRestrictions(itemEntity.getUseRestrictions());
