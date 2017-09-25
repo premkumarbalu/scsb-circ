@@ -58,15 +58,15 @@ public class SubmitCollectionDAOService {
             }
         } else {//if no record found to update, generate exception info
             savedBibliographicEntity = bibliographicEntity;
-            addExceptionReport(bibliographicEntity.getItemEntities(), submitCollectionReportInfoMap);
+            addExceptionReport(bibliographicEntity.getItemEntities(), submitCollectionReportInfoMap,ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
         }
         return savedBibliographicEntity;
     }
 
-    private void addExceptionReport(List<ItemEntity> itemEntityList, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
+    private void addExceptionReport(List<ItemEntity> itemEntityList, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,String message) {
         boolean isBarcodeAlreadyAdded = submitCollectionReportHelperService.isBarcodeAlreadyAdded(itemEntityList.get(0),submitCollectionReportInfoMap);
         if (!isBarcodeAlreadyAdded) {//This is to avoid repeated error message for non-existing boundwith records
-            submitCollectionReportHelperService.setSubmitCollectionExceptionReportInfo(itemEntityList,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
+            submitCollectionReportHelperService.setSubmitCollectionExceptionReportInfo(itemEntityList,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), message);
         }
     }
 
@@ -166,22 +166,28 @@ public class SubmitCollectionDAOService {
             boolean isItemUpdated = false;
             boolean isBarcodeMatched = false;
             for(ItemEntity fetchedItemEntity:fetchItemEntityList){
-                if (fetchedItemEntity.getOwningInstitutionItemId().equalsIgnoreCase(incomingItemEntity.getOwningInstitutionItemId())) {
-                    if (fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode())) {
-                        copyItemEntity(fetchedItemEntity, incomingItemEntity,updatedItemEntityList);
-                        isItemUpdated = true;
-                        isValidItemToUpdate = true;
+                    if (fetchedItemEntity.getOwningInstitutionItemId().equalsIgnoreCase(incomingItemEntity.getOwningInstitutionItemId())) {
+                        if (fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode())) {
+                            if(!isDeAccessionedItem(fetchedItemEntity)) {
+                                copyItemEntity(fetchedItemEntity, incomingItemEntity, updatedItemEntityList);
+                                isItemUpdated = true;
+                                isValidItemToUpdate = true;
+                                isBarcodeMatched = true;
+                            } else {//add exception report for deaccession record
+                                addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap,ReCAPConstants.SUBMIT_COLLECTION_DEACCESSION_EXCEPTION_RECORD);
+                            }
+                        } else {//Owning institution id matched but barcode not matched
+                            addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap,ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
+                        }
+                    } else if(fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode())){
                         isBarcodeMatched = true;
-                    } else {//Owning institution id matched but barcode not matched
-                        addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap);
                     }
-                } else if(fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode())){
-                    isBarcodeMatched = true;
+
+                if(!isItemUpdated && !isBarcodeMatched){//Add to exception report when barcode is unavailable
+                    addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap,ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
                 }
             }
-            if(!isItemUpdated && !isBarcodeMatched){//Add to exception report when barcode is unavailable
-                addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap);
-            }
+
         }
 
         fetchBibliographicEntity.setHoldingsEntities(fetchedHoldingsEntityList);
@@ -199,6 +205,13 @@ public class SubmitCollectionDAOService {
             logger.error(ReCAPConstants.LOG_ERROR,e);
             return null;
         }
+    }
+
+    private boolean isDeAccessionedItem(ItemEntity fetchedItemEntity){
+        if(fetchedItemEntity.isDeleted()){
+            return true;
+        }
+        return false;
     }
 
     private BibliographicEntity updateExistingRecordForDummy(BibliographicEntity fetchBibliographicEntity, BibliographicEntity bibliographicEntity) {
