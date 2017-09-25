@@ -1,6 +1,7 @@
 package org.recap.service.common;
 
 import org.recap.ReCAPConstants;
+import org.recap.model.CollectionGroupEntity;
 import org.recap.model.InstitutionEntity;
 import org.recap.model.ItemStatusEntity;
 import org.slf4j.Logger;
@@ -28,6 +29,8 @@ public class SetupDataService {
     private Map<String,Integer> itemStatusCodeIdMap;
 
     private Map<Integer,String> institutionEntityMap;
+
+    private Map<String,Integer> collectionGroupMap;
 
     /**
      * Gets item status id and item status code from db and puts it into a map where status id as key and status code as value.
@@ -90,5 +93,21 @@ public class SetupDataService {
             }
         }
         return institutionEntityMap;
+    }
+
+    public Map getCollectionGroupMap() {
+        if (null == collectionGroupMap) {
+            collectionGroupMap = new HashMap();
+            try {
+                Iterable<CollectionGroupEntity> collectionGroupEntities = repositoryService.getCollectionGroupDetailsRepository().findAll();
+                for (Iterator iterator = collectionGroupEntities.iterator(); iterator.hasNext(); ) {
+                    CollectionGroupEntity collectionGroupEntity = (CollectionGroupEntity) iterator.next();
+                    collectionGroupMap.put(collectionGroupEntity.getCollectionGroupCode(), collectionGroupEntity.getCollectionGroupId());
+                }
+            } catch (Exception e) {
+                logger.error(ReCAPConstants.LOG_ERROR,e);
+            }
+        }
+        return collectionGroupMap;
     }
 }
