@@ -90,7 +90,7 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
         Mockito.when(gfaService.getItemChangeLogDetailsRepository()).thenReturn(itemChangeLogDetailsRepository);
         Mockito.when(statusReconciliationController.getGfaService()).thenReturn(gfaService);
         Mockito.when(statusReconciliationController.getFromDate(0)).thenReturn(from);
-        Mockito.when(statusReconciliationController.getTotalPageCount()).thenReturn(itemCountAndStatusIdMap);
+        Mockito.when(statusReconciliationController.getTotalPageCount(Arrays.asList(1,9))).thenReturn(itemCountAndStatusIdMap);
         Mockito.when(statusReconciliationController.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
         Mockito.when(statusReconciliationController.getBatchSize()).thenReturn(batchSize);
         Mockito.when(statusReconciliationController.getItemStatusDetailsRepository()).thenReturn(itemStatusDetailsRepository);
@@ -98,8 +98,8 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
         Mockito.when(statusReconciliationController.getStatusReconciliationLasBarcodeLimit()).thenReturn(statusReconciliationLasBarcodeLimit);
         Mockito.when(statusReconciliationController.getProducer()).thenReturn(producer);
         Mockito.when(statusReconciliationController.getGfaService().itemStatusComparison(Mockito.any(),Mockito.any())).thenCallRealMethod();
-        Mockito.when(statusReconciliationController.getItemDetailsRepository().getNotAvailableItems( statusReconciliationDayLimit,itemAvailabilityStatusId,"complete",false,from,batchSize)).thenReturn(itemEntityList);
-        Mockito.when(statusReconciliationController.getTotalPageCount()).thenCallRealMethod();
+        Mockito.when(statusReconciliationController.getItemDetailsRepository().getNotAvailableItems(statusReconciliationDayLimit,Arrays.asList(1,9),from,batchSize)).thenReturn(itemEntityList);
+        Mockito.when(statusReconciliationController.getTotalPageCount(Arrays.asList(1,9))).thenCallRealMethod();
         Mockito.when(statusReconciliationController.itemStatusReconciliation()).thenCallRealMethod();
         ResponseEntity responseEntity = statusReconciliationController.itemStatusReconciliation();
         assertNotNull(responseEntity);

@@ -149,41 +149,45 @@ public interface ItemDetailsRepository extends PagingAndSortingRepository<ItemEn
      * Gets item count for the given date difference, status id, cataloging status and isDeleted.
      *
      * @param dateDifference           the date difference
-     * @param itemAvailabilityStatusId the item availability status id
-     * @param catalogingStatus         the cataloging status
-     * @param isDeleted                the is deleted
      * @return the not available items count
      */
-    @Query(value = "SELECT count(*) FROM recap.item_t where date(LAST_UPDATED_DATE) < DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY) and ITEM_AVAIL_STATUS_ID=:itemAvailabilityStatusId and CATALOGING_STATUS=:catalogingStatus and IS_DELETED=:isDeleted", nativeQuery = true)
-    Long getNotAvailableItemsCount(@Param("dateDifference") Integer dateDifference,@Param("itemAvailabilityStatusId") Integer itemAvailabilityStatusId,@Param("catalogingStatus") String catalogingStatus,@Param("isDeleted") boolean isDeleted);
+    @Query(value = "select count(*) from recap.request_item_t rit " +
+            "inner join recap.item_t it on rit.ITEM_ID = it.ITEM_ID " +
+            "where rit.REQUEST_STATUS_ID in (:requestStatusCodes) " +
+            "and date(rit.LAST_UPDATED_DATE) < DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY)", nativeQuery = true)
+    Long getNotAvailableItemsCount(@Param("dateDifference") Integer dateDifference,
+                                   @Param("requestStatusCodes") List<Integer> requestStatusCodes);
 
     /**
      * Gets item entities for the given date difference,status id, cataloging status and isDeleted.
      *
      * @param dateDifference           the date difference
-     * @param itemAvailabilityStatusId the item availability status id
-     * @param catalogingStatus         the cataloging status
-     * @param isDeleted                the is deleted
      * @param getFrom                  the get from
      * @param batchSize                the batch size
      * @return the not available items
      */
-    @Query(value = "SELECT * FROM recap.item_t where date(LAST_UPDATED_DATE) < DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY) and ITEM_AVAIL_STATUS_ID=:itemAvailabilityStatusId and CATALOGING_STATUS=:catalogingStatus and IS_DELETED=:isDeleted order by ITEM_ID limit :getFrom , :batchSize", nativeQuery = true)
-    List<ItemEntity> getNotAvailableItems(@Param("dateDifference") Integer dateDifference,@Param("itemAvailabilityStatusId") Integer itemAvailabilityStatusId,@Param("catalogingStatus") String catalogingStatus,@Param("isDeleted") boolean isDeleted,@Param("getFrom") long getFrom , @Param("batchSize") long batchSize);
+    @Query(value = "select it.* from recap.request_item_t rit " +
+            "inner join recap.item_t it on rit.ITEM_ID = it.ITEM_ID " +
+            "where rit.REQUEST_STATUS_ID in (:requestStatusCodes) " +
+            "and date(rit.LAST_UPDATED_DATE) < DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY) " +
+            "order by rit.LAST_UPDATED_DATE desc limit :getFrom , :batchSize", nativeQuery = true)
+    List<ItemEntity> getNotAvailableItems(@Param("dateDifference") Integer dateDifference,
+                                          @Param("requestStatusCodes") List<Integer> requestStatusCodes,
+                                          @Param("getFrom") long getFrom ,
+                                          @Param("batchSize") long batchSize);
 
     /**
      * Updates the item availability status ,last updated date and last updated by for the given barcodes.
      *
      * @param itemAvailabilityStatusId the item availability status id
-     * @param lastUpdatedDate          the last updated date
      * @param lastUpdatedBy            the last updated by
      * @param barcode                  the barcode
      * @return the int
      */
     @Transactional
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE ItemEntity item SET item.itemAvailabilityStatusId = :itemAvailabilityStatusId, item.lastUpdatedDate = :lastUpdatedDate, item.lastUpdatedBy = :lastUpdatedBy where item.barcode IN (:barcode)")
-    int updateAvailabilityStatus(@Param("itemAvailabilityStatusId") Integer itemAvailabilityStatusId,@Param("lastUpdatedDate") Date lastUpdatedDate,@Param("lastUpdatedBy") String lastUpdatedBy,@Param("barcode") String barcode);
+    @Query("UPDATE ItemEntity item SET item.itemAvailabilityStatusId = :itemAvailabilityStatusId , item.lastUpdatedBy = :lastUpdatedBy where item.barcode IN (:barcode)")
+    int updateAvailabilityStatus(@Param("itemAvailabilityStatusId") Integer itemAvailabilityStatusId,@Param("lastUpdatedBy") String lastUpdatedBy,@Param("barcode") String barcode);
 
     /**
      * Gets item entities for the given barcode and status code.
