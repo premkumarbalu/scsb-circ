@@ -207,7 +207,7 @@ public class ItemRequestInformation {
      * @return the delivery location
      */
     public String getDeliveryLocation() {
-        return deliveryLocation;
+        return deliveryLocation.toUpperCase();
     }
 
     /**
@@ -216,7 +216,7 @@ public class ItemRequestInformation {
      * @param deliveryLocation the delivery location
      */
     public void setDeliveryLocation(String deliveryLocation) {
-        this.deliveryLocation = deliveryLocation;
+        this.deliveryLocation = deliveryLocation.toUpperCase();
     }
 
     /**
@@ -351,7 +351,7 @@ public class ItemRequestInformation {
      * @return the customer code
      */
     public String getCustomerCode() {
-        return customerCode;
+        return customerCode.toUpperCase();
     }
 
     /**
@@ -360,7 +360,7 @@ public class ItemRequestInformation {
      * @param customerCode the customer code
      */
     public void setCustomerCode(String customerCode) {
-        this.customerCode = customerCode;
+        this.customerCode = customerCode.toUpperCase();
     }
 
     /**

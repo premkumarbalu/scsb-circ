@@ -293,7 +293,7 @@ public class GFAService {
                                 lasStatus = ttitem.getItemStatus();
                                 boolean isNotAvailable = false;
                                 for (String status : lasNotAvailableStatusList) {
-                                    if (ttitem.getItemStatus().toUpperCase().contains(status)) {
+                                    if (StringUtils.startsWithIgnoreCase(lasStatus,status)) {
                                         isNotAvailable = true;
                                     }
                                 }
@@ -322,7 +322,7 @@ public class GFAService {
 
     private void processMismatchStatus(List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList, List<ItemChangeLogEntity> itemChangeLogEntityList, String lasStatus, ItemEntity itemEntity) {
         StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
-        List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByitemId(itemEntity.getItemId(),Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED,ReCAPConstants.REQUEST_STATUS_EDD,ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD));
+        List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByitemId(itemEntity.getItemId(),Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED,ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD));
         List<String> barcodeList = new ArrayList<>();
         List<Integer> requestIdList = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
@@ -332,14 +332,15 @@ public class GFAService {
                 statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "yes", requestItemEntity.getRequestId().toString(), lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
                 barcodeList.add(itemEntity.getBarcode());
                 requestIdList.add(requestItemEntity.getRequestId());
+                logger.info("found mismatch in item status and refilled for the item id :{}",requestItemEntity.getItemId());
             }
         } else {
             statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "No", null, lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
-            getItemDetailsRepository().updateAvailabilityStatus(1,new Date(), ReCAPConstants.GUEST_USER, itemEntity.getBarcode());
+            getItemDetailsRepository().updateAvailabilityStatus(1,ReCAPConstants.GUEST_USER, itemEntity.getBarcode());
             ItemChangeLogEntity itemChangeLogEntity = saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE,itemEntity.getBarcode());
             itemChangeLogEntityList.add(itemChangeLogEntity);
             itemRequestService.updateSolrIndex(itemEntity);
-            logger.info("status updated for the item barcode:{}",itemEntity.getBarcode());
+            logger.info("found mismatch in item status and updated availability status for the item barcode:{}",itemEntity.getBarcode());
         }
         if (!barcodeList.isEmpty() && !requestIdList.isEmpty()) {
             ItemRefileRequest itemRefileRequest = new ItemRefileRequest();
