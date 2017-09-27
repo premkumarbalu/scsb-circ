@@ -83,9 +83,8 @@ public class DailyReconciliationProcessor {
                     createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getOwningInst(), 8);
                     createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getDeliveryMethod(), 9);
                     createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getStatus(), 10);
-                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getEmail(), 11);
-                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getErrorCode(), 12);
-                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getErrorNote(), 13);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getErrorCode(), 11);
+                    createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getErrorNote(), 12);
                     i++;                         
                 }
                 logger.info("completed creating las sheet");
@@ -172,11 +171,6 @@ public class DailyReconciliationProcessor {
                 createCell(xssfWorkbook, row,cellStyle, String.valueOf(itemEntity.getInstitutionEntity().getInstitutionCode()), 8);
                 createCell(xssfWorkbook, row,cellStyle, requestItemEntity.getRequestTypeEntity().getRequestTypeCode(), 9);
                 createCell(xssfWorkbook, row,cellStyle, itemEntity.getItemStatusEntity().getStatusCode(), 10);
-                if (StringUtils.isNotBlank(requestItemEntity.getEmailId())){
-                    createCell(xssfWorkbook, row,cellStyle, securityUtil.getDecryptedValue(requestItemEntity.getEmailId()), 11);
-                }else {
-                    createCell(xssfWorkbook, row,cellStyle,requestItemEntity.getEmailId(),11);
-                }
 
             }
         }
@@ -244,7 +238,6 @@ public class DailyReconciliationProcessor {
         row.createCell(8).setCellValue(ReCAPConstants.DAILY_RR_OWNING_INSTITUTION);
         row.createCell(9).setCellValue(ReCAPConstants.DAILY_RR_DELIVERY_METHOD);
         row.createCell(10).setCellValue(ReCAPConstants.DAILY_RR_STATUS);
-        row.createCell(11).setCellValue(ReCAPConstants.DAILY_RR_EMAIL);
         setColumnWidthForSheet(xssfSheet);
     }
 
@@ -258,7 +251,6 @@ public class DailyReconciliationProcessor {
         xssfSheet.setColumnWidth(8, 4000);
         xssfSheet.setColumnWidth(9, 3000);
         xssfSheet.setColumnWidth(10, 6000);
-        xssfSheet.setColumnWidth(11, 5500);
     }
 
     /**
