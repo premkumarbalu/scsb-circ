@@ -5,12 +5,12 @@ import org.recap.ReCAPConstants;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.*;
 import org.recap.repository.*;
+import org.recap.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -54,6 +54,9 @@ public class ItemRequestDBService {
     @Autowired
     private ItemStatusDetailsRepository itemStatusDetailsRepository;
 
+    @Autowired
+    private SecurityUtil securityUtil;
+
     /**
      * Update recap request item integer.
      *
@@ -89,7 +92,11 @@ public class ItemRequestDBService {
                 requestItemEntity.setPatronId(itemRequestInformation.getPatronBarcode());
                 requestItemEntity.setStopCode(itemRequestInformation.getDeliveryLocation());
                 requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                requestItemEntity.setEmailId(itemRequestInformation.getEmailAddress());
+                if(StringUtils.isNotBlank(itemRequestInformation.getEmailAddress())){
+                    requestItemEntity.setEmailId(securityUtil.getEncryptedValue(itemRequestInformation.getEmailAddress()));
+                }else {
+                    requestItemEntity.setEmailId(itemRequestInformation.getEmailAddress());
+                }
                 requestItemEntity.setNotes(itemRequestInformation.getRequestNotes());
             }
             savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
@@ -153,7 +160,11 @@ public class ItemRequestDBService {
                 requestItemEntity.setPatronId(itemInformationResponse.getPatronBarcode());
                 requestItemEntity.setStopCode(itemInformationResponse.getDeliveryLocation());
                 requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                requestItemEntity.setEmailId(itemInformationResponse.getEmailAddress());
+                if (StringUtils.isNotBlank(itemInformationResponse.getEmailAddress())){
+                    requestItemEntity.setEmailId(securityUtil.getEncryptedValue(itemInformationResponse.getEmailAddress()));
+                }else {
+                    requestItemEntity.setEmailId(itemInformationResponse.getEmailAddress());
+                }
                 requestItemEntity.setNotes(itemInformationResponse.getRequestNotes());
             }
             savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);

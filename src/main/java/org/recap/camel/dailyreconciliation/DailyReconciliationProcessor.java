@@ -11,6 +11,7 @@ import org.recap.model.RequestItemEntity;
 import org.recap.model.csv.DailyReconcilationRecord;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.RequestItemDetailsRepository;
+import org.recap.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,9 @@ public class DailyReconciliationProcessor {
 
     @Autowired
     private CamelContext camelContext;
+
+    @Autowired
+    private SecurityUtil securityUtil;
 
     /**
      * Process input for daily reconciliation report.
@@ -168,7 +172,12 @@ public class DailyReconciliationProcessor {
                 createCell(xssfWorkbook, row,cellStyle, String.valueOf(itemEntity.getInstitutionEntity().getInstitutionCode()), 8);
                 createCell(xssfWorkbook, row,cellStyle, requestItemEntity.getRequestTypeEntity().getRequestTypeCode(), 9);
                 createCell(xssfWorkbook, row,cellStyle, itemEntity.getItemStatusEntity().getStatusCode(), 10);
-                createCell(xssfWorkbook, row,cellStyle, requestItemEntity.getEmailId(), 11);
+                if (StringUtils.isNotBlank(requestItemEntity.getEmailId())){
+                    createCell(xssfWorkbook, row,cellStyle, securityUtil.getDecryptedValue(requestItemEntity.getEmailId()), 11);
+                }else {
+                    createCell(xssfWorkbook, row,cellStyle,requestItemEntity.getEmailId(),11);
+                }
+
             }
         }
     }
