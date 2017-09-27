@@ -1,5 +1,6 @@
 package org.recap.util;
 
+import org.recap.ReCAPConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,15 +37,15 @@ public class SecurityUtil {
             Base64.Encoder encoder = Base64.getEncoder();
             encryptedString = encoder.encodeToString(encrypted);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         } catch (InvalidKeyException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         } catch (BadPaddingException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         }
         logger.info("encryptedString--->{}",encryptedString);
         return encryptedString;
@@ -62,15 +63,15 @@ public class SecurityUtil {
             cipher.init(Cipher.DECRYPT_MODE, aesKey);
             decrypted = new String(cipher.doFinal(decoder.decode(encryptedValue)));
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         } catch (InvalidKeyException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         } catch (BadPaddingException e) {
-            e.printStackTrace();
+            logger.error(ReCAPConstants.LOG_ERROR,e);
         }
         logger.info("decryptedString--->{}",decrypted);
         return decrypted;
