@@ -90,11 +90,12 @@ public class SubmitCollectionProcessor {
         logger.info("Submit Collection : Route started and started processing the records from ftp for submitcollection");
         String inputXml = exchange.getIn().getBody(String.class);
         String xmlFileName = exchange.getIn().toString();
-        logger.info("Processing xmlFileName----->{}",xmlFileName);
+        logger.info("SC Processing xmlFileName----->{}",xmlFileName);
         Set<Integer> processedBibIds = new HashSet<>();
         List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
         try {
+            logger.info("Calling submitCollectionExecutorService");
             submitCollectionExecutorService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndexList,xmlFileName,reportRecordNumList, false, isCGDProtection);
             logger.info("Submit Collection : Solr indexing started for {} records", processedBibIds.size());
             logger.info("idMapToRemoveIndex--->"+idMapToRemoveIndexList.size());
