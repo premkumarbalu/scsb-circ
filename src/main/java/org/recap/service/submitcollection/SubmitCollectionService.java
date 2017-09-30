@@ -44,13 +44,16 @@ public class SubmitCollectionService {
     private SubmitCollectionReportHelperService submitCollectionReportHelperService;
 
     @Autowired
-    private SubmitCollectionDAOService submitCollectionDAOService;
+    private SubmitCollectionHelperService submitCollectionHelperService;
 
-    @Autowired
+/*    @Autowired
+    private SubmitCollectionDAOService submitCollectionDAOService;*/
+
+/*    @Autowired
     private MarcToBibEntityConverter marcToBibEntityConverter;
 
     @Autowired
-    private SCSBToBibEntityConverter scsbToBibEntityConverter;
+    private SCSBToBibEntityConverter scsbToBibEntityConverter;*/
 
     @Autowired
     private SubmitCollectionValidationService validationService;
@@ -122,10 +125,10 @@ public class SubmitCollectionService {
         return submitColletionResponseList;
     }
 
-    private void setResponse(String reponse, List<SubmitCollectionResponse> submitColletionResponseList) {
-        if(reponse != null){
+    private void setResponse(String response, List<SubmitCollectionResponse> submitColletionResponseList) {
+        if(response != null){
             SubmitCollectionResponse submitCollectionResponse = new SubmitCollectionResponse();
-            submitCollectionResponse.setMessage(reponse);
+            submitCollectionResponse.setMessage(response);
             submitColletionResponseList.add(submitCollectionResponse);
         }
     }
@@ -163,7 +166,8 @@ public class SubmitCollectionService {
             Set<String> processedBarcodeSet = new HashSet<>();
             for (Record record : records) {
                 logger.info("Processing record no: {}",count);
-                BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndexList,isCGDProtection,institutionEntity,processedBarcodeSet);
+                //BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndexList,isCGDProtection,institutionEntity,processedBarcodeSet);
+                BibliographicEntity bibliographicEntity = submitCollectionHelperService.loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndexList,isCGDProtection,institutionEntity,processedBarcodeSet);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
@@ -177,7 +181,7 @@ public class SubmitCollectionService {
     }
 
     private String processSCSB(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,
-                               List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit,boolean isCGDProtected,InstitutionEntity institutionEntity) {
+                               List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit,boolean isCGDProtected,InstitutionEntity institutionEntity) throws Exception{
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String format;
@@ -196,10 +200,17 @@ public class SubmitCollectionService {
         }
         int count = 1;
         Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+        String response = loadBibRecord(processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndexList, isCGDProtected, institutionEntity, format, bibRecords, count, processedBarcodeSetForDummyRecords);
+        if (response != null) return response;
+        logger.info("Total time take {}",stopWatch.getTotalTimeSeconds());
+        return null;
+    }
+
+    public String loadBibRecord(Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, boolean isCGDProtected, InstitutionEntity institutionEntity, String format, BibRecords bibRecords, int count, Set<String> processedBarcodeSetForDummyRecords) throws Exception{
         for (BibRecord bibRecord : bibRecords.getBibRecords()) {
             logger.info("Processing Bib record no: {}",count);
             try {
-                BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndexList,isCGDProtected,institutionEntity,processedBarcodeSetForDummyRecords);
+                BibliographicEntity bibliographicEntity = submitCollectionHelperService.loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndexList,isCGDProtected,institutionEntity,processedBarcodeSetForDummyRecords);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
@@ -213,11 +224,10 @@ public class SubmitCollectionService {
             logger.info("Process completed for Bib record no: {}",count);
             count ++;
         }
-        logger.info("Total time take {}",stopWatch.getTotalTimeSeconds());
         return null;
     }
 
-    private BibliographicEntity loadData(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String,String>> idMapToRemoveIndexList
+/*    public BibliographicEntity loadData(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String,String>> idMapToRemoveIndexList
             ,boolean isCGDProtected,InstitutionEntity institutionEntity,Set<String> processedBarcodeSetForDummyRecords){
         BibliographicEntity savedBibliographicEntity = null;
         BibliographicEntity bibliographicEntity = null;
@@ -253,7 +263,7 @@ public class SubmitCollectionService {
                 }
             }
         }
-    }
+    }*/
 
     /**
      * Index data string.
@@ -281,14 +291,14 @@ public class SubmitCollectionService {
         submitColletionResponseList.add(submitCollectionResponse);
     }
 
-    private XmlToBibEntityConverterInterface getConverter(String format){
+/*    private XmlToBibEntityConverterInterface getConverter(String format){
         if(format.equalsIgnoreCase(ReCAPConstants.FORMAT_MARC)){
             return marcToBibEntityConverter;
         } else if(format.equalsIgnoreCase(ReCAPConstants.FORMAT_SCSB)){
             return scsbToBibEntityConverter;
         }
         return null;
-    }
+    }*/
 
     /**
      * Generate submit collection report.
