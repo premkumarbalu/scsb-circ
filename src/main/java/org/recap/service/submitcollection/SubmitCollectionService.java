@@ -145,7 +145,7 @@ public class SubmitCollectionService {
     }
 
     private String processMarc(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit
-            ,boolean isCGDProtection,InstitutionEntity institutionEntity) {
+            ,boolean isCGDProtected,InstitutionEntity institutionEntity) throws Exception{
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String format;
@@ -164,16 +164,18 @@ public class SubmitCollectionService {
         if (CollectionUtils.isNotEmpty(records)) {
             int count = 1;
             Set<String> processedBarcodeSet = new HashSet<>();
-            for (Record record : records) {
+/*            for (Record record : records) {
                 logger.info("Processing record no: {}",count);
-                //BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndexList,isCGDProtection,institutionEntity,processedBarcodeSet);
                 BibliographicEntity bibliographicEntity = submitCollectionHelperService.loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndexList,isCGDProtection,institutionEntity,processedBarcodeSet);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
                 logger.info("Processing completed for record no: {}",count);
                 count ++;
-            }
+            }*/
+            Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+            String response = loadRecord(processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndexList, isCGDProtected, institutionEntity, format, records, count, processedBarcodeSetForDummyRecords);
+            if (response != null) return response;
         }
         stopWatch.stop();
         logger.info("Total time take {}",stopWatch.getTotalTimeSeconds());
@@ -211,6 +213,28 @@ public class SubmitCollectionService {
             logger.info("Processing Bib record no: {}",count);
             try {
                 BibliographicEntity bibliographicEntity = submitCollectionHelperService.loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndexList,isCGDProtected,institutionEntity,processedBarcodeSetForDummyRecords);
+                if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
+                    processedBibIds.add(bibliographicEntity.getBibliographicId());
+                }
+            } catch (MarcException me) {
+                logger.error(ReCAPConstants.LOG_ERROR,me);
+                return ReCAPConstants.INVALID_MARC_XML_FORMAT_IN_SCSBXML_MESSAGE;
+            } catch (ResourceAccessException rae){
+                logger.error(ReCAPConstants.LOG_ERROR,rae);
+                return ReCAPConstants.SCSB_SOLR_CLIENT_SERVICE_UNAVAILABLE;
+            }
+            logger.info("Process completed for Bib record no: {}",count);
+            count ++;
+        }
+        return null;
+    }
+
+    public String loadRecord(Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, boolean isCGDProtected, InstitutionEntity institutionEntity, String format,
+                                List<Record> recordList, int count, Set<String> processedBarcodeSetForDummyRecords) throws Exception{
+        for (Record record : recordList) {
+            logger.info("Processing Bib record no: {}",count);
+            try {
+                BibliographicEntity bibliographicEntity = submitCollectionHelperService.loadData(record, format, submitCollectionReportInfoMap, idMapToRemoveIndexList,isCGDProtected,institutionEntity,processedBarcodeSetForDummyRecords);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }

@@ -146,7 +146,7 @@ public class SubmitCollectionReportHelperService {
 
         for (Map.Entry<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoIndividualMap : submitCollectionReportInfoMap.entrySet()) {
             List<SubmitCollectionReportInfo> submitCollectionReportInfoList = submitCollectionReportInfoIndividualMap.getValue();
-            if(!submitCollectionReportInfoList.isEmpty()){
+            if(submitCollectionReportInfoList!=null && !submitCollectionReportInfoList.isEmpty()){
                 for(SubmitCollectionReportInfo submitCollectionReportInfo : submitCollectionReportInfoList){
                     if(submitCollectionReportInfo.getItemBarcode().equals(itemEntity.getBarcode())){
                         return true;

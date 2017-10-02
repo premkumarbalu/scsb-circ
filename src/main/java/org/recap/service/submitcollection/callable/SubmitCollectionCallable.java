@@ -35,11 +35,13 @@ public class SubmitCollectionCallable implements Callable {
     private InstitutionEntity institutionEntity;
     private String format;
     private BibRecord bibRecord;
+    private Object record;
     private Set<String> processedBarcodeSetForDummyRecords;
 
-    public SubmitCollectionCallable(BibRecord bibRecord, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String,String>> idMapToRemoveIndexList
+    public SubmitCollectionCallable(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String,String>> idMapToRemoveIndexList
             , boolean isCGDProtected, InstitutionEntity institutionEntity, Set<String> processedBarcodeSetForDummyRecords){
-        this.bibRecord = bibRecord;
+        //this.bibRecord = bibRecord;
+        this.record = record;
         this.format = format;
         this.submitCollectionReportInfoMap = submitCollectionReportInfoMap;
         this.idMapToRemoveIndexList = idMapToRemoveIndexList;
@@ -51,6 +53,6 @@ public class SubmitCollectionCallable implements Callable {
     @Override
     public Object call() throws Exception {
         logger.info("inside callable ....");
-        return submitCollectionHelperService.loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndexList,isCGDProtected,institutionEntity,processedBarcodeSetForDummyRecords);
+        return submitCollectionHelperService.loadData(record, format, submitCollectionReportInfoMap, idMapToRemoveIndexList,isCGDProtected,institutionEntity,processedBarcodeSetForDummyRecords);
     }
 }
