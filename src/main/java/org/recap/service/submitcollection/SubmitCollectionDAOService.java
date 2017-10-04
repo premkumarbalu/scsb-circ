@@ -160,38 +160,33 @@ public class SubmitCollectionDAOService {
             }
         }
 
-        List<ItemEntity> fetchItemEntityList = fetchBibliographicEntity.getItemEntities();
+        List<ItemEntity> fetchedItemEntityList = fetchBibliographicEntity.getItemEntities();
         List<ItemEntity> incomingItemEntityList = new ArrayList<>(incomingBibliographicEntity.getItemEntities());
-        for(ItemEntity incomingItemEntity:incomingItemEntityList){
-            boolean isItemUpdated = false;
-            boolean isBarcodeMatched = false;
-            for(ItemEntity fetchedItemEntity:fetchItemEntityList){
-                    if (fetchedItemEntity.getOwningInstitutionItemId().equalsIgnoreCase(incomingItemEntity.getOwningInstitutionItemId())) {
-                        if (fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode())) {
-                            if(!isDeAccessionedItem(fetchedItemEntity)) {
-                                copyItemEntity(fetchedItemEntity, incomingItemEntity, updatedItemEntityList);
-                                isItemUpdated = true;
-                                isValidItemToUpdate = true;
-                                isBarcodeMatched = true;
-                            } else {//add exception report for deaccession record
-                                addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap,ReCAPConstants.SUBMIT_COLLECTION_DEACCESSION_EXCEPTION_RECORD);
-                            }
-                        } else {//Owning institution id matched but barcode not matched
-                            addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap,ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
+
+        Map<String,ItemEntity> fetchedBarcodeItemEntityMap = getBarcodeItemEntityMap(fetchedItemEntityList);
+        Map<String,ItemEntity> incomingBarcodeItemEntityMap = getBarcodeItemEntityMap(incomingItemEntityList);
+        for(Map.Entry<String,ItemEntity> incomingBarcodeItemEntityMapEntry:incomingBarcodeItemEntityMap.entrySet()){
+            ItemEntity incomingItemEntity = incomingBarcodeItemEntityMapEntry.getValue();
+            ItemEntity fetchedItemEntity = fetchedBarcodeItemEntityMap.get(incomingBarcodeItemEntityMapEntry.getKey());
+            logger.info("Processing barcode--->{}",incomingItemEntity.getBarcode());
+            if(fetchedItemEntity != null){
+                if (fetchedItemEntity.getOwningInstitutionItemId().equalsIgnoreCase(incomingItemEntity.getOwningInstitutionItemId())) {
+                    if (fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode())) {
+                        if(!isDeAccessionedItem(fetchedItemEntity)) {
+                            copyItemEntity(fetchedItemEntity, incomingItemEntity, updatedItemEntityList);
+                            isValidItemToUpdate = true;
+                        } else {//add exception report for deaccession record
+                            addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap,ReCAPConstants.SUBMIT_COLLECTION_DEACCESSION_EXCEPTION_RECORD);
                         }
-                    } else if(fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode())){
-                        isBarcodeMatched = true;
                     }
-
-                if(!isItemUpdated && !isBarcodeMatched){//Add to exception report when barcode is unavailable
-                    addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap,ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
                 }
+            } else {//Add to exception report when barcode is unavailable
+                addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap,ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD);
             }
-
         }
 
         fetchBibliographicEntity.setHoldingsEntities(fetchedHoldingsEntityList);
-        fetchBibliographicEntity.setItemEntities(fetchItemEntityList);
+        fetchBibliographicEntity.setItemEntities(fetchedItemEntityList);
         try {
             updateCatalogingStatusForBib(fetchBibliographicEntity);
             if (isValidHoldingToUpdate && isValidItemToUpdate) {
@@ -205,6 +200,14 @@ public class SubmitCollectionDAOService {
             logger.error(ReCAPConstants.LOG_ERROR,e);
             return null;
         }
+    }
+
+    private Map<String,ItemEntity> getBarcodeItemEntityMap(List<ItemEntity> itemEntityList){
+        Map<String,ItemEntity> barcodeItemEntityMap = new HashMap();
+        for(ItemEntity itemEntity:itemEntityList){
+            barcodeItemEntityMap.put(itemEntity.getBarcode(),itemEntity);
+        }
+        return barcodeItemEntityMap;
     }
 
     private boolean isDeAccessionedItem(ItemEntity fetchedItemEntity){

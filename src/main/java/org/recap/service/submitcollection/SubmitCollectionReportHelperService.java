@@ -255,8 +255,8 @@ public class SubmitCollectionReportHelperService {
     }
 
     private void setReportInfoForMatchedRecord(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<SubmitCollectionReportInfo> successSubmitCollectionReportInfoList, List<SubmitCollectionReportInfo> rejectedSubmitCollectionReportInfoList, String owningInstitution, ItemEntity incomingItemEntity, ItemEntity fetchedItemEntity) {
-        ItemStatusEntity itemStatusEntity = repositoryService.getItemStatusDetailsRepository().findByItemStatusId(fetchedItemEntity.getItemAvailabilityStatusId());
-        if(!itemStatusEntity.getStatusCode().equalsIgnoreCase(ReCAPConstants.ITEM_STATUS_AVAILABLE) && !fetchedItemEntity.isDeleted()){//Rejection report
+        ItemStatusEntity fetchedItemStatusEntity = repositoryService.getItemStatusDetailsRepository().findByItemStatusId(fetchedItemEntity.getItemAvailabilityStatusId());
+        if(!fetchedItemStatusEntity.getStatusCode().equalsIgnoreCase(ReCAPConstants.ITEM_STATUS_AVAILABLE) && !fetchedItemEntity.isDeleted() && fetchedItemEntity.getCatalogingStatus().equals(ReCAPConstants.COMPLETE_STATUS)){//Rejection report
             SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
             submitCollectionReportInfo.setItemBarcode(fetchedItemEntity.getBarcode());
             submitCollectionReportInfo.setCustomerCode(fetchedItemEntity.getCustomerCode());
