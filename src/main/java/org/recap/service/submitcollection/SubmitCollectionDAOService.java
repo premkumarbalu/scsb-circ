@@ -63,7 +63,7 @@ public class SubmitCollectionDAOService {
         return savedBibliographicEntity;
     }
 
-    private void addExceptionReport(List<ItemEntity> itemEntityList, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,String message) {
+    private synchronized void addExceptionReport(List<ItemEntity> itemEntityList, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,String message) {
         boolean isBarcodeAlreadyAdded = submitCollectionReportHelperService.isBarcodeAlreadyAdded(itemEntityList.get(0),submitCollectionReportInfoMap);
         if (!isBarcodeAlreadyAdded) {//This is to avoid repeated error message for non-existing boundwith records
             submitCollectionReportHelperService.setSubmitCollectionExceptionReportInfo(itemEntityList,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), message);
@@ -405,7 +405,7 @@ public class SubmitCollectionDAOService {
      * @param itemAvailabilityStatusId the item availability status id
      * @return the boolean
      */
-    public boolean isAvailableItem(Integer itemAvailabilityStatusId){
+    public synchronized boolean isAvailableItem(Integer itemAvailabilityStatusId){
         String itemStatusCode = (String) setupDataService.getItemStatusIdCodeMap().get(itemAvailabilityStatusId);
         if (itemStatusCode.equalsIgnoreCase(ReCAPConstants.ITEM_STATUS_AVAILABLE)) {
             return true;
@@ -413,7 +413,7 @@ public class SubmitCollectionDAOService {
         return false;
     }
 
-    private void setItemAvailabilityStatus(ItemEntity itemEntity){
+    private synchronized void setItemAvailabilityStatus(ItemEntity itemEntity){
         if(itemEntity.getItemAvailabilityStatusId()==null) {
             itemEntity.setItemAvailabilityStatusId((Integer) setupDataService.getItemStatusCodeIdMap().get("Available"));
         }
