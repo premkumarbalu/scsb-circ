@@ -13,10 +13,7 @@ import org.recap.ils.model.response.ItemHoldResponse;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.ils.model.response.ItemRecallResponse;
 import org.recap.model.*;
-import org.recap.repository.CustomerCodeDetailsRepository;
-import org.recap.repository.ItemDetailsRepository;
-import org.recap.repository.RequestItemDetailsRepository;
-import org.recap.repository.RequestItemStatusDetailsRepository;
+import org.recap.repository.*;
 import org.recap.service.RestHeaderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +88,9 @@ public class ItemRequestService {
     private CustomerCodeDetailsRepository customerCodeDetailsRepository;
 
     @Autowired
+    private ItemStatusDetailsRepository itemStatusDetailsRepository;
+
+    @Autowired
     private RestHeaderService restHeaderService;
 
     public RestHeaderService getRestHeaderService(){
@@ -134,15 +134,26 @@ public class ItemRequestService {
                 itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
                 itemRequestInfo.setPickupLocation(customerCodeEntity.getPickupLocation());
                 itemResponseInformation.setItemId(itemEntity.getItemId());
-                // Change Item Availablity
-                updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
+
+                boolean isItemStatusAvailable;
+                synchronized (this) {
+                    // Change Item Availablity
+                    isItemStatusAvailable = updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
+                }
+
                 Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
                 itemRequestInfo.setRequestId(requestId);
                 itemResponseInformation.setRequestId(requestId);
-                // Process
-                itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity);
+
+                if (isItemStatusAvailable) {
+                    // Process
+                    itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity);
+                } else {
+                    itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_SCSB_EXCEPTION + ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM);
+                    itemResponseInformation.setSuccess(false);
+                }
             } else {
-                itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
+                itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_SCSB_EXCEPTION + ReCAPConstants.WRONG_ITEM_BARCODE);
                 itemResponseInformation.setSuccess(false);
             }
             itemResponseInformation = setItemResponseInformation(itemRequestInfo, itemResponseInformation);
@@ -291,24 +302,22 @@ public class ItemRequestService {
                         }
                     }
                 }
-                logger.info("Refile = "+ itemBarcode);
-                if (requestItemEntity != null) {
-                    ItemRequestInformation itemRequestInfo = new ItemRequestInformation();
-                    itemRequestInfo.setItemBarcodes(Arrays.asList(itemBarcode));
+                logger.info("Refile Request Id = {} Refile Barcode = {}",requestItemEntity.getRequestId(), itemBarcode);
+                ItemRequestInformation itemRequestInfo = new ItemRequestInformation();
+                itemRequestInfo.setItemBarcodes(Arrays.asList(itemBarcode));
 
-                    itemRequestInfo.setItemOwningInstitution(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
-                    itemRequestInfo.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
+                itemRequestInfo.setItemOwningInstitution(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
+                itemRequestInfo.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
 
-                    if (itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON) || itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
-                        itemRequestInfo.setPatronBarcode(requestItemEntity.getPatronId());
-                        requestItemController.checkinItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
-                    } else if (itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.NYPL)) {
-                        requestItemController.getJsipConectorFactory().getJSIPConnector(itemRequestInfo.getRequestingInstitution()).refileItem(itemBarcode);
-                    }
-                    if (!itemRequestInfo.isOwningInstitutionItem() && (itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.NYPL) || itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON))) {
-                        itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getItemOwningInstitution()));
-                        requestItemController.checkinItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
-                    }
+                if (itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON) || itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
+                    itemRequestInfo.setPatronBarcode(requestItemEntity.getPatronId());
+                    requestItemController.checkinItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                } else if (itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.NYPL)) {
+                    requestItemController.getJsipConectorFactory().getJSIPConnector(itemRequestInfo.getRequestingInstitution()).refileItem(itemBarcode);
+                }
+                if (!itemRequestInfo.isOwningInstitutionItem() && (itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.NYPL) || itemRequestInfo.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON))) {
+                    itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getItemOwningInstitution()));
+                    requestItemController.checkinItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
                 }
             }
         }
@@ -415,8 +424,17 @@ public class ItemRequestService {
         return itemRequestDBService.updateRecapRequestStatus(itemInformationResponse);
     }
 
-    private void updateItemAvailabilutyStatus(List<ItemEntity> itemEntities, String username) {
+    private boolean updateItemAvailabilutyStatus(List<ItemEntity> itemEntities, String username) {
+        ItemStatusEntity itemStatusEntity = itemStatusDetailsRepository.findByStatusCode(ReCAPConstants.NOT_AVAILABLE);
+        for (ItemEntity itemEntity : itemEntities) {
+            ItemEntity itemEntityByItemId = itemDetailsRepository.findByItemId(itemEntity.getItemId());
+            logger.info("Item status : " + itemEntityByItemId.getItemStatusEntity().getStatusCode());
+            if (itemStatusEntity.getItemStatusId() == itemEntityByItemId.getItemAvailabilityStatusId()) {
+                return false;
+            }
+        }
         itemRequestDBService.updateItemAvailabilutyStatus(itemEntities, username);
+        return true;
     }
 
     private void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity, String username) {

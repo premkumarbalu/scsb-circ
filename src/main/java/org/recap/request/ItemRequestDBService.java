@@ -226,7 +226,7 @@ public class ItemRequestDBService {
         }
         // Not Available
         itemDetailsRepository.save(itemEntities);
-
+        itemDetailsRepository.flush();
     }
 
     /**
