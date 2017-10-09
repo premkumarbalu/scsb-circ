@@ -32,7 +32,7 @@ public class DeAccessionItem {
      * @return the delivery location
      */
     public String getDeliveryLocation() {
-        return deliveryLocation.toUpperCase();
+        return null != deliveryLocation ? deliveryLocation.toUpperCase() : null;
     }
 
     /**
@@ -41,6 +41,6 @@ public class DeAccessionItem {
      * @param deliveryLocation the delivery location
      */
     public void setDeliveryLocation(String deliveryLocation) {
-        this.deliveryLocation = deliveryLocation.toUpperCase();
+        this.deliveryLocation = null != deliveryLocation ? deliveryLocation.toUpperCase() : null;
     }
 }
