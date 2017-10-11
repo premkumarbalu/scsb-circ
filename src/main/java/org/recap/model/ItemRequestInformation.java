@@ -207,7 +207,7 @@ public class ItemRequestInformation {
      * @return the delivery location
      */
     public String getDeliveryLocation() {
-        return deliveryLocation.toUpperCase();
+        return null != deliveryLocation ? deliveryLocation.toUpperCase() : null;
     }
 
     /**
@@ -216,7 +216,7 @@ public class ItemRequestInformation {
      * @param deliveryLocation the delivery location
      */
     public void setDeliveryLocation(String deliveryLocation) {
-        this.deliveryLocation = deliveryLocation.toUpperCase();
+        this.deliveryLocation = null != deliveryLocation ? deliveryLocation.toUpperCase() : null;
     }
 
     /**
@@ -351,7 +351,7 @@ public class ItemRequestInformation {
      * @return the customer code
      */
     public String getCustomerCode() {
-        return customerCode.toUpperCase();
+        return null != customerCode ? customerCode.toUpperCase() : null;
     }
 
     /**
@@ -360,7 +360,7 @@ public class ItemRequestInformation {
      * @param customerCode the customer code
      */
     public void setCustomerCode(String customerCode) {
-        this.customerCode = customerCode.toUpperCase();
+        this.customerCode = null != customerCode ? customerCode.toUpperCase() : null;
     }
 
     /**

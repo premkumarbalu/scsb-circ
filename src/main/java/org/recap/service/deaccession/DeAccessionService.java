@@ -2,7 +2,6 @@ package org.recap.service.deaccession;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.recap.ReCAPConstants;
 import org.recap.controller.RequestItemController;
@@ -18,9 +17,13 @@ import org.recap.repository.*;
 import org.recap.request.GFAService;
 import org.recap.request.ItemRequestService;
 import org.recap.service.RestHeaderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -34,7 +37,7 @@ import java.util.*;
 @Component
 public class DeAccessionService {
 
-    private static final Logger logger = Logger.getLogger(DeAccessionService.class);
+    private static final Logger logger = LoggerFactory.getLogger(DeAccessionService.class);
 
     /**
      * The Bibliographic details repository.
@@ -178,6 +181,7 @@ public class DeAccessionService {
     private void checkGfaItemStatus(List<DeAccessionItem> deAccessionItems, List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities, Map<String, String> barcodeAndStopCodeMap) {
         try {
             for (DeAccessionItem deAccessionItem : deAccessionItems) {
+                logger.info("Deaccession Item Barcode = {} Delivery Location = {}", deAccessionItem.getItemBarcode(), deAccessionItem.getDeliveryLocation());
                 String itemBarcode = deAccessionItem.getItemBarcode();
                 if (StringUtils.isNotBlank(itemBarcode)) {
                     List<ItemEntity> itemEntities = itemDetailsRepository.findByBarcode(itemBarcode.trim());
@@ -189,7 +193,9 @@ public class DeAccessionService {
                             deAccessionDBResponseEntities.add(prepareFailureResponse(itemBarcode, deAccessionItem.getDeliveryLocation(), ReCAPConstants.ITEM_BARCDE_DOESNOT_EXIST, itemEntity));
                         } else {
                             String scsbItemStatus = itemEntity.getItemStatusEntity().getStatusCode();
+                            logger.info("SCSB Item Status : {}", scsbItemStatus);
                             String gfaItemStatus = callGfaItemStatus(itemBarcode);
+                            logger.info("GFA Item Status : {}", gfaItemStatus);
                             if (StringUtils.isNotBlank(gfaItemStatus)) {
                                 gfaItemStatus = gfaItemStatus.toUpperCase();
                                 gfaItemStatus = gfaItemStatus.contains(":") ? gfaItemStatus.substring(0, gfaItemStatus.indexOf(':') + 1) : gfaItemStatus;

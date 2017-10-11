@@ -511,6 +511,10 @@ public final class ReCAPConstants {
 
     public static final String BARCODE_RECONCILIATION_FILE_DATE_FORMAT = "yyyyMMdd";
 
+    public static final String SUBMIT_COLLECTION_JOB_INITIATE_QUEUE = "scsbactivemq:queue:submitCollectionInitiateQ";
+    public static final String SUBMIT_COLLECTION_JOB_INITIATE_ROUTE_ID = "scsbactivemq:queue:submitCollectionInitiateRoute";
+    public static final String SUBMIT_COLLECTION_JOB_COMPLETION_OUTGOING_QUEUE = "scsbactivemq:queue:submitCollectionCompletionOutgoingQ";
+
     private ReCAPConstants() {
     }
 
