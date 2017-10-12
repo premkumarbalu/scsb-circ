@@ -53,6 +53,8 @@ public class SubmitCollectionDAOService {
         if(fetchBibliographicEntity != null ){//update existing record
             if(fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId())){//update existing complete record
                 savedBibliographicEntity = updateExistingRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
+            } else if(!fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId()) && !fetchBibliographicEntity.getOwningInstitutionBibId().toString().substring(0,1).equals("d")){
+                submitCollectionReportHelperService.setSubmitCollectionReportInfoForOwningInstitutionBibIdMismatch(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST));
             } else {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
                 savedBibliographicEntity = updateDummyRecord(bibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, savedBibliographicEntity, fetchBibliographicEntity);
             }
@@ -71,10 +73,9 @@ public class SubmitCollectionDAOService {
     }
 
     private BibliographicEntity updateDummyRecord(BibliographicEntity bibliographicEntity, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, Set<String> processedBarcodeSet, BibliographicEntity savedBibliographicEntity, BibliographicEntity fetchBibliographicEntity) {
-        List<ItemEntity> fetchedCompleteItem = submitCollectionReportHelperService.getIncomingItemIsIncomplete(bibliographicEntity.getItemEntities());//To verify the incoming barcode is complete for dummy record, if it is complete record and update will not happen.
         List<ItemEntity> fetchedItemBasedOnOwningInstitutionItemId = submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(bibliographicEntity.getItemEntities());
         boolean boundWith = isBoundWithItem(bibliographicEntity,processedBarcodeSet);
-        if ((fetchedCompleteItem.isEmpty() && fetchedItemBasedOnOwningInstitutionItemId.isEmpty()) || boundWith) {
+        if (fetchedItemBasedOnOwningInstitutionItemId.isEmpty() || boundWith) {
             boolean isCheckCGDNotNull = checkIsCGDNotNull(bibliographicEntity);
             if (isCheckCGDNotNull) {
                 updateCustomerCode(fetchBibliographicEntity, bibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it, this happens mostly for CUL
@@ -95,12 +96,8 @@ public class SubmitCollectionDAOService {
             } else {
                     submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,fetchBibliographicEntity,bibliographicEntity);
             }
-        } else {
-            if (!fetchedCompleteItem.isEmpty()) {
-                submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidDummyRecordBasedOnBarcode(bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),fetchedCompleteItem);
-            } else if (!fetchedItemBasedOnOwningInstitutionItemId.isEmpty()) {
+        } else if (!fetchedItemBasedOnOwningInstitutionItemId.isEmpty()) {
                 submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidDummyRecordBasedOnOwnInstItemId(bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),fetchedItemBasedOnOwningInstitutionItemId);
-            }
         }
         return savedBibliographicEntity;
     }
