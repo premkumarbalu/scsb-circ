@@ -255,7 +255,7 @@ public class SubmitCollectionReportHelperService {
                         submitCollectionReportInfo.setCustomerCode(incomingItemEntity.getCustomerCode());
                         submitCollectionReportInfo.setOwningInstitution(owningInstitution);
                         String existingOwningInstitutionHoldingsId = getExistingItemEntityOwningInstItemId(fetchedBibliographicEntity,incomingItemEntity);
-                        submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD+" - Owning institution holding id mismatch - incoming owning institution holdings " +incomingHoldingItemMapEntry.getKey()+ ", existing owning institution item id "+incomingItemEntity.getOwningInstitutionItemId()
+                        submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD+" - Owning institution holding id mismatch - incoming owning institution holdings id" +incomingHoldingItemMapEntry.getKey()+ ", existing owning institution item id "+incomingItemEntity.getOwningInstitutionItemId()
                                 +", existing owning institution holdings id "+existingOwningInstitutionHoldingsId+", existing owning institution bib id "+fetchedBibliographicEntity.getOwningInstitutionBibId());
                         failureSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
                     }
