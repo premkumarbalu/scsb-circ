@@ -1,0 +1,6 @@
+The bulk request process has completed successfully and the report has been attached. Below are bulk request process status details.
+
+Bulk Request Id 	    : ${header.emailPayLoad.bulkRequestId}
+Bulk Request Name       : ${header.emailPayLoad.bulkRequestName}
+Bulk Request File Name 	: ${header.emailPayLoad.bulkRequestFileName}
+Bulk Request Status 	: ${header.emailPayLoad.bulkRequestStatus}

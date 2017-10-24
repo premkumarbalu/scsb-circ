@@ -4,11 +4,14 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.recap.ReCAPConstants;
 import org.recap.mqconsumer.RequestItemQueueConsumer;
+import org.recap.request.BulkItemRequestProcessService;
+import org.recap.request.BulkItemRequestService;
 import org.recap.request.ItemEDDRequestService;
 import org.recap.request.ItemRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,7 +30,7 @@ public class RequestItemRouteBuilder {
      * @param itemEDDRequestService the item edd request service
      */
     @Autowired
-    public RequestItemRouteBuilder(CamelContext camelContext, ItemRequestService itemRequestService,ItemEDDRequestService itemEDDRequestService ) {
+    public RequestItemRouteBuilder(@Value("${bulk.request.concurrent.consumer.count}") Integer bulkRequestConsumerCount, CamelContext camelContext, ItemRequestService itemRequestService, ItemEDDRequestService itemEDDRequestService, BulkItemRequestService bulkItemRequestService, BulkItemRequestProcessService bulkItemRequestProcessService) {
         try {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
@@ -71,6 +74,24 @@ public class RequestItemRouteBuilder {
                         .bean(new RequestItemQueueConsumer(itemRequestService), "lasResponsePWIOnMessage")
                         .when(header(ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER).isEqualTo(ReCAPConstants.REQUEST_TYPE_PW_DIRECT))
                         .bean(new RequestItemQueueConsumer(itemRequestService), "lasResponsePWDOnMessage");
+                }
+            });
+
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.BULK_REQUEST_ITEM_QUEUE)
+                            .routeId(ReCAPConstants.BULK_REQUEST_ITEM_QUEUE_ROUTEID)
+                            .bean(new RequestItemQueueConsumer(bulkItemRequestService), "bulkRequestItemOnMessage");
+                }
+            });
+
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.BULK_REQUEST_ITEM_PROCESSING_QUEUE + ReCAPConstants.ASYNC_CONCURRENT_CONSUMERS + bulkRequestConsumerCount)
+                            .routeId(ReCAPConstants.BULK_REQUEST_ITEM_PROCESSING_QUEUE_ROUTEID)
+                            .bean(new RequestItemQueueConsumer(bulkItemRequestProcessService), "bulkRequestProcessItemOnMessage");
                 }
             });
 

@@ -22,6 +22,12 @@ public class EmailPayLoad implements Serializable{
     private String exceptionMessage;
     private String pendingRequestLimit;
 
+    private String bulkRequestId;
+    private String bulkRequestName;
+    private String bulkRequestFileName;
+    private String bulkRequestStatus;
+    private String bulkRequestCsvFileData;
+
 
     /**
      * Gets to.
@@ -273,5 +279,95 @@ public class EmailPayLoad implements Serializable{
      */
     public void setPendingRequestLimit(String pendingRequestLimit) {
         this.pendingRequestLimit = pendingRequestLimit;
+    }
+
+    /**
+     * Gets bulk request id.
+     *
+     * @return the bulk request id
+     */
+    public String getBulkRequestId() {
+        return bulkRequestId;
+    }
+
+    /**
+     * Sets bulk request id.
+     *
+     * @param bulkRequestId the bulk request id
+     */
+    public void setBulkRequestId(String bulkRequestId) {
+        this.bulkRequestId = bulkRequestId;
+    }
+
+    /**
+     * Gets bulk request name.
+     *
+     * @return the bulk request name
+     */
+    public String getBulkRequestName() {
+        return bulkRequestName;
+    }
+
+    /**
+     * Sets bulk request name.
+     *
+     * @param bulkRequestName the bulk request name
+     */
+    public void setBulkRequestName(String bulkRequestName) {
+        this.bulkRequestName = bulkRequestName;
+    }
+
+    /**
+     * Gets bulk request file name.
+     *
+     * @return the bulk request file name
+     */
+    public String getBulkRequestFileName() {
+        return bulkRequestFileName;
+    }
+
+    /**
+     * Sets bulk request file name.
+     *
+     * @param bulkRequestFileName the bulk request file name
+     */
+    public void setBulkRequestFileName(String bulkRequestFileName) {
+        this.bulkRequestFileName = bulkRequestFileName;
+    }
+
+    /**
+     * Gets bulk request status.
+     *
+     * @return the bulk request status
+     */
+    public String getBulkRequestStatus() {
+        return bulkRequestStatus;
+    }
+
+    /**
+     * Sets bulk request status.
+     *
+     * @param bulkRequestStatus the bulk request status
+     */
+    public void setBulkRequestStatus(String bulkRequestStatus) {
+        this.bulkRequestStatus = bulkRequestStatus;
+    }
+
+    /**
+     * Gets bulk request csv file data.
+     *
+     * @return the bulk request csv file data
+     */
+    public String getBulkRequestCsvFileData() {
+        return bulkRequestCsvFileData;
+    }
+
+    /**
+     * Sets bulk request csv file data.
+     *
+     * @param bulkRequestCsvFileData the bulk request csv file data
+     */
+    public void setBulkRequestCsvFileData(String bulkRequestCsvFileData) {
+        this.bulkRequestCsvFileData = bulkRequestCsvFileData;
     }
 }

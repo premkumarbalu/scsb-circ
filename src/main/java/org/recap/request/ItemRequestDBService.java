@@ -65,9 +65,12 @@ public class ItemRequestDBService {
      * @param requestStatusCode      the request status code
      * @return the integer
      */
-    public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, String requestStatusCode) {
+    public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, String requestStatusCode, BulkRequestItemEntity bulkRequestItemEntity) {
 
         RequestItemEntity requestItemEntity = new RequestItemEntity();
+        if (null != bulkRequestItemEntity) {
+            requestItemEntity.setBulkRequestItemEntity(bulkRequestItemEntity);
+        }
         RequestItemEntity savedItemRequest;
         Integer requestId = 0;
         try {
@@ -92,7 +95,7 @@ public class ItemRequestDBService {
                 requestItemEntity.setPatronId(itemRequestInformation.getPatronBarcode());
                 requestItemEntity.setStopCode(itemRequestInformation.getDeliveryLocation());
                 requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                if(StringUtils.isNotBlank(itemRequestInformation.getEmailAddress())){
+                if(StringUtils.isNotBlank(itemRequestInformation.getEmailAddress()) && null == bulkRequestItemEntity){
                     requestItemEntity.setEmailId(securityUtil.getEncryptedValue(itemRequestInformation.getEmailAddress()));
                 }else {
                     requestItemEntity.setEmailId(itemRequestInformation.getEmailAddress());

@@ -7,6 +7,7 @@ import org.recap.model.*;
 import org.recap.repository.RequestItemDetailsRepository;
 import org.recap.repository.RequestItemStatusDetailsRepository;
 import org.recap.request.ItemRequestService;
+import org.recap.util.ItemRequestServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class CancelItemController {
 
     @Autowired
     private ItemRequestService itemRequestService;
+
+    @Autowired
+    private ItemRequestServiceUtil itemRequestServiceUtil;
 
     /**
      * This is rest service  method, for cancel requested item.
@@ -117,7 +121,7 @@ public class CancelItemController {
                 }
                 RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
                 itemRequestService.saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS, ReCAPConstants.REQUEST_STATUS_CANCELED + savedRequestItemEntity.getItemId());
-                itemRequestService.updateSolrIndex(savedRequestItemEntity.getItemEntity());
+                itemRequestServiceUtil.updateSolrIndex(savedRequestItemEntity.getItemEntity());
                 itemCanceHoldResponse.setSuccess(true);
                 itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_SUCCCESS);
                 logger.info("Send Mail");

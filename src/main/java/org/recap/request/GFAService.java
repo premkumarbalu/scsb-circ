@@ -14,6 +14,7 @@ import org.recap.repository.ItemChangeLogDetailsRepository;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.ItemStatusDetailsRepository;
 import org.recap.repository.RequestItemDetailsRepository;
+import org.recap.util.ItemRequestServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +82,9 @@ public class GFAService {
 
     @Autowired
     private ItemRequestService itemRequestService;
+
+    @Autowired
+    private ItemRequestServiceUtil itemRequestServiceUtil;
 
     @Autowired
     private ItemStatusDetailsRepository itemStatusDetailsRepository;
@@ -339,7 +343,7 @@ public class GFAService {
             getItemDetailsRepository().updateAvailabilityStatus(1,ReCAPConstants.GUEST_USER, itemEntity.getBarcode());
             ItemChangeLogEntity itemChangeLogEntity = saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE,itemEntity.getBarcode());
             itemChangeLogEntityList.add(itemChangeLogEntity);
-            itemRequestService.updateSolrIndex(itemEntity);
+            itemRequestServiceUtil.updateSolrIndex(itemEntity);
             logger.info("found mismatch in item status and updated availability status for the item barcode:{}",itemEntity.getBarcode());
         }
         if (!barcodeList.isEmpty() && !requestIdList.isEmpty()) {

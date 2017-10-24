@@ -71,6 +71,12 @@ public class RequestItemEntity implements Serializable {
     @Column(name = "EMAIL_ID")
     private String emailId;
 
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinTable(name = "bulk_request_t",
+            joinColumns = @JoinColumn(name = "REQUEST_ID"),
+            inverseJoinColumns = @JoinColumn(name = "BULK_REQUEST_ID"))
+    private BulkRequestItemEntity bulkRequestItemEntity;
+
     /**
      * Gets request id.
      *
@@ -375,5 +381,13 @@ public class RequestItemEntity implements Serializable {
      */
     public void setEmailId(String emailId) {
         this.emailId = emailId;
+    }
+
+    public BulkRequestItemEntity getBulkRequestItemEntity() {
+        return bulkRequestItemEntity;
+    }
+
+    public void setBulkRequestItemEntity(BulkRequestItemEntity bulkRequestItemEntity) {
+        this.bulkRequestItemEntity = bulkRequestItemEntity;
     }
 }
