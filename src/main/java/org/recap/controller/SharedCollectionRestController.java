@@ -4,6 +4,7 @@ import org.recap.ReCAPConstants;
 import org.recap.model.deaccession.DeAccessionRequest;
 import org.recap.model.submitcollection.SubmitCollectionResponse;
 import org.recap.service.deaccession.DeAccessionService;
+import org.recap.service.submitcollection.SubmitCollectionBatchService;
 import org.recap.service.submitcollection.SubmitCollectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,9 @@ public class SharedCollectionRestController {
 
     @Autowired
     private SubmitCollectionService submitCollectionService;
+
+    @Autowired
+    private SubmitCollectionBatchService submitCollectionBatchService;
 
     /**
      * The De accession service.
@@ -54,7 +58,7 @@ public class SharedCollectionRestController {
         List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
         List<SubmitCollectionResponse> submitCollectionResponseList;
         try {
-            submitCollectionResponseList = submitCollectionService.process(institution,inputRecords,processedBibIds,idMapToRemoveIndexList,"",reportRecordNumberList, true,isCGDProtection);
+            submitCollectionResponseList = submitCollectionBatchService.process(institution,inputRecords,processedBibIds,idMapToRemoveIndexList,"",reportRecordNumberList, true,isCGDProtection);
             if (!processedBibIds.isEmpty()) {
                 logger.info("Calling indexing service to update data");
                 submitCollectionService.indexData(processedBibIds);
@@ -64,7 +68,7 @@ public class SharedCollectionRestController {
                 submitCollectionService.removeSolrIndex(idMapToRemoveIndexList);
                 logger.info("Removed dummy records from solr");
             }
-            submitCollectionService.generateSubmitCollectionReportFile(reportRecordNumberList);
+            submitCollectionBatchService.generateSubmitCollectionReportFile(reportRecordNumberList);
             responseEntity = new ResponseEntity(submitCollectionResponseList,getHttpHeaders(), HttpStatus.OK);
         } catch (Exception e) {
             logger.error(ReCAPConstants.LOG_ERROR,e);

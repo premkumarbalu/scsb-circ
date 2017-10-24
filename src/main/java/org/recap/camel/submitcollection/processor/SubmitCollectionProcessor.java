@@ -5,6 +5,7 @@ import org.apache.camel.ProducerTemplate;
 import org.recap.ReCAPConstants;
 import org.recap.camel.EmailPayLoad;
 import org.recap.model.ReportDataRequest;
+import org.recap.service.submitcollection.SubmitCollectionBatchService;
 import org.recap.service.submitcollection.SubmitCollectionReportGenerator;
 import org.recap.service.submitcollection.SubmitCollectionService;
 import org.slf4j.Logger;
@@ -29,6 +30,9 @@ public class SubmitCollectionProcessor {
 
     @Autowired
     private SubmitCollectionService submitCollectionService;
+
+    @Autowired
+    private SubmitCollectionBatchService submitCollectionBatchService;
 
     @Autowired
     private SubmitCollectionReportGenerator submitCollectionReportGenerator;
@@ -91,11 +95,11 @@ public class SubmitCollectionProcessor {
         List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
         try {
-            submitCollectionService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndexList,xmlFileName,reportRecordNumList, false, isCGDProtection);
+            submitCollectionBatchService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndexList,xmlFileName,reportRecordNumList, false, isCGDProtection);
             logger.info("Submit Collection : Solr indexing started for {} records", processedBibIds.size());
             logger.info("idMapToRemoveIndex--->"+idMapToRemoveIndexList.size());
             if (processedBibIds.size()>0) {
-                submitCollectionService.indexData(processedBibIds);
+                submitCollectionBatchService.indexData(processedBibIds);
                 logger.info("Submit Collection : Solr indexing completed and remove the incomplete record from solr index for {} records", idMapToRemoveIndexList.size());
                 if (idMapToRemoveIndexList.size()>0) {//remove the incomplete record from solr index
                     StopWatch stopWatchRemovingDummy = new StopWatch();
@@ -103,7 +107,7 @@ public class SubmitCollectionProcessor {
                     logger.info("Calling indexing to remove dummy records");
                     new Thread(() -> {
                         try {
-                            submitCollectionService.removeSolrIndex(idMapToRemoveIndexList);
+                            submitCollectionBatchService.removeSolrIndex(idMapToRemoveIndexList);
                         } catch (Exception e) {
                             logger.error(ReCAPConstants.LOG_ERROR,e);
                         }
