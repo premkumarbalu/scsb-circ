@@ -215,8 +215,10 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
             }
             StopWatch saveEntityStopWatch = new StopWatch();
             saveEntityStopWatch.start();
-            repositoryService.getBibliographicDetailsRepository().save(updatedBibliographicEntityToSaveList);
-            repositoryService.getBibliographicDetailsRepository().flush();
+            if (!updatedBibliographicEntityToSaveList.isEmpty()) {
+                repositoryService.getBibliographicDetailsRepository().save(updatedBibliographicEntityToSaveList);
+                repositoryService.getBibliographicDetailsRepository().flush();
+            }
             saveEntityStopWatch.stop();
             logger.info("Time taken to save {} non bound-with records batch--->{}",partitionSize,saveEntityStopWatch.getTotalTimeSeconds());
             stopWatch.stop();

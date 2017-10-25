@@ -5,6 +5,7 @@ import org.apache.camel.ProducerTemplate;
 import org.recap.ReCAPConstants;
 import org.recap.camel.EmailPayLoad;
 import org.recap.model.ReportDataRequest;
+import org.recap.service.common.SetupDataService;
 import org.recap.service.submitcollection.SubmitCollectionBatchService;
 import org.recap.service.submitcollection.SubmitCollectionReportGenerator;
 import org.recap.service.submitcollection.SubmitCollectionService;
@@ -71,6 +72,9 @@ public class SubmitCollectionProcessor {
     @Value("${submit.collection.email.nypl.cc}")
     private String emailCCForNypl;
 
+    @Autowired
+    private SetupDataService setupDataService;
+
     public SubmitCollectionProcessor(){};
 
     public SubmitCollectionProcessor(String inputInstitutionCode,boolean isCGDProtection) {
@@ -92,31 +96,36 @@ public class SubmitCollectionProcessor {
         String xmlFileName = exchange.getIn().toString();
         logger.info("Processing xmlFileName----->{}",xmlFileName);
         Set<Integer> processedBibIds = new HashSet<>();
-        Set<String> updatedDummyRecordOwnInstBibIdSet = new HashSet<>();
+        Set<String> updatedBoundWithDummyRecordOwnInstBibIdSet = new HashSet<>();
         List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
+        Integer institutionId = (Integer) setupDataService.getInstitutionCodeIdMap().get(institutionCode);
         try {
-            submitCollectionBatchService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndexList,xmlFileName,reportRecordNumList, false, isCGDProtection,updatedDummyRecordOwnInstBibIdSet);
+            submitCollectionBatchService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndexList,xmlFileName,reportRecordNumList, false, isCGDProtection,updatedBoundWithDummyRecordOwnInstBibIdSet);
             logger.info("Submit Collection : Solr indexing started for {} records", processedBibIds.size());
             logger.info("idMapToRemoveIndex--->"+idMapToRemoveIndexList.size());
             if (processedBibIds.size()>0) {
                 submitCollectionBatchService.indexData(processedBibIds);
                 logger.info("Submit Collection : Solr indexing completed and remove the incomplete record from solr index for {} records", idMapToRemoveIndexList.size());
-                if (idMapToRemoveIndexList.size()>0) {//remove the incomplete record from solr index
-                    StopWatch stopWatchRemovingDummy = new StopWatch();
-                    stopWatchRemovingDummy.start();
-                    logger.info("Calling indexing to remove dummy records");
-                    new Thread(() -> {
-                        try {
-                            submitCollectionBatchService.removeSolrIndex(idMapToRemoveIndexList);
-                        } catch (Exception e) {
-                            logger.error(ReCAPConstants.LOG_ERROR,e);
-                        }
-                    }).start();
-                    logger.info("Removed dummy records from solr");
-                    stopWatchRemovingDummy.stop();
-                    logger.info("Time take to call and execute solr call to remove dummy-->{} sec",stopWatchRemovingDummy.getTotalTimeSeconds());
-                }
+            }
+            if(!updatedBoundWithDummyRecordOwnInstBibIdSet.isEmpty()){
+                logger.info("Updated boudwith dummy record own inst bib id size-->{}",updatedBoundWithDummyRecordOwnInstBibIdSet.size());
+                submitCollectionService.indexDataUsingOwningInstBibId(new ArrayList<>(updatedBoundWithDummyRecordOwnInstBibIdSet),institutionId);
+            }
+            if (idMapToRemoveIndexList.size()>0) {//remove the incomplete record from solr index
+                StopWatch stopWatchRemovingDummy = new StopWatch();
+                stopWatchRemovingDummy.start();
+                logger.info("Calling indexing to remove dummy records");
+                new Thread(() -> {
+                    try {
+                        submitCollectionBatchService.removeSolrIndex(idMapToRemoveIndexList);
+                    } catch (Exception e) {
+                        logger.error(ReCAPConstants.LOG_ERROR,e);
+                    }
+                }).start();
+                logger.info("Removed dummy records from solr");
+                stopWatchRemovingDummy.stop();
+                logger.info("Time take to call and execute solr call to remove dummy-->{} sec",stopWatchRemovingDummy.getTotalTimeSeconds());
             }
             ReportDataRequest reportRequest = getReportDataRequest(xmlFileName);
             String generatedReportFileName = submitCollectionReportGenerator.generateReport(reportRequest);

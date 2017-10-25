@@ -70,10 +70,8 @@ public class SubmitCollectionDAOService {
                     if (fetchedItemEntity != null) {
                         List<BibliographicEntity> fetchedBibliographicEntityList = fetchedItemEntity.getBibliographicEntities();
                         for (BibliographicEntity fetchedBibliographicEntity : fetchedBibliographicEntityList) {
-                            /**********************/
                             Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap = fetchedBarcodeBibliographicEntityMap.get(incomingItemEntity.getBarcode());
                             if (fetchedOwnInstBibIdBibliographicEntityMap != null && fetchedOwnInstBibIdBibliographicEntityMap.containsKey(incomingBibliographicEntity.getOwningInstitutionBibId())) {//TODO need to check the if condition, remove the condition if not required
-                                /**********************/
                                 if (fetchedBibliographicEntity.getOwningInstitutionBibId().equals(incomingBibliographicEntity.getOwningInstitutionBibId())) {//update existing record
                                     BibliographicEntity updatedBibliographicEntity = updateExistingRecordToEntityObject(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap, processedBibIds);
                                     if (updatedBibliographicEntity != null) {
@@ -89,7 +87,7 @@ public class SubmitCollectionDAOService {
                                 }
                             }
                             else if (!fetchedBibliographicEntity.getOwningInstitutionBibId().equals(incomingBibliographicEntity.getOwningInstitutionBibId()) && !fetchedBibliographicEntity.getOwningInstitutionBibId().substring(0, 1).equals("d")) {//Owning inst bib id mismatch for non dummy record
-                                submitCollectionReportHelperService.setSubmitCollectionReportInfoForOwningInstitutionBibIdMismatch(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST));
+                                submitCollectionReportHelperService.setSubmitCollectionReportInfoForOwningInstitutionBibIdMismatch(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap);
                             }
                         }
                     }
@@ -261,7 +259,7 @@ public class SubmitCollectionDAOService {
             if(fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId())){//update existing complete record
                 savedBibliographicEntity = updateExistingRecord(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
             } else if(!fetchBibliographicEntity.getOwningInstitutionBibId().equals(bibliographicEntity.getOwningInstitutionBibId()) && !fetchBibliographicEntity.getOwningInstitutionBibId().substring(0,1).equals("d")){
-                submitCollectionReportHelperService.setSubmitCollectionReportInfoForOwningInstitutionBibIdMismatch(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST));
+                submitCollectionReportHelperService.setSubmitCollectionReportInfoForOwningInstitutionBibIdMismatch(fetchBibliographicEntity,bibliographicEntity,submitCollectionReportInfoMap);
             } else {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
                 savedBibliographicEntity = updateDummyRecord(bibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, savedBibliographicEntity, fetchBibliographicEntity);
             }

@@ -81,27 +81,31 @@ public class SubmitCollectionReportHelperService {
     }
 
     public void setSubmitCollectionReportInfoForOwningInstitutionBibIdMismatch(BibliographicEntity fetchedBibliographicEntity, BibliographicEntity incomingBibliographicEntity,
-                                                                               List<SubmitCollectionReportInfo> submitCollectionExceptionInfos){
+                                                                               Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap){
         Map<String,String> fetchedBarcodeOwningInstitutionBibIdMap = getBarcodeOwningInstitutionBibIdMap(fetchedBibliographicEntity);
         Map<String,String> incomingBarcodeOwningInstitutionBibIdMap = getBarcodeOwningInstitutionBibIdMap(incomingBibliographicEntity);
         Map<String,ItemEntity> incomingBarcodeItemEntityMap = getBarcodeItemEntityMap(incomingBibliographicEntity.getItemEntities());
         Map<String,ItemEntity> fetchedBarcodeItemEntityMap = getBarcodeItemEntityMap(fetchedBibliographicEntity.getItemEntities());
+        List<SubmitCollectionReportInfo> submitCollectionFailureReportInfos = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST);
 
         String owningInstitution = (String) setupDataService.getInstitutionIdCodeMap().get(fetchedBibliographicEntity.getOwningInstitutionId());
         for(Map.Entry<String,String> incomingOwningInstitutionBibIdBarcodeMapEntry : incomingBarcodeOwningInstitutionBibIdMap.entrySet()){
             String existingOwningInstitutionBibId = fetchedBarcodeOwningInstitutionBibIdMap.get(incomingOwningInstitutionBibIdBarcodeMapEntry.getKey());
-            if(!existingOwningInstitutionBibId.equals(incomingOwningInstitutionBibIdBarcodeMapEntry.getValue())){
-                ItemEntity incomingItemEntity = incomingBarcodeItemEntityMap.get(incomingOwningInstitutionBibIdBarcodeMapEntry.getKey());
-                ItemEntity fetchedItemEntity = fetchedBarcodeItemEntityMap.get(incomingOwningInstitutionBibIdBarcodeMapEntry.getKey());
-                SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
-                submitCollectionReportInfo.setOwningInstitution(owningInstitution);
-                submitCollectionReportInfo.setItemBarcode(incomingOwningInstitutionBibIdBarcodeMapEntry.getKey());
-                submitCollectionReportInfo.setCustomerCode(incomingItemEntity.getCustomerCode());
-                submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD+" - Owning institution bib id mismatch - incoming owning institution"
-                        +"bib id "+incomingBibliographicEntity.getOwningInstitutionBibId()+", existing owning institution bib id "+fetchedBibliographicEntity.getOwningInstitutionBibId()
-                        +", existing owning institution holdings id "+fetchedItemEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId()+", existing owning"
-                        +"institution item id "+fetchedItemEntity.getOwningInstitutionItemId());
-                submitCollectionExceptionInfos.add(submitCollectionReportInfo);
+            boolean isBarcodeAlreadyAdded = isBarcodeAlreadyAdded(incomingOwningInstitutionBibIdBarcodeMapEntry.getKey(),submitCollectionReportInfoMap);
+            if(!isBarcodeAlreadyAdded){
+                if(!existingOwningInstitutionBibId.equals(incomingOwningInstitutionBibIdBarcodeMapEntry.getValue())){
+                    ItemEntity incomingItemEntity = incomingBarcodeItemEntityMap.get(incomingOwningInstitutionBibIdBarcodeMapEntry.getKey());
+                    ItemEntity fetchedItemEntity = fetchedBarcodeItemEntityMap.get(incomingOwningInstitutionBibIdBarcodeMapEntry.getKey());
+                    SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
+                    submitCollectionReportInfo.setOwningInstitution(owningInstitution);
+                    submitCollectionReportInfo.setItemBarcode(incomingOwningInstitutionBibIdBarcodeMapEntry.getKey());
+                    submitCollectionReportInfo.setCustomerCode(incomingItemEntity.getCustomerCode());
+                    submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD+" - Owning institution bib id mismatch - incoming owning institution"
+                            +"bib id "+incomingBibliographicEntity.getOwningInstitutionBibId()+", existing owning institution bib id "+fetchedBibliographicEntity.getOwningInstitutionBibId()
+                            +", existing owning institution holdings id "+fetchedItemEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId()+", existing owning"
+                            +"institution item id "+fetchedItemEntity.getOwningInstitutionItemId());
+                    submitCollectionFailureReportInfos.add(submitCollectionReportInfo);
+                }
             }
         }
     }
@@ -196,7 +200,6 @@ public class SubmitCollectionReportHelperService {
      * @return the boolean
      */
     public boolean isBarcodeAlreadyAdded(String barcode,Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap){
-
         for (Map.Entry<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoIndividualMap : submitCollectionReportInfoMap.entrySet()) {
             List<SubmitCollectionReportInfo> submitCollectionReportInfoList = submitCollectionReportInfoIndividualMap.getValue();
             if(!submitCollectionReportInfoList.isEmpty()){
@@ -210,6 +213,16 @@ public class SubmitCollectionReportHelperService {
         return false;
     }
 
+    public boolean isBarcodeAlreadyAddedToReport(String barcode,List<SubmitCollectionReportInfo> submitCollectionReportInfoList){
+            if(!submitCollectionReportInfoList.isEmpty()){
+                for(SubmitCollectionReportInfo submitCollectionReportInfo : submitCollectionReportInfoList){
+                    if(submitCollectionReportInfo.getItemBarcode().equals(barcode)){
+                        return true;
+                    }
+                }
+            }
+        return false;
+    }
     /**
      * Sets submit collection report info for invalid xml.
      *
@@ -255,7 +268,8 @@ public class SubmitCollectionReportHelperService {
                 Map<String,ItemEntity> incomingItemEntityMap = getItemIdEntityMap(incomingBibliographicEntity);
                 Map<String,ItemEntity> fetchedItemEntityMap = getItemIdEntityMap(fetchedBibliographicEntity);
                 for(Map.Entry<String,ItemEntity> incomingItemEntityMapEntry:incomingItemEntityMap.entrySet()){
-                    setReportForMatchedAndUnmatchedRecords(submitCollectionReportInfoMap, successSubmitCollectionReportInfoList, rejectedSubmitCollectionReportInfoList, failureSubmitCollectionReportInfoList, owningInstitution, fetchedItemEntityMap, incomingItemEntityMapEntry);}
+                    setReportForMatchedAndUnmatchedRecords(submitCollectionReportInfoMap, successSubmitCollectionReportInfoList, rejectedSubmitCollectionReportInfoList, failureSubmitCollectionReportInfoList, owningInstitution, fetchedItemEntityMap, incomingItemEntityMapEntry);
+                }
             } else {//Failure report - holding id mismatch and for dummy record not having CGD in the incoming data
                 for(Map.Entry<String,ItemEntity> incomingOwningItemIdBarcodeMapEntry:incomingOwningItemIdEntityMap.entrySet()) {
                     ItemEntity incomingItemEntity = incomingOwningItemIdBarcodeMapEntry.getValue();
@@ -302,17 +316,20 @@ public class SubmitCollectionReportHelperService {
         if(fetchedItemEntity!=null && incomingItemEntity.getBarcode().equals(fetchedItemEntity.getBarcode())){
             setReportInfoForMatchedRecord(submitCollectionReportInfoMap, successSubmitCollectionReportInfoList, rejectedSubmitCollectionReportInfoList, owningInstitution, incomingItemEntity, fetchedItemEntity);
         } else {//Failure report - item id mismatch
-            SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
-            submitCollectionReportInfo.setItemBarcode(incomingItemEntity.getBarcode());
-            submitCollectionReportInfo.setCustomerCode(incomingItemEntity.getCustomerCode()!=null?incomingItemEntity.getCustomerCode():"");
-            submitCollectionReportInfo.setOwningInstitution(owningInstitution);
-            ItemEntity misMatchedItemEntity = getMismatchedItemEntity(incomingItemEntity,fetchedOwningItemIdEntityMap);
-            if (misMatchedItemEntity != null) {
-                submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD+" - Owning institution item id mismatch - incoming owning institution item id "+incomingItemEntity.getOwningInstitutionItemId()
-                        +" , existing owning institution item id "+misMatchedItemEntity.getOwningInstitutionItemId()
-                        +", existing owning institution holding id "+misMatchedItemEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId()+", existing owning institution bib id "
-                        +misMatchedItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
-                failureSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
+            boolean isBarcodeAlreadyAdded = isBarcodeAlreadyAddedToReport(incomingItemEntity.getBarcode(),submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST));
+            if(!isBarcodeAlreadyAdded){
+                SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
+                submitCollectionReportInfo.setItemBarcode(incomingItemEntity.getBarcode());
+                submitCollectionReportInfo.setCustomerCode(incomingItemEntity.getCustomerCode()!=null?incomingItemEntity.getCustomerCode():"");
+                submitCollectionReportInfo.setOwningInstitution(owningInstitution);
+                ItemEntity misMatchedItemEntity = getMismatchedItemEntity(incomingItemEntity,fetchedOwningItemIdEntityMap);
+                if (misMatchedItemEntity != null) {
+                    submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD+" - Owning institution item id mismatch - incoming owning institution item id "+incomingItemEntity.getOwningInstitutionItemId()
+                            +" , existing owning institution item id "+misMatchedItemEntity.getOwningInstitutionItemId()
+                            +", existing owning institution holding id "+misMatchedItemEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId()+", existing owning institution bib id "
+                            +misMatchedItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
+                    failureSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
+                }
             }
         }
     }
@@ -346,8 +363,8 @@ public class SubmitCollectionReportHelperService {
 
     private Map<String,Map<String,ItemEntity>> getHoldingItemIdMap(BibliographicEntity bibliographicEntity){
         Map<String,Map<String,ItemEntity>> holdingItemMap = new HashMap<>();
-        Map<String,ItemEntity> itemEntityMap = new HashMap<>();
         for(HoldingsEntity holdingsEntity:bibliographicEntity.getHoldingsEntities()){
+            Map<String,ItemEntity> itemEntityMap = new HashMap<>();
             for(ItemEntity itemEntity:holdingsEntity.getItemEntities()){
                 itemEntityMap.put(itemEntity.getOwningInstitutionItemId(),itemEntity);
             }
