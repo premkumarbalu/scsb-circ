@@ -322,12 +322,12 @@ public class RequestItemQueueConsumer {
     }
 
     private void setTopicMessageToDb(String body, String operationType) {
-        if (!itemRequestService.isUseQueueLasCall()) {
+        if (!getItemRequestService().isUseQueueLasCall()) {
             ObjectMapper om = new ObjectMapper();
             ItemInformationResponse itemInformationResponse = null;
             try {
                 itemInformationResponse = om.readValue(body, ItemInformationResponse.class);
-                itemRequestService.updateChangesToDb(itemInformationResponse, operationType);
+                getItemRequestService().updateChangesToDb(itemInformationResponse, operationType);
             } catch (Exception e) {
                 logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
             }
