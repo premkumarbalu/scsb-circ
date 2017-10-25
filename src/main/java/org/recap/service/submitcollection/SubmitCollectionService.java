@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StopWatch;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -266,6 +268,17 @@ public class SubmitCollectionService {
         return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/indexByBibliographicId", bibliographicIdList, String.class);
     }
 
+    public String indexDataUsingOwningInstBibId(List<String> owningInstBibliographicIdList,Integer owningInstId){
+        MultiValueMap<String,Object> requestParameter = getLinkedMultiValueMap();
+        requestParameter.add(ReCAPConstants.OWN_INST_BIBID_LIST,owningInstBibliographicIdList);
+        requestParameter.add(ReCAPConstants.OWN_INSTITUTION_ID,owningInstId);
+        return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/indexByOwningInstBibliographicIdList", requestParameter, String.class);
+
+    }
+
+    public LinkedMultiValueMap getLinkedMultiValueMap(){
+        return new LinkedMultiValueMap<>();
+    }
     /**
      * Remove solr index string.
      *

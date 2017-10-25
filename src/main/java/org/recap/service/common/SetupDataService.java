@@ -30,6 +30,8 @@ public class SetupDataService {
 
     private Map<Integer,String> institutionEntityMap;
 
+    private Map<String,Integer> institutionCodeIdMap;
+
     private Map<String,Integer> collectionGroupMap;
 
     /**
@@ -93,6 +95,22 @@ public class SetupDataService {
             }
         }
         return institutionEntityMap;
+    }
+
+    public Map getInstitutionCodeIdMap() {
+        if (null == institutionCodeIdMap) {
+            institutionCodeIdMap = new HashMap();
+            try {
+                Iterable<InstitutionEntity> institutionEntities = repositoryService.getInstitutionDetailsRepository().findAll();
+                for (Iterator iterator = institutionEntities.iterator(); iterator.hasNext(); ) {
+                    InstitutionEntity institutionEntity = (InstitutionEntity) iterator.next();
+                    institutionCodeIdMap.put(institutionEntity.getInstitutionCode(),institutionEntity.getInstitutionId());
+                }
+            } catch (Exception e) {
+                logger.error(ReCAPConstants.LOG_ERROR,e);
+            }
+        }
+        return institutionCodeIdMap;
     }
 
     public Map getCollectionGroupMap() {
