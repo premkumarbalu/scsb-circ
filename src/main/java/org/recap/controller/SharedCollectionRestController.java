@@ -3,6 +3,7 @@ package org.recap.controller;
 import org.recap.ReCAPConstants;
 import org.recap.model.deaccession.DeAccessionRequest;
 import org.recap.model.submitcollection.SubmitCollectionResponse;
+import org.recap.service.common.RepositoryService;
 import org.recap.service.deaccession.DeAccessionService;
 import org.recap.service.submitcollection.SubmitCollectionBatchService;
 import org.recap.service.submitcollection.SubmitCollectionService;
@@ -54,14 +55,15 @@ public class SharedCollectionRestController {
         Boolean isCGDProtection = Boolean.valueOf((String) requestParameters.get(ReCAPConstants.IS_CGD_PROTECTED));
 
         List<Integer> reportRecordNumberList = new ArrayList<>();
-        Set<Integer> processedBibIds = new HashSet<>();
+        Set<Integer> processedBibIdSet = new HashSet<>();
         List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
+        Set<String> updatedDummyRecordOwnInstBibIdSet = new HashSet<>();
         List<SubmitCollectionResponse> submitCollectionResponseList;
         try {
-            submitCollectionResponseList = submitCollectionBatchService.process(institution,inputRecords,processedBibIds,idMapToRemoveIndexList,"",reportRecordNumberList, true,isCGDProtection);
-            if (!processedBibIds.isEmpty()) {
+            submitCollectionResponseList = submitCollectionBatchService.process(institution,inputRecords,processedBibIdSet,idMapToRemoveIndexList,"",reportRecordNumberList, true,isCGDProtection,updatedDummyRecordOwnInstBibIdSet);
+            if (!processedBibIdSet.isEmpty()) {
                 logger.info("Calling indexing service to update data");
-                submitCollectionService.indexData(processedBibIds);
+                submitCollectionService.indexData(processedBibIdSet);
             }
             if (!idMapToRemoveIndexList.isEmpty()) {//remove the incomplete record from solr index
                 logger.info("Calling indexing to remove dummy records");

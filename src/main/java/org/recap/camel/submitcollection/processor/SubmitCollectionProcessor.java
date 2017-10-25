@@ -92,10 +92,11 @@ public class SubmitCollectionProcessor {
         String xmlFileName = exchange.getIn().toString();
         logger.info("Processing xmlFileName----->{}",xmlFileName);
         Set<Integer> processedBibIds = new HashSet<>();
+        Set<String> updatedDummyRecordOwnInstBibIdSet = new HashSet<>();
         List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
         try {
-            submitCollectionBatchService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndexList,xmlFileName,reportRecordNumList, false, isCGDProtection);
+            submitCollectionBatchService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndexList,xmlFileName,reportRecordNumList, false, isCGDProtection,updatedDummyRecordOwnInstBibIdSet);
             logger.info("Submit Collection : Solr indexing started for {} records", processedBibIds.size());
             logger.info("idMapToRemoveIndex--->"+idMapToRemoveIndexList.size());
             if (processedBibIds.size()>0) {

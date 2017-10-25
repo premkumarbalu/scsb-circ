@@ -82,9 +82,10 @@ public class SubmitCollectionDAOService {
                                 }
                             } else if(fetchedBibliographicEntity.getOwningInstitutionBibId().substring(0, 1).equals("d")) {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
                                 BibliographicEntity updatedBibliographicEntity = null;
-                                updateDummyRecord(incomingBibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, updatedBibliographicEntity, fetchedBibliographicEntity);
+                                updatedBibliographicEntity = updateDummyRecord(incomingBibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, updatedBibliographicEntity, fetchedBibliographicEntity);
                                 if (updatedBibliographicEntity != null) {
                                     updatedBibliographicEntityList.add(updatedBibliographicEntity);
+                                    processedBibIds.add(updatedBibliographicEntity.getBibliographicId());
                                 }
                             }
                             else if (!fetchedBibliographicEntity.getOwningInstitutionBibId().equals(incomingBibliographicEntity.getOwningInstitutionBibId()) && !fetchedBibliographicEntity.getOwningInstitutionBibId().substring(0, 1).equals("d")) {//Owning inst bib id mismatch for non dummy record
@@ -136,7 +137,7 @@ public class SubmitCollectionDAOService {
                             }
                         } else if(fetchedBibliographicEntityList.get(0).getOwningInstitutionBibId().substring(0, 1).equals("d")) {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
                             BibliographicEntity updatedBibliographicEntity = null;
-                            updateDummyRecord(incomingBibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, updatedBibliographicEntity, fetchedBibliographicEntityList.get(0));
+                            updatedBibliographicEntity = updateDummyRecordForBoundWith(incomingBibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, updatedBibliographicEntity, fetchedBibliographicEntityList.get(0));
                             if (updatedBibliographicEntity != null) {
                                 updatedBibliographicEntityList.add(updatedBibliographicEntity);
                             }
@@ -295,8 +296,8 @@ public class SubmitCollectionDAOService {
                     bibliographicEntityToSave = updateExistingRecordForDummy(fetchedBibliographicEntity, bibliographicEntity);
                 }
                 savedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().saveAndFlush(bibliographicEntityToSave);
-                saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, ReCAPConstants.SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE, savedBibliographicEntity.getItemEntities());
                 entityManager.refresh(savedBibliographicEntity);
+                saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, ReCAPConstants.SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE, savedBibliographicEntity.getItemEntities());
                 setProcessedBarcode(bibliographicEntity, processedBarcodeSet);
                 submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap, savedBibliographicEntity, bibliographicEntity);
             } else {
@@ -304,6 +305,36 @@ public class SubmitCollectionDAOService {
             }
         } else if (!fetchedItemBasedOnOwningInstitutionItemId.isEmpty()) {
                 submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidDummyRecordBasedOnOwnInstItemId(bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),fetchedItemBasedOnOwningInstitutionItemId);
+        }
+        return savedBibliographicEntity;
+    }
+
+    public BibliographicEntity updateDummyRecordForBoundWith(BibliographicEntity bibliographicEntity, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, Set<String> processedBarcodeSet, BibliographicEntity savedBibliographicEntity, BibliographicEntity fetchBibliographicEntity) {
+        List<ItemEntity> fetchedItemBasedOnOwningInstitutionItemId = submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(bibliographicEntity.getItemEntities());
+        boolean boundWith = isBoundWithItem(bibliographicEntity,processedBarcodeSet);
+        BibliographicEntity bibliographicEntityToSave = null;
+        if (fetchedItemBasedOnOwningInstitutionItemId.isEmpty() || boundWith) {//To check there should not be existing item record with same own item id and for bound with own item id can be different
+            boolean isCheckCGDNotNull = checkIsCGDNotNull(bibliographicEntity);
+            if (isCheckCGDNotNull) {
+                updateCustomerCode(fetchBibliographicEntity, bibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it, this happens mostly for CUL
+                removeDummyRecord(idMapToRemoveIndexList, fetchBibliographicEntity);
+                BibliographicEntity fetchedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(), bibliographicEntity.getOwningInstitutionBibId());
+                bibliographicEntityToSave = bibliographicEntity;
+                setItemAvailabilityStatus(bibliographicEntity.getItemEntities().get(0));
+                updateCatalogingStatusForItem(bibliographicEntityToSave);
+                updateCatalogingStatusForBib(bibliographicEntityToSave);
+                if (fetchedBibliographicEntity != null) {//1Bib n holding n item
+                    bibliographicEntityToSave = updateExistingRecordForDummy(fetchedBibliographicEntity, bibliographicEntity);
+                }
+                savedBibliographicEntity = bibliographicEntityToSave;
+                saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, ReCAPConstants.SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE, savedBibliographicEntity.getItemEntities());
+                setProcessedBarcode(bibliographicEntity, processedBarcodeSet);
+                submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap, savedBibliographicEntity, bibliographicEntity);
+            } else {
+                submitCollectionReportHelperService.buildSubmitCollectionReportInfo(submitCollectionReportInfoMap,fetchBibliographicEntity,bibliographicEntity);
+            }
+        } else if (!fetchedItemBasedOnOwningInstitutionItemId.isEmpty()) {
+            submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidDummyRecordBasedOnOwnInstItemId(bibliographicEntity,submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),fetchedItemBasedOnOwningInstitutionItemId);
         }
         return savedBibliographicEntity;
     }
@@ -484,10 +515,6 @@ public class SubmitCollectionDAOService {
 
     private boolean isDeAccessionedItem(ItemEntity fetchedItemEntity){
         return fetchedItemEntity.isDeleted();
-/*        if(fetchedItemEntity.isDeleted()){
-            return true;
-        }
-        return false;*/
     }
 
     private BibliographicEntity updateExistingRecordForDummy(BibliographicEntity fetchBibliographicEntity, BibliographicEntity bibliographicEntity) {
@@ -603,10 +630,6 @@ public class SubmitCollectionDAOService {
 
     private boolean isBoundWithItem(ItemEntity itemEntity){
         return itemEntity.getBibliographicEntities().size() > 1;
-/*        if(itemEntity.getBibliographicEntities().size() > 1){
-            return true;
-        }
-        return false;*/
     }
 
     private void saveItemChangeLogEntity(String operationType, String message, List<ItemEntity> itemEntityList) {
@@ -725,10 +748,6 @@ public class SubmitCollectionDAOService {
     public boolean isAvailableItem(Integer itemAvailabilityStatusId){
         String itemStatusCode = (String) setupDataService.getItemStatusIdCodeMap().get(itemAvailabilityStatusId);
         return itemStatusCode.equalsIgnoreCase(ReCAPConstants.ITEM_STATUS_AVAILABLE);
-/*        if (itemStatusCode.equalsIgnoreCase(ReCAPConstants.ITEM_STATUS_AVAILABLE)) {
-            return true;
-        }
-        return false;*/
     }
 
     private void setItemAvailabilityStatus(ItemEntity itemEntity){

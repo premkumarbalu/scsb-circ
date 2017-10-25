@@ -44,7 +44,7 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
 
     @Override
     public String processMarc(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit
-            , boolean isCGDProtection, InstitutionEntity institutionEntity) {
+            , boolean isCGDProtection, InstitutionEntity institutionEntity,Set<String> updatedDummyRecordOwnInstBibIdSet) {
         logger.info("inside SubmitCollectionImprovedService");
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -86,7 +86,7 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
             processRecordsInBatchesForNonBoundWith(nonBoundWithBibliographicEntityObjectList,institutionEntity.getInstitutionId(),submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList);
         }
         if (!boundwithBibliographicEntityList.isEmpty()) {
-            processRecordsInBatchesForBoundWith(boundWithBibliographicEntityObjectList,institutionEntity.getInstitutionId(),submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList);
+            processRecordsInBatchesForBoundWith(boundWithBibliographicEntityObjectList,institutionEntity.getInstitutionId(),submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,updatedDummyRecordOwnInstBibIdSet);//updatedDummyRecordOwnInstBibIdSet is required only for boundwith
         }
 
 
@@ -164,16 +164,15 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
 
     private void processRecordsInBatchesForNonBoundWith(List<NonBoundWithBibliographicEntityObject> nonBoundWithBibliographicEntityObjectList, Integer owningInstitutionId, Map<String,
             List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList){
-
         Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
         List<List<NonBoundWithBibliographicEntityObject>> nonBoundWithBibliographicEntityPartitionList = ListUtils.partition(nonBoundWithBibliographicEntityObjectList,partitionSize);
-        logger.info("Total batch count--->{}",nonBoundWithBibliographicEntityPartitionList.size());
+        logger.info("Total non bound-with batch count--->{}",nonBoundWithBibliographicEntityPartitionList.size());
         List<BibliographicEntity> updatedBibliographicEntityToSaveList = new ArrayList<>();
         int batchCounter = 1;
         for(List<NonBoundWithBibliographicEntityObject> nonBoundWithBibliographicEntityObjectListToProces :nonBoundWithBibliographicEntityPartitionList){
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
-            logger.info("Processing batch no. ---->{}",batchCounter);
+            logger.info("Processing non bound-with batch no. ---->{}",batchCounter);
             List<BibliographicEntity> updatedBibliographicEntityList = null;
             updatedBibliographicEntityList = getSubmitCollectionDAOService().updateBibliographicEntityInBatchForNonBoundWith(nonBoundWithBibliographicEntityObjectListToProces,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
             if (updatedBibliographicEntityList!=null && !updatedBibliographicEntityList.isEmpty()) {
@@ -184,63 +183,55 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
             repositoryService.getBibliographicDetailsRepository().save(updatedBibliographicEntityToSaveList);
             repositoryService.getBibliographicDetailsRepository().flush();
             saveEntityStopWatch.stop();
-            logger.info("Time taken to save {} batch--->{}",partitionSize,saveEntityStopWatch.getTotalTimeSeconds());
+            logger.info("Time taken to save {} non bound-with records batch--->{}",partitionSize,saveEntityStopWatch.getTotalTimeSeconds());
             stopWatch.stop();
-            logger.info("Time taken to process and save {} records batch--->{}",partitionSize,stopWatch.getTotalTimeSeconds());
+            logger.info("Time taken to process and save {} non bound-with records batch--->{}",partitionSize,stopWatch.getTotalTimeSeconds());
             batchCounter++;
         }
     }
 
     private void processRecordsInBatchesForBoundWith(List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList, Integer owningInstitutionId, Map<String,
-            List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList){
+            List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList,Set<String> updatedDummyRecordOwnInstBibIdSet){
 
         Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
         List<List<BoundWithBibliographicEntityObject>> boundWithBibliographicEntityObjectPartitionList = ListUtils.partition(boundWithBibliographicEntityObjectList,partitionSize);
-        logger.info("Total batch count--->{}",boundWithBibliographicEntityObjectPartitionList.size());
+        logger.info("Total bound-with batch count--->{}",boundWithBibliographicEntityObjectPartitionList.size());
         List<BibliographicEntity> updatedBibliographicEntityToSaveList = new ArrayList<>();
         int batchCounter = 1;
         for(List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectToProcess :boundWithBibliographicEntityObjectPartitionList){
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
-            logger.info("Processing batch no. ---->{}",batchCounter);
+            logger.info("Processing bound-with batch no. ---->{}",batchCounter);
             List<BibliographicEntity> updatedBibliographicEntityList = null;
             updatedBibliographicEntityList = getSubmitCollectionDAOService().updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectToProcess,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
             if (updatedBibliographicEntityList!=null && !updatedBibliographicEntityList.isEmpty()) {
                 updatedBibliographicEntityToSaveList.addAll(updatedBibliographicEntityList);
             }
+            setUpdatedDummyRecordOwningInstBibId(updatedBibliographicEntityList,updatedDummyRecordOwnInstBibIdSet);
             StopWatch saveEntityStopWatch = new StopWatch();
             saveEntityStopWatch.start();
-            repositoryService.getBibliographicDetailsRepository().save(updatedBibliographicEntityToSaveList);
-            repositoryService.getBibliographicDetailsRepository().flush();
+            try {
+                repositoryService.getBibliographicDetailsRepository().save(updatedBibliographicEntityToSaveList);
+                repositoryService.getBibliographicDetailsRepository().flush();
+            } catch (Exception e) {
+                logger.error(ReCAPConstants.LOG_ERROR,e);
+            }
             saveEntityStopWatch.stop();
-            logger.info("Time taken to save {} records batch--->{}",partitionSize,saveEntityStopWatch.getTotalTimeSeconds());
+            logger.info("Time taken to save {} bound-with records batch--->{}",partitionSize,saveEntityStopWatch.getTotalTimeSeconds());
             stopWatch.stop();
-            logger.info("Time taken to process and save {} records batch--->{}",partitionSize,stopWatch.getTotalTimeSeconds());
+            logger.info("Time taken to process and save {} bound-with records batch--->{}",partitionSize,stopWatch.getTotalTimeSeconds());
+            logger.info("Total updatedDummyRecordOwnInstBibIdSet size--->{}",updatedDummyRecordOwnInstBibIdSet.size());
             batchCounter++;
         }
     }
-/*    @Override
-    public BibliographicEntity loadData(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String,String>> idMapToRemoveIndexList
-            , boolean isCGDProtected, InstitutionEntity institutionEntity, Set<String> processedBarcodeSetForDummyRecords){
-        try {
-            Map responseMap = getConverter(format).convert(record,institutionEntity);
-            StringBuilder errorMessage = (StringBuilder)responseMap.get("errorMessage");
-            BibliographicEntity bibliographicEntity = responseMap.get("bibliographicEntity") != null ? (BibliographicEntity) responseMap.get("bibliographicEntity"):null;
-            if (errorMessage != null && errorMessage.length()==0) {
-                //validBibliographicEntityList.add(bibliographicEntity);
-            } else {
-                logger.error("Error while parsing xml for a barcode in submit collection");
-                submitCollectionReportHelperService.setSubmitCollectionFailureReportForUnexpectedException(bibliographicEntity,
-                        submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),"Failed record - Item not updated - "+errorMessage.toString(),institutionEntity);
+
+    private void setUpdatedDummyRecordOwningInstBibId(List<BibliographicEntity> bibliographicEntityList, Set<String> updatedDummyRecordOwnInstBibIdSet){
+        for(BibliographicEntity bibliographicEntity:bibliographicEntityList){
+            if (bibliographicEntity.getBibliographicId()==null) {
+                updatedDummyRecordOwnInstBibIdSet.add(bibliographicEntity.getOwningInstitutionBibId());
             }
-            return bibliographicEntity;
-        } catch (Exception e) {
-*//*            submitCollectionReportHelperService.setSubmitCollectionFailureReportForUnexpectedException(bibliographicEntity,
-                    submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),"Failed record - Item not updated - "+e.getMessage(),institutionEntity);*//*
-            logger.error(ReCAPConstants.LOG_ERROR,e);
-            return null;
         }
-    }*/
+    }
 
     private List<BarcodeBibliographicEntityObject> getBarcodeOwningInstitutionBibIdObjectList(List<BibliographicEntity> bibliographicEntityList){
         List<BarcodeBibliographicEntityObject> barcodeOwningInstitutionBibIdObjectList = new ArrayList<>();

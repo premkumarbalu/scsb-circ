@@ -77,7 +77,8 @@ public class SubmitCollectionService {
      * @return the string
      */
     @Transactional
-    public List<SubmitCollectionResponse> process(String institutionCode, String inputRecords, Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList, String xmlFileName, List<Integer> reportRecordNumberList, boolean checkLimit,boolean isCGDProtected) {
+    public List<SubmitCollectionResponse> process(String institutionCode, String inputRecords, Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList, String xmlFileName, List<Integer> reportRecordNumberList, boolean checkLimit
+            ,boolean isCGDProtected,Set<String> updatedDummyRecordOwnInstBibIdSet) {
         logger.info("Submit Collection : Input record processing started");
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -90,9 +91,9 @@ public class SubmitCollectionService {
             try {
                 if (!"".equals(inputRecords)) {
                     if (inputRecords.contains(ReCAPConstants.BIBRECORD_TAG)) {
-                        response = processSCSB(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndexList, checkLimit,isCGDProtected,institutionEntity);
+                        response = processSCSB(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndexList, checkLimit,isCGDProtected,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
                     } else {
-                        response = processMarc(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndexList, checkLimit,isCGDProtected,institutionEntity);
+                        response = processMarc(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndexList, checkLimit,isCGDProtected,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
                     }
                     if (response != null){//This happens when there is a failure
                         setResponse(response, submitCollectionResponseList);
@@ -142,7 +143,7 @@ public class SubmitCollectionService {
     }
 
     public String processMarc(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit
-            ,boolean isCGDProtection,InstitutionEntity institutionEntity) {
+            ,boolean isCGDProtection,InstitutionEntity institutionEntity,Set<String> updatedDummyRecordOwnInstBibIdSet) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String format;
@@ -177,7 +178,7 @@ public class SubmitCollectionService {
     }
 
     private String processSCSB(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,
-                               List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit,boolean isCGDProtected,InstitutionEntity institutionEntity) {
+                               List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit,boolean isCGDProtected,InstitutionEntity institutionEntity,Set<String> updatedDummyRecordOwnInstBibIdSet) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String format;
@@ -262,8 +263,6 @@ public class SubmitCollectionService {
      * @return the string
      */
     public String indexData(Set<Integer> bibliographicIdList){
-        //return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/indexByBibliographicIdInThreads", bibliographicIdList, String.class);
-        //return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/indexByBibliographicIdList", bibliographicIdList, String.class);
         return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/indexByBibliographicId", bibliographicIdList, String.class);
     }
 
