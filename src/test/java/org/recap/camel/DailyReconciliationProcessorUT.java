@@ -79,7 +79,7 @@ public class DailyReconciliationProcessorUT extends BaseTestCase {
         Cell cell8 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 8);
         Cell cell9 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 9);
         Cell cell10 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 10);
-        Cell cell11 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 11);
+
         assertEquals(String.valueOf(requestItemEntity.getRequestId()),cell0.getStringCellValue());
         assertEquals(String.valueOf(itemEntity.getBarcode()),cell1.getStringCellValue());
         assertEquals(String.valueOf(itemEntity.getCustomerCode()),cell2.getStringCellValue());
@@ -89,7 +89,7 @@ public class DailyReconciliationProcessorUT extends BaseTestCase {
         assertEquals(String.valueOf(itemEntity.getInstitutionEntity().getInstitutionCode()),cell8.getStringCellValue());
         assertEquals(requestItemEntity.getRequestTypeEntity().getRequestTypeCode(),cell9.getStringCellValue());
         assertEquals(itemEntity.getItemStatusEntity().getStatusCode(),cell10.getStringCellValue());
-        assertEquals(requestItemEntity.getEmailId(),cell11.getStringCellValue());
+
     }
 
 
