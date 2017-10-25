@@ -148,6 +148,7 @@ public class SubmitCollectionReportHelperServiceUT extends BaseTestCase {
             itemEntity.setCollectionGroupId(1);
             itemEntity.setCallNumberType("1");
             itemEntity.setCustomerCode(customerCode);
+            itemEntity.setCatalogingStatus("Complete");
             if (availableItem) {
                 itemEntity.setItemAvailabilityStatusId(1);
             } else {

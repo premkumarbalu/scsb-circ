@@ -1,10 +1,9 @@
 package org.recap.controller;
 
-import org.apache.activemq.broker.jmx.DestinationViewMBean;
 import org.apache.camel.ProducerTemplate;
 import org.recap.ReCAPConstants;
-import org.recap.activemq.JmxHelper;
 import org.recap.camel.EmailPayLoad;
+import org.recap.service.ActiveMqQueuesInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +24,6 @@ public class EmailPendingRequestJobController {
     private static String queueName = "lasOutgoingQ";
 
     /**
-     * The Jmx helper.
-     */
-    @Autowired
-    JmxHelper jmxHelper;
-
-    /**
      * The Producer template.
      */
     @Autowired
@@ -42,6 +35,9 @@ public class EmailPendingRequestJobController {
     @Value("${request.pending.limit}")
     Integer pendingRequestLimit;
 
+    @Autowired
+    private ActiveMqQueuesInfo activemqQueuesInfo;
+
     /**
      * Send email for pending request string.
      *
@@ -50,8 +46,7 @@ public class EmailPendingRequestJobController {
      */
     @RequestMapping(value = "/sendEmailForPendingRequest",method = RequestMethod.POST)
     public String sendEmailForPendingRequest() throws Exception{
-        DestinationViewMBean lasOutgoingQ = jmxHelper.getBeanForQueueName(queueName);
-        long pendingRequests = lasOutgoingQ.getQueueSize();
+        Integer pendingRequests = activemqQueuesInfo.getActivemqQueuesInfo(queueName);
         if(pendingRequests >= pendingRequestLimit) {
             logger.info("Pending Request : {}", pendingRequests);
             EmailPayLoad emailPayLoad = new EmailPayLoad();
