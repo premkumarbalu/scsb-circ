@@ -7,6 +7,9 @@ import org.recap.ReCAPConstants;
 import org.recap.model.BibliographicEntity;
 import org.recap.model.InstitutionEntity;
 import org.recap.model.ItemEntity;
+import org.recap.model.jaxb.BibRecord;
+import org.recap.model.jaxb.JAXBHandler;
+import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.model.submitcollection.BarcodeBibliographicEntityObject;
 import org.recap.model.submitcollection.BoundWithBibliographicEntityObject;
@@ -19,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 
+import javax.xml.bind.JAXBException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,13 +67,18 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
         }
 
         List<BibliographicEntity> validBibliographicEntityList = new ArrayList<>();
-        Set<String> processedBarcodeSet = new HashSet<>();
         for(Record record:recordList){
-            BibliographicEntity bibliographicEntity = prepareBibliographicEntity(record, format, submitCollectionReportInfoMap,idMapToRemoveIndexList,isCGDProtection,institutionEntity,processedBarcodeSet);
+            BibliographicEntity bibliographicEntity = prepareBibliographicEntity(record, format, submitCollectionReportInfoMap,idMapToRemoveIndexList,isCGDProtection,institutionEntity);
             validBibliographicEntityList.add(bibliographicEntity);
         }
         logger.info("Total incoming marc records for processing--->{}",recordList.size());
+        processConvertedBibliographicEntityFromIncomingRecords(processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndexList, institutionEntity, updatedDummyRecordOwnInstBibIdSet, validBibliographicEntityList);
+        stopWatch.stop();
+        logger.info("Total time take for processMarc--->{}",stopWatch.getTotalTimeSeconds());
+        return null;
+    }
 
+    private void processConvertedBibliographicEntityFromIncomingRecords(Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, InstitutionEntity institutionEntity, Set<String> updatedDummyRecordOwnInstBibIdSet, List<BibliographicEntity> validBibliographicEntityList) {
         //TODO need to remove the list - remove the intermediate process
         List<BibliographicEntity> boundwithBibliographicEntityList = new ArrayList<>();
         List<BibliographicEntity> nonBoundWithBibliographicEntityList = new ArrayList<>();
@@ -88,11 +97,37 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
         if (!boundwithBibliographicEntityList.isEmpty()) {
             processRecordsInBatchesForBoundWith(boundWithBibliographicEntityObjectList,institutionEntity.getInstitutionId(),submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,updatedDummyRecordOwnInstBibIdSet);//updatedDummyRecordOwnInstBibIdSet is required only for boundwith
         }
+    }
 
+    @Override
+    public String processSCSB(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,
+                               List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit,boolean isCGDProtected,InstitutionEntity institutionEntity,Set<String> updatedDummyRecordOwnInstBibIdSet) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        String format;
+        format = ReCAPConstants.FORMAT_SCSB;
+        BibRecords bibRecords = null;
+        try {
+            bibRecords = (BibRecords) JAXBHandler.getInstance().unmarshal(inputRecords, BibRecords.class);
+            logger.info("bibrecord size {}", bibRecords.getBibRecords().size());
+            if (checkLimit && bibRecords.getBibRecords().size() > inputLimit) {
+                return ReCAPConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE + " " + inputLimit;
+            }
+        } catch (JAXBException e) {
+            logger.info(String.valueOf(e.getCause()));
+            logger.error(ReCAPConstants.LOG_ERROR, e);
+            return ReCAPConstants.INVALID_SCSB_XML_FORMAT_MESSAGE;
+        }
 
-
+        List<BibliographicEntity> validBibliographicEntityList = new ArrayList<>();
+        for (BibRecord bibRecord : bibRecords.getBibRecords()) {
+            BibliographicEntity bibliographicEntity = prepareBibliographicEntity(bibRecord, format, submitCollectionReportInfoMap,idMapToRemoveIndexList,isCGDProtected,institutionEntity);
+            validBibliographicEntityList.add(bibliographicEntity);
+        }
+        logger.info("Total incoming scsb records for processing--->{}",bibRecords.getBibRecords().size());
+        processConvertedBibliographicEntityFromIncomingRecords(processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndexList, institutionEntity, updatedDummyRecordOwnInstBibIdSet, validBibliographicEntityList);
         stopWatch.stop();
-        logger.info("Total time take for processMarc--->{}",stopWatch.getTotalTimeSeconds());
+        logger.info("Total time take for process SCSB--->{}",stopWatch.getTotalTimeSeconds());
         return null;
     }
 
@@ -139,7 +174,7 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
     }
 
     private BibliographicEntity prepareBibliographicEntity(Object record, String format, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String,String>> idMapToRemoveIndexList
-            , boolean isCGDProtected, InstitutionEntity institutionEntity, Set<String> processedBarcodeSetForDummyRecords){
+            , boolean isCGDProtected, InstitutionEntity institutionEntity){
         BibliographicEntity incomingBibliographicEntity = null;
         try {
             Map responseMap = getConverter(format).convert(record,institutionEntity);

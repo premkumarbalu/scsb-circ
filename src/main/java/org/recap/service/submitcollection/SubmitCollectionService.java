@@ -163,10 +163,10 @@ public class SubmitCollectionService {
         }
         if (CollectionUtils.isNotEmpty(records)) {
             int count = 1;
-            Set<String> processedBarcodeSet = new HashSet<>();
+            Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
             for (Record record : records) {
                 logger.info("Processing record no: {}",count);
-                BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndexList,isCGDProtection,institutionEntity,processedBarcodeSet);
+                BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap,idMapToRemoveIndexList,isCGDProtection,institutionEntity,processedBarcodeSetForDummyRecords);
                 if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
                     processedBibIds.add(bibliographicEntity.getBibliographicId());
                 }
@@ -179,7 +179,7 @@ public class SubmitCollectionService {
         return null;
     }
 
-    private String processSCSB(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,
+    public String processSCSB(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,
                                List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit,boolean isCGDProtected,InstitutionEntity institutionEntity,Set<String> updatedDummyRecordOwnInstBibIdSet) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();

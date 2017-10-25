@@ -289,7 +289,7 @@ public class SubmitCollectionDAOService {
                 removeDummyRecord(idMapToRemoveIndexList, fetchBibliographicEntity);
                 BibliographicEntity fetchedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(), bibliographicEntity.getOwningInstitutionBibId());
                 BibliographicEntity bibliographicEntityToSave = bibliographicEntity;
-                setItemAvailabilityStatus(bibliographicEntity.getItemEntities().get(0));
+                setItemAvailabilityStatus(bibliographicEntity.getItemEntities());
                 updateCatalogingStatusForItem(bibliographicEntityToSave);
                 updateCatalogingStatusForBib(bibliographicEntityToSave);
                 if (fetchedBibliographicEntity != null) {//1Bib n holding n item
@@ -320,7 +320,7 @@ public class SubmitCollectionDAOService {
                 removeDummyRecord(idMapToRemoveIndexList, fetchBibliographicEntity);
                 BibliographicEntity fetchedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(), bibliographicEntity.getOwningInstitutionBibId());
                 bibliographicEntityToSave = bibliographicEntity;
-                setItemAvailabilityStatus(bibliographicEntity.getItemEntities().get(0));
+                setItemAvailabilityStatus(bibliographicEntity.getItemEntities());
                 updateCatalogingStatusForItem(bibliographicEntityToSave);
                 updateCatalogingStatusForBib(bibliographicEntityToSave);
                 if (fetchedBibliographicEntity != null) {//1Bib n holding n item
@@ -750,9 +750,11 @@ public class SubmitCollectionDAOService {
         return itemStatusCode.equalsIgnoreCase(ReCAPConstants.ITEM_STATUS_AVAILABLE);
     }
 
-    private void setItemAvailabilityStatus(ItemEntity itemEntity){
-        if(itemEntity.getItemAvailabilityStatusId()==null) {
-            itemEntity.setItemAvailabilityStatusId((Integer) setupDataService.getItemStatusCodeIdMap().get("Available"));
+    private void setItemAvailabilityStatus(List<ItemEntity> itemEntityList){
+        for (ItemEntity itemEntity:itemEntityList) {
+            if(itemEntity.getItemAvailabilityStatusId()==null) {
+                itemEntity.setItemAvailabilityStatusId((Integer) setupDataService.getItemStatusCodeIdMap().get("Available"));
+            }
         }
     }
 }
