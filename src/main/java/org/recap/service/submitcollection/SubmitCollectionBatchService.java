@@ -205,22 +205,16 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
         List<BibliographicEntity> updatedBibliographicEntityToSaveList = new ArrayList<>();
         int batchCounter = 1;
         for(List<NonBoundWithBibliographicEntityObject> nonBoundWithBibliographicEntityObjectListToProces :nonBoundWithBibliographicEntityPartitionList){
+            logger.info("nonBoundWithBibliographicEntityObjectListToProces.size---->{}",nonBoundWithBibliographicEntityObjectListToProces.size());
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
             logger.info("Processing non bound-with batch no. ---->{}",batchCounter);
             List<BibliographicEntity> updatedBibliographicEntityList = null;
-            updatedBibliographicEntityList = getSubmitCollectionDAOService().updateBibliographicEntityInBatchForNonBoundWith(nonBoundWithBibliographicEntityObjectListToProces,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+            updatedBibliographicEntityList = getSubmitCollectionDAOService().updateBibliographicEntityInBatchForNonBoundWith(nonBoundWithBibliographicEntityObjectListToProces
+                    ,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
             if (updatedBibliographicEntityList!=null && !updatedBibliographicEntityList.isEmpty()) {
                 updatedBibliographicEntityToSaveList.addAll(updatedBibliographicEntityList);
             }
-            StopWatch saveEntityStopWatch = new StopWatch();
-            saveEntityStopWatch.start();
-            if (!updatedBibliographicEntityToSaveList.isEmpty()) {
-                repositoryService.getBibliographicDetailsRepository().save(updatedBibliographicEntityToSaveList);
-                repositoryService.getBibliographicDetailsRepository().flush();
-            }
-            saveEntityStopWatch.stop();
-            logger.info("Time taken to save {} non bound-with records batch--->{}",partitionSize,saveEntityStopWatch.getTotalTimeSeconds());
             stopWatch.stop();
             logger.info("Time taken to process and save {} non bound-with records batch--->{}",partitionSize,stopWatch.getTotalTimeSeconds());
             batchCounter++;
@@ -238,6 +232,7 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
         for(List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectToProcess :boundWithBibliographicEntityObjectPartitionList){
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
+            logger.info("boundWithBibliographicEntityObjectToProcess.size---->{}",boundWithBibliographicEntityObjectToProcess.size());
             logger.info("Processing bound-with batch no. ---->{}",batchCounter);
             List<BibliographicEntity> updatedBibliographicEntityList = null;
             updatedBibliographicEntityList = getSubmitCollectionDAOService().updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectToProcess,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
@@ -245,16 +240,6 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
                 updatedBibliographicEntityToSaveList.addAll(updatedBibliographicEntityList);
             }
             setUpdatedDummyRecordOwningInstBibId(updatedBibliographicEntityList,updatedDummyRecordOwnInstBibIdSet);
-            StopWatch saveEntityStopWatch = new StopWatch();
-            saveEntityStopWatch.start();
-            try {
-                repositoryService.getBibliographicDetailsRepository().save(updatedBibliographicEntityToSaveList);
-                repositoryService.getBibliographicDetailsRepository().flush();
-            } catch (Exception e) {
-                logger.error(ReCAPConstants.LOG_ERROR,e);
-            }
-            saveEntityStopWatch.stop();
-            logger.info("Time taken to save {} bound-with records batch--->{}",partitionSize,saveEntityStopWatch.getTotalTimeSeconds());
             stopWatch.stop();
             logger.info("Time taken to process and save {} bound-with records batch--->{}",partitionSize,stopWatch.getTotalTimeSeconds());
             logger.info("Total updatedDummyRecordOwnInstBibIdSet size--->{}",updatedDummyRecordOwnInstBibIdSet.size());
