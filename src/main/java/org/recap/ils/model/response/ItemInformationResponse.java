@@ -42,6 +42,7 @@ public class ItemInformationResponse extends AbstractResponseItem {
     private String requestNotes = "";
     private Integer itemId;
     private String username;
+    private boolean isBulk;
 
     /**
      * Gets request id.
@@ -671,5 +672,23 @@ public class ItemInformationResponse extends AbstractResponseItem {
      */
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    /**
+     * Is bulk boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isBulk() {
+        return isBulk;
+    }
+
+    /**
+     * Sets bulk.
+     *
+     * @param bulk the bulk
+     */
+    public void setBulk(boolean bulk) {
+        isBulk = bulk;
     }
 }

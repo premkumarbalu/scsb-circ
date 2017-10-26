@@ -17,6 +17,7 @@ import org.recap.repository.*;
 import org.recap.request.GFAService;
 import org.recap.request.ItemRequestService;
 import org.recap.service.RestHeaderService;
+import org.recap.util.ItemRequestServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,7 +97,7 @@ public class DeAccessionService {
      * The Item Request Service.
      */
     @Autowired
-    ItemRequestService itemRequestService;
+    ItemRequestServiceUtil itemRequestServiceUtil;
 
     @Autowired
     RestHeaderService restHeaderService;
@@ -425,7 +426,7 @@ public class DeAccessionService {
             }
             RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
             saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), username, ReCAPConstants.REQUEST_ITEM_CANCEL_DEACCESSION_ITEM, ReCAPConstants.REQUEST_ITEM_CANCELED_FOR_DEACCESSION + savedRequestItemEntity.getItemId());
-            itemRequestService.updateSolrIndex(savedRequestItemEntity.getItemEntity());
+            itemRequestServiceUtil.updateSolrIndex(savedRequestItemEntity.getItemEntity());
             itemCancelHoldResponse.setSuccess(true);
             itemCancelHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_SUCCCESS);
         }

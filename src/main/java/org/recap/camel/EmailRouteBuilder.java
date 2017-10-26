@@ -1,6 +1,9 @@
 package org.recap.camel;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.io.FileUtils;
 import org.recap.ReCAPConstants;
@@ -10,7 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.activation.DataHandler;
+import javax.mail.util.ByteArrayDataSource;
 import java.io.*;
+
+import static org.apache.camel.component.xslt.XsltOutput.file;
 
 /**
  * Created by chenchulakshmig on 13/9/16.
@@ -28,6 +35,7 @@ public class EmailRouteBuilder {
     private String emailBodyForSubmitCollection;
     private String emailBodyForSubmitCollectionEmptyDirectory;
     private String emailBodyForExceptionInSubmitColletion;
+    private String emailBodyForBulkRequestProcess;
 
     /**
      * Instantiates a new Email route builder.
@@ -53,6 +61,7 @@ public class EmailRouteBuilder {
                     loadEmailBodyTemplateForNoData();
                     loadEmailBodyTemplateForSubmitCollectionEmptyDirectory();
                     loadEmailBodyTemplateForExceptionInSubmitCollection();
+                    loadEmailBodyForBulkRequest();
                     emailBodyRecall = loadEmailLasStatus(ReCAPConstants.REQUEST_RECALL_EMAIL_TEMPLATE);
                     emailBodyLasStatus = loadEmailLasStatus(ReCAPConstants.REQUEST_LAS_STATUS_EMAIL_TEMPLATE);
                     emailBodyDeletedRecords=loadEmailLasStatus(ReCAPConstants.DELETED_RECORDS_EMAIL_TEMPLATE);
@@ -143,6 +152,25 @@ public class EmailRouteBuilder {
                                     .setHeader("from", simple(from))
                                     .setHeader("to", simple(requestPendingTo))
                                     .log("Email for request pending")
+                                    .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
+                                 .when(header(ReCAPConstants.EMAIL_BODY_FOR).isEqualTo(ReCAPConstants.BULK_REQUEST_EMAIL_QUEUE))
+                                    .setHeader("subject", simple("${header.emailPayLoad.subject}"))
+                                    .setBody(simple(emailBodyForBulkRequestProcess))
+                                    .process(new Processor() {
+                                        @Override
+                                        public void process(Exchange exchange) throws Exception {
+                                            try {
+                                                Message in = exchange.getIn();
+                                                EmailPayLoad emailPayLoad = (EmailPayLoad) in.getHeader("emailPayLoad");
+                                                in.addAttachment("Results_" + emailPayLoad.getBulkRequestFileName(), new DataHandler(emailPayLoad.getBulkRequestCsvFileData(), "text/csv"));
+                                            } catch (Exception ex) {
+                                                logger.info(ReCAPConstants.LOG_ERROR, ex);
+                                            }
+                                        }
+                                    })
+                                    .setHeader("from", simple(from))
+                                    .setHeader("to", simple("${header.emailPayLoad.to}"))
+                                    .log("Email sent for bulk request process")
                                     .to("smtps://" + smtpServer + "?username=" + username + "&password=" + emailPassword)
                     ;
                 }
@@ -256,6 +284,26 @@ public class EmailRouteBuilder {
                         logger.error(ReCAPConstants.LOG_ERROR,e);
                     }
                     emailBodyForRequestPending = out.toString();
+                }
+
+                private void loadEmailBodyForBulkRequest() {
+                    InputStream inputStream = getClass().getResourceAsStream(ReCAPConstants.BULK_REQUEST_EMAIL_BODY_VM);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    StringBuilder out = new StringBuilder();
+                    String line;
+                    try {
+                        while ((line = reader.readLine()) != null) {
+                            if (line.isEmpty()) {
+                                out.append("\n");
+                            } else {
+                                out.append(line);
+                                out.append("\n");
+                            }
+                        }
+                    } catch (IOException e) {
+                        logger.error(ReCAPConstants.LOG_ERROR, e);
+                    }
+                    emailBodyForBulkRequestProcess = out.toString();
                 }
             });
         } catch (Exception e) {

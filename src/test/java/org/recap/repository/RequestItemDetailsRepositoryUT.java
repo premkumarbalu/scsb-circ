@@ -163,4 +163,10 @@ public class RequestItemDetailsRepositoryUT extends BaseTestCase {
         return savedBibliographicEntity;
 
     }
+
+    @Test
+    public void testRequestItem() throws Exception {
+        RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(202);
+        assertNotNull(requestItemEntity);;
+    }
 }

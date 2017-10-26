@@ -65,9 +65,12 @@ public class ItemRequestDBService {
      * @param requestStatusCode      the request status code
      * @return the integer
      */
-    public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, String requestStatusCode) {
+    public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, String requestStatusCode, BulkRequestItemEntity bulkRequestItemEntity) {
 
         RequestItemEntity requestItemEntity = new RequestItemEntity();
+        if (null != bulkRequestItemEntity) {
+            requestItemEntity.setBulkRequestItemEntity(bulkRequestItemEntity);
+        }
         RequestItemEntity savedItemRequest;
         Integer requestId = 0;
         try {
@@ -92,7 +95,7 @@ public class ItemRequestDBService {
                 requestItemEntity.setPatronId(itemRequestInformation.getPatronBarcode());
                 requestItemEntity.setStopCode(itemRequestInformation.getDeliveryLocation());
                 requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                if(StringUtils.isNotBlank(itemRequestInformation.getEmailAddress())){
+                if(StringUtils.isNotBlank(itemRequestInformation.getEmailAddress()) && null == bulkRequestItemEntity){
                     requestItemEntity.setEmailId(securityUtil.getEncryptedValue(itemRequestInformation.getEmailAddress()));
                 }else {
                     requestItemEntity.setEmailId(itemRequestInformation.getEmailAddress());
@@ -192,7 +195,12 @@ public class ItemRequestDBService {
         RequestStatusEntity requestStatusEntity=null;
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
         if(requestItemEntity != null) {
+            BulkRequestItemEntity bulkRequestItemEntity = requestItemEntity.getBulkRequestItemEntity();
             String notes = ReCAPConstants.USER + " : " + requestItemEntity.getNotes();
+            if (null != bulkRequestItemEntity) {
+                itemInformationResponse.setBulk(true);
+                notes = notes + "\n" + ReCAPConstants.BULK_REQUEST_ID_TEXT + bulkRequestItemEntity.getBulkRequestId();
+            }
             requestItemEntity.setNotes(notes);
             if (itemInformationResponse.isSuccess()) {
                 if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
@@ -202,7 +210,10 @@ public class ItemRequestDBService {
                 }
             } else {
                 requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
-                requestItemEntity.setNotes(notes + "\n" + ReCAPConstants.LAS + " : " + ReCAPConstants.REQUEST_ITEM_GFA_FAILURE + " with error note - " + itemInformationResponse.getScreenMessage());
+                if (itemInformationResponse.isBulk()) {
+                    requestItemEntity.setNotes(notes + "\n" + ReCAPConstants.REQUEST_LAS_EXCEPTION + ReCAPConstants.REQUEST_ITEM_GFA_FAILURE + " with error note - " + itemInformationResponse.getScreenMessage() + "\n" + ReCAPConstants.BULK_REQUEST_ID_TEXT + bulkRequestItemEntity.getBulkRequestId());
+                }
+                requestItemEntity.setNotes(notes + "\n" + ReCAPConstants.REQUEST_LAS_EXCEPTION + ReCAPConstants.REQUEST_ITEM_GFA_FAILURE + " with error note - " + itemInformationResponse.getScreenMessage());
             }
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
             requestItemDetailsRepository.save(requestItemEntity);

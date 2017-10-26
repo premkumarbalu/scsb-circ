@@ -69,6 +69,9 @@ public final class ReCAPConstants {
 
     // MQ URI
     public static final String REQUEST_ITEM_QUEUE = "scsbactivemq:queue:RequestItemQ?asyncConsumer=true&concurrentConsumers=10&destination.consumer.prefetchSize=20";
+    public static final String BULK_REQUEST_ITEM_QUEUE = "scsbactivemq:queue:BulkRequestItemQ";
+    public static final String BULK_REQUEST_ITEM_PROCESSING_QUEUE = "scsbactivemq:queue:BulkRequestItemProcessingQ";
+    public static final String ASYNC_CONCURRENT_CONSUMERS = "?asyncConsumer=true&concurrentConsumers=";
     public static final String EMAIL_Q = "scsbactivemq:queue:CircEmailQ";
     public static final String SCSB_OUTGOING_QUEUE = "scsbactivemq:queue:scsbOutgoingQ";
     public static final String LAS_OUTGOING_QUEUE = "scsbactivemq:queue:lasOutgoingQ";
@@ -94,6 +97,8 @@ public final class ReCAPConstants {
 
     //RoutId
     public static final String REQUEST_ITEM_QUEUE_ROUTEID = "RequestItemRouteId";
+    public static final String BULK_REQUEST_ITEM_QUEUE_ROUTEID = "BulkRequestItemRouteId";
+    public static final String BULK_REQUEST_ITEM_PROCESSING_QUEUE_ROUTEID = "BulkRequestItemProcessingRouteId";
     public static final String EMAIL_ROUTE_ID = "RequestRecallEmailRouteId";
     public static final String SCSB_OUTGOING_ROUTE_ID = "LasOutgoingRouteId";
     public static final String LAS_INCOMING_ROUTE_ID = "LasIncomingQueueRouteId";
@@ -506,6 +511,10 @@ public final class ReCAPConstants {
     public static final String USER = "User";
     public static final String REQUEST_RECALL = "RequestItem-Recall";
     public static final String REQUEST_RETRIEVAL = "RequestItem-Retrieval";
+    public static final String BULK_REQUEST_ID = "bulkRequestId";
+    public static final String PROCESSED = "PROCESSED";
+    public static final String BULK_REQUEST_EMAIL_QUEUE = "BulkRequestEmailQueue";
+    public static final String BULK_REQUEST_EMAIL_BODY_VM = "bulkRequestEmailBody.vm";
 
     public static final String NYPL_NO_RESTRICTIONS = "Standard NYPL restrictions apply";
 
@@ -514,6 +523,8 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_JOB_INITIATE_QUEUE = "scsbactivemq:queue:submitCollectionInitiateQ";
     public static final String SUBMIT_COLLECTION_JOB_INITIATE_ROUTE_ID = "scsbactivemq:queue:submitCollectionInitiateRoute";
     public static final String SUBMIT_COLLECTION_JOB_COMPLETION_OUTGOING_QUEUE = "scsbactivemq:queue:submitCollectionCompletionOutgoingQ";
+
+    public static final String BULK_REQUEST_ID_TEXT = "Bulk Request Id : ";
 
     private ReCAPConstants() {
     }
