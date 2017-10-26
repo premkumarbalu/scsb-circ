@@ -6,6 +6,8 @@ import org.apache.camel.Exchange;
 import org.recap.ReCAPConstants;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
+import org.recap.request.BulkItemRequestProcessService;
+import org.recap.request.BulkItemRequestService;
 import org.recap.request.ItemEDDRequestService;
 import org.recap.request.ItemRequestService;
 import org.slf4j.Logger;
@@ -22,6 +24,8 @@ public class RequestItemQueueConsumer {
 
     private ItemRequestService itemRequestService;
     private ItemEDDRequestService itemEDDRequestService;
+    private BulkItemRequestService bulkItemRequestService;
+    private BulkItemRequestProcessService bulkItemRequestProcessService;
 
     /**
      * Gets item request service.
@@ -39,6 +43,42 @@ public class RequestItemQueueConsumer {
      */
     public ItemEDDRequestService getItemEDDRequestService() {
         return itemEDDRequestService;
+    }
+
+    /**
+     * Gets bulk item request service.
+     *
+     * @return the bulk item request service
+     */
+    public BulkItemRequestService getBulkItemRequestService() {
+        return bulkItemRequestService;
+    }
+
+    /**
+     * Gets bulk item request processservice.
+     *
+     * @return the bulk item request process service
+     */
+    public BulkItemRequestProcessService getBulkItemRequestProcessService() {
+        return bulkItemRequestProcessService;
+    }
+
+    /**
+     * Gets bulk item request service.
+     *
+     * @return the bulk item request service
+     */
+    public RequestItemQueueConsumer(BulkItemRequestService bulkItemRequestService) {
+        this.bulkItemRequestService = bulkItemRequestService;
+    }
+
+    /**
+     * Gets bulk item request process service.
+     *
+     * @return the bulk item request process service
+     */
+    public RequestItemQueueConsumer(BulkItemRequestProcessService bulkItemRequestProcessService) {
+        this.bulkItemRequestProcessService = bulkItemRequestProcessService;
     }
 
     /**
@@ -115,6 +155,32 @@ public class RequestItemQueueConsumer {
         ItemRequestInformation itemRequestInformation = om.readValue(body, ItemRequestInformation.class);
         getLogger().info("Item Barcode Recevied for Processing EDD -> " + itemRequestInformation.getItemBarcodes().get(0));
         getItemEDDRequestService().eddRequestItem(itemRequestInformation, exchange);
+    }
+
+    /**
+     * Bulk Request item on message.
+     *
+     * @param body     the body
+     * @param exchange the exchange
+     * @throws IOException the io exception
+     */
+    public void bulkRequestItemOnMessage(@Body String body, Exchange exchange) throws IOException {
+        Integer bulkRequestId = Integer.valueOf(body);
+        getLogger().info("Bulk item request received for bulk request id -> {}", bulkRequestId);
+        getBulkItemRequestService().bulkRequestItems(bulkRequestId);
+    }
+
+    /**
+     * Bulk Request item process on message.
+     *
+     * @param body     the body
+     * @param exchange the exchange
+     * @throws IOException the io exception
+     */
+    public void bulkRequestProcessItemOnMessage(@Body String body, Exchange exchange) throws IOException {
+        Integer bulkRequestId = (Integer) exchange.getIn().getHeaders().get(ReCAPConstants.BULK_REQUEST_ID);
+        getLogger().info("Bulk item request barcode received for bulk request id -> {} is -> {}", bulkRequestId, body);
+        getBulkItemRequestProcessService().processBulkRequestItem(body, bulkRequestId);
     }
 
     /**
@@ -322,12 +388,12 @@ public class RequestItemQueueConsumer {
     }
 
     private void setTopicMessageToDb(String body, String operationType) {
-        if (!itemRequestService.isUseQueueLasCall()) {
+        if (!getItemRequestService().isUseQueueLasCall()) {
             ObjectMapper om = new ObjectMapper();
             ItemInformationResponse itemInformationResponse = null;
             try {
                 itemInformationResponse = om.readValue(body, ItemInformationResponse.class);
-                itemRequestService.updateChangesToDb(itemInformationResponse, operationType);
+                getItemRequestService().updateChangesToDb(itemInformationResponse, operationType);
             } catch (Exception e) {
                 logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
             }

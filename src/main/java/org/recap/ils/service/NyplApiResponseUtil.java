@@ -128,7 +128,7 @@ public class NyplApiResponseUtil {
         itemCheckoutResponse.setCreatedDate(formatFromSipDate(checkoutData.getCreatedDate()));
         itemCheckoutResponse.setUpdatedDate(formatFromSipDate((String) checkoutData.getUpdatedDate()));
         itemCheckoutResponse.setDueDate(formatDueDate(checkoutData.getDesiredDateDue()));
-        itemCheckoutResponse.setProcessed(checkoutData.getProcessed());
+        itemCheckoutResponse.setProcessed(null != checkoutData.getProcessed() ? checkoutData.getProcessed() : false);
         itemCheckoutResponse.setJobId(checkoutData.getJobId());
         itemCheckoutResponse.setSuccess(checkoutData.getSuccess());
         return itemCheckoutResponse;
@@ -146,7 +146,7 @@ public class NyplApiResponseUtil {
         itemCheckinResponse.setItemBarcode(checkinData.getItemBarcode());
         itemCheckinResponse.setCreatedDate(formatFromSipDate(checkinData.getCreatedDate()));
         itemCheckinResponse.setUpdatedDate(formatFromSipDate((String) checkinData.getUpdatedDate()));
-        itemCheckinResponse.setProcessed(checkinData.getProcessed());
+        itemCheckinResponse.setProcessed(null != checkinData.getProcessed() ? checkinData.getProcessed() : false);
         itemCheckinResponse.setJobId(checkinData.getJobId());
         itemCheckinResponse.setSuccess(checkinData.getSuccess());
         return itemCheckinResponse;

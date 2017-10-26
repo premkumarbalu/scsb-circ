@@ -48,6 +48,10 @@ public class EmailService {
     private String refilePulMailTo;
     @Value("${request.refile.email.recap.to}")
     private String refileRecapMailTo;
+
+    @Value("${bulk.request.email.to}")
+    private String bulkRequestEmailTo;
+
     @Autowired
     private ProducerTemplate producer;
 
@@ -96,6 +100,27 @@ public class EmailService {
         emailPayLoad.setItemBarcode(itemBarcode);
         emailPayLoad.setSubject(subject);
         producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, emailPayLoad, ReCAPConstants.EMAIL_BODY_FOR, ReCAPConstants.REQUEST_LAS_STATUS_MAIL_QUEUE);
+    }
+
+    /**
+     * Send email for bulk request process.
+     *
+     * @param bulkRequestId
+     * @param bulkRequestName
+     * @param bulkRequestFileName
+     * @param bulkRequestStatus
+     * @param subject
+     */
+    public void sendBulkRequestEmail(String bulkRequestId, String bulkRequestName, String bulkRequestFileName, String bulkRequestStatus, String bulkRequestCsvFileData, String subject) {
+        EmailPayLoad emailPayLoad = new EmailPayLoad();
+        emailPayLoad.setTo(bulkRequestEmailTo);
+        emailPayLoad.setBulkRequestId(bulkRequestId);
+        emailPayLoad.setBulkRequestName(bulkRequestName);
+        emailPayLoad.setBulkRequestFileName(bulkRequestFileName);
+        emailPayLoad.setBulkRequestStatus(bulkRequestStatus);
+        emailPayLoad.setBulkRequestCsvFileData(bulkRequestCsvFileData);
+        emailPayLoad.setSubject(subject);
+        producer.sendBodyAndHeader(ReCAPConstants.EMAIL_Q, emailPayLoad, ReCAPConstants.EMAIL_BODY_FOR, ReCAPConstants.BULK_REQUEST_EMAIL_QUEUE);
     }
 
     private String refileEmailIdTo(String institution) {

@@ -15,12 +15,15 @@ import org.recap.ils.model.response.ItemRecallResponse;
 import org.recap.model.*;
 import org.recap.repository.*;
 import org.recap.service.RestHeaderService;
+import org.recap.util.ItemRequestServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -92,6 +95,9 @@ public class ItemRequestService {
 
     @Autowired
     private RestHeaderService restHeaderService;
+
+    @Autowired
+    private ItemRequestServiceUtil itemRequestServiceUtil;
 
     public RestHeaderService getRestHeaderService(){
         return restHeaderService;
@@ -267,7 +273,7 @@ public class ItemRequestService {
                         requestItemEntity.setLastUpdatedDate(new Date());
                         requestItemDetailsRepository.save(requestItemEntity);
                         rollbackUpdateItemAvailabilutyStatus(itemEntity, ReCAPConstants.GUEST_USER);
-                        updateSolrIndex(itemEntity);
+                        itemRequestServiceUtil.updateSolrIndex(itemEntity);
                         bSuccess = true;
                     } else { // Recall Request Exist
                         if (requestItemEntityRecalled.getRequestingInstitutionId().intValue() == requestItemEntityRecalled.getItemEntity().getOwningInstitutionId().intValue()) { // Borrowing Inst same as Owning
@@ -278,7 +284,7 @@ public class ItemRequestService {
                             requestItemDetailsRepository.save(requestItemEntity);
                             requestItemDetailsRepository.save(requestItemEntityRecalled);
                             rollbackUpdateItemAvailabilutyStatus(requestItemEntity.getItemEntity(), ReCAPConstants.GUEST_USER);
-                            updateSolrIndex(requestItemEntity.getItemEntity());
+                            itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
                             bSuccess = true;
                         } else { // Borrowing Inst not same as Owning, Change Retrieval Status to Refiled
                             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
@@ -401,7 +407,7 @@ public class ItemRequestService {
      * @return the integer
      */
     public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, String requestStatusCode) {
-        return itemRequestDBService.updateRecapRequestItem(itemRequestInformation, itemEntity, requestStatusCode);
+        return itemRequestDBService.updateRecapRequestItem(itemRequestInformation, itemEntity, requestStatusCode, null);
     }
 
     /**
@@ -532,7 +538,7 @@ public class ItemRequestService {
             itemResponseInformation = updateScsbAndGfa(itemRequestInfo, itemResponseInformation, itemEntity);
         }
         if (itemResponseInformation.isSuccess()) {
-            updateSolrIndex(itemEntity);
+            itemRequestServiceUtil.updateSolrIndex(itemEntity);
         }
         return itemResponseInformation;
     }
@@ -681,23 +687,6 @@ public class ItemRequestService {
     }
 
     /**
-     * Update solr index.
-     *
-     * @param itemEntity the item entity
-     */
-    public void updateSolrIndex(ItemEntity itemEntity) {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpEntity requestEntity = new HttpEntity<>(getRestHeaderService().getHttpHeaders());
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(scsbSolrClientUrl + ReCAPConstants.UPDATE_ITEM_STATUS_SOLR).queryParam(ReCAPConstants.UPDATE_ITEM_STATUS_SOLR_PARAM_ITEM_ID, itemEntity.getBarcode());
-            ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity, String.class);
-            logger.info(responseEntity.getBody());
-        } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
-        }
-    }
-
-    /**
      * Search records search result row.
      *
      * @param itemEntity the item entity
@@ -776,9 +765,13 @@ public class ItemRequestService {
         ItemRequestInformation itemRequestInformation = itemRequestDBService.rollbackAfterGFA(itemResponseInformation);
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemResponseInformation.getRequestId());
         if (null != requestItemEntity) {
-            updateSolrIndex(requestItemEntity.getItemEntity());
+            itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
         }
-        requestItemController.cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
+        if (itemResponseInformation.isBulk()) {
+            requestItemController.checkinItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
+        } else {
+            requestItemController.cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
+        }
     }
 
     /**

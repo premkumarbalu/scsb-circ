@@ -109,6 +109,16 @@ public class StatusReconciliationController {
         return itemDetailsRepository;
     }
 
+
+    /**
+     * Get request item status details repository request item status details repository.
+     *
+     * @return the request item status details repository
+     */
+    public RequestItemStatusDetailsRepository getRequestItemStatusDetailsRepository(){
+        return requestItemStatusDetailsRepository ;
+    }
+
     /**
      * Gets status reconciliation las barcode limit.
      *
@@ -145,7 +155,7 @@ public class StatusReconciliationController {
      */
     @RequestMapping(value = "/itemStatusReconciliation", method = RequestMethod.GET)
     public ResponseEntity itemStatusReconciliation(){
-        List<RequestStatusEntity> requestStatusEntityList = requestItemStatusDetailsRepository.findByRequestStatusCodeIn(Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD));
+        List<RequestStatusEntity> requestStatusEntityList = getRequestItemStatusDetailsRepository().findByRequestStatusCodeIn(Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD));
         List<Integer> requestStatusIds = requestStatusEntityList.stream().map(RequestStatusEntity::getRequestStatusId).collect(Collectors.toList());
         logger.info("status reconciliation request ids : {} ",requestStatusIds);
         Map<String,Integer> itemCountAndStatusIdMap = getTotalPageCount(requestStatusIds);

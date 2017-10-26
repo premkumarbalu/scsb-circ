@@ -8,10 +8,7 @@ import org.mockito.Mockito;
 import org.recap.BaseTestCase;
 import org.recap.gfa.model.*;
 import org.recap.model.ItemEntity;
-import org.recap.repository.ItemChangeLogDetailsRepository;
-import org.recap.repository.ItemDetailsRepository;
-import org.recap.repository.ItemStatusDetailsRepository;
-import org.recap.repository.RequestItemDetailsRepository;
+import org.recap.repository.*;
 import org.recap.request.GFAService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +55,9 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
     private RequestItemDetailsRepository mockedRequestItemDetailsRepository;
 
     @Mock
+    private RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
+
+    @Mock
     private ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
 
     @Test
@@ -94,6 +94,7 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
         Mockito.when(statusReconciliationController.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
         Mockito.when(statusReconciliationController.getBatchSize()).thenReturn(batchSize);
         Mockito.when(statusReconciliationController.getItemStatusDetailsRepository()).thenReturn(itemStatusDetailsRepository);
+        Mockito.when(statusReconciliationController.getRequestItemStatusDetailsRepository()).thenReturn(requestItemStatusDetailsRepository);
         Mockito.when(statusReconciliationController.getStatusReconciliationDayLimit()).thenReturn(statusReconciliationDayLimit);
         Mockito.when(statusReconciliationController.getStatusReconciliationLasBarcodeLimit()).thenReturn(statusReconciliationLasBarcodeLimit);
         Mockito.when(statusReconciliationController.getProducer()).thenReturn(producer);
