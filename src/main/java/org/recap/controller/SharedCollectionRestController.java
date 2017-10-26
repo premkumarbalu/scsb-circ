@@ -3,7 +3,9 @@ package org.recap.controller;
 import org.recap.ReCAPConstants;
 import org.recap.model.deaccession.DeAccessionRequest;
 import org.recap.model.submitcollection.SubmitCollectionResponse;
+import org.recap.service.common.SetupDataService;
 import org.recap.service.deaccession.DeAccessionService;
+import org.recap.service.submitcollection.SubmitCollectionBatchService;
 import org.recap.service.submitcollection.SubmitCollectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,11 @@ public class SharedCollectionRestController {
     @Autowired
     private SubmitCollectionService submitCollectionService;
 
+    @Autowired
+    private SubmitCollectionBatchService submitCollectionBatchService;
+
+    @Autowired
+    private SetupDataService setupDataService;
     /**
      * The De accession service.
      */
@@ -47,24 +54,30 @@ public class SharedCollectionRestController {
         ResponseEntity responseEntity;
         String inputRecords = (String) requestParameters.get(ReCAPConstants.INPUT_RECORDS);
         String institution = (String) requestParameters.get(ReCAPConstants.INSTITUTION);
+        Integer institutionId = (Integer) setupDataService.getInstitutionCodeIdMap().get(institution);
         Boolean isCGDProtection = Boolean.valueOf((String) requestParameters.get(ReCAPConstants.IS_CGD_PROTECTED));
 
         List<Integer> reportRecordNumberList = new ArrayList<>();
-        Set<Integer> processedBibIds = new HashSet<>();
+        Set<Integer> processedBibIdSet = new HashSet<>();
         List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
+        Set<String> updatedBoundWithDummyRecordOwnInstBibIdSet = new HashSet<>();
         List<SubmitCollectionResponse> submitCollectionResponseList;
         try {
-            submitCollectionResponseList = submitCollectionService.process(institution,inputRecords,processedBibIds,idMapToRemoveIndexList,"",reportRecordNumberList, true,isCGDProtection);
-            if (!processedBibIds.isEmpty()) {
+            submitCollectionResponseList = submitCollectionBatchService.process(institution,inputRecords,processedBibIdSet,idMapToRemoveIndexList,"",reportRecordNumberList, true,isCGDProtection,updatedBoundWithDummyRecordOwnInstBibIdSet);
+            if (!processedBibIdSet.isEmpty()) {
                 logger.info("Calling indexing service to update data");
-                submitCollectionService.indexData(processedBibIds);
+                submitCollectionService.indexData(processedBibIdSet);
+            }
+            if(!updatedBoundWithDummyRecordOwnInstBibIdSet.isEmpty()){
+                logger.info("Updated boudwith dummy record own inst bib id size-->{}",updatedBoundWithDummyRecordOwnInstBibIdSet.size());
+                submitCollectionService.indexDataUsingOwningInstBibId(new ArrayList<>(updatedBoundWithDummyRecordOwnInstBibIdSet),institutionId);
             }
             if (!idMapToRemoveIndexList.isEmpty()) {//remove the incomplete record from solr index
                 logger.info("Calling indexing to remove dummy records");
                 submitCollectionService.removeSolrIndex(idMapToRemoveIndexList);
                 logger.info("Removed dummy records from solr");
             }
-            submitCollectionService.generateSubmitCollectionReportFile(reportRecordNumberList);
+            submitCollectionBatchService.generateSubmitCollectionReportFile(reportRecordNumberList);
             responseEntity = new ResponseEntity(submitCollectionResponseList,getHttpHeaders(), HttpStatus.OK);
         } catch (Exception e) {
             logger.error(ReCAPConstants.LOG_ERROR,e);

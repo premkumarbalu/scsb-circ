@@ -485,6 +485,8 @@ public final class ReCAPConstants {
     public static final String INPUT_RECORDS = "inputRecords";
     public static final String INSTITUTION = "institution";
     public static final String IS_CGD_PROTECTED = "isCGDProtected";
+    public static final String OWN_INST_BIBID_LIST = "owningInstBibIdList";
+    public static final String OWN_INSTITUTION_ID = "institutionId";
 
     //Date Pattern
     public static final String FILE_DATE_FORMAT="yyyyMMdd_HHmmss";
