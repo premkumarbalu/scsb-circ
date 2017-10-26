@@ -58,36 +58,4 @@ public class BarcodeBibliographicEntityObject {
         return result;
     }
 
-    /*
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        BarcodeBibliographicEntityObject that = (BarcodeBibliographicEntityObject) o;
-
-        if (barcode != null ? !barcode.equals(that.barcode) : that.barcode != null) return false;
-        return owningInstitutionBibId != null ? owningInstitutionBibId.equals(that.owningInstitutionBibId) : that.owningInstitutionBibId == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = barcode != null ? barcode.hashCode() : 0;
-        result = 31 * result + (owningInstitutionBibId != null ? owningInstitutionBibId.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "BarcodeBibliographicEntityObject{" +
-                "barcode='" + barcode + '\'' +
-                ", owningInstitutionBibId='" + owningInstitutionBibId + '\'' +
-                '}';
-    }
-*/
-
-    /*    @Override
-    public String toString() {
-        return super.toString();
-    }*/
 }
