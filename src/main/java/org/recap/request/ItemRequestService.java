@@ -4,10 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.FluentProducerTemplate;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.DefaultFluentProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.controller.RequestItemController;
+import org.recap.gfa.model.GFAEddItemResponse;
+import org.recap.gfa.model.GFARetrieveItemResponse;
 import org.recap.ils.model.response.ItemCreateBibResponse;
 import org.recap.ils.model.response.ItemHoldResponse;
 import org.recap.ils.model.response.ItemInformationResponse;
@@ -93,6 +96,9 @@ public class ItemRequestService {
 
     @Autowired
     private RestHeaderService restHeaderService;
+
+    @Autowired
+    private ProducerTemplate producerTemplate;
 
     @Autowired
     private ItemRequestServiceUtil itemRequestServiceUtil;
@@ -765,7 +771,11 @@ public class ItemRequestService {
         if (null != requestItemEntity) {
             itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
         }
-        requestItemController.cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
+        if (itemResponseInformation.isBulk()) {
+            requestItemController.checkinItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
+        } else {
+            requestItemController.cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
+        }
     }
 
     /**

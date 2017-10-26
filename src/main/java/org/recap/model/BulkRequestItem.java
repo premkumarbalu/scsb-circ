@@ -7,6 +7,8 @@ public class BulkRequestItem {
 
     private String itemBarcode;
     private String customerCode;
+    private String requestId;
+    private String requestStatus;
     private String status;
 
     /**
@@ -43,6 +45,42 @@ public class BulkRequestItem {
      */
     public void setCustomerCode(String customerCode) {
         this.customerCode = customerCode;
+    }
+
+    /**
+     * Gets request id.
+     *
+     * @return the request id
+     */
+    public String getRequestId() {
+        return requestId;
+    }
+
+    /**
+     * Sets request id.
+     *
+     * @param requestId the request id
+     */
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    /**
+     * Gets request status.
+     *
+     * @return the request status
+     */
+    public String getRequestStatus() {
+        return requestStatus;
+    }
+
+    /**
+     * Sets request status.
+     *
+     * @param requestStatus the request status
+     */
+    public void setRequestStatus(String requestStatus) {
+        this.requestStatus = requestStatus;
     }
 
     /**

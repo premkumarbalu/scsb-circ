@@ -42,6 +42,11 @@ public class BulkItemRequestService {
     @Autowired
     private ProducerTemplate producerTemplate;
 
+    /**
+     * Bulk request items.
+     *
+     * @param bulkRequestId the bulk request id
+     */
     public void bulkRequestItems(Integer bulkRequestId) {
         LinkedList<String> bulkRequestItemBarcodeList = new LinkedList<>();
         BulkRequestItemEntity bulkRequestItemEntity = bulkRequestItemDetailsRepository.findOne(bulkRequestId);
@@ -89,11 +94,16 @@ public class BulkItemRequestService {
         producerTemplate.sendBodyAndHeader(ReCAPConstants.BULK_REQUEST_ITEM_PROCESSING_QUEUE, ReCAPConstants.COMPLETE, ReCAPConstants.BULK_REQUEST_ID, bulkRequestId);
     }
 
+    /**
+     * Updates process status to each barcode in csv format.
+     * @param exceptionBulkRequestItems
+     * @param bulkRequestId
+     */
     private void updateStatusToBarcodes(List<BulkRequestItem> exceptionBulkRequestItems, Integer bulkRequestId) {
         BulkRequestItemEntity bulkRequestItemEntity = bulkRequestItemDetailsRepository.findOne(bulkRequestId);
         if (!ReCAPConstants.PROCESSED.equals(bulkRequestItemEntity.getBulkRequestStatus())) {
             StringBuilder csvFormatDataBuilder = new StringBuilder();
-            csvFormatDataBuilder.append("BARCODE,CUSTOMER_CODE,STATUS");
+            csvFormatDataBuilder.append("BARCODE,CUSTOMER CODE,REQUEST ID,REQUEST STATUS,STATUS");
             itemRequestServiceUtil.buildCsvFormatData(exceptionBulkRequestItems, csvFormatDataBuilder);
             bulkRequestItemEntity.setBulkRequestFileData(csvFormatDataBuilder.toString().getBytes());
             bulkRequestItemDetailsRepository.save(bulkRequestItemEntity);
@@ -102,10 +112,22 @@ public class BulkItemRequestService {
         }
     }
 
+    /**
+     * Removes duplicates from list.
+     * @param bulkRequestItemBarcodeList
+     * @return
+     */
     private Set<String> removeDuplicates(List<String> bulkRequestItemBarcodeList) {
         return new HashSet<>(bulkRequestItemBarcodeList);
     }
 
+    /**
+     * Builds bulk request item object.
+     * @param barcode
+     * @param customerCode
+     * @param status
+     * @return
+     */
     private BulkRequestItem buildBulkRequestItem(String barcode, String customerCode, String status) {
         BulkRequestItem bulkRequestItem = new BulkRequestItem();
         bulkRequestItem.setItemBarcode(barcode);

@@ -1,7 +1,6 @@
 package org.recap.util;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.model.BulkRequestItem;
 import org.recap.model.BulkRequestItemEntity;
@@ -63,7 +62,12 @@ public class ItemRequestServiceUtil {
         }
     }
 
-    public synchronized void updateStatusToBarcodes(List<BulkRequestItem> bulkRequestItems, BulkRequestItemEntity bulkRequestItemEntity) {
+    /**
+     * Updates process status to each barcode in csv format.
+     * @param bulkRequestItems
+     * @param bulkRequestItemEntity
+     */
+    public void updateStatusToBarcodes(List<BulkRequestItem> bulkRequestItems, BulkRequestItemEntity bulkRequestItemEntity) {
         StringBuilder csvFormatDataBuilder = new StringBuilder();
         String requestData = new String(bulkRequestItemEntity.getBulkRequestFileData());
         csvFormatDataBuilder.append(requestData);
@@ -72,15 +76,26 @@ public class ItemRequestServiceUtil {
         bulkRequestItemDetailsRepository.save(bulkRequestItemEntity);
     }
 
+    /**
+     * Builds csv format data for all bulk request items.
+     * @param exceptionBulkRequestItems
+     * @param csvFormatDataBuilder
+     */
     public void buildCsvFormatData(List<BulkRequestItem> exceptionBulkRequestItems, StringBuilder csvFormatDataBuilder) {
         for (BulkRequestItem bulkRequestItem : exceptionBulkRequestItems) {
             csvFormatDataBuilder.append("\n");
             csvFormatDataBuilder.append(bulkRequestItem.getItemBarcode()).append(",");
             csvFormatDataBuilder.append(bulkRequestItem.getCustomerCode()).append(",");
+            csvFormatDataBuilder.append(bulkRequestItem.getRequestId()).append(",");
+            csvFormatDataBuilder.append(bulkRequestItem.getRequestStatus()).append(",");
             csvFormatDataBuilder.append(StringEscapeUtils.escapeCsv(bulkRequestItem.getStatus()));
         }
     }
 
+    /**
+     * Generates report for the bulk request items and sends an email.
+     * @param bulkRequestId
+     */
     public void generateReportAndSendEmail(Integer bulkRequestId) {
         BulkRequestItemEntity bulkRequestItemEntity = bulkRequestItemDetailsRepository.findOne(bulkRequestId);
         emailService.sendBulkRequestEmail(String.valueOf(bulkRequestItemEntity.getBulkRequestId()), bulkRequestItemEntity.getBulkRequestName(), bulkRequestItemEntity.getBulkRequestFileName(), bulkRequestItemEntity.getBulkRequestStatus(), new String(bulkRequestItemEntity.getBulkRequestFileData()), "Bulk Request Process Report");

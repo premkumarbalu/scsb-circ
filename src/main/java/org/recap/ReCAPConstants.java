@@ -524,6 +524,8 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_JOB_INITIATE_ROUTE_ID = "scsbactivemq:queue:submitCollectionInitiateRoute";
     public static final String SUBMIT_COLLECTION_JOB_COMPLETION_OUTGOING_QUEUE = "scsbactivemq:queue:submitCollectionCompletionOutgoingQ";
 
+    public static final String BULK_REQUEST_ID_TEXT = "Bulk Request Id : ";
+
     private ReCAPConstants() {
     }
 
