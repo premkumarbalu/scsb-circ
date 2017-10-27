@@ -119,11 +119,11 @@ public class SubmitCollectionProcessor {
                 new Thread(() -> {
                     try {
                         submitCollectionBatchService.removeSolrIndex(idMapToRemoveIndexList);
+                        logger.info("Removed dummy records from solr");
                     } catch (Exception e) {
                         logger.error(ReCAPConstants.LOG_ERROR,e);
                     }
                 }).start();
-                logger.info("Removed dummy records from solr");
                 stopWatchRemovingDummy.stop();
                 logger.info("Time take to call and execute solr call to remove dummy-->{} sec",stopWatchRemovingDummy.getTotalTimeSeconds());
             }
