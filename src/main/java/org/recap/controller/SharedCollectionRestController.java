@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -51,6 +52,8 @@ public class SharedCollectionRestController {
     @RequestMapping(value = "/submitCollection", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity submitCollection(@RequestParam Map<String,Object> requestParameters){
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         ResponseEntity responseEntity;
         String inputRecords = (String) requestParameters.get(ReCAPConstants.INPUT_RECORDS);
         String institution = (String) requestParameters.get(ReCAPConstants.INSTITUTION);
@@ -74,8 +77,10 @@ public class SharedCollectionRestController {
             }
             if (!idMapToRemoveIndexList.isEmpty()) {//remove the incomplete record from solr index
                 logger.info("Calling indexing to remove dummy records");
-                submitCollectionService.removeSolrIndex(idMapToRemoveIndexList);
-                logger.info("Removed dummy records from solr");
+                new Thread(() -> {
+                    submitCollectionService.removeSolrIndex(idMapToRemoveIndexList);
+                    logger.info("Removed dummy records from solr");
+                }).start();
             }
             submitCollectionBatchService.generateSubmitCollectionReportFile(reportRecordNumberList);
             responseEntity = new ResponseEntity(submitCollectionResponseList,getHttpHeaders(), HttpStatus.OK);
@@ -83,6 +88,8 @@ public class SharedCollectionRestController {
             logger.error(ReCAPConstants.LOG_ERROR,e);
             responseEntity = new ResponseEntity(ReCAPConstants.SUBMIT_COLLECTION_INTERNAL_ERROR,getHttpHeaders(), HttpStatus.OK);
         }
+        stopWatch.stop();
+        logger.info("Total time taken to process submit collection through rest api--->{} sec",stopWatch.getTotalTimeSeconds());
         return responseEntity;
     }
 
