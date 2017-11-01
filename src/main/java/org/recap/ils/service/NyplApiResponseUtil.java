@@ -215,6 +215,7 @@ public class NyplApiResponseUtil {
         ItemRefileResponse itemRefileResponse = new ItemRefileResponse();
         RefileData refileData = refileResponse.getData();
         itemRefileResponse.setItemBarcode(refileData.getItemBarcode());
+        itemRefileResponse.setItemOwningInstitution(ReCAPConstants.NYPL);
         itemRefileResponse.setJobId(refileData.getJobId());
         return itemRefileResponse;
     }
