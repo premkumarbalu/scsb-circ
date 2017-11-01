@@ -274,6 +274,36 @@ public class RequestItemController {
     }
 
     /**
+     * This method refiles the item in ILS. Currently only NYPL has the refile endpoint.
+     *
+     * @param itemRequestInformation the item request information
+     * @param callInstitition        the call institition
+     * @return the abstract response item
+     */
+    @RequestMapping(value = "/refileItemInILS", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public AbstractResponseItem refileItemInILS(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
+        ItemRefileResponse itemRefileResponse;
+        String itemBarcode;
+        try {
+            String callInst = callingInsttution(callInstitition, itemRequestInformation);
+            if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
+                itemBarcode = itemRequestInformation.getItemBarcodes().get(0);
+                itemRefileResponse = (ItemRefileResponse) getJsipConectorFactory().getJSIPConnector(callInst).refileItem(itemBarcode);
+            } else {
+                itemRefileResponse = new ItemRefileResponse();
+                itemRefileResponse.setSuccess(false);
+                itemRefileResponse.setScreenMessage(ReCAPConstants.REQUEST_ITEM_BARCODE_NOT_FOUND);
+            }
+        } catch (Exception e) {
+            itemRefileResponse = new ItemRefileResponse();
+            itemRefileResponse.setSuccess(false);
+            itemRefileResponse.setScreenMessage(e.getMessage());
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+        }
+        return itemRefileResponse;
+    }
+
+    /**
      * Gets pickup location.
      *
      * @param institution the institution
