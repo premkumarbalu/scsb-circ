@@ -190,7 +190,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE = "RequestItem AvailabilityStatus Change";
     public static final String REQUEST_ITEM_GFA_FAILURE = "RequestItem - LAS Request Failed";
     public static final String REQUEST_ITEM_ITEM_CHANGE_LOG_EXCEPTION = "RequestItem - Exception";
-    public static final String REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS = "RequestItemCancel AvailabilityStatus Change";
+    public static final String REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS = "RequestItemCancel";
     public static final String REQUEST_ITEM_INSERT = "Request Item Insert";
     public static final String RETRIVAL_ORDER_NOT_REQUIRED_FOR_RECALL = "Retrival order not required for recall";
 

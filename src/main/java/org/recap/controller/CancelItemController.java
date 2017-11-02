@@ -7,7 +7,6 @@ import org.recap.model.*;
 import org.recap.repository.RequestItemDetailsRepository;
 import org.recap.repository.RequestItemStatusDetailsRepository;
 import org.recap.request.ItemRequestService;
-import org.recap.util.ItemRequestServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -40,9 +41,6 @@ public class CancelItemController {
 
     @Autowired
     private ItemRequestService itemRequestService;
-
-    @Autowired
-    private ItemRequestServiceUtil itemRequestServiceUtil;
 
     /**
      * This is rest service  method, for cancel requested item.
@@ -113,31 +111,18 @@ public class CancelItemController {
                 if (!itemRequestInformation.getItemOwningInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
                     requestItemController.checkinItem(itemRequestInformation, itemRequestInformation.getItemOwningInstitution());
                 }
-                RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
-                requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                requestItemEntity.setLastUpdatedDate(new Date());
-                if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
-                    requestItemEntity.getItemEntity().setItemAvailabilityStatusId(1);
-                }
-                RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
-                itemRequestService.saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS, ReCAPConstants.REQUEST_STATUS_CANCELED + savedRequestItemEntity.getItemId());
-                itemRequestServiceUtil.updateSolrIndex(savedRequestItemEntity.getItemEntity());
-                itemCanceHoldResponse.setSuccess(true);
-                itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_SUCCCESS);
-                logger.info("Send Mail");
-                sendEmail(requestItemEntity.getItemEntity().getCustomerCode(), requestItemEntity.getItemEntity().getBarcode(), requestItemEntity.getPatronId());
-                logger.info("Send Mail Done");
+                changeRetrievalToCancelStatus(requestItemEntity, itemCanceHoldResponse);
             } else {
                 itemCanceHoldResponse.setSuccess(false);
                 itemCanceHoldResponse.setScreenMessage(itemCanceHoldResponse.getScreenMessage());
             }
         } else {
             itemCanceHoldResponse = new ItemHoldResponse();
-            itemCanceHoldResponse.setSuccess(false);
-            itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_NOT_ON_HOLD_IN_ILS);
+            changeRetrievalToCancelStatus(requestItemEntity,itemCanceHoldResponse);
         }
         return itemCanceHoldResponse;
     }
+
 
     private ItemHoldResponse processRecall(ItemRequestInformation itemRequestInformation, ItemInformationResponse itemInformationResponse, RequestItemEntity requestItemEntity) {
         ItemHoldResponse itemCanceHoldResponse;
@@ -145,21 +130,14 @@ public class CancelItemController {
             itemRequestInformation.setBibId(itemInformationResponse.getBibID());
             itemCanceHoldResponse = (ItemHoldResponse) requestItemController.cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
             if (itemCanceHoldResponse.isSuccess()) {
-                RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
-                requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                requestItemEntity.setLastUpdatedDate(new Date());
-                RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
-                itemRequestService.saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS, ReCAPConstants.REQUEST_STATUS_CANCELED + savedRequestItemEntity.getItemId());
-                itemCanceHoldResponse.setSuccess(true);
-                itemCanceHoldResponse.setScreenMessage(ReCAPConstants.RECALL_CANCELLATION_SUCCCESS);
+                changeRecallToCancelStatus(requestItemEntity, itemCanceHoldResponse);
             } else {
                 itemCanceHoldResponse.setSuccess(false);
                 itemCanceHoldResponse.setScreenMessage(itemCanceHoldResponse.getScreenMessage());
             }
         } else {
             itemCanceHoldResponse = new ItemHoldResponse();
-            itemCanceHoldResponse.setSuccess(false);
-            itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_NOT_ON_HOLD_IN_ILS);
+            changeRecallToCancelStatus(requestItemEntity, itemCanceHoldResponse);
         }
         return itemCanceHoldResponse;
     }
@@ -169,6 +147,7 @@ public class CancelItemController {
         RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
         requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
         requestItemEntity.setLastUpdatedDate(new Date());
+        requestItemEntity.setNotes(appendCancelMessageToNotes(requestItemEntity));
         RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
         itemRequestService.saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS, ReCAPConstants.REQUEST_STATUS_CANCELED + savedRequestItemEntity.getItemId());
         itemCanceHoldResponse.setSuccess(true);
@@ -189,4 +168,33 @@ public class CancelItemController {
         itemRequestService.getEmailService().sendEmail(customerCode, itemBarcode, ReCAPConstants.REQUEST_CANCELLED_NO_REFILED, patronBarcode, ReCAPConstants.GFA,ReCAPConstants.REQUEST_CANCELLED_SUBJECT);
     }
 
+    private void changeRetrievalToCancelStatus(RequestItemEntity requestItemEntity, ItemHoldResponse itemCanceHoldResponse) {
+        RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
+        requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+        requestItemEntity.setLastUpdatedDate(new Date());
+        requestItemEntity.setNotes(appendCancelMessageToNotes(requestItemEntity));
+        RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
+        itemRequestService.saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS, ReCAPConstants.REQUEST_STATUS_CANCELED + savedRequestItemEntity.getItemId());
+        itemCanceHoldResponse.setSuccess(true);
+        itemCanceHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_SUCCCESS);
+        logger.info("Send Mail");
+        sendEmail(requestItemEntity.getItemEntity().getCustomerCode(), requestItemEntity.getItemEntity().getBarcode(), requestItemEntity.getPatronId());
+        logger.info("Send Mail Done");
+    }
+
+    private void changeRecallToCancelStatus(RequestItemEntity requestItemEntity, ItemHoldResponse itemCanceHoldResponse) {
+        RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
+        requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+        requestItemEntity.setLastUpdatedDate(new Date());
+        requestItemEntity.setNotes(appendCancelMessageToNotes(requestItemEntity));
+        RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
+        itemRequestService.saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), ReCAPConstants.GUEST_USER, ReCAPConstants.REQUEST_ITEM_CANCEL_ITEM_AVAILABILITY_STATUS, ReCAPConstants.REQUEST_STATUS_CANCELED + savedRequestItemEntity.getItemId());
+        itemCanceHoldResponse.setSuccess(true);
+        itemCanceHoldResponse.setScreenMessage(ReCAPConstants.RECALL_CANCELLATION_SUCCCESS);
+    }
+
+    private String appendCancelMessageToNotes(RequestItemEntity requestItemEntity) {
+        DateFormat cancelRequestDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return requestItemEntity.getNotes() + "\nCancel requested ["+cancelRequestDateFormat.format(new Date())+"]";
+    }
 }
