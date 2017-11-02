@@ -157,6 +157,7 @@ public class ItemRequestService {
                 }
 
                 Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
+                logger.info("RequestId : " + requestId);
                 itemRequestInfo.setRequestId(requestId);
                 itemResponseInformation.setRequestId(requestId);
 

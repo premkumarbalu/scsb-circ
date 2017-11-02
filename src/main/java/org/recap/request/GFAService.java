@@ -600,6 +600,7 @@ public class GFAService {
             RetrieveItemRequest retrieveItem = new RetrieveItemRequest();
             retrieveItem.setTtitem(ttitems);
             gfaRetrieveItemRequest.setRetrieveItem(retrieveItem);
+            logger.info("RequestId"+itemResponseInformation.getRequestId());
             if (isUseQueueLasCall()) { // Queue
                 ObjectMapper objectMapper = new ObjectMapper();
                 String json = objectMapper.writeValueAsString(gfaRetrieveItemRequest);
