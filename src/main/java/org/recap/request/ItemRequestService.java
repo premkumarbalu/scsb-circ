@@ -566,10 +566,11 @@ public class ItemRequestService {
         Integer requestId = 0;
         if (gfaService.isUseQueueLasCall()) {
             requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
-            logger.info("Request Id " + itemResponseInformation.getRequestId());
+            logger.info("Request Id 1 " + itemResponseInformation.getRequestId());
         }
-        logger.info("Request Id " + itemResponseInformation.getRequestId());
-        logger.info("Request Id " + itemRequestInfo.getRequestId());
+        logger.info("Request Id 2 " + itemResponseInformation.getRequestId());
+        logger.info("Request Id 3 " + itemRequestInfo.getRequestId());
+        logger.info("Request Id 4 " + requestId);
 
         itemResponseInformation.setRequestId(requestId);
         itemResponseInformation = updateGFA(itemRequestInfo, itemResponseInformation);

@@ -95,21 +95,19 @@ public class ItemRequestDBService {
                 requestItemEntity.setPatronId(itemRequestInformation.getPatronBarcode());
                 requestItemEntity.setStopCode(itemRequestInformation.getDeliveryLocation());
                 requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                if (StringUtils.isNotBlank(itemRequestInformation.getEmailAddress())) {
-                    if (StringUtils.isNotBlank(itemRequestInformation.getEmailAddress()) && null == bulkRequestItemEntity) {
-                        requestItemEntity.setEmailId(securityUtil.getEncryptedValue(itemRequestInformation.getEmailAddress()));
-                    } else {
-                        requestItemEntity.setEmailId(itemRequestInformation.getEmailAddress());
-                    }
-                    requestItemEntity.setNotes(itemRequestInformation.getRequestNotes());
+                if(StringUtils.isNotBlank(itemRequestInformation.getEmailAddress()) && null == bulkRequestItemEntity){
+                    requestItemEntity.setEmailId(securityUtil.getEncryptedValue(itemRequestInformation.getEmailAddress()));
+                }else {
+                    requestItemEntity.setEmailId(itemRequestInformation.getEmailAddress());
                 }
-                savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
-                if (savedItemRequest != null) {
-                    requestId = savedItemRequest.getRequestId();
-                    saveItemChangeLogEntity(savedItemRequest.getRequestId(), getUser(itemRequestInformation.getUsername()), ReCAPConstants.REQUEST_ITEM_INSERT, savedItemRequest.getItemId() + " - " + savedItemRequest.getPatronId());
-                }
-                logger.info("SCSB DB Update Successful");
+                requestItemEntity.setNotes(itemRequestInformation.getRequestNotes());
             }
+            savedItemRequest = requestItemDetailsRepository.save(requestItemEntity);
+            if (savedItemRequest != null) {
+                requestId = savedItemRequest.getRequestId();
+                saveItemChangeLogEntity(savedItemRequest.getRequestId(), getUser(itemRequestInformation.getUsername()), ReCAPConstants.REQUEST_ITEM_INSERT, savedItemRequest.getItemId() + " - " + savedItemRequest.getPatronId());
+            }
+            logger.info("SCSB DB Update Successful");
         } catch (ParseException e) {
             logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
         } catch (Exception e) {
@@ -128,26 +126,24 @@ public class ItemRequestDBService {
 
         RequestItemEntity requestItemEntity;
         RequestItemEntity savedItemRequest;
-        RequestStatusEntity requestStatusEntity = null;
+        RequestStatusEntity requestStatusEntity=null;
         Integer requestId = 0;
         try {
             if (!itemInformationResponse.isSuccess()) {
                 requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EXCEPTION);
-            } else {
-                if (itemInformationResponse.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
+            }else {
+                if (itemInformationResponse.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)){
                     requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
-                } else if (itemInformationResponse.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
+                }else if (itemInformationResponse.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)){
                     requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EDD);
-                } else if (itemInformationResponse.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
+                }else if (itemInformationResponse.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)){
                     requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RECALLED);
                 }
             }
 
             if (itemInformationResponse.getRequestId() != null && itemInformationResponse.getRequestId() > 0) {
                 requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
-                if(!requestItemEntity.getRequestStatusEntity().getRequestStatusCode().equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_LAS_ITEM_STATUS_PENDING)) {
-                    requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                }
+                requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
                 requestItemEntity.setRequestExpirationDate(getExpirationDate(itemInformationResponse.getExpirationDate(), itemInformationResponse.getRequestingInstitution()));
                 requestItemEntity.setNotes(itemInformationResponse.getRequestNotes());
                 requestItemEntity.setLastUpdatedDate(new Date());
@@ -167,9 +163,9 @@ public class ItemRequestDBService {
                 requestItemEntity.setPatronId(itemInformationResponse.getPatronBarcode());
                 requestItemEntity.setStopCode(itemInformationResponse.getDeliveryLocation());
                 requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                if (StringUtils.isNotBlank(itemInformationResponse.getEmailAddress())) {
+                if (StringUtils.isNotBlank(itemInformationResponse.getEmailAddress())){
                     requestItemEntity.setEmailId(securityUtil.getEncryptedValue(itemInformationResponse.getEmailAddress()));
-                } else {
+                }else {
                     requestItemEntity.setEmailId(itemInformationResponse.getEmailAddress());
                 }
                 requestItemEntity.setNotes(itemInformationResponse.getRequestNotes());
@@ -196,9 +192,9 @@ public class ItemRequestDBService {
      * @return the item information response
      */
     public ItemInformationResponse updateRecapRequestStatus(ItemInformationResponse itemInformationResponse) {
-        RequestStatusEntity requestStatusEntity = null;
+        RequestStatusEntity requestStatusEntity=null;
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
-        if (requestItemEntity != null) {
+        if(requestItemEntity != null) {
             BulkRequestItemEntity bulkRequestItemEntity = requestItemEntity.getBulkRequestItemEntity();
             String notes = ReCAPConstants.USER + " : " + requestItemEntity.getNotes();
             if (null != bulkRequestItemEntity) {
@@ -306,8 +302,8 @@ public class ItemRequestDBService {
     public ItemRequestInformation rollbackAfterGFA(ItemInformationResponse itemInformationResponse) {
         ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemInformationResponse.getRequestId());
-        if (requestItemEntity != null) {
-            CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(requestItemEntity.getItemEntity().getCustomerCode());
+        if(requestItemEntity != null) {
+            CustomerCodeEntity customerCodeEntity= customerCodeDetailsRepository.findByCustomerCode(requestItemEntity.getItemEntity().getCustomerCode());
             rollbackUpdateItemAvailabilutyStatus(requestItemEntity.getItemEntity(), ReCAPConstants.GUEST_USER);
             saveItemChangeLogEntity(itemInformationResponse.getRequestId(), requestItemEntity.getCreatedBy(), ReCAPConstants.REQUEST_ITEM_GFA_FAILURE, ReCAPConstants.REQUEST_ITEM_GFA_FAILURE + itemInformationResponse.getScreenMessage());
             itemRequestInformation.setBibId(requestItemEntity.getItemEntity().getBibliographicEntities().get(0).getOwningInstitutionBibId());
