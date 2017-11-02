@@ -99,6 +99,7 @@ public class BulkItemRequestProcessService {
             Integer requestId = itemRequestDBService.updateRecapRequestItem(itemRequestInformation, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING, bulkRequestItemEntity);
             itemRequestInformation.setRequestId(requestId);
             itemRequestInformation.setItemBarcodes(Arrays.asList(itemEntity.getBarcode()));
+            itemRequestInformation.setCustomerCode(itemEntity.getCustomerCode());
             ItemCheckoutResponse itemCheckoutResponse = (ItemCheckoutResponse) requestItemController.checkoutItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
             itemCheckoutResponse.setSuccess(true);
             if (itemCheckoutResponse.isSuccess()) {
