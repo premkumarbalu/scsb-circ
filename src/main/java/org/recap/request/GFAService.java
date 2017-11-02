@@ -544,8 +544,6 @@ public class GFAService {
         String gfaOnlyStatus;
 
         try {
-            logger.info("RequestId " + itemResponseInformation.getRequestId());
-            logger.info("RequestId " + itemRequestInfo.getRequestId());
             GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
             gfaItemStatus001.setItemBarCode(itemRequestInfo.getItemBarcodes().get(0));
             List<GFAItemStatus> gfaItemStatuses = new ArrayList<>();
@@ -602,8 +600,6 @@ public class GFAService {
             RetrieveItemRequest retrieveItem = new RetrieveItemRequest();
             retrieveItem.setTtitem(ttitems);
             gfaRetrieveItemRequest.setRetrieveItem(retrieveItem);
-            logger.info("RequestId " + itemResponseInformation.getRequestId());
-            logger.info("RequestId " + itemRequestInfo.getRequestId());
 
             if (isUseQueueLasCall()) { // Queue
                 ObjectMapper objectMapper = new ObjectMapper();
@@ -832,7 +828,7 @@ public class GFAService {
         this.lasItemStatusCheckPollingProcessor = lasItemStatusCheckPollingProcessor;
     }
 
-    private void lasPolling(ItemRequestInformation itemRequestInfo) {
+    private void lasPolling(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         // Update Request_item_t table with new status - each Item
         RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_LAS_ITEM_STATUS_PENDING);
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findRequestItemByRequestId(itemRequestInfo.getRequestId());
