@@ -195,6 +195,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
      */
     @Override
     public ItemInformationResponse lookupItem(String itemIdentifier) {
+        getLogger().info("Lookup item in NYPL for barcode : {}", itemIdentifier);
         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
         try {
             String institutionId = getNyplApiResponseUtil().getItemOwningInstitutionByItemBarcode(itemIdentifier);
@@ -233,6 +234,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
      */
     @Override
     public ItemCheckoutResponse checkOutItem(String itemIdentifier, String patronIdentifier) {
+        getLogger().info("Item barcode {} received for a checkout in NYPL for patron {}", itemIdentifier, patronIdentifier);
         ItemCheckoutResponse itemCheckoutResponse = new ItemCheckoutResponse();
         try {
             String apiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_CHECKOUT_REQUEST_URL;
@@ -290,6 +292,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
      */
     @Override
     public ItemCheckinResponse checkInItem(String itemIdentifier, String patronIdentifier) {
+        getLogger().info("Item barcode {} received for a checkin in NYPL for patron {}", itemIdentifier, patronIdentifier);
         ItemCheckinResponse itemCheckinResponse = new ItemCheckinResponse();
         try {
             String apiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_CHECKIN_REQUEST_URL;
@@ -354,6 +357,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
      */
     @Override
     public AbstractResponseItem placeHold(String itemIdentifier, String patronIdentifier, String callInstitutionId, String itemInstitutionId, String expirationDate, String bibId, String deliveryLocation, String trackingId, String title, String author, String callNumber) {
+        getLogger().info("Item barcode {} received for hold request in NYPL for patron {}", itemIdentifier, patronIdentifier);
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         try {
             String recapHoldApiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_RECAP_HOLD_REQUEST_URL;
@@ -430,6 +434,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
      */
     @Override
     public AbstractResponseItem cancelHold(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation, String trackingId) {
+        getLogger().info("Item barcode {} received for a canceling a hold in NYPL for patron {}", itemIdentifier, patronIdentifier);
         ItemHoldResponse itemHoldResponse = new ItemHoldResponse();
         try {
             String apiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_RECAP_CANCEL_HOLD_REQUEST_URL;
@@ -619,6 +624,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
      */
     @Override
     public AbstractResponseItem recallItem(String itemIdentifier, String patronIdentifier, String institutionId, String expirationDate, String bibId, String pickupLocation) {
+        getLogger().info("Item barcode {} received for a recall request in NYPL for patron {}", itemIdentifier, patronIdentifier);
         ItemRecallResponse itemRecallResponse = new ItemRecallResponse();
         try {
             String apiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_RECAP_RECALL_REQUEST_URL;
@@ -673,6 +679,7 @@ public abstract class NyplApiServiceConnector implements IJSIPConnector {
      */
     @Override
     public ItemRefileResponse refileItem(String itemIdentifier) {
+        getLogger().info("Item barcode {} received for refiling in NYPL", itemIdentifier);
         ItemRefileResponse itemRefileResponse = new ItemRefileResponse();
         try {
             String apiUrl = getNyplDataApiUrl() + ReCAPConstants.NYPL_RECAP_REFILE_REQUEST_URL;
