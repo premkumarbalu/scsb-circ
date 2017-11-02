@@ -103,17 +103,27 @@ public class ItemEDDRequestService {
                 userNotes = itemRequestInfo.getRequestNotes();
                 // Add EDD Information to notes to be saved in database
                 itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
-                requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
-                itemRequestInfo.setRequestId(requestId);
-
-                if (getItemRequestService().getGfaService().isUseQueueLasCall()) {
-                    requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
+                boolean isItemStatusAvailable;
+                synchronized (this) {
+                    // Change Item Availablity
+                    isItemStatusAvailable = getItemRequestService().updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
                 }
-                itemRequestInfo.setRequestNotes(userNotes);
-                itemResponseInformation.setItemId(itemEntity.getItemId());
-                itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
-                itemResponseInformation.setRequestId(requestId);
-                itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
+                if (isItemStatusAvailable) {
+                    requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
+                    itemRequestInfo.setRequestId(requestId);
+
+                    if (getItemRequestService().getGfaService().isUseQueueLasCall()) {
+                        requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
+                    }
+                    itemRequestInfo.setRequestNotes(userNotes);
+                    itemResponseInformation.setItemId(itemEntity.getItemId());
+                    itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
+                    itemResponseInformation.setRequestId(requestId);
+                    itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
+                } else {
+                    itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_SCSB_EXCEPTION + ReCAPConstants.WRONG_ITEM_BARCODE);
+                    itemResponseInformation.setSuccess(false);
+                }
                 itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
             } else {
                 itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);

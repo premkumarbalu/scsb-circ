@@ -28,6 +28,9 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
      */
     RequestItemEntity findByRequestId(@Param("requestId") Integer requestId);
 
+    @Query(value = "select requestItemEntity from RequestItemEntity requestItemEntity inner join requestItemEntity.requestStatusEntity as rse where requestItemEntity.requestId =?1")
+    RequestItemEntity findRequestItemByRequestId(@Param("requestId") Integer requestId);
+
     /**
      * Find by request id in list.
      *
@@ -46,6 +49,12 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
     @Query(value = "select request from RequestItemEntity request inner join request.itemEntity item where item.barcode = :itemBarcode")
     Page<RequestItemEntity> findByItemBarcode(Pageable pageable, @Param("itemBarcode") String itemBarcode);
 
+    @Query(value = "select request from RequestItemEntity request inner join request.requestStatusEntity as rse where rse.requestStatusCode = :requestStatusCode")
+    List<RequestItemEntity> findByRequestStatusCode(@Param("requestStatusCode") List<String> requestStatusCode);
+
+    @Query(value = "select request from RequestItemEntity request inner join request.requestStatusEntity as rse where request.requestId in(?1) and rse.requestStatusCode in(?2)")
+    List<RequestItemEntity> findByRequestIdsAndStatusCodes(@Param("itemBarcode") List<Integer> requestIds, @Param("requestStatusCode") List<String> requestStatusCodes);
+
     /**
      * Find by item barcode and request sta code request item entity.
      *
@@ -55,7 +64,7 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
      * @throws IncorrectResultSizeDataAccessException the incorrect result size data access exception
      */
     @Query(value = "select requestItemEntity from RequestItemEntity requestItemEntity inner join requestItemEntity.itemEntity ie inner join requestItemEntity.requestStatusEntity as rse  where ie.barcode = :itemBarcode and rse.requestStatusCode= :requestStatusCode ")
-    RequestItemEntity findByItemBarcodeAndRequestStaCode(@Param("itemBarcode") String itemBarcode, @Param("requestStatusCode") String requestStatusCode) throws IncorrectResultSizeDataAccessException;
+    RequestItemEntity findByItemBarcodeAndRequestStaCode(@Param("itemBarcode") String itemBarcode, @Param("requestStatusCode") String requestStatusCodes) throws IncorrectResultSizeDataAccessException;
 
     /**
      * Find by item barcode list.
@@ -77,5 +86,5 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
     int purgeExceptionRequests(@Param("requestStatusCode") String requestStatusCode, @Param("createdDate") Date createdDate, @Param("dateDifference") Integer dateDifference);
 
     @Query(value = "select request from RequestItemEntity request inner join request.requestStatusEntity status where request.itemId= :itemId and status.requestStatusCode in (:requestStatusCodes)")
-    List<RequestItemEntity> findByitemId(@Param("itemId") Integer itemId,@Param("requestStatusCodes")List<String> requestStatusCodes);
+    List<RequestItemEntity> findByitemId(@Param("itemId") Integer itemId, @Param("requestStatusCodes") List<String> requestStatusCodes);
 }

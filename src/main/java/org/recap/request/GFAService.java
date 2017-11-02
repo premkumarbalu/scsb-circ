@@ -10,10 +10,8 @@ import org.recap.camel.statusreconciliation.StatusReconciliationErrorCSVRecord;
 import org.recap.gfa.model.*;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.*;
-import org.recap.repository.ItemChangeLogDetailsRepository;
-import org.recap.repository.ItemDetailsRepository;
-import org.recap.repository.ItemStatusDetailsRepository;
-import org.recap.repository.RequestItemDetailsRepository;
+import org.recap.processor.LasItemStatusCheckPollingProcessor;
+import org.recap.repository.*;
 import org.recap.util.ItemRequestServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,9 +70,6 @@ public class GFAService {
     private ProducerTemplate producer;
 
     @Autowired
-    private EmailService emailService;
-
-    @Autowired
     private ItemDetailsRepository itemDetailsRepository;
 
     @Autowired
@@ -91,6 +86,12 @@ public class GFAService {
 
     @Autowired
     private ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
+
+    @Autowired
+    private LasItemStatusCheckPollingProcessor lasItemStatusCheckPollingProcessor;
+
+    @Autowired
+    RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
 
     /**
      * Gets gfa item status.
@@ -227,7 +228,6 @@ public class GFAService {
         return itemChangeLogDetailsRepository;
     }
 
-
     /**
      * Gets gfa server response time out milliseconds.
      *
@@ -265,7 +265,7 @@ public class GFAService {
                 logger.info("" + responseEntity.getStatusCode());
             }
         } catch (JsonProcessingException e) {
-            logger.info(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
         } catch (Exception e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
@@ -279,72 +279,72 @@ public class GFAService {
      * @param statusReconciliationErrorCSVRecordList the status reconciliation error csv record list
      * @return the list
      */
-    public List<StatusReconciliationCSVRecord> itemStatusComparison(List<List<ItemEntity>> itemEntityChunkList,List<StatusReconciliationErrorCSVRecord> statusReconciliationErrorCSVRecordList) {
+    public List<StatusReconciliationCSVRecord> itemStatusComparison(List<List<ItemEntity>> itemEntityChunkList, List<StatusReconciliationErrorCSVRecord> statusReconciliationErrorCSVRecordList) {
         List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList = new ArrayList<>();
         List<ItemChangeLogEntity> itemChangeLogEntityList = new ArrayList<>();
-            for (List<ItemEntity> itemEntities : itemEntityChunkList) {
-                List<String> lasNotAvailableStatusList = ReCAPConstants.getGFAStatusNotAvailableList();
-                GFAItemStatusCheckResponse gfaItemStatusCheckResponse = getGFAItemStatusCheckResponse(itemEntities);
-                if (gfaItemStatusCheckResponse != null && gfaItemStatusCheckResponse.getDsitem() != null && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null) {
-                    List<Ttitem> ttitemList = gfaItemStatusCheckResponse.getDsitem().getTtitem();
-                    String lasStatus = null;
-                    StatusReconciliationErrorCSVRecord statusReconciliationErrorCSVRecord = new StatusReconciliationErrorCSVRecord();
-                    for (ItemEntity itemEntity : itemEntities) {
-                        boolean isBarcodeAvailableForErrorReport = false;
-                        for (Ttitem ttitem : ttitemList) {
-                            if (itemEntity.getBarcode().equalsIgnoreCase(ttitem.getItemBarcode())) {
-                                isBarcodeAvailableForErrorReport = true;
-                                lasStatus = ttitem.getItemStatus();
-                                boolean isNotAvailable = false;
-                                for (String status : lasNotAvailableStatusList) {
-                                    if (StringUtils.startsWithIgnoreCase(lasStatus,status)) {
-                                        isNotAvailable = true;
-                                    }
+        for (List<ItemEntity> itemEntities : itemEntityChunkList) {
+            List<String> lasNotAvailableStatusList = ReCAPConstants.getGFAStatusNotAvailableList();
+            GFAItemStatusCheckResponse gfaItemStatusCheckResponse = getGFAItemStatusCheckResponse(itemEntities);
+            if (gfaItemStatusCheckResponse != null && gfaItemStatusCheckResponse.getDsitem() != null && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null) {
+                List<Ttitem> ttitemList = gfaItemStatusCheckResponse.getDsitem().getTtitem();
+                String lasStatus = null;
+                StatusReconciliationErrorCSVRecord statusReconciliationErrorCSVRecord = new StatusReconciliationErrorCSVRecord();
+                for (ItemEntity itemEntity : itemEntities) {
+                    boolean isBarcodeAvailableForErrorReport = false;
+                    for (Ttitem ttitem : ttitemList) {
+                        if (itemEntity.getBarcode().equalsIgnoreCase(ttitem.getItemBarcode())) {
+                            isBarcodeAvailableForErrorReport = true;
+                            lasStatus = ttitem.getItemStatus();
+                            boolean isNotAvailable = false;
+                            for (String status : lasNotAvailableStatusList) {
+                                if (StringUtils.startsWithIgnoreCase(lasStatus, status)) {
+                                    isNotAvailable = true;
                                 }
-                                if (!isNotAvailable) {
-                                    processMismatchStatus(statusReconciliationCSVRecordList, itemChangeLogEntityList, lasStatus, itemEntity);
-                                }
-                                break;
-                            }else {
-                                continue;
                             }
+                            if (!isNotAvailable) {
+                                processMismatchStatus(statusReconciliationCSVRecordList, itemChangeLogEntityList, lasStatus, itemEntity);
+                            }
+                            break;
+                        } else {
+                            continue;
+                        }
 
-                        }
-                        if(!isBarcodeAvailableForErrorReport){
-                            statusReconciliationErrorCSVRecord.setBarcode(itemEntity.getBarcode());
-                            statusReconciliationErrorCSVRecord.setInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
-                            statusReconciliationErrorCSVRecord.setReasonForFailure("Barcode not found in LAS");
-                            statusReconciliationErrorCSVRecordList.add(statusReconciliationErrorCSVRecord);
-                        }
+                    }
+                    if (!isBarcodeAvailableForErrorReport) {
+                        statusReconciliationErrorCSVRecord.setBarcode(itemEntity.getBarcode());
+                        statusReconciliationErrorCSVRecord.setInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
+                        statusReconciliationErrorCSVRecord.setReasonForFailure(ReCAPConstants.BARCODE_NOT_FOUND_IN_LAS);
+                        statusReconciliationErrorCSVRecordList.add(statusReconciliationErrorCSVRecord);
                     }
                 }
-                getItemChangeLogDetailsRepository().save(itemChangeLogEntityList);
-                getItemChangeLogDetailsRepository().flush();
             }
+            getItemChangeLogDetailsRepository().save(itemChangeLogEntityList);
+            getItemChangeLogDetailsRepository().flush();
+        }
         return statusReconciliationCSVRecordList;
     }
 
     private void processMismatchStatus(List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList, List<ItemChangeLogEntity> itemChangeLogEntityList, String lasStatus, ItemEntity itemEntity) {
         StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
-        List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByitemId(itemEntity.getItemId(),Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED,ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD));
+        List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByitemId(itemEntity.getItemId(), Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD));
         List<String> barcodeList = new ArrayList<>();
         List<Integer> requestIdList = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
         ItemStatusEntity itemStatusEntity = getItemStatusDetailsRepository().findByItemStatusId(itemEntity.getItemAvailabilityStatusId());
         if (!requestItemEntityList.isEmpty()) {
-            for (RequestItemEntity requestItemEntity: requestItemEntityList) {
+            for (RequestItemEntity requestItemEntity : requestItemEntityList) {
                 statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "yes", requestItemEntity.getRequestId().toString(), lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
                 barcodeList.add(itemEntity.getBarcode());
                 requestIdList.add(requestItemEntity.getRequestId());
-                logger.info("found mismatch in item status and refilled for the item id :{}",requestItemEntity.getItemId());
+                logger.info("found mismatch in item status and refilled for the item id :{}", requestItemEntity.getItemId());
             }
         } else {
             statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "No", null, lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
-            getItemDetailsRepository().updateAvailabilityStatus(1,ReCAPConstants.GUEST_USER, itemEntity.getBarcode());
-            ItemChangeLogEntity itemChangeLogEntity = saveItemChangeLogEntity(itemEntity.getItemId(),ReCAPConstants.GUEST_USER,ReCAPConstants.STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE,itemEntity.getBarcode());
+            getItemDetailsRepository().updateAvailabilityStatus(1, ReCAPConstants.GUEST_USER, itemEntity.getBarcode());
+            ItemChangeLogEntity itemChangeLogEntity = saveItemChangeLogEntity(itemEntity.getItemId(), ReCAPConstants.GUEST_USER, ReCAPConstants.STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE, itemEntity.getBarcode());
             itemChangeLogEntityList.add(itemChangeLogEntity);
             itemRequestServiceUtil.updateSolrIndex(itemEntity);
-            logger.info("found mismatch in item status and updated availability status for the item barcode:{}",itemEntity.getBarcode());
+            logger.info("found mismatch in item status and updated availability status for the item barcode:{}", itemEntity.getBarcode());
         }
         if (!barcodeList.isEmpty() && !requestIdList.isEmpty()) {
             ItemRefileRequest itemRefileRequest = new ItemRefileRequest();
@@ -361,10 +361,10 @@ public class GFAService {
      * @param itemEntities the item entities
      * @return the gfa item status check response
      */
-    public GFAItemStatusCheckResponse getGFAItemStatusCheckResponse(List<ItemEntity> itemEntities){
+    public GFAItemStatusCheckResponse getGFAItemStatusCheckResponse(List<ItemEntity> itemEntities) {
         GFAItemStatusCheckResponse gfaItemStatusCheckResponse = new GFAItemStatusCheckResponse();
         List<GFAItemStatus> gfaItemStatusList = new ArrayList<>();
-        if(itemEntities != null) {
+        if (itemEntities != null) {
             for (ItemEntity itemEntity : itemEntities) {
                 GFAItemStatus gfaItemStatus = new GFAItemStatus();
                 gfaItemStatus.setItemBarCode(itemEntity.getBarcode());
@@ -388,13 +388,13 @@ public class GFAService {
      * @param itemStatusEntity the item status entity
      * @return the status reconciliation csv record
      */
-    public StatusReconciliationCSVRecord getStatusReconciliationCSVRecord(String barcode,String availability,String requestId,String statusInLas,String dateTime,ItemStatusEntity itemStatusEntity){
+    public StatusReconciliationCSVRecord getStatusReconciliationCSVRecord(String barcode, String availability, String requestId, String statusInLas, String dateTime, ItemStatusEntity itemStatusEntity) {
         StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
         statusReconciliationCSVRecord.setBarcode(barcode);
         statusReconciliationCSVRecord.setRequestAvailability(availability);
         statusReconciliationCSVRecord.setRequestId(requestId);
         statusReconciliationCSVRecord.setStatusInLas(statusInLas);
-        if(itemStatusEntity != null){
+        if (itemStatusEntity != null) {
             statusReconciliationCSVRecord.setStatusInScsb(itemStatusEntity.getStatusDescription());
         }
         statusReconciliationCSVRecord.setDateTime(dateTime);
@@ -404,7 +404,7 @@ public class GFAService {
 
     private ItemChangeLogEntity saveItemChangeLogEntity(Integer requestId, String deaccessionUser, String operationType, String barcode) {
         ItemChangeLogEntity itemChangeLogEntity = new ItemChangeLogEntity();
-        String notes = "ItemBarcode:"+barcode+" , "+"ItemAvailabilityStatusChange"+ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK;
+        String notes = "ItemBarcode:" + barcode + " , " + "ItemAvailabilityStatusChange" + ReCAPConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK;
         itemChangeLogEntity.setUpdatedBy(deaccessionUser);
         itemChangeLogEntity.setUpdatedDate(new Date());
         itemChangeLogEntity.setOperationType(operationType);
@@ -452,10 +452,10 @@ public class GFAService {
         if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveItem() != null && gfaRetrieveItemResponse.getRetrieveItem().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveItem().getTtitem().isEmpty()) {
             List<Ttitem> titemList = gfaRetrieveItemResponse.getRetrieveItem().getTtitem();
             for (Ttitem ttitem : titemList) {
-                if(StringUtils.isNotBlank(ttitem.getErrorCode())) {
+                if (StringUtils.isNotBlank(ttitem.getErrorCode())) {
                     gfaRetrieveItemResponse.setSuccess(false);
                     gfaRetrieveItemResponse.setScrenMessage(ttitem.getErrorNote());
-                }else{
+                } else {
                     if (gfaRetrieveItemResponse == null) {
                         gfaRetrieveItemResponse = new GFARetrieveItemResponse();
                     }
@@ -512,7 +512,7 @@ public class GFAService {
         } catch (HttpServerErrorException | HttpClientErrorException e) {
             gfaRetrieveItemResponse = new GFARetrieveItemResponse();
             gfaRetrieveItemResponse.setSuccess(false);
-            gfaRetrieveItemResponse.setScrenMessage(ReCAPConstants.REQUEST_LAS_EXCEPTION +  ReCAPConstants.LAS_SERVER_NOT_REACHABLE);
+            gfaRetrieveItemResponse.setScrenMessage(ReCAPConstants.REQUEST_LAS_EXCEPTION + ReCAPConstants.LAS_SERVER_NOT_REACHABLE);
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         } catch (Exception e) {
             gfaRetrieveItemResponse = new GFARetrieveItemResponse();
@@ -562,10 +562,6 @@ public class GFAService {
                 }
 
                 logger.info(gfaOnlyStatus);
-                // Send Email
-                if(gfaOnlyStatus.equalsIgnoreCase(ReCAPConstants.GFA_STATUS_OUT_ON_EDD_WORK_ORDER) || gfaOnlyStatus.equalsIgnoreCase(ReCAPConstants.GFA_STATUS_REFILE_ON_WORK_ORDER)){
-                    sendEmailLasStatus(itemRequestInfo.getItemBarcodes().get(0));
-                }
                 // Call Retrival Order
                 if (ReCAPConstants.getGFAStatusAvailableList().contains(gfaOnlyStatus)) {
                     if (itemRequestInfo.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
@@ -587,49 +583,6 @@ public class GFAService {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemResponseInformation;
-    }
-
-    /**
-     * Gets gfa status.
-     *
-     * @param barcode the barcode
-     * @return the gfa status
-     */
-    public boolean getGFAStatus(String barcode) {
-        GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
-
-        GFAItemStatusCheckResponse gfaItemStatusCheckResponse = null;
-        String itemStatus = "";
-        String gfaOnlyStaus = "";
-        boolean bSuccess = false;
-
-        try {
-            GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
-            gfaItemStatus001.setItemBarCode(barcode);
-            List<GFAItemStatus> gfaItemStatuses = new ArrayList<>();
-            gfaItemStatuses.add(gfaItemStatus001);
-            gfaItemStatusCheckRequest.setItemStatus(gfaItemStatuses);
-            gfaItemStatusCheckResponse = itemStatusCheck(gfaItemStatusCheckRequest);
-            if (gfaItemStatusCheckResponse != null
-                    && gfaItemStatusCheckResponse.getDsitem() != null
-                    && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
-
-                itemStatus = gfaItemStatusCheckResponse.getDsitem().getTtitem().get(0).getItemStatus();
-                if (itemStatus.contains(":")) {
-                    gfaOnlyStaus = itemStatus.substring(0, itemStatus.indexOf(':') + 1).toUpperCase();
-                } else {
-                    gfaOnlyStaus = itemStatus.toUpperCase();
-                }
-                logger.info(gfaOnlyStaus);
-
-                if (ReCAPConstants.getGFAStatusAvailableList().contains(gfaOnlyStaus)) {
-                    bSuccess = true;
-                }
-            }
-        } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
-        }
-        return bSuccess;
     }
 
     private ItemInformationResponse callItemRetrivate(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
@@ -842,10 +795,10 @@ public class GFAService {
         if (gfaRetrieveItemResponse != null && gfaRetrieveItemResponse.getRetrieveEDD() != null && gfaRetrieveItemResponse.getRetrieveEDD().getTtitem() != null && !gfaRetrieveItemResponse.getRetrieveEDD().getTtitem().isEmpty()) {
             List<TtitemEDDResponse> titemList = gfaRetrieveItemResponse.getRetrieveEDD().getTtitem();
             for (TtitemEDDResponse ttitemEDDRequest : titemList) {
-                if(!ttitemEDDRequest.getErrorCode().isEmpty()) {
+                if (!ttitemEDDRequest.getErrorCode().isEmpty()) {
                     gfaRetrieveItemResponse.setSuccess(false);
                     gfaRetrieveItemResponse.setScrenMessage(ttitemEDDRequest.getErrorNote());
-                }else{
+                } else {
                     gfaRetrieveItemResponse.setSuccess(true);
                 }
             }
@@ -866,8 +819,27 @@ public class GFAService {
         return strJson;
     }
 
-    private void sendEmailLasStatus(String itemBarcode) {
-        emailService.sendEmail(itemBarcode,ReCAPConstants.GFA, ReCAPConstants.REQUEST_REFILE_SUBJECT);
+    public LasItemStatusCheckPollingProcessor getLasItemStatusCheckPollingProcessor() {
+        return lasItemStatusCheckPollingProcessor;
     }
 
+    public void setLasItemStatusCheckPollingProcessor(LasItemStatusCheckPollingProcessor lasItemStatusCheckPollingProcessor) {
+        this.lasItemStatusCheckPollingProcessor = lasItemStatusCheckPollingProcessor;
+    }
+
+    private void lasPolling(ItemRequestInformation itemRequestInfo){
+        // Update Request_item_t table with new status - each Item
+        RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_LAS_ITEM_STATUS_PENDING);
+        RequestItemEntity requestItemEntity = requestItemDetailsRepository.findRequestItemByRequestId(itemRequestInfo.getRequestId());
+        requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+        requestItemEntity.setLastUpdatedDate(new Date());
+        requestItemDetailsRepository.save(requestItemEntity);
+
+        // Solr Index - each Item
+        itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
+        if(ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
+            // Start Polling program - Once
+            getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse();
+        }
+    }
 }

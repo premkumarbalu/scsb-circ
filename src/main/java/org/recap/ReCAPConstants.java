@@ -50,9 +50,9 @@ public final class ReCAPConstants {
     public static final String REQUEST_RECALL_MAIL_QUEUE = "requestRecallMailSendQueue";
     public static final String REQUEST_LAS_STATUS_MAIL_QUEUE = "requestLASStatusMailSendQueue";
     public static final String REQUEST_ACCESSION_RECONCILATION_MAIL_QUEUE = "AccessionReconcilation";
-    public static final String REQUEST_INITIAL_DATA_LOAD ="requestInitialDataLoad";
-    public static final String SUBMIT_COLLECTION_EXCEPTION="Exception";
-    public static final String SUBJECT_FOR_SUBMIT_COL_EXCEPTION="Exception Occured during Submit collection";
+    public static final String REQUEST_INITIAL_DATA_LOAD = "requestInitialDataLoad";
+    public static final String SUBMIT_COLLECTION_EXCEPTION = "Exception";
+    public static final String SUBJECT_FOR_SUBMIT_COL_EXCEPTION = "Exception Occured during Submit collection";
 
     public static final String REQUEST_RECALL_EMAIL_TEMPLATE = "request_recall_email_body.vm";
     public static final String REQUEST_LAS_STATUS_EMAIL_TEMPLATE = "request_las_status_email_body.vm";
@@ -161,7 +161,7 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_COMPLETION_QUEUE_FROM = "scsbactivemq:queue:submitCollectionCompletionFromQueue";
     public static final String SUBMIT_COLLECTION_COMPLETION_QUEUE_TO = "scsbactivemq:queue:submitCollectionCompletionToQueue";
     public static final String CAMEL_BATCH_COMPLETE = "CamelBatchComplete";
-    public static final String PROCESS ="process";
+    public static final String PROCESS = "process";
     public static final String SEND_EMAIL_FOR_EMPTY_DIRECTORY = "sendEmailForEmptyDirectory";
 
 
@@ -227,6 +227,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_STATUS_PENDING = "PENDING";
     public static final String REQUEST_STATUS_PROCESSING = "PROCESSING";
     public static final String REQUEST_STATUS_INITIAL_LOAD = "INITIAL_LOAD";
+    public static final String REQUEST_STATUS_LAS_ITEM_STATUS_PENDING = "LAS_ITEM_STATUS_PENDING";
 
     public static final String NYPL_HOLD_DATE_FORMAT = "yyyy-MM-dd";
     public static final String NYPL_RECORD_TYPE = "i";
@@ -249,7 +250,7 @@ public final class ReCAPConstants {
     public static final String GFA_STATUS_OUT_ON_EDD_WORK_ORDER = "OUT ON EDD WO:";
     public static final String GFA_STATUS_REACC_ON_WORK_ORDER = "REACC ON WO:";
     public static final String GFA_STATUS_REFILE_ON_WORK_ORDER = "REFILE ON WO:";
-    public static final String GFA_STATUS_SCH_ON_WORK_ORDER = "SCH ON EDD WO:";
+    public static final String GFA_STATUS_SCH_ON_EDD_WORK_ORDER = "SCH ON EDD WO:";
     public static final String GFA_STATUS_VER_ON_EDD_WORK_ORDER = "VER ON EDD WO:";
     public static final String GFA_STATUS_IN = "IN";
 
@@ -263,11 +264,10 @@ public final class ReCAPConstants {
     public static final String GFA_STATUS_VER_ON_RET_WORK_ORDER = "VER ON RET WO:";
     public static final String GFA_STATUS_VER_ON_WORK_ORDER = "VER ON WO:";
 
-
-    protected static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER, GFA_STATUS_SCH_ON_WORK_ORDER, GFA_STATUS_VER_ON_EDD_WORK_ORDER, GFA_STATUS_IN);
+    protected static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER,  GFA_STATUS_IN);
     protected static final List<String> GFA_STATUS_NOT_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_NOT_ON_FILE, GFA_STATUS_OUT_ON_RETRIVAL_WORK_ORDER, GFA_STATUS_PW_INDIRECT_WORK_ORDER, GFA_STATUS_PW_DIRECT_WORK_ORDER,
-            GFA_STATUS_SCH_ON_RET_WORK_ORDER, GFA_STATUS_VER_ON_PW_INDIRECT_WORK_ORDER, GFA_STATUS_VER_ON_PW_DIRECT_WORK_ORDER, GFA_STATUS_VER_ON_RET_WORK_ORDER, GFA_STATUS_VER_ON_WORK_ORDER);
-
+            GFA_STATUS_SCH_ON_RET_WORK_ORDER, GFA_STATUS_VER_ON_PW_INDIRECT_WORK_ORDER, GFA_STATUS_VER_ON_PW_DIRECT_WORK_ORDER, GFA_STATUS_VER_ON_RET_WORK_ORDER, GFA_STATUS_VER_ON_WORK_ORDER, GFA_STATUS_REFILE_ON_WORK_ORDER,
+            GFA_STATUS_OUT_ON_EDD_WORK_ORDER, GFA_STATUS_VER_ON_EDD_WORK_ORDER, GFA_STATUS_SCH_ON_EDD_WORK_ORDER);
 
     protected static final List<String> REQUEST_TYPE_LIST = Arrays.asList(ReCAPConstants.RETRIEVAL, ReCAPConstants.REQUEST_TYPE_EDD, ReCAPConstants.BORROW_DIRECT, ReCAPConstants.REQUEST_TYPE_RECALL);
 
@@ -316,7 +316,7 @@ public final class ReCAPConstants {
 
 
     //Logger
-    public static final String LOG_ERROR="error-->";
+    public static final String LOG_ERROR = "error-->";
     public static final String GFA_ITEM_STATUS_MISMATCH = "There is a mismatch in item status between SCSB and LAS. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
     public static final String GFA_SERVER_DOWN = "LAS item status check failed to give valid response or LAS is down. Please contact ReCAP staff (<a href=\"mailto:{0}\">{1}</a>) for further assistance.";
     public static final String LAS_DEACCESSION_REJECT_ERROR = "LAS has rejected the {0} request with Error code : \"{1}\" and Error note : \"{2}\".";
@@ -442,7 +442,7 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdProtectedRoute";
     public static final String SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdNotProtectedRoute";
     public static final String SUBMIT_COLLECTION_COMPLETED_ROUTE = "submitCollectionCompletedRoute";
-    public static final String SUBMIT_COLLECTION__CAUGHT_EXCEPTION_METHOD="caughtException";
+    public static final String SUBMIT_COLLECTION__CAUGHT_EXCEPTION_METHOD = "caughtException";
     public static final String SUBMIT_COLLECTION_EXCEPTION_BODY_VM = "submit_collection_exception_body.vm";
 
     public static final String DELETED_MAIL_QUEUE = "deletedRecordsMailSendQueue";
@@ -469,7 +469,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_INITIAL_LOAD_NYPL = "nypl";
     public static final String CAMEL_SPLIT_INDEX = "CamelSplitIndex";
     public static final String REQUEST_INITIAL_LOAD_HEADER = "Barcodes Not Exist In SCSB";
-    public static final String EMAIL_HEADER_REQUEST_PENDING ="Request_Pending";
+    public static final String EMAIL_HEADER_REQUEST_PENDING = "Request_Pending";
     public static final String REQUEST_PENDING_EMAIL_BODY_VM = "requestPendingEmailBody.vm";
 
     // NYPL API URL
@@ -489,7 +489,7 @@ public final class ReCAPConstants {
     public static final String OWN_INSTITUTION_ID = "institutionId";
 
     //Date Pattern
-    public static final String FILE_DATE_FORMAT="yyyyMMdd_HHmmss";
+    public static final String FILE_DATE_FORMAT = "yyyyMMdd_HHmmss";
     public static final String CHECK_IN_REQUEST_SUCCESSFUL = "Check In Request Successful";
     public static final String SCREEN_MESSAGE_ITEM_BARCODE_NOT_FOUND = "Item barcode not found";
     public static final String ITEM_BARCODE_NOT_FOUND = "ITEM_BARCODE_NOT_FOUND";
@@ -507,7 +507,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_INITIAL_LOAD_CUL_DIRECT_ROUTE = "requestInitialLoadCulDirectRoute";
     public static final String REQUEST_INITIAL_LOAD_NYPL_DIRECT_ROUTE = "requestInitialLoadNyplDirectRoute";
     public static final String ACCESSION_RECONCILIATION_HEADER = "Barcodes not present in SCSB";
-    public static final String DIRECT_ROUTE_FOR_EXCEPTION="direct:Exception";
+    public static final String DIRECT_ROUTE_FOR_EXCEPTION = "direct:Exception";
 
     public static final String LAS = "LAS";
     public static final String USER = "User";
@@ -525,6 +525,15 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_JOB_INITIATE_QUEUE = "scsbactivemq:queue:submitCollectionInitiateQ";
     public static final String SUBMIT_COLLECTION_JOB_INITIATE_ROUTE_ID = "scsbactivemq:queue:submitCollectionInitiateRoute";
     public static final String SUBMIT_COLLECTION_JOB_COMPLETION_OUTGOING_QUEUE = "scsbactivemq:queue:submitCollectionCompletionOutgoingQ";
+    public static final String BARCODE_NOT_FOUND_IN_LAS = "Barcode not found in LAS";
+
+    /**
+     * 0 = Initialise Polling Processess
+     * 1 = Started Polling Processess
+     * 2 = Finish Polling Processess
+     *
+     */
+    public static int LAS_ITEM_STATUS_REST_SERVICE_STATUS = 0;
 
     public static final String BULK_REQUEST_ID_TEXT = "Bulk Request Id : ";
 

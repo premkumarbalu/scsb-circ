@@ -141,6 +141,7 @@ public class RequestItemQueueConsumer {
         ItemRequestInformation itemRequestInformation = om.readValue(body, ItemRequestInformation.class);
         getLogger().info("Item Barcode Recevied for Processing Request -> " + itemRequestInformation.getItemBarcodes().get(0));
         getItemRequestService().requestItem(itemRequestInformation, exchange);
+
     }
 
     /**
