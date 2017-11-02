@@ -518,15 +518,23 @@ public class SubmitCollectionDAOService {
         boolean isNonHoldingIdInstitution = Arrays.asList(nonHoldingIdInstitutionArray).contains(institutionCode);
 
         Set<String> barcodeHavingMismatchHoldingsId = new HashSet<>();
-        for(HoldingsEntity incomingHoldingsEntity:incomingHoldingsEntityList){
-            for(HoldingsEntity fetchedHoldingsEntity:fetchedHoldingsEntityList){
-                if (fetchedHoldingsEntity.getOwningInstitutionHoldingsId().equalsIgnoreCase(incomingHoldingsEntity.getOwningInstitutionHoldingsId())) {
-                    copyHoldingsEntity(fetchedHoldingsEntity, incomingHoldingsEntity,false);
-                    isAnyValidHoldingToUpdate = true;
-                } else if(isNonHoldingIdInstitution){//Added to handle non holding id institution
+        if(isNonHoldingIdInstitution){//Added to handle non holding id institution
+            for(HoldingsEntity incomingHoldingsEntity:incomingHoldingsEntityList) {
+                for (HoldingsEntity fetchedHoldingsEntity : fetchedHoldingsEntityList) {
                     manageHoldingWithItem(incomingHoldingsEntity, fetchedHoldingsEntity);
                     isAnyValidHoldingToUpdate = true;
-                } else{
+                }
+            }
+        } else {
+            Map<String,HoldingsEntity> incomingOwningInstHoldingsIdHoldingsEntityMap = getOwningInstHoldingsIdHoldingsEntityMap(incomingHoldingsEntityList);
+            Map<String,HoldingsEntity> fetchedOwningInstHoldingsIdHoldingsEntityMap = getOwningInstHoldingsIdHoldingsEntityMap(fetchedHoldingsEntityList);
+            for(Map.Entry<String,HoldingsEntity> incomingOwningInstHoldingsIdHoldingsEntityMapEntry:incomingOwningInstHoldingsIdHoldingsEntityMap.entrySet()){
+                HoldingsEntity incomingHoldingsEntity = incomingOwningInstHoldingsIdHoldingsEntityMapEntry.getValue();
+                HoldingsEntity fetchedHoldingsEntity = fetchedOwningInstHoldingsIdHoldingsEntityMap.get(incomingOwningInstHoldingsIdHoldingsEntityMapEntry.getKey());
+                if(fetchedHoldingsEntity != null){
+                    copyHoldingsEntity(fetchedHoldingsEntity, incomingHoldingsEntity,false);
+                    isAnyValidHoldingToUpdate = true;
+                } else {
                     for(ItemEntity itemEntity:incomingHoldingsEntity.getItemEntities()){
                         barcodeHavingMismatchHoldingsId.add(itemEntity.getBarcode());
                     }
@@ -577,6 +585,10 @@ public class SubmitCollectionDAOService {
             logger.error(ReCAPConstants.LOG_ERROR,e);
             return null;
         }
+    }
+
+    private Map<String,HoldingsEntity> getOwningInstHoldingsIdHoldingsEntityMap(List<HoldingsEntity> holdingsEntityList){
+        return holdingsEntityList.stream().collect((Collectors.toMap(HoldingsEntity::getOwningInstitutionHoldingsId,holdingsEntity -> holdingsEntity)));
     }
 
     private boolean isDeAccessionedItem(ItemEntity fetchedItemEntity){
