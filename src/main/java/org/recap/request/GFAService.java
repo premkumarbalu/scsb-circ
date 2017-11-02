@@ -544,6 +544,8 @@ public class GFAService {
         String gfaOnlyStatus;
 
         try {
+            logger.info("RequestId " + itemResponseInformation.getRequestId());
+            logger.info("RequestId " + itemRequestInfo.getRequestId());
             GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
             gfaItemStatus001.setItemBarCode(itemRequestInfo.getItemBarcodes().get(0));
             List<GFAItemStatus> gfaItemStatuses = new ArrayList<>();
@@ -600,7 +602,9 @@ public class GFAService {
             RetrieveItemRequest retrieveItem = new RetrieveItemRequest();
             retrieveItem.setTtitem(ttitems);
             gfaRetrieveItemRequest.setRetrieveItem(retrieveItem);
-            logger.info("RequestId"+itemResponseInformation.getRequestId());
+            logger.info("RequestId " + itemResponseInformation.getRequestId());
+            logger.info("RequestId " + itemRequestInfo.getRequestId());
+
             if (isUseQueueLasCall()) { // Queue
                 ObjectMapper objectMapper = new ObjectMapper();
                 String json = objectMapper.writeValueAsString(gfaRetrieveItemRequest);
@@ -828,7 +832,7 @@ public class GFAService {
         this.lasItemStatusCheckPollingProcessor = lasItemStatusCheckPollingProcessor;
     }
 
-    private void lasPolling(ItemRequestInformation itemRequestInfo){
+    private void lasPolling(ItemRequestInformation itemRequestInfo) {
         // Update Request_item_t table with new status - each Item
         RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_LAS_ITEM_STATUS_PENDING);
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findRequestItemByRequestId(itemRequestInfo.getRequestId());
@@ -838,7 +842,7 @@ public class GFAService {
 
         // Solr Index - each Item
         itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
-        if(ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
+        if (ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
             // Start Polling program - Once
             getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse();
         }
