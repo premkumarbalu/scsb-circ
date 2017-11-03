@@ -443,20 +443,33 @@ public class SubmitCollectionDAOService {
         List<HoldingsEntity> fetchedHoldingsEntityList = fetchBibliographicEntity.getHoldingsEntities();
         List<HoldingsEntity> incomingHoldingsEntityList = new ArrayList<>(incomingBibliographicEntity.getHoldingsEntities());
         List<ItemEntity> updatedItemEntityList = new ArrayList<>();
-        boolean isValidHoldingToUpdate = false;
-        boolean isValidItemToUpdate = false;
+        boolean isAnyValidHoldingToUpdate = false;
+        boolean isAnyValidItemToUpdate = false;
         String[] nonHoldingIdInstitutionArray = nonHoldingIdInstitution.split(",");
         String institutionCode = (String) setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId());
         boolean isNonHoldingIdInstitution = Arrays.asList(nonHoldingIdInstitutionArray).contains(institutionCode);
 
-        for(HoldingsEntity incomingHoldingsEntity:incomingHoldingsEntityList){
-            for(HoldingsEntity fetchedHoldingsEntity:fetchedHoldingsEntityList){
-                if (fetchedHoldingsEntity.getOwningInstitutionHoldingsId().equalsIgnoreCase(incomingHoldingsEntity.getOwningInstitutionHoldingsId())) {
-                    copyHoldingsEntity(fetchedHoldingsEntity, incomingHoldingsEntity,false);
-                    isValidHoldingToUpdate = true;
-                } else if(isNonHoldingIdInstitution){//Added to handle non holding id institution
+        Set<String> barcodeHavingMismatchHoldingsId = new HashSet<>();
+        if(isNonHoldingIdInstitution){//Added to handle non holding id institution
+            for(HoldingsEntity incomingHoldingsEntity:incomingHoldingsEntityList) {
+                for (HoldingsEntity fetchedHoldingsEntity : fetchedHoldingsEntityList) {
                     manageHoldingWithItem(incomingHoldingsEntity, fetchedHoldingsEntity);
-                    isValidHoldingToUpdate = true;
+                    isAnyValidHoldingToUpdate = true;
+                }
+            }
+        } else {
+            Map<String,HoldingsEntity> incomingOwningInstHoldingsIdHoldingsEntityMap = getOwningInstHoldingsIdHoldingsEntityMap(incomingHoldingsEntityList);
+            Map<String,HoldingsEntity> fetchedOwningInstHoldingsIdHoldingsEntityMap = getOwningInstHoldingsIdHoldingsEntityMap(fetchedHoldingsEntityList);
+            for(Map.Entry<String,HoldingsEntity> incomingOwningInstHoldingsIdHoldingsEntityMapEntry:incomingOwningInstHoldingsIdHoldingsEntityMap.entrySet()){
+                HoldingsEntity incomingHoldingsEntity = incomingOwningInstHoldingsIdHoldingsEntityMapEntry.getValue();
+                HoldingsEntity fetchedHoldingsEntity = fetchedOwningInstHoldingsIdHoldingsEntityMap.get(incomingOwningInstHoldingsIdHoldingsEntityMapEntry.getKey());
+                if(fetchedHoldingsEntity != null){
+                    copyHoldingsEntity(fetchedHoldingsEntity, incomingHoldingsEntity,false);
+                    isAnyValidHoldingToUpdate = true;
+                } else {
+                    for(ItemEntity itemEntity:incomingHoldingsEntity.getItemEntities()){
+                        barcodeHavingMismatchHoldingsId.add(itemEntity.getBarcode());
+                    }
                 }
             }
         }
@@ -475,7 +488,7 @@ public class SubmitCollectionDAOService {
                     if (fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode())) {
                         if(!isDeAccessionedItem(fetchedItemEntity)) {
                             copyItemEntity(fetchedItemEntity, incomingItemEntity, updatedItemEntityList);
-                            isValidItemToUpdate = true;
+                            isAnyValidItemToUpdate = true;
                         } else {//add exception report for deaccession record
                             addExceptionReport(Arrays.asList(incomingItemEntity),submitCollectionReportInfoMap,ReCAPConstants.SUBMIT_COLLECTION_DEACCESSION_EXCEPTION_RECORD);
                         }
@@ -490,7 +503,7 @@ public class SubmitCollectionDAOService {
         fetchBibliographicEntity.setItemEntities(fetchedItemEntityList);
         try {
             updateCatalogingStatusForBib(fetchBibliographicEntity);
-            if (isValidHoldingToUpdate && isValidItemToUpdate) {
+            if (isAnyValidHoldingToUpdate && isAnyValidItemToUpdate) {
                 savedOrUnsavedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().saveAndFlush(fetchBibliographicEntity);
                 saveItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, ReCAPConstants.SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE,updatedItemEntityList);
             }
