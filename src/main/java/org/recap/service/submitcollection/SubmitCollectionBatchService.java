@@ -5,6 +5,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.marc4j.marc.Record;
 import org.recap.ReCAPConstants;
 import org.recap.model.BibliographicEntity;
+import org.recap.model.HoldingsEntity;
 import org.recap.model.InstitutionEntity;
 import org.recap.model.ItemEntity;
 import org.recap.model.jaxb.BibRecord;
@@ -49,7 +50,7 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
     @Override
     public String processMarc(String inputRecords, Set<Integer> processedBibIds, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, boolean checkLimit
             , boolean isCGDProtection, InstitutionEntity institutionEntity,Set<String> updatedDummyRecordOwnInstBibIdSet) {
-        logger.info("inside SubmitCollectionImprovedService");
+        logger.info("inside SubmitCollectionBatchService");
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String format;
@@ -82,7 +83,8 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
         //TODO need to remove the list - remove the intermediate process
         List<BibliographicEntity> boundwithBibliographicEntityList = new ArrayList<>();
         List<BibliographicEntity> nonBoundWithBibliographicEntityList = new ArrayList<>();
-        prepareBoundWithAndNonBoundWithList(validBibliographicEntityList,nonBoundWithBibliographicEntityList,boundwithBibliographicEntityList);
+        List<BibliographicEntity> splittedBibliographicEntityList = splitBibWithOneItem(validBibliographicEntityList);
+        prepareBoundWithAndNonBoundWithList(splittedBibliographicEntityList,nonBoundWithBibliographicEntityList,boundwithBibliographicEntityList);
 
         Map<String,List<BibliographicEntity>> groupByOwnInstBibIdBibliographicEntityListMap = groupByOwnInstBibIdBibliographicEntityListMap(nonBoundWithBibliographicEntityList);//Added to avoid data discrepancy during multithreading
         Map<String,List<BibliographicEntity>> groupByBarcodeBibliographicEntityListMap = groupByBarcodeBibliographicEntityListMap(boundwithBibliographicEntityList);//Added to avoid data discrepancy during multithreading
@@ -97,6 +99,42 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
         if (!boundwithBibliographicEntityList.isEmpty()) {
             processRecordsInBatchesForBoundWith(boundWithBibliographicEntityObjectList,institutionEntity.getInstitutionId(),submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,updatedDummyRecordOwnInstBibIdSet);//updatedDummyRecordOwnInstBibIdSet is required only for boundwith
         }
+    }
+
+    private List<BibliographicEntity> splitBibWithOneItem(List<BibliographicEntity> bibliographicEntityList){
+        List<BibliographicEntity> splitedBibliographicEntityList = new ArrayList<>();
+        for(BibliographicEntity bibliographicEntity:bibliographicEntityList){
+            if(bibliographicEntity.getItemEntities().size()>1){
+                for(HoldingsEntity holdingsEntity:bibliographicEntity.getHoldingsEntities()){
+                    for (ItemEntity itemEntity:holdingsEntity.getItemEntities()){
+                        BibliographicEntity splitedBibliographicEntity = new BibliographicEntity();
+                        splitedBibliographicEntity.setOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionBibId());
+                        splitedBibliographicEntity.setCatalogingStatus(bibliographicEntity.getCatalogingStatus());
+                        splitedBibliographicEntity.setContent(bibliographicEntity.getContent());
+                        splitedBibliographicEntity.setOwningInstitutionId(bibliographicEntity.getOwningInstitutionId());
+                        splitedBibliographicEntity.setCreatedBy(bibliographicEntity.getCreatedBy());
+                        splitedBibliographicEntity.setCreatedDate(bibliographicEntity.getCreatedDate());
+                        splitedBibliographicEntity.setLastUpdatedBy(bibliographicEntity.getLastUpdatedBy());
+                        splitedBibliographicEntity.setLastUpdatedDate(bibliographicEntity.getLastUpdatedDate());
+                        HoldingsEntity splitedHoldingsEntity = new HoldingsEntity();
+                        splitedHoldingsEntity.setOwningInstitutionId(holdingsEntity.getOwningInstitutionId());
+                        splitedHoldingsEntity.setContent(holdingsEntity.getContent());
+                        splitedHoldingsEntity.setOwningInstitutionHoldingsId(holdingsEntity.getOwningInstitutionHoldingsId());
+                        splitedHoldingsEntity.setCreatedBy(holdingsEntity.getCreatedBy());
+                        splitedHoldingsEntity.setCreatedDate(holdingsEntity.getCreatedDate());
+                        splitedHoldingsEntity.setLastUpdatedBy(holdingsEntity.getLastUpdatedBy());
+                        splitedHoldingsEntity.setLastUpdatedDate(holdingsEntity.getLastUpdatedDate());
+                        splitedHoldingsEntity.setItemEntities(Arrays.asList(itemEntity));
+                        splitedBibliographicEntity.setHoldingsEntities(Arrays.asList(splitedHoldingsEntity));
+                        splitedBibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
+                        splitedBibliographicEntityList.add(splitedBibliographicEntity);
+                    }
+                }
+            } else {
+                splitedBibliographicEntityList.add(bibliographicEntity);
+            }
+        }
+        return splitedBibliographicEntityList;
     }
 
     @Override
