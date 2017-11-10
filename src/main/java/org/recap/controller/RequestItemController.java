@@ -304,12 +304,12 @@ public class RequestItemController {
     }
 
     @RequestMapping(value = "/lasItemStatus", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String lasItemStatusUri(@RequestParam(name="uriEnable", required = true) boolean uriEnable) {
-        String msg ="Uri Enabled = "+uriEnable;
-        if(uriEnable){
-            ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE="http://recapgfa-dev.princeton.edu:9092/lasapi/rest/lasapiSvc/itemStatus";
-        }else{
-            ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE="http://recapgfa-dev.princeton.edu:9092/lasapi/rest/lasapiSvc/itemStatu";
+    public String lasItemStatusUri(@RequestParam(name = "uriEnable", required = true) boolean uriEnable) {
+        String msg = "Uri Enabled = " + uriEnable;
+        if (uriEnable) {
+            ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE = "http://recapgfa-dev.princeton.edu:9092/lasapi/rest/lasapiSvc/itemStatus";
+        } else {
+            ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE = "http://recapgfa-dev.princeton.edu:9092/lasapi/rest/lasapiSvc/itemStatu";
         }
         return msg;
     }
