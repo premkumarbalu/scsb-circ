@@ -846,14 +846,13 @@ public class GFAService {
             requestInformation.setItemResponseInformation(itemResponseInformation);
             json = objectMapper.writeValueAsString(requestInformation);
             logger.info(json);
-            getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, itemRequestInfo.getRequestType());
-            // Solr Index - each Item
-            itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
             if (ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
                 // Start Polling program - Once
                 getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse();
             }
-
+            getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, itemRequestInfo.getRequestType());
+            // Solr Index - each Item
+            itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
         } catch (JsonProcessingException e) {
             logger.error("JsonProcessingException ", e);
         } catch (Exception e) {

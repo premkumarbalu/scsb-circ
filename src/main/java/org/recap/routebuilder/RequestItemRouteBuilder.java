@@ -102,6 +102,7 @@ public class RequestItemRouteBuilder {
                 public void configure() throws Exception {
                     from(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE)
                             .routeId(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID)
+                            .noAutoStartup()
                             .choice()
                             .when(body().isNull())
                                 .process(new StopRouteProcessor(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID))
