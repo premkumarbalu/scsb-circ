@@ -90,7 +90,7 @@ public class ItemValidatorService {
                             if (!checkRequestItemStatus(itemEntity1.getBarcode(), ReCAPConstants.REQUEST_STATUS_EDD)) {
                                 return new ResponseEntity(ReCAPConstants.RECALL_FOR_EDD_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                             }else if (!checkRequestItemStatus(itemEntity1.getBarcode(), ReCAPConstants.REQUEST_STATUS_CANCELED)) {
-                                return new ResponseEntity(ReCAPConstants.RECALL_FOR_EDD_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                                return new ResponseEntity(ReCAPConstants.RECALL_FOR_CANCELLED_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                             }
                         }
 
