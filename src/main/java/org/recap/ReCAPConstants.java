@@ -44,6 +44,7 @@ public final class ReCAPConstants {
     public static final String INITIAL_LOAD_ITEM_EXISTS = "Initial load item(s) cannot be requested/recalled.";
     public static final String EDD_REQUEST_NOT_ALLOWED = "EDD request is not allowed for this customer code";
     public static final String RECALL_FOR_EDD_ITEM = "Recall for existing EDD request is not allowed";
+    public static final String RECALL_FOR_CANCELLED_ITEM = "Recall for Cancelled request is not allowed. Please Refile this Request.";
 
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
