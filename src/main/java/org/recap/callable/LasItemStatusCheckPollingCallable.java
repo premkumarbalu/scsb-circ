@@ -34,7 +34,7 @@ public class LasItemStatusCheckPollingCallable implements Callable {
 
     private GFAItemStatusCheckResponse poll() throws Exception {
         Boolean statusFlag = false;
-        GFAItemStatusCheckResponse gfaItemStatusCheckResponse;
+        GFAItemStatusCheckResponse gfaItemStatusCheckResponse=null;
         GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
         //Todo Pol ItemRequest Rest Service
         GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
@@ -42,11 +42,15 @@ public class LasItemStatusCheckPollingCallable implements Callable {
         List<GFAItemStatus> gfaItemStatuses = new ArrayList<>();
         gfaItemStatuses.add(gfaItemStatus001);
         gfaItemStatusCheckRequest.setItemStatus(gfaItemStatuses);
-        gfaItemStatusCheckResponse = gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
-        if (gfaItemStatusCheckResponse != null
-                && gfaItemStatusCheckResponse.getDsitem() != null
-                && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
-            Thread.sleep(pollingTimeInterval);
+        try {
+            gfaItemStatusCheckResponse = gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
+            if (gfaItemStatusCheckResponse != null
+                    && gfaItemStatusCheckResponse.getDsitem() != null
+                    && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
+                Thread.sleep(pollingTimeInterval);
+            }
+        } catch (Exception e) {
+            logger.error("",e);
         }
         return gfaItemStatusCheckResponse;
     }
