@@ -6,6 +6,7 @@ import org.apache.camel.Exchange;
 import org.recap.ReCAPConstants;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
+import org.recap.model.RequestInformation;
 import org.recap.request.BulkItemRequestProcessService;
 import org.recap.request.BulkItemRequestService;
 import org.recap.request.ItemEDDRequestService;
@@ -115,7 +116,7 @@ public class RequestItemQueueConsumer {
      *
      * @return the object mapper
      */
-    public ObjectMapper getObjectMapper(){
+    public ObjectMapper getObjectMapper() {
         return new ObjectMapper();
     }
 
@@ -124,7 +125,7 @@ public class RequestItemQueueConsumer {
      *
      * @return the logger
      */
-    public Logger getLogger(){
+    public Logger getLogger() {
         return logger;
     }
 
@@ -141,7 +142,6 @@ public class RequestItemQueueConsumer {
         ItemRequestInformation itemRequestInformation = om.readValue(body, ItemRequestInformation.class);
         getLogger().info("Item Barcode Recevied for Processing Request -> " + itemRequestInformation.getItemBarcodes().get(0));
         getItemRequestService().requestItem(itemRequestInformation, exchange);
-
     }
 
     /**
@@ -182,6 +182,21 @@ public class RequestItemQueueConsumer {
         Integer bulkRequestId = (Integer) exchange.getIn().getHeaders().get(ReCAPConstants.BULK_REQUEST_ID);
         getLogger().info("Bulk item request barcode received for bulk request id -> {} is -> {}", bulkRequestId, body);
         getBulkItemRequestProcessService().processBulkRequestItem(body, bulkRequestId);
+    }
+
+    public void requestItemLasStatusCheckOnMessage(@Body String body, Exchange exchange) throws IOException {
+        ObjectMapper om = new ObjectMapper();
+
+        RequestInformation requestInformation = null;
+        try {
+            requestInformation = om.readValue(body, RequestInformation.class);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        if (requestInformation != null) {
+            getItemRequestService().executeLasitemCheck(requestInformation.getItemRequestInfo(), requestInformation.getItemResponseInformation());
+        }
+        getLogger().info("Las Status Check" + body);
     }
 
     /**

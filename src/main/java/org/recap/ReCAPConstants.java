@@ -43,6 +43,7 @@ public final class ReCAPConstants {
     public static final String RECALL_FOR_ITEM_EXISTS = "Recall for this item already exists.";
     public static final String INITIAL_LOAD_ITEM_EXISTS = "Initial load item(s) cannot be requested/recalled.";
     public static final String EDD_REQUEST_NOT_ALLOWED = "EDD request is not allowed for this customer code";
+    public static final String RECALL_FOR_EDD_ITEM = "Recall for existing EDD request is not allowed";
 
     public static final String CHAPTER_TITLE_IS_REQUIRED = "Chapter title is required for the request type EDD.";
 
@@ -76,6 +77,7 @@ public final class ReCAPConstants {
     public static final String SCSB_OUTGOING_QUEUE = "scsbactivemq:queue:scsbOutgoingQ";
     public static final String LAS_OUTGOING_QUEUE = "scsbactivemq:queue:lasOutgoingQ";
     public static final String LAS_INCOMING_QUEUE = "scsbactivemq:queue:lasIncomingQ";
+    public static final String REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE = "scsbactivemq:queue:RequestItemLasStatusCheckQ?asyncConsumer=true";
 
     public static final String PUL_REQUEST_TOPIC = "scsbactivemq:topic:PUL.RequestT";
     public static final String PUL_EDD_TOPIC = "scsbactivemq:topic:PUL.EDDT";
@@ -102,6 +104,7 @@ public final class ReCAPConstants {
     public static final String EMAIL_ROUTE_ID = "RequestRecallEmailRouteId";
     public static final String SCSB_OUTGOING_ROUTE_ID = "LasOutgoingRouteId";
     public static final String LAS_INCOMING_ROUTE_ID = "LasIncomingQueueRouteId";
+    public static final String REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID = "RequestItemLasStatusCheckRouteId";
 
     public static final String PUL_REQUEST_TOPIC_ROUTEID = "PULRequestTopicRouteId";
     public static final String PUL_EDD_TOPIC_ROUTEID = "PULEDDTopicRouteId";

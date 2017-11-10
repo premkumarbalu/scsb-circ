@@ -1,7 +1,9 @@
 package org.recap.processor;
 
+import org.apache.camel.CamelContext;
 import org.recap.ReCAPConstants;
 import org.recap.callable.LasItemStatusCheckPollingCallable;
+import org.recap.camel.route.StartRouteProcessor;
 import org.recap.gfa.model.GFAItemStatusCheckResponse;
 import org.recap.ils.model.response.ItemInformationResponse;
 import org.recap.model.ItemRequestInformation;
@@ -43,47 +45,22 @@ public class LasItemStatusCheckPollingProcessor {
     @Autowired
     ItemRequestServiceUtil itemRequestServiceUtil;
 
+    @Autowired
+    private CamelContext camelContext;
+
+
     public GFAItemStatusCheckResponse pollLasItemStatusJobResponse() {
         GFAItemStatusCheckResponse gfaItemStatusCheckResponse = null;
         ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
             Future<GFAItemStatusCheckResponse> future = executor.submit(new LasItemStatusCheckPollingCallable(pollingTimeInterval, gfaService));
             gfaItemStatusCheckResponse = future.get();
-
-
-            if (gfaItemStatusCheckResponse != null && gfaItemStatusCheckResponse.getDsitem() != null
+            if (gfaItemStatusCheckResponse != null
+                    && gfaItemStatusCheckResponse.getDsitem() != null
                     && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
-                //Todo: Process request with LAS_ITEM_STATUS_PENDING, send it to LAS
-                RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_LAS_ITEM_STATUS_PENDING);
-                List<RequestItemEntity> requestEntities = requestItemDetailsRepository.findByRequestStatusCode(Arrays.asList(requestStatusEntity.getRequestStatusCode()));
-                for (RequestItemEntity requestItemEntity : requestEntities) {
-                    ItemRequestInformation itemRequestInfo = null;
-                    ItemInformationResponse itemResponseInformation = null;
-                    if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
-                        retrivalInforamtion(itemRequestInfo, itemResponseInformation, requestItemEntity);
-                    } else if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
-                        eddInforamtion(itemRequestInfo, itemResponseInformation, requestItemEntity);
-                    }
-
-                    itemResponseInformation = lasRetrivalOrder(itemRequestInfo, itemResponseInformation);
-
-                    if (itemResponseInformation.isSuccess()) {
-                        // Todo: Update Request Table, Item table & solr index
-                        if (itemResponseInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
-                            requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
-                        } else if (itemResponseInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
-                            requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EDD);
-                        }
-                        requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                        requestItemEntity.setLastUpdatedDate(new Date());
-                        requestItemDetailsRepository.save(requestItemEntity);
-                        itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
-                    } else {
-                        return gfaItemStatusCheckResponse;
-                    }
-                    executor.shutdown();
-                }
+                camelContext.startRoute(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
             }
+            executor.shutdown();
         } catch (InterruptedException e) {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         } catch (ExecutionException e) {
@@ -128,7 +105,7 @@ public class LasItemStatusCheckPollingProcessor {
         itemRequestInfo.setRequestId(requestItemEntity.getRequestId());
         itemRequestInfo.setEmailAddress(requestItemEntity.getEmailId());
 
-//        itemRequestInfo.setStartPage();
+        itemRequestInfo.setStartPage(itemRequestInfo.getStartPage());
 //        itemRequestInfo.setEndPage();
 //
 //        itemRequestInfo.setChapterTitle();
@@ -145,4 +122,6 @@ public class LasItemStatusCheckPollingProcessor {
         itemResponseInformation = new ItemInformationResponse();
         itemResponseInformation.setRequestId(requestItemEntity.getRequestId());
     }
+
+
 }

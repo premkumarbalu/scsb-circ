@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
+import org.recap.camel.route.StartRouteProcessor;
 import org.recap.camel.statusreconciliation.StatusReconciliationCSVRecord;
 import org.recap.camel.statusreconciliation.StatusReconciliationErrorCSVRecord;
 import org.recap.gfa.model.*;
@@ -574,6 +575,7 @@ public class GFAService {
                     itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ITEM_NOT_AVAILABLE);
                 }
             } else {
+                lasPolling(itemRequestInfo,itemResponseInformation);
                 itemResponseInformation.setSuccess(false);
                 itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_ITEM_STATUS_CHECK_FAILED);
             }
@@ -830,17 +832,33 @@ public class GFAService {
 
     private void lasPolling(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
         // Update Request_item_t table with new status - each Item
-        RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_LAS_ITEM_STATUS_PENDING);
-        RequestItemEntity requestItemEntity = requestItemDetailsRepository.findRequestItemByRequestId(itemRequestInfo.getRequestId());
-        requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-        requestItemEntity.setLastUpdatedDate(new Date());
-        requestItemDetailsRepository.save(requestItemEntity);
+        try {
+            RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_LAS_ITEM_STATUS_PENDING);
+            RequestItemEntity requestItemEntity = requestItemDetailsRepository.findRequestItemByRequestId(itemRequestInfo.getRequestId());
+            requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+            requestItemEntity.setLastUpdatedDate(new Date());
+            requestItemDetailsRepository.save(requestItemEntity);
 
-        // Solr Index - each Item
-        itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
-        if (ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
-            // Start Polling program - Once
-            getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse();
+            ObjectMapper objectMapper = getObjectMapper();
+            String json = null;
+            RequestInformation requestInformation = new RequestInformation();
+            requestInformation.setItemRequestInfo(itemRequestInfo);
+            requestInformation.setItemResponseInformation(itemResponseInformation);
+            json = objectMapper.writeValueAsString(requestInformation);
+            logger.info(json);
+            getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, itemRequestInfo.getRequestType());
+            // Solr Index - each Item
+            itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
+            if (ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
+                // Start Polling program - Once
+                getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse();
+            }
+
+        } catch (JsonProcessingException e) {
+            logger.error("JsonProcessingException ", e);
+        } catch (Exception e) {
+            logger.error("Exception ", e);
         }
+
     }
 }
