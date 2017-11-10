@@ -43,6 +43,7 @@ public class LasItemStatusCheckPollingCallable implements Callable {
         gfaItemStatuses.add(gfaItemStatus001);
         gfaItemStatusCheckRequest.setItemStatus(gfaItemStatuses);
         try {
+            logger.info("LAS Item Status Check Polling");
             gfaItemStatusCheckResponse = gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
             if (gfaItemStatusCheckResponse != null
                     && gfaItemStatusCheckResponse.getDsitem() != null
