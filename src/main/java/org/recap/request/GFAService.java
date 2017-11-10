@@ -100,7 +100,7 @@ public class GFAService {
      * @return the gfa item status
      */
     public String getGfaItemStatus() {
-        return gfaItemStatus;
+        return ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE;
     }
 
     /**

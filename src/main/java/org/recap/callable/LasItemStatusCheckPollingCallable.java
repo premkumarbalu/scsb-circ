@@ -49,6 +49,7 @@ public class LasItemStatusCheckPollingCallable implements Callable {
                     && gfaItemStatusCheckResponse.getDsitem() != null
                     && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
                 Thread.sleep(pollingTimeInterval);
+                gfaItemStatusCheckResponse = poll();
             }
         } catch (Exception e) {
             logger.error("",e);

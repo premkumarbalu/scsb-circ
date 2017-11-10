@@ -859,32 +859,21 @@ public class ItemRequestService {
     }
 
     public boolean executeLasitemCheck(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
-
-        //Todo: Process request with LAS_ITEM_STATUS_PENDING, send it to LAS
         RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_LAS_ITEM_STATUS_PENDING);
-        List<RequestItemEntity> requestEntities = requestItemDetailsRepository.findByRequestStatusCode(Arrays.asList(requestStatusEntity.getRequestStatusCode()));
-        for (RequestItemEntity requestItemEntity : requestEntities) {
-
-            itemResponseInformation = gfaService.executeRetriveOrder(itemRequestInfo, itemResponseInformation);
-            if (itemResponseInformation.isSuccess()) {
-                // Todo: Update Request Table, Item table & solr index
-                if (itemResponseInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
-                    requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
-                } else if (itemResponseInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_EDD)) {
-                    requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_EDD);
-                }
-                requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-                requestItemEntity.setLastUpdatedDate(new Date());
-                requestItemDetailsRepository.save(requestItemEntity);
-                itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
-            } else {
-                return false;
-            }
-            try {
-                camelContext.stopRoute(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
-            } catch (Exception e) {
-                logger.error("",e);
-            }
+        RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemRequestInfo.getRequestId());
+        itemResponseInformation = gfaService.executeRetriveOrder(itemRequestInfo, itemResponseInformation);
+        if (itemResponseInformation.isSuccess()) {
+            requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_PENDING);
+            requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+            requestItemEntity.setLastUpdatedDate(new Date());
+            requestItemDetailsRepository.save(requestItemEntity);
+        } else {
+            return false;
+        }
+        try {
+            camelContext.stopRoute(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
+        } catch (Exception e) {
+            logger.error("", e);
         }
         return true;
     }
