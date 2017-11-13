@@ -268,8 +268,10 @@ public class GFAService {
         } catch (JsonProcessingException e) {
             logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
         } catch (Exception e) {
-            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+//            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION + " " + e.getMessage());
         }
+
         return gfaItemStatusCheckResponse;
     }
 
@@ -575,7 +577,7 @@ public class GFAService {
                     itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_RETRIVAL_ITEM_NOT_AVAILABLE);
                 }
             } else {
-                lasPolling(itemRequestInfo,itemResponseInformation);
+                lasPolling(itemRequestInfo, itemResponseInformation);
                 itemResponseInformation.setSuccess(false);
                 itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_ITEM_STATUS_CHECK_FAILED);
             }
@@ -838,7 +840,7 @@ public class GFAService {
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
             requestItemEntity.setLastUpdatedDate(new Date());
             requestItemDetailsRepository.save(requestItemEntity);
-            logger.info("lasPolling Saved "+ requestItemEntity.getRequestStatusEntity().getRequestStatusCode());
+            logger.info("lasPolling Saved " + requestItemEntity.getRequestStatusEntity().getRequestStatusCode());
             ObjectMapper objectMapper = getObjectMapper();
             String json = null;
             RequestInformation requestInformation = new RequestInformation();
@@ -850,7 +852,7 @@ public class GFAService {
                 // Start Polling program - Once
                 getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse(itemRequestInfo.getItemBarcodes().get(0));
             }
-            getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER,itemRequestInfo.getRequestType());
+            getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
             // Solr Index - each Item
             itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
         } catch (JsonProcessingException e) {
