@@ -21,11 +21,11 @@ public class LasItemStatusCheckPollingCallable implements Callable {
     private Integer pollingTimeInterval;
 
 
-    public LasItemStatusCheckPollingCallable(Integer pollingTimeInterval, GFAService gfaService) {
+    public LasItemStatusCheckPollingCallable(Integer pollingTimeInterval, GFAService gfaService, String barcode) {
         this.gfaService = gfaService;
         this.pollingTimeInterval = pollingTimeInterval;
+        this.barcode = barcode;
     }
-
 
     @Override
     public GFAItemStatusCheckResponse call() throws Exception {
@@ -33,29 +33,30 @@ public class LasItemStatusCheckPollingCallable implements Callable {
     }
 
     private GFAItemStatusCheckResponse poll() throws Exception {
-        Boolean statusFlag = false;
-        GFAItemStatusCheckResponse gfaItemStatusCheckResponse=null;
+        GFAItemStatusCheckResponse gfaItemStatusCheckResponse = null;
         GFAItemStatusCheckRequest gfaItemStatusCheckRequest = new GFAItemStatusCheckRequest();
-        //Todo Pol ItemRequest Rest Service
+        //Pol ItemRequest Rest Service
         GFAItemStatus gfaItemStatus001 = new GFAItemStatus();
         gfaItemStatus001.setItemBarCode(barcode);
         List<GFAItemStatus> gfaItemStatuses = new ArrayList<>();
         gfaItemStatuses.add(gfaItemStatus001);
         gfaItemStatusCheckRequest.setItemStatus(gfaItemStatuses);
         try {
-            logger.info("LAS Item Status Check Polling");
             gfaItemStatusCheckResponse = gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
+            logger.info("Item Status Check Polling -> "+gfaItemStatusCheckResponse);
             if (gfaItemStatusCheckResponse != null
                     && gfaItemStatusCheckResponse.getDsitem() != null
                     && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
                 Thread.sleep(pollingTimeInterval);
+                logger.info("LAS Item Status Check Polling");
                 gfaItemStatusCheckResponse = poll();
             }
         } catch (Exception e) {
-            logger.error("",e);
+            logger.error("", e);
         }
         return gfaItemStatusCheckResponse;
     }
+
     public static String getBarcode() {
         return barcode;
     }

@@ -848,7 +848,7 @@ public class GFAService {
             logger.info(json);
             if (ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
                 // Start Polling program - Once
-                getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse();
+                getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse(itemRequestInfo.getItemBarcodes().get(0));
             }
             getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER,itemRequestInfo.getRequestType());
             // Solr Index - each Item

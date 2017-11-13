@@ -49,11 +49,11 @@ public class LasItemStatusCheckPollingProcessor {
     private CamelContext camelContext;
 
 
-    public GFAItemStatusCheckResponse pollLasItemStatusJobResponse() {
+    public GFAItemStatusCheckResponse pollLasItemStatusJobResponse(String barcode) {
         GFAItemStatusCheckResponse gfaItemStatusCheckResponse = null;
         ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
-            Future<GFAItemStatusCheckResponse> future = executor.submit(new LasItemStatusCheckPollingCallable(pollingTimeInterval, gfaService));
+            Future<GFAItemStatusCheckResponse> future = executor.submit(new LasItemStatusCheckPollingCallable(pollingTimeInterval, gfaService,barcode));
             gfaItemStatusCheckResponse = future.get();
             if (gfaItemStatusCheckResponse != null
                     && gfaItemStatusCheckResponse.getDsitem() != null
