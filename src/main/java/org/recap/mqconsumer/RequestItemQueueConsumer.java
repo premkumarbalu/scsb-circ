@@ -189,6 +189,7 @@ public class RequestItemQueueConsumer {
 
         RequestInformation requestInformation = null;
         try {
+            logger.info(body);
             requestInformation = om.readValue(body, RequestInformation.class);
         } catch (Exception e) {
             logger.error(e.getMessage());

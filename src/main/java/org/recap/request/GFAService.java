@@ -578,8 +578,8 @@ public class GFAService {
                 }
             } else {
                 lasPolling(itemRequestInfo, itemResponseInformation);
-                itemResponseInformation.setSuccess(false);
-                itemResponseInformation.setScreenMessage(ReCAPConstants.GFA_ITEM_STATUS_CHECK_FAILED);
+                itemResponseInformation.setSuccess(true);
+                itemResponseInformation.setScreenMessage("");
             }
         } catch (Exception e) {
             itemResponseInformation.setSuccess(false);
