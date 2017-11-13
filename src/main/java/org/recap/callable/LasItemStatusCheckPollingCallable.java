@@ -44,9 +44,7 @@ public class LasItemStatusCheckPollingCallable implements Callable {
         try {
             gfaItemStatusCheckResponse = gfaService.itemStatusCheck(gfaItemStatusCheckRequest);
             logger.info("Item Status Check Polling -> "+gfaItemStatusCheckResponse);
-            if (gfaItemStatusCheckResponse != null
-                    && gfaItemStatusCheckResponse.getDsitem() != null
-                    && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
+            if (gfaItemStatusCheckResponse == null) {
                 Thread.sleep(pollingTimeInterval);
                 logger.info("LAS Item Status Check Polling");
                 gfaItemStatusCheckResponse = poll();

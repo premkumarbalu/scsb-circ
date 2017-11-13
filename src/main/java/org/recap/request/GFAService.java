@@ -838,7 +838,7 @@ public class GFAService {
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
             requestItemEntity.setLastUpdatedDate(new Date());
             requestItemDetailsRepository.save(requestItemEntity);
-
+            logger.info("lasPolling Saved "+ requestItemEntity.getRequestStatusEntity().getRequestStatusCode());
             ObjectMapper objectMapper = getObjectMapper();
             String json = null;
             RequestInformation requestInformation = new RequestInformation();
