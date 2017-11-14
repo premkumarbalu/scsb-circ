@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -34,6 +36,7 @@ import java.util.*;
  * Created by sudhishk on 27/1/17.
  */
 @Service
+@EnableAsync
 public class GFAService {
 
     private static final Logger logger = LoggerFactory.getLogger(GFAService.class);
@@ -853,12 +856,9 @@ public class GFAService {
             logger.info("Rest Service Status -> " + ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS);
             if (ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
                 // Start Polling program - Once
-                logger.info("Start Polling Process Once");
-                getProducer().getCamelContext().stopRoute(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
-                getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse(itemRequestInfo.getItemBarcodes().get(0), getProducer().getCamelContext());
-                ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS = 1;
-                logger.info("Rest Service Status -> " + ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS);
+                startPolling(itemRequestInfo.getItemBarcodes().get(0));
             }
+            logger.info("Rest Service Status 01 -> " + ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS);
             getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
             // Solr Index - each Item
             itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
@@ -867,6 +867,17 @@ public class GFAService {
         } catch (Exception e) {
             logger.error("Exception ", e);
         }
+    }
 
+    @Async
+    private void startPolling(String barcode){
+        try {
+            logger.info("Start Polling Process Once");
+            getProducer().getCamelContext().stopRoute(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
+            ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS = 1;
+            getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse(barcode, getProducer().getCamelContext());
+        } catch (Exception e) {
+            logger.error("Exception ", e);
+        }
     }
 }
