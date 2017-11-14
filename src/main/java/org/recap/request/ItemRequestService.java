@@ -871,11 +871,6 @@ public class ItemRequestService {
         } else {
             return false;
         }
-        try {
-            camelContext.stopRoute(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
-        } catch (Exception e) {
-            logger.error("", e);
-        }
         return true;
     }
 }
