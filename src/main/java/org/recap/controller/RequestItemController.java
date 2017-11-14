@@ -127,7 +127,7 @@ public class RequestItemController {
                     itemRequestInformation.getItemOwningInstitution(),
                     itemRequestInformation.getExpirationDate(),
                     itemRequestInformation.getBibId(),
-                    getPickupLocationDB(itemRequestInformation,callInst),
+                    getPickupLocationDB(itemRequestInformation, callInst),
                     itemRequestInformation.getTrackingId(),
                     itemRequestInformation.getTitleIdentifier(),
                     itemRequestInformation.getAuthor(),
@@ -160,7 +160,7 @@ public class RequestItemController {
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                getPickupLocationDB(itemRequestInformation,callInst), itemRequestInformation.getTrackingId());
+                getPickupLocationDB(itemRequestInformation, callInst), itemRequestInformation.getTrackingId());
         return itemHoldCancelResponse;
     }
 
@@ -175,7 +175,7 @@ public class RequestItemController {
     public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemCreateBibResponse itemCreateBibResponse;
         String itemBarcode;
-        logger.info("ESIP CALL FOR -> "+callInstitition);
+        logger.info("ESIP CALL FOR -> " + callInstitition);
         String callInst = callingInsttution(callInstitition, itemRequestInformation);
         if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
             itemBarcode = itemRequestInformation.getItemBarcodes().get(0);
@@ -221,14 +221,14 @@ public class RequestItemController {
     @RequestMapping(value = "/recallItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem recallItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemRecallResponse itemRecallResponse;
-        logger.info("ESIP CALL FOR -> "+callInstitition);
+        logger.info("ESIP CALL FOR -> " + callInstitition);
         String callInst = callingInsttution(callInstitition, itemRequestInformation);
         String itembarcode = itemRequestInformation.getItemBarcodes().get(0);
         itemRecallResponse = (ItemRecallResponse) getJsipConectorFactory().getJSIPConnector(callInst).recallItem(itembarcode, itemRequestInformation.getPatronBarcode(),
                 itemRequestInformation.getRequestingInstitution(),
                 itemRequestInformation.getExpirationDate(),
                 itemRequestInformation.getBibId(),
-                getPickupLocationDB(itemRequestInformation,callInst));
+                getPickupLocationDB(itemRequestInformation, callInst));
         return itemRecallResponse;
     }
 
@@ -269,7 +269,7 @@ public class RequestItemController {
 
 
     @PostMapping("/patronValidationBulkRequest")
-    public Boolean patronValidationBulkRequest(@RequestBody BulkRequestInformation bulkRequestInformation){
+    public Boolean patronValidationBulkRequest(@RequestBody BulkRequestInformation bulkRequestInformation) {
         return jsipConectorFactory.getJSIPConnector(bulkRequestInformation.getRequestingInstitution()).patronValidation(bulkRequestInformation.getRequestingInstitution(), bulkRequestInformation.getPatronBarcode());
     }
 
@@ -301,6 +301,17 @@ public class RequestItemController {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemRefileResponse;
+    }
+
+    @RequestMapping(value = "/lasItemStatus", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public String lasItemStatusUri(@RequestParam(name = "uriEnable", required = true) boolean uriEnable) {
+        String msg = "Uri Enabled = " + uriEnable;
+        if (uriEnable) {
+            ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE = "http://recapgfa-dev.princeton.edu:9092/lasapi/rest/lasapiSvc/itemStatus";
+        } else {
+            ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE = "http://recapgfa-dev.princeton.edu:9092/lasapi/rest/lasapiSvc/itemStatu";
+        }
+        return msg;
     }
 
     /**
@@ -352,7 +363,7 @@ public class RequestItemController {
         return inst;
     }
 
-    private String getPickupLocationDB(ItemRequestInformation itemRequestInformation, String callInstitution){
+    private String getPickupLocationDB(ItemRequestInformation itemRequestInformation, String callInstitution) {
         if (ReCAPConstants.NYPL.equalsIgnoreCase(callInstitution)) {
             return itemRequestInformation.getDeliveryLocation();
         }

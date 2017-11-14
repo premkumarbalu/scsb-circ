@@ -9,6 +9,7 @@ import org.recap.model.ItemRequestInformation;
 import org.recap.model.SearchResultRow;
 import org.recap.repository.ItemDetailsRepository;
 import org.recap.repository.RequestTypeDetailsRepository;
+import org.recap.util.ItemRequestServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class ItemEDDRequestService {
 
     @Autowired
     private ItemRequestService itemRequestService;
+
+    @Autowired
+    private ItemRequestServiceUtil itemRequestServiceUtil;
 
     /**
      * Gets item details repository.
@@ -80,7 +84,7 @@ public class ItemEDDRequestService {
     public ItemInformationResponse eddRequestItem(ItemRequestInformation itemRequestInfo, Exchange exchange) {
 
         List<ItemEntity> itemEntities;
-        ItemEntity itemEntity;
+        ItemEntity itemEntity=null;
         ItemInformationResponse itemResponseInformation = getItemInformationResponse();
         Integer requestId = 0;
         String userNotes = "";
@@ -103,17 +107,27 @@ public class ItemEDDRequestService {
                 userNotes = itemRequestInfo.getRequestNotes();
                 // Add EDD Information to notes to be saved in database
                 itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
-                requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
-                itemRequestInfo.setRequestId(requestId);
-
-                if (getItemRequestService().getGfaService().isUseQueueLasCall()) {
-                    requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
+                boolean isItemStatusAvailable;
+                synchronized (this) {
+                    // Change Item Availablity
+                    isItemStatusAvailable = getItemRequestService().updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
                 }
-                itemRequestInfo.setRequestNotes(userNotes);
-                itemResponseInformation.setItemId(itemEntity.getItemId());
-                itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
-                itemResponseInformation.setRequestId(requestId);
-                itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
+                if (isItemStatusAvailable) {
+                    requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
+                    itemRequestInfo.setRequestId(requestId);
+
+                    if (getItemRequestService().getGfaService().isUseQueueLasCall()) {
+                        requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
+                    }
+                    itemRequestInfo.setRequestNotes(userNotes);
+                    itemResponseInformation.setItemId(itemEntity.getItemId());
+                    itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
+                    itemResponseInformation.setRequestId(requestId);
+                    itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
+                } else {
+                    itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_SCSB_EXCEPTION + ReCAPConstants.WRONG_ITEM_BARCODE);
+                    itemResponseInformation.setSuccess(false);
+                }
                 itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
             } else {
                 itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
@@ -135,6 +149,9 @@ public class ItemEDDRequestService {
                 getItemRequestService().updateChangesToDb(itemResponseInformation, ReCAPConstants.REQUEST_TYPE_EDD + "-" + itemResponseInformation.getRequestingInstitution());
             } else {
                 itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes());
+                if(itemEntity != null) {
+                    itemRequestServiceUtil.updateSolrIndex(itemEntity);
+                }
             }
             // Update Topics
             getItemRequestService().sendMessageToTopic(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getRequestType(), itemResponseInformation, exchange);

@@ -3,6 +3,8 @@ package org.recap.routebuilder;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.recap.ReCAPConstants;
+import org.recap.camel.route.StartRouteProcessor;
+import org.recap.camel.route.StopRouteProcessor;
 import org.recap.mqconsumer.RequestItemQueueConsumer;
 import org.recap.request.BulkItemRequestProcessService;
 import org.recap.request.BulkItemRequestService;
@@ -95,6 +97,22 @@ public class RequestItemRouteBuilder {
                 }
             });
 
+            camelContext.addRoutes(new RouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    from(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE)
+                            .routeId(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID)
+                            .noAutoStartup()
+                            .choice()
+                                .when(body().isNull())
+                                    .log("No Requests To Process")
+                                .otherwise()
+                                    .log("Start Route 1")
+                                    .process(new StartRouteProcessor(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID))
+                                    .bean(new RequestItemQueueConsumer(itemRequestService), "requestItemLasStatusCheckOnMessage")
+                            .endChoice();
+                }
+            });
             /* PUL Topics*/
             camelContext.addRoutes(new RouteBuilder() {
                 @Override

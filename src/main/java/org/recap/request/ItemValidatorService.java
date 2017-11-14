@@ -85,6 +85,15 @@ public class ItemValidatorService {
                         } else if (availabilityStatus.equalsIgnoreCase(ReCAPConstants.AVAILABLE) && itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
                             return new ResponseEntity(ReCAPConstants.RECALL_NOT_FOR_AVAILABLE_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                         }
+
+                        if(itemRequestInformation.getRequestType().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RECALL)) {
+                            if (!checkRequestItemStatus(itemEntity1.getBarcode(), ReCAPConstants.REQUEST_STATUS_EDD)) {
+                                return new ResponseEntity(ReCAPConstants.RECALL_FOR_EDD_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                            }else if (!checkRequestItemStatus(itemEntity1.getBarcode(), ReCAPConstants.REQUEST_STATUS_CANCELED)) {
+                                return new ResponseEntity(ReCAPConstants.RECALL_FOR_CANCELLED_ITEM, getHttpHeaders(), HttpStatus.BAD_REQUEST);
+                            }
+                        }
+
                         if (!checkRequestItemStatus(itemEntity1.getBarcode(), ReCAPConstants.REQUEST_STATUS_RECALLED)) {
                             return new ResponseEntity(ReCAPConstants.RECALL_FOR_ITEM_EXISTS, getHttpHeaders(), HttpStatus.BAD_REQUEST);
                         }
