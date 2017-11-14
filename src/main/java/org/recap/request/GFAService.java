@@ -6,6 +6,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.camel.route.StartRouteProcessor;
+import org.recap.camel.route.StopRouteProcessor;
 import org.recap.camel.statusreconciliation.StatusReconciliationCSVRecord;
 import org.recap.camel.statusreconciliation.StatusReconciliationErrorCSVRecord;
 import org.recap.gfa.model.*;
@@ -850,6 +851,8 @@ public class GFAService {
             logger.info(json);
             if (ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
                 // Start Polling program - Once
+                logger.info("Start Polling Process Once");
+                StopRouteProcessor stopRouteProcessor = new StopRouteProcessor(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
                 getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse(itemRequestInfo.getItemBarcodes().get(0));
             }
             getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
