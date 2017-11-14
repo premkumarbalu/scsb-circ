@@ -850,11 +850,14 @@ public class GFAService {
             requestInformation.setItemResponseInformation(itemResponseInformation);
             json = objectMapper.writeValueAsString(requestInformation);
             logger.info(json);
+            logger.info("Rest Service Status -> " + ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS);
             if (ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
                 // Start Polling program - Once
                 logger.info("Start Polling Process Once");
-                StopRouteProcessor stopRouteProcessor = new StopRouteProcessor(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
-                getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse(itemRequestInfo.getItemBarcodes().get(0),getProducer().getCamelContext());
+                getProducer().getCamelContext().stopRoute(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
+                getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse(itemRequestInfo.getItemBarcodes().get(0), getProducer().getCamelContext());
+                ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS = 1;
+                logger.info("Rest Service Status -> " + ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS);
             }
             getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
             // Solr Index - each Item
