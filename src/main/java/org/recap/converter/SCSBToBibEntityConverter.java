@@ -111,6 +111,9 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
                         holdingsEntities.add(holdingsEntity);
                     }
                     String holdingsCallNumber = marcUtil.getDataFieldValue(holdingsRecords.get(0), "852", 'h');
+                    if(holdingsCallNumber == null){
+                        holdingsCallNumber = "";
+                    }
                     Character holdingsCallNumberType = marcUtil.getInd1(holdingsRecords.get(0), "852", 'h');
                     List<Items> itemEntityList = holding.getItems();
                     for(Items items:itemEntityList){
@@ -260,7 +263,7 @@ public class SCSBToBibEntityConverter implements XmlToBibEntityConverterInterfac
             itemEntity.setCustomerCode(customerCode);
         }
         itemEntity.setCallNumber(holdingsCallNumber);
-        itemEntity.setCallNumberType(String.valueOf(holdingsCallNumberType));
+        itemEntity.setCallNumberType(holdingsCallNumberType != null ? String.valueOf(holdingsCallNumberType) : "");
         String copyNumber = marcUtil.getDataFieldValue(itemRecord, "876", 't');
         if (StringUtils.isNotBlank(copyNumber) && org.apache.commons.lang3.math.NumberUtils.isNumber(copyNumber)) {
             itemEntity.setCopyNumber(Integer.valueOf(copyNumber));
