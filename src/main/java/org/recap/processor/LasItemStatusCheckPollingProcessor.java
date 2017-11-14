@@ -45,17 +45,13 @@ public class LasItemStatusCheckPollingProcessor {
     @Autowired
     ItemRequestServiceUtil itemRequestServiceUtil;
 
-    @Autowired
-    private CamelContext camelContext;
-
-
-    public GFAItemStatusCheckResponse pollLasItemStatusJobResponse(String barcode) {
+    public GFAItemStatusCheckResponse pollLasItemStatusJobResponse(String barcode, CamelContext camelContext) {
         GFAItemStatusCheckResponse gfaItemStatusCheckResponse = null;
         ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
             Future<GFAItemStatusCheckResponse> future = executor.submit(new LasItemStatusCheckPollingCallable(pollingTimeInterval, gfaService, barcode));
             gfaItemStatusCheckResponse = future.get();
-            logger.info("Process -1 -> "+gfaItemStatusCheckResponse);
+            logger.info("Process -1 -> " + gfaItemStatusCheckResponse);
             ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS = 1;
             if (gfaItemStatusCheckResponse != null
                     && gfaItemStatusCheckResponse.getDsitem() != null

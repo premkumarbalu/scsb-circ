@@ -95,6 +95,7 @@ public class GFAService {
     @Autowired
     RequestItemStatusDetailsRepository requestItemStatusDetailsRepository;
 
+
     /**
      * Gets gfa item status.
      *
@@ -853,7 +854,7 @@ public class GFAService {
                 // Start Polling program - Once
                 logger.info("Start Polling Process Once");
                 StopRouteProcessor stopRouteProcessor = new StopRouteProcessor(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
-                getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse(itemRequestInfo.getItemBarcodes().get(0));
+                getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse(itemRequestInfo.getItemBarcodes().get(0),getProducer().getCamelContext());
             }
             getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
             // Solr Index - each Item
