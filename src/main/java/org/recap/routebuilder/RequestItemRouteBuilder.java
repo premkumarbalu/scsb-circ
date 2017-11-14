@@ -106,7 +106,6 @@ public class RequestItemRouteBuilder {
                             .choice()
                                 .when(body().isNull())
                                     .log("No Requests To Process")
-    //                                .process(new StopRouteProcessor(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID))
                                 .otherwise()
                                     .log("Start Route 1")
                                     .process(new StartRouteProcessor(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID))

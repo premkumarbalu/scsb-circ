@@ -272,7 +272,6 @@ public class GFAService {
         } catch (JsonProcessingException e) {
             logger.error(ReCAPConstants.REQUEST_PARSE_EXCEPTION, e);
         } catch (Exception e) {
-//            logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
             logger.error(ReCAPConstants.REQUEST_EXCEPTION + " " + e.getMessage());
         }
 
