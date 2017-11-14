@@ -36,7 +36,6 @@ import java.util.*;
  * Created by sudhishk on 27/1/17.
  */
 @Service
-@EnableAsync
 public class GFAService {
 
     private static final Logger logger = LoggerFactory.getLogger(GFAService.class);
@@ -854,14 +853,12 @@ public class GFAService {
             json = objectMapper.writeValueAsString(requestInformation);
             logger.info(json);
             logger.info("Rest Service Status -> " + ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS);
+            getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
+            itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
             if (ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
                 // Start Polling program - Once
                 startPolling(itemRequestInfo.getItemBarcodes().get(0));
             }
-            logger.info("Rest Service Status 01 -> " + ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS);
-            getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
-            // Solr Index - each Item
-            itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
         } catch (JsonProcessingException e) {
             logger.error("JsonProcessingException ", e);
         } catch (Exception e) {
@@ -869,8 +866,7 @@ public class GFAService {
         }
     }
 
-    @Async
-    private void startPolling(String barcode){
+    public void startPolling(String barcode){
         try {
             logger.info("Start Polling Process Once");
             getProducer().getCamelContext().stopRoute(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
