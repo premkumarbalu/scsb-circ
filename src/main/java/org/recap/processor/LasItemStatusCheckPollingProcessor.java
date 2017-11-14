@@ -56,12 +56,12 @@ public class LasItemStatusCheckPollingProcessor {
             Future<GFAItemStatusCheckResponse> future = executor.submit(new LasItemStatusCheckPollingCallable(pollingTimeInterval, gfaService, barcode));
             gfaItemStatusCheckResponse = future.get();
             logger.info("Process -1 -> "+gfaItemStatusCheckResponse);
+            ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS = 1;
             if (gfaItemStatusCheckResponse != null
                     && gfaItemStatusCheckResponse.getDsitem() != null
                     && gfaItemStatusCheckResponse.getDsitem().getTtitem() != null && !gfaItemStatusCheckResponse.getDsitem().getTtitem().isEmpty()) {
                 logger.info("Start Route");
                 camelContext.startRoute(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
-                ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS = 1;
             }
             executor.shutdown();
         } catch (InterruptedException e) {

@@ -197,7 +197,7 @@ public class RequestItemQueueConsumer {
         if (requestInformation != null) {
             getItemRequestService().executeLasitemCheck(requestInformation.getItemRequestInfo(), requestInformation.getItemResponseInformation());
         }
-        getLogger().info("Las Status Check-> " + body);
+        getLogger().info("End On Message");
     }
 
     /**

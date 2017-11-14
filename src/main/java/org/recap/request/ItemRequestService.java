@@ -859,9 +859,10 @@ public class ItemRequestService {
     }
 
     public boolean executeLasitemCheck(ItemRequestInformation itemRequestInfo, ItemInformationResponse itemResponseInformation) {
-        RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_LAS_ITEM_STATUS_PENDING);
+        RequestStatusEntity requestStatusEntity = null;
         RequestItemEntity requestItemEntity = requestItemDetailsRepository.findByRequestId(itemRequestInfo.getRequestId());
         itemResponseInformation = gfaService.executeRetriveOrder(itemRequestInfo, itemResponseInformation);
+        logger.info("itemResponseInformation-> " + itemResponseInformation.isSuccess());
         if (itemResponseInformation.isSuccess()) {
             requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_PENDING);
             requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
