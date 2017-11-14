@@ -853,6 +853,9 @@ public class GFAService {
             json = objectMapper.writeValueAsString(requestInformation);
             logger.info(json);
             logger.info("Rest Service Status -> " + ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS);
+            if (ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
+                getProducer().getCamelContext().stopRoute(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
+            }
             getProducer().sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInfo.getRequestType());
             itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
             if (ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS == 0) {
@@ -866,10 +869,9 @@ public class GFAService {
         }
     }
 
-    public void startPolling(String barcode){
+    public void startPolling(String barcode) {
         try {
             logger.info("Start Polling Process Once");
-            getProducer().getCamelContext().stopRoute(ReCAPConstants.REQUEST_ITEM_LAS_STATUS_CHECK_QUEUE_ROUTEID);
             ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS = 1;
             getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse(barcode, getProducer().getCamelContext());
         } catch (Exception e) {
