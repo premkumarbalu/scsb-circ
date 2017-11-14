@@ -1,5 +1,6 @@
 package org.recap.callable;
 
+import org.recap.ReCAPConstants;
 import org.recap.gfa.model.GFAItemStatus;
 import org.recap.gfa.model.GFAItemStatusCheckRequest;
 import org.recap.gfa.model.GFAItemStatusCheckResponse;
@@ -49,6 +50,7 @@ public class LasItemStatusCheckPollingCallable implements Callable {
                 logger.info("LAS Item Status Check Polling");
                 gfaItemStatusCheckResponse = poll();
             }
+            ReCAPConstants.LAS_ITEM_STATUS_REST_SERVICE_STATUS = 0;
         } catch (Exception e) {
             logger.error("", e);
         }
