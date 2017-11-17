@@ -532,6 +532,22 @@ public final class ReCAPConstants {
     public static final String BARCODE_NOT_FOUND_IN_LAS = "Barcode not found in LAS";
     public static String LAS_ITEM_STATUS_REST_SERVICE = "http://recapgfa-dev.princeton.edu:9092/lasapi/rest/lasapiSvc/itemStatus";
 
+    public static final String DEFAULT_DATE_FORMAT = "dd-MM-yyyy hh:mm";
+    public static final String REQUEST_STATUS = "RequestStatus";
+    public static final String REQUEST_IDS = "RequestIds";
+    public static final String REQUEST_IDS_RANGE = "RangeOfRequestIds";
+    public static final String REQUEST_DATES_RANGE = "RangeOfRequestDates";
+    public static final String TOTAL_REQUESTS_FOUND = "TotalRequestsFound";
+    public static final String TOTAL_REQUESTS_IDS = "TotalRequestIds";
+    public static final String INVALID_REQUEST = "InvalidRequest";
+    public static final String NO_REQUESTS_FOUND = "No requests found.";
+    public static final String IGNORE_REQUEST_TYPE_NOT_VALID = "Ignored as the request type is ";
+    public static final String REQUEST_STATUS_INVALID = "Provide request status value. Allowed values are : PENDING";
+    public static final String REQUEST_IDS_INVALID = "Provide comma separated request Ids.";
+    public static final String REQUEST_START_END_IDS_INVALID = "Provide start request id and end request id.";
+    public static final String REQUEST_DATES_INVALID = "Provide request from date and to date.";
+    public static final String REQUEST_REPLACE_BY_TYPE_INVALID = "Invalid replace request type. Allowed values for \"replaceRequestByType\" are :  RequestStatus, RequestIds, RangeOfRequestIds, RangeOfRequestDates";
+    public static final String REQUEST_REPLACE_BY_TYPE_NOT_SELECTED = "Provide one of the values to \"replaceRequestByType\" :  RequestStatus, RequestIds, RangeOfRequestIds, RangeOfRequestDates";
 
     /**
      * 0 = Initialise Polling Processess

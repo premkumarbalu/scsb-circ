@@ -4,10 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.ils.JSIPConnectorFactory;
 import org.recap.ils.model.response.*;
-import org.recap.model.BulkRequestInformation;
-import org.recap.model.ItemRefileRequest;
-import org.recap.model.ItemRefileResponse;
-import org.recap.model.ItemRequestInformation;
+import org.recap.model.*;
 import org.recap.request.ItemRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 /**
  * Created by sudhishk on 16/11/16.
@@ -301,6 +299,17 @@ public class RequestItemController {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, e);
         }
         return itemRefileResponse;
+    }
+
+    /**
+     * This method will replace the requests to LAS queue.
+     *
+     * @param replaceRequest the replace request
+     * @return the string response
+     */
+    @RequestMapping(value = "/replaceRequest", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Map<String, String> replaceRequest(@RequestBody ReplaceRequest replaceRequest) {
+        return itemRequestService.replaceRequestsToLASQueue(replaceRequest);
     }
 
     @RequestMapping(value = "/lasItemStatus", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
