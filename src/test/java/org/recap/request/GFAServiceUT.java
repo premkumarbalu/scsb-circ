@@ -23,6 +23,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.sql.Time;
 import java.util.Arrays;
 import java.util.Date;
@@ -377,4 +379,25 @@ public class GFAServiceUT extends BaseTestCase{
         return itemInformationResponse;
     }
 
+    @Test
+    public void testBuildingEddInfoForGFAFromRequestNotes() throws Exception {
+        String notes = "User: 1\n" +
+                "\n" +
+                "Start Page: 1 \n" +
+                "End Page: 2 \n" +
+                "Volume Number: 3 \n" +
+                "Issue: 4 \n" +
+                "Article Author: author \n" +
+                "Article/Chapter Title: title";
+
+        TtitemEDDResponse ttitem001 = new TtitemEDDResponse();
+        new BufferedReader(new StringReader(notes)).lines().forEach(line -> getGfaService.setEddInfoToGfaRequest(line, ttitem001));
+        assertNotNull(ttitem001);
+        assertEquals("1", ttitem001.getStartPage());
+        assertEquals("2", ttitem001.getEndPage());
+        assertEquals("3", ttitem001.getArticleVolume());
+        assertEquals("4", ttitem001.getArticleIssue());
+        assertEquals("author", ttitem001.getArticleAuthor());
+        assertEquals("title", ttitem001.getArticleTitle());
+    }
 }

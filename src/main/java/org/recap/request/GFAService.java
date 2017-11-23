@@ -3,10 +3,9 @@ package org.recap.request;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.ProducerTemplate;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
-import org.recap.camel.route.StartRouteProcessor;
-import org.recap.camel.route.StopRouteProcessor;
 import org.recap.camel.statusreconciliation.StatusReconciliationCSVRecord;
 import org.recap.camel.statusreconciliation.StatusReconciliationErrorCSVRecord;
 import org.recap.gfa.model.*;
@@ -21,16 +20,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by sudhishk on 27/1/17.
@@ -875,6 +877,117 @@ public class GFAService {
             getLasItemStatusCheckPollingProcessor().pollLasItemStatusJobResponse(barcode, getProducer().getCamelContext());
         } catch (Exception e) {
             logger.error("Exception ", e);
+        }
+    }
+
+    /**
+     * Builds retrieval request order info and replaces into LAS queue.
+     * @param requestItemEntity
+     * @return
+     */
+    public String buildRetrieveRequestInfoAndReplaceToLAS(RequestItemEntity requestItemEntity) {
+        try {
+            GFARetrieveItemRequest gfaRetrieveItemRequest = buildGFARetrieveItemRequest(requestItemEntity);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = objectMapper.writeValueAsString(gfaRetrieveItemRequest);
+            getProducer().sendBodyAndHeader(ReCAPConstants.SCSB_OUTGOING_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, requestItemEntity.getRequestTypeEntity().getRequestTypeCode());
+        } catch (Exception exception) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, exception);
+            return ReCAPConstants.FAILURE + ":" + exception.getMessage();
+        }
+        return ReCAPConstants.SUCCESS;
+    }
+
+    /**
+     * Builds edd request order info and replaces into LAS queue.
+     * @param requestItemEntity
+     * @return
+     */
+    public String buildEddRequestInfoAndReplaceToLAS(RequestItemEntity requestItemEntity) {
+        try {
+            GFARetrieveEDDItemRequest gfaRetrieveEDDItemRequest = buildGFAEddItemRequest(requestItemEntity);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = objectMapper.writeValueAsString(gfaRetrieveEDDItemRequest);
+            getProducer().sendBodyAndHeader(ReCAPConstants.SCSB_OUTGOING_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, requestItemEntity.getRequestTypeEntity().getRequestTypeCode());
+        } catch (Exception exception) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, exception);
+            return ReCAPConstants.FAILURE + ":" + exception.getMessage();
+        }
+        return ReCAPConstants.SUCCESS;
+    }
+
+    /**
+     * Builds retrieval request order info.
+     * @param requestItemEntity
+     * @return
+     */
+    private GFARetrieveItemRequest buildGFARetrieveItemRequest(RequestItemEntity requestItemEntity) {
+        GFARetrieveItemRequest gfaRetrieveItemRequest = new GFARetrieveItemRequest();
+        TtitemRequest ttitem001 = new TtitemRequest();
+        ttitem001.setCustomerCode(requestItemEntity.getItemEntity().getCustomerCode());
+        ttitem001.setItemBarcode(requestItemEntity.getItemEntity().getBarcode());
+        ttitem001.setDestination(requestItemEntity.getStopCode());
+        ttitem001.setRequestId(String.valueOf(requestItemEntity.getRequestId()));
+        ttitem001.setRequestor(requestItemEntity.getPatronId());
+        RetrieveItemRequest retrieveItem = new RetrieveItemRequest();
+        retrieveItem.setTtitem(Arrays.asList(ttitem001));
+        gfaRetrieveItemRequest.setRetrieveItem(retrieveItem);
+        return gfaRetrieveItemRequest;
+    }
+
+    /**
+     * Builds edd request order info.
+     * @param requestItemEntity
+     * @return
+     */
+    private GFARetrieveEDDItemRequest buildGFAEddItemRequest(RequestItemEntity requestItemEntity) {
+        GFARetrieveEDDItemRequest gfaRetrieveEDDItemRequest = new GFARetrieveEDDItemRequest();
+        ItemEntity itemEntity = requestItemEntity.getItemEntity();
+        TtitemEDDResponse ttitem001 = new TtitemEDDResponse();
+        ttitem001.setCustomerCode(itemEntity.getCustomerCode());
+        ttitem001.setItemBarcode(itemEntity.getBarcode());
+        ttitem001.setRequestId(requestItemEntity.getRequestId());
+        ttitem001.setRequestor(requestItemEntity.getPatronId());
+        ttitem001.setRequestorEmail(requestItemEntity.getEmailId());
+
+        String notes = requestItemEntity.getNotes();
+        ttitem001.setNotes(notes);
+        new BufferedReader(new StringReader(notes)).lines().forEach(line -> setEddInfoToGfaRequest(line, ttitem001));
+        ttitem001.setArticleVolume(ttitem001.getArticleVolume() + ", " + ttitem001.getArticleIssue());
+
+        SearchResultRow searchResultRow = itemRequestService.searchRecords(itemEntity);
+        ttitem001.setBiblioTitle(itemRequestService.getTitle(null, itemEntity, searchResultRow));
+        ttitem001.setBiblioAuthor(searchResultRow.getAuthor());
+        ttitem001.setBiblioVolume(itemEntity.getVolumePartYear());
+        ttitem001.setBiblioLocation(itemEntity.getCallNumber());
+
+        RetrieveItemEDDRequest retrieveItemEDDRequest = new RetrieveItemEDDRequest();
+        retrieveItemEDDRequest.setTtitem(Arrays.asList(ttitem001));
+        gfaRetrieveEDDItemRequest.setRetrieveEDD(retrieveItemEDDRequest);
+        return gfaRetrieveEDDItemRequest;
+    }
+
+    /**
+     * Builds edd info from request notes.
+     * @param line
+     * @param ttitem001
+     */
+    public void setEddInfoToGfaRequest(String line, TtitemEDDResponse ttitem001) {
+        String[] splitData = line.split(":");
+        if (ArrayUtils.isNotEmpty(splitData) && splitData.length > 1) {
+            if ("Start Page".equals(splitData[0])) {
+                ttitem001.setStartPage(splitData[1].trim());
+            } else if ("End Page".equals(splitData[0])) {
+                ttitem001.setEndPage(splitData[1].trim());
+            } else if ("Volume Number".equals(splitData[0])) {
+                ttitem001.setArticleVolume(splitData[1].trim());
+            } else if ("Issue".equals(splitData[0])) {
+                ttitem001.setArticleIssue(splitData[1].trim());
+            } else if ("Article Author".equals(splitData[0])) {
+                ttitem001.setArticleAuthor(splitData[1].trim());
+            } else if ("Article/Chapter Title".equals(splitData[0])) {
+                ttitem001.setArticleTitle(splitData[1].trim());
+            }
         }
     }
 }

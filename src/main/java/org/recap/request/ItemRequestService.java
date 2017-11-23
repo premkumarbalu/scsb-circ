@@ -6,6 +6,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.builder.DefaultFluentProducerTemplate;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.controller.RequestItemController;
@@ -31,10 +32,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Class for Request Item Service
@@ -872,5 +872,105 @@ public class ItemRequestService {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Replaces the requests to LAS Queue.
+     * @param replaceRequest
+     * @return
+     */
+    public Map<String, String> replaceRequestsToLASQueue(ReplaceRequest replaceRequest) {
+        Map<String, String> resultMap = new HashMap<>();
+        String replaceRequestByType = replaceRequest.getReplaceRequestByType();
+        try {
+            if (StringUtils.isNotBlank(replaceRequestByType)) {
+                resultMap = replaceRequestToLASQueueByType(replaceRequest, replaceRequestByType);
+            } else {
+                resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_REPLACE_BY_TYPE_NOT_SELECTED);
+            }
+        } catch (Exception exception) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, exception);
+            resultMap.put(ReCAPConstants.FAILURE, exception.getMessage());
+        }
+        return resultMap;
+    }
+
+    /**
+     * Replaces the requests to LAS Queue based on the replace request type.
+     * @param replaceRequest
+     * @param replaceRequestByType
+     * @return
+     * @throws ParseException
+     */
+    private Map<String, String> replaceRequestToLASQueueByType(ReplaceRequest replaceRequest, String replaceRequestByType) throws ParseException {
+        Map<String, String> resultMap = new HashMap<>();
+        if (ReCAPConstants.REQUEST_STATUS.equalsIgnoreCase(replaceRequestByType)) {
+            String requestStatus = replaceRequest.getRequestStatus();
+            if (StringUtils.isNotBlank(requestStatus) && ReCAPConstants.REQUEST_STATUS_PENDING.equalsIgnoreCase(requestStatus)) {
+                List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.findByRequestStatusCode(Arrays.asList(ReCAPConstants.REQUEST_STATUS_PENDING));
+                resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
+            } else {
+                resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_STATUS_INVALID);
+            }
+        } else if (ReCAPConstants.REQUEST_IDS.equalsIgnoreCase(replaceRequestByType)) {
+            if (StringUtils.isNotBlank(replaceRequest.getRequestIds())) {
+                List<Integer> requestIds = new ArrayList<>();
+                Arrays.stream(replaceRequest.getRequestIds().split(",")).forEach(requestId -> requestIds.add(Integer.valueOf(requestId.trim())));
+                List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.findByRequestIdIn(requestIds);
+                resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
+                resultMap.put(ReCAPConstants.TOTAL_REQUESTS_IDS, String.valueOf(requestIds.size()));
+            } else {
+                resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_IDS_INVALID);
+            }
+        } else if (ReCAPConstants.REQUEST_IDS_RANGE.equalsIgnoreCase(replaceRequestByType)) {
+            if (StringUtils.isNotBlank(replaceRequest.getStartRequestId()) && StringUtils.isNotBlank(replaceRequest.getEndRequestId())) {
+                Integer startRequestId = Integer.valueOf(replaceRequest.getStartRequestId());
+                Integer endRequestId = Integer.valueOf(replaceRequest.getEndRequestId());
+                List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.getRequestsBasedOnRequestIdRange(startRequestId, endRequestId);
+                resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
+            } else {
+                resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_START_END_IDS_INVALID);
+            }
+        } else if (ReCAPConstants.REQUEST_DATES_RANGE.equalsIgnoreCase(replaceRequestByType)) {
+            if (StringUtils.isNotBlank(replaceRequest.getFromDate()) && StringUtils.isNotBlank(replaceRequest.getToDate())) {
+                SimpleDateFormat dateFormatter = new SimpleDateFormat(ReCAPConstants.DEFAULT_DATE_FORMAT);
+                Date fromDate = dateFormatter.parse(replaceRequest.getFromDate());
+                Date toDate = dateFormatter.parse(replaceRequest.getToDate());
+                List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.getRequestsBasedOnDateRange(fromDate, toDate);
+                resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
+            } else {
+                resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_DATES_INVALID);
+            }
+        } else {
+            resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_REPLACE_BY_TYPE_INVALID);
+        }
+        return resultMap;
+    }
+
+    /**
+     * Builds request information and replaces them to LAS queue.
+     * @param requestItemEntities
+     * @return
+     */
+    private Map<String, String> buildRequestInfoAndReplaceToLAS(List<RequestItemEntity> requestItemEntities) {
+        Map<String, String> resultMap = new HashMap<>();
+        resultMap.put(ReCAPConstants.TOTAL_REQUESTS_FOUND, String.valueOf(requestItemEntities.size()));
+        if (CollectionUtils.isNotEmpty(requestItemEntities)) {
+            String message;
+            for (RequestItemEntity requestItemEntity : requestItemEntities) {
+                String requestTypeCode = requestItemEntity.getRequestTypeEntity().getRequestTypeCode();
+                if (ReCAPConstants.RETRIEVAL.equalsIgnoreCase(requestTypeCode)) {
+                    message = gfaService.buildRetrieveRequestInfoAndReplaceToLAS(requestItemEntity);
+                } else if (ReCAPConstants.EDD_REQUEST.equalsIgnoreCase(requestTypeCode)) {
+                    message = gfaService.buildEddRequestInfoAndReplaceToLAS(requestItemEntity);
+                } else {
+                    message = ReCAPConstants.IGNORE_REQUEST_TYPE_NOT_VALID + requestTypeCode;
+                }
+                resultMap.put(String.valueOf(requestItemEntity.getRequestId()), message);
+            }
+        } else {
+            resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.NO_REQUESTS_FOUND);
+        }
+        return resultMap;
     }
 }

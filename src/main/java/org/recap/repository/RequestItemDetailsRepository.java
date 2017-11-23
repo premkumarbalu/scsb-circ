@@ -59,7 +59,7 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
      * Find by item barcode and request sta code request item entity.
      *
      * @param itemBarcode       the item barcode
-     * @param requestStatusCode the request status code
+     * @param requestStatusCodes the request status code
      * @return the request item entity
      * @throws IncorrectResultSizeDataAccessException the incorrect result size data access exception
      */
@@ -87,4 +87,22 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
 
     @Query(value = "select request from RequestItemEntity request inner join request.requestStatusEntity status where request.itemId= :itemId and status.requestStatusCode in (:requestStatusCodes)")
     List<RequestItemEntity> findByitemId(@Param("itemId") Integer itemId, @Param("requestStatusCodes") List<String> requestStatusCodes);
+
+    /**
+     * Gets requests based on the given request id range.
+     * @param requestIdFrom
+     * @param requestIdTo
+     * @return
+     */
+    @Query(value = "SELECT request FROM RequestItemEntity as request WHERE request.requestId BETWEEN :requestIdFrom and :requestIdTo")
+    List<RequestItemEntity> getRequestsBasedOnRequestIdRange(@Param("requestIdFrom") Integer requestIdFrom, @Param("requestIdTo")Integer requestIdTo);
+
+    /**
+     * Gets requests based on the last updated date range.
+     * @param createdDateFrom
+     * @param createdDateTo
+     * @return
+     */
+    @Query(value = "SELECT request FROM RequestItemEntity as request WHERE request.createdDate BETWEEN :createdDateFrom and :createdDateTo")
+    List<RequestItemEntity> getRequestsBasedOnDateRange(@Param("createdDateFrom") Date createdDateFrom, @Param("createdDateTo") Date createdDateTo);
 }
