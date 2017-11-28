@@ -147,6 +147,7 @@ public class ItemEDDRequestService {
             if (!itemResponseInformation.isSuccess()) {
                 itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes() + "\nException - " + itemResponseInformation.getScreenMessage());
                 getItemRequestService().updateChangesToDb(itemResponseInformation, ReCAPConstants.REQUEST_TYPE_EDD + "-" + itemResponseInformation.getRequestingInstitution());
+                getItemRequestService().rollbackUpdateItemAvailabilutyStatus(itemEntity,ReCAPConstants.GUEST_USER);
             } else {
                 itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes());
                 if(itemEntity != null) {

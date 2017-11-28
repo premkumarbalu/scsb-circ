@@ -268,7 +268,7 @@ public class ItemRequestService {
         boolean bSuccess = false;
         String itemBarcode;
         ItemEntity itemEntity;
-        List<String> requestItemStatusList = Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ReCAPConstants.REQUEST_STATUS_EDD, ReCAPConstants.REQUEST_STATUS_CANCELED);
+        List<String> requestItemStatusList = Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ReCAPConstants.REQUEST_STATUS_EDD, ReCAPConstants.REQUEST_STATUS_CANCELED, ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD);
         List<RequestItemEntity> requestEntities = requestItemDetailsRepository.findByRequestIdsAndStatusCodes(itemRefileRequest.getRequestIds(), requestItemStatusList);
 
         for (RequestItemEntity requestItemEntity : requestEntities) {
@@ -450,7 +450,7 @@ public class ItemRequestService {
         return true;
     }
 
-    private void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity, String username) {
+    public void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity, String username) {
         itemRequestDBService.rollbackUpdateItemAvailabilutyStatus(itemEntity, username);
     }
 
