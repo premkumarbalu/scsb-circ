@@ -952,7 +952,7 @@ public class GFAService {
 
         String notes = requestItemEntity.getNotes();
         ttitem001.setNotes(notes);
-        new BufferedReader(new StringReader(notes)).lines().forEach(line -> setEddInfoToGfaRequest(line, ttitem001));
+        new BufferedReader(new StringReader(notes)).lines().forEach(line -> itemRequestServiceUtil.setEddInfoToGfaRequest(line, ttitem001));
         ttitem001.setArticleVolume(ttitem001.getArticleVolume() + ", " + ttitem001.getArticleIssue());
 
         SearchResultRow searchResultRow = itemRequestService.searchRecords(itemEntity);
@@ -965,29 +965,5 @@ public class GFAService {
         retrieveItemEDDRequest.setTtitem(Arrays.asList(ttitem001));
         gfaRetrieveEDDItemRequest.setRetrieveEDD(retrieveItemEDDRequest);
         return gfaRetrieveEDDItemRequest;
-    }
-
-    /**
-     * Builds edd info from request notes.
-     * @param line
-     * @param ttitem001
-     */
-    public void setEddInfoToGfaRequest(String line, TtitemEDDResponse ttitem001) {
-        String[] splitData = line.split(":");
-        if (ArrayUtils.isNotEmpty(splitData) && splitData.length > 1) {
-            if ("Start Page".equals(splitData[0])) {
-                ttitem001.setStartPage(splitData[1].trim());
-            } else if ("End Page".equals(splitData[0])) {
-                ttitem001.setEndPage(splitData[1].trim());
-            } else if ("Volume Number".equals(splitData[0])) {
-                ttitem001.setArticleVolume(splitData[1].trim());
-            } else if ("Issue".equals(splitData[0])) {
-                ttitem001.setArticleIssue(splitData[1].trim());
-            } else if ("Article Author".equals(splitData[0])) {
-                ttitem001.setArticleAuthor(splitData[1].trim());
-            } else if ("Article/Chapter Title".equals(splitData[0])) {
-                ttitem001.setArticleTitle(splitData[1].trim());
-            }
-        }
     }
 }

@@ -2,9 +2,9 @@ package org.recap.request;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.FluentProducerTemplate;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.DefaultFluentProducerTemplate;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +18,7 @@ import org.recap.model.*;
 import org.recap.repository.*;
 import org.recap.service.RestHeaderService;
 import org.recap.util.ItemRequestServiceUtil;
+import org.recap.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -101,7 +104,16 @@ public class ItemRequestService {
     private ItemRequestServiceUtil itemRequestServiceUtil;
 
     @Autowired
-    private CamelContext camelContext;
+    private ProducerTemplate producerTemplate;
+
+    @Autowired
+    private RequestParamaterValidatorService requestParamaterValidatorService;
+
+    @Autowired
+    private ItemValidatorService itemValidatorService;
+
+    @Autowired
+    private SecurityUtil securityUtil;
 
     /**
      * @return
@@ -906,38 +918,69 @@ public class ItemRequestService {
         Map<String, String> resultMap = new HashMap<>();
         if (ReCAPConstants.REQUEST_STATUS.equalsIgnoreCase(replaceRequestByType)) {
             String requestStatus = replaceRequest.getRequestStatus();
-            if (StringUtils.isNotBlank(requestStatus) && ReCAPConstants.REQUEST_STATUS_PENDING.equalsIgnoreCase(requestStatus)) {
-                List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.findByRequestStatusCode(Arrays.asList(ReCAPConstants.REQUEST_STATUS_PENDING));
-                resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
+            if (StringUtils.isNotBlank(requestStatus)) {
+                if (ReCAPConstants.REQUEST_STATUS_PENDING.equalsIgnoreCase(requestStatus)) {
+                    List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.findByRequestStatusCode(Arrays.asList(ReCAPConstants.REQUEST_STATUS_PENDING));
+                    resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
+                } else if (ReCAPConstants.REQUEST_STATUS_EXCEPTION.equalsIgnoreCase(requestStatus)) {
+                    List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.findByRequestStatusCode(Arrays.asList(ReCAPConstants.REQUEST_STATUS_EXCEPTION));
+                    resultMap = buildRequestInfoAndReplaceToSCSB(requestItemEntities);
+                } else {
+                    resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_STATUS_INVALID);
+                }
             } else {
                 resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_STATUS_INVALID);
             }
         } else if (ReCAPConstants.REQUEST_IDS.equalsIgnoreCase(replaceRequestByType)) {
-            if (StringUtils.isNotBlank(replaceRequest.getRequestIds())) {
+            if (StringUtils.isNotBlank(replaceRequest.getRequestIds()) && StringUtils.isNotBlank(replaceRequest.getRequestStatus())) {
+                String requestStatus = replaceRequest.getRequestStatus();
                 List<Integer> requestIds = new ArrayList<>();
                 Arrays.stream(replaceRequest.getRequestIds().split(",")).forEach(requestId -> requestIds.add(Integer.valueOf(requestId.trim())));
-                List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.findByRequestIdIn(requestIds);
-                resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
                 resultMap.put(ReCAPConstants.TOTAL_REQUESTS_IDS, String.valueOf(requestIds.size()));
+                if (ReCAPConstants.REQUEST_STATUS_PENDING.equalsIgnoreCase(requestStatus)) {
+                    List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.findByRequestIdsAndStatusCodes(requestIds, Arrays.asList(ReCAPConstants.REQUEST_STATUS_PENDING));
+                    resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
+                } else if (ReCAPConstants.REQUEST_STATUS_EXCEPTION.equalsIgnoreCase(requestStatus)) {
+                    List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.findByRequestIdsAndStatusCodes(requestIds, Arrays.asList(ReCAPConstants.REQUEST_STATUS_EXCEPTION));
+                    resultMap = buildRequestInfoAndReplaceToSCSB(requestItemEntities);
+                } else {
+                    resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_STATUS_INVALID);
+                }
             } else {
                 resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_IDS_INVALID);
             }
         } else if (ReCAPConstants.REQUEST_IDS_RANGE.equalsIgnoreCase(replaceRequestByType)) {
-            if (StringUtils.isNotBlank(replaceRequest.getStartRequestId()) && StringUtils.isNotBlank(replaceRequest.getEndRequestId())) {
+            if (StringUtils.isNotBlank(replaceRequest.getStartRequestId()) && StringUtils.isNotBlank(replaceRequest.getEndRequestId()) && StringUtils.isNotBlank(replaceRequest.getRequestStatus())) {
+                String requestStatus = replaceRequest.getRequestStatus();
                 Integer startRequestId = Integer.valueOf(replaceRequest.getStartRequestId());
                 Integer endRequestId = Integer.valueOf(replaceRequest.getEndRequestId());
-                List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.getRequestsBasedOnRequestIdRange(startRequestId, endRequestId);
-                resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
+                if (ReCAPConstants.REQUEST_STATUS_PENDING.equalsIgnoreCase(requestStatus)) {
+                    List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.getRequestsBasedOnRequestIdRangeAndRequestStatusCode(startRequestId, endRequestId, ReCAPConstants.REQUEST_STATUS_PENDING);
+                    resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
+                } else if (ReCAPConstants.REQUEST_STATUS_EXCEPTION.equalsIgnoreCase(requestStatus)) {
+                    List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.getRequestsBasedOnRequestIdRangeAndRequestStatusCode(startRequestId, endRequestId, ReCAPConstants.REQUEST_STATUS_EXCEPTION);
+                    resultMap = buildRequestInfoAndReplaceToSCSB(requestItemEntities);
+                } else {
+                    resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_STATUS_INVALID);
+                }
             } else {
                 resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_START_END_IDS_INVALID);
             }
         } else if (ReCAPConstants.REQUEST_DATES_RANGE.equalsIgnoreCase(replaceRequestByType)) {
-            if (StringUtils.isNotBlank(replaceRequest.getFromDate()) && StringUtils.isNotBlank(replaceRequest.getToDate())) {
+            if (StringUtils.isNotBlank(replaceRequest.getFromDate()) && StringUtils.isNotBlank(replaceRequest.getToDate()) && StringUtils.isNotBlank(replaceRequest.getRequestStatus())) {
+                String requestStatus = replaceRequest.getRequestStatus();
                 SimpleDateFormat dateFormatter = new SimpleDateFormat(ReCAPConstants.DEFAULT_DATE_FORMAT);
                 Date fromDate = dateFormatter.parse(replaceRequest.getFromDate());
                 Date toDate = dateFormatter.parse(replaceRequest.getToDate());
-                List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.getRequestsBasedOnDateRange(fromDate, toDate);
-                resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
+                if (ReCAPConstants.REQUEST_STATUS_PENDING.equalsIgnoreCase(requestStatus)) {
+                    List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.getRequestsBasedOnDateRangeAndRequestStatusCode(fromDate, toDate, ReCAPConstants.REQUEST_STATUS_PENDING);
+                    resultMap = buildRequestInfoAndReplaceToLAS(requestItemEntities);
+                } else if (ReCAPConstants.REQUEST_STATUS_EXCEPTION.equalsIgnoreCase(requestStatus)) {
+                    List<RequestItemEntity> requestItemEntities = requestItemDetailsRepository.getRequestsBasedOnDateRangeAndRequestStatusCode(fromDate, toDate, ReCAPConstants.REQUEST_STATUS_EXCEPTION);
+                    resultMap = buildRequestInfoAndReplaceToSCSB(requestItemEntities);
+                } else {
+                    resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_STATUS_INVALID);
+                }
             } else {
                 resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.REQUEST_DATES_INVALID);
             }
@@ -972,5 +1015,104 @@ public class ItemRequestService {
             resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.NO_REQUESTS_FOUND);
         }
         return resultMap;
+    }
+
+    /**
+     * Builds request information and replaces them to SCSB queue.
+     * @param requestItemEntities
+     * @return
+     */
+    private Map<String, String> buildRequestInfoAndReplaceToSCSB(List<RequestItemEntity> requestItemEntities) {
+        Map<String, String> resultMap = new HashMap<>();
+        resultMap.put(ReCAPConstants.TOTAL_REQUESTS_FOUND, String.valueOf(requestItemEntities.size()));
+        if (CollectionUtils.isNotEmpty(requestItemEntities)) {
+            String message;
+            for (RequestItemEntity requestItemEntity : requestItemEntities) {
+                String requestTypeCode = requestItemEntity.getRequestTypeEntity().getRequestTypeCode();
+                if (ReCAPConstants.RETRIEVAL.equalsIgnoreCase(requestTypeCode)) {
+                    message = buildRetrieveRequestInfoAndReplaceToSCSB(requestItemEntity);
+                } else if (ReCAPConstants.EDD_REQUEST.equalsIgnoreCase(requestTypeCode)) {
+                    message = buildEddRequestInfoAndReplaceToSCSB(requestItemEntity);
+                } else {
+                    message = ReCAPConstants.IGNORE_REQUEST_TYPE_NOT_VALID + requestTypeCode;
+                }
+                resultMap.put(String.valueOf(requestItemEntity.getRequestId()), message);
+            }
+        } else {
+            resultMap.put(ReCAPConstants.INVALID_REQUEST, ReCAPConstants.NO_REQUESTS_FOUND);
+        }
+        return resultMap;
+    }
+
+    private String validateItemRequest(ItemRequestInformation itemRequestInformation) {
+        ResponseEntity responseEntity = requestParamaterValidatorService.validateItemRequestParameters(itemRequestInformation);
+        if (responseEntity == null) {
+            responseEntity = itemValidatorService.itemValidation(itemRequestInformation);
+        }
+        return responseEntity.getBody().toString();
+    }
+
+    private String buildRetrieveRequestInfoAndReplaceToSCSB(RequestItemEntity requestItemEntity) {
+        try {
+            ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
+            itemRequestInformation.setUsername(requestItemEntity.getCreatedBy());
+            itemRequestInformation.setItemBarcodes(Arrays.asList(requestItemEntity.getItemEntity().getBarcode()));
+            itemRequestInformation.setPatronBarcode(requestItemEntity.getPatronId());
+            itemRequestInformation.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
+            itemRequestInformation.setEmailAddress(securityUtil.getDecryptedValue(requestItemEntity.getEmailId()));
+            itemRequestInformation.setItemOwningInstitution(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
+            itemRequestInformation.setRequestType(requestItemEntity.getRequestTypeEntity().getRequestTypeCode());
+            itemRequestInformation.setDeliveryLocation(requestItemEntity.getStopCode());
+
+            String notes = requestItemEntity.getNotes();
+            new BufferedReader(new StringReader(notes)).lines().forEach(line -> itemRequestServiceUtil.setEddInfoToScsbRequest(line, itemRequestInformation));
+
+            String validationMessage = validateItemRequest(itemRequestInformation);
+            if (!ReCAPConstants.VALID_REQUEST.equals(validationMessage)) {
+                return ReCAPConstants.FAILURE + ":" + validationMessage;
+            }
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = objectMapper.writeValueAsString(itemRequestInformation);
+            producerTemplate.sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInformation.getRequestType());
+        } catch (Exception exception) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, exception);
+            return ReCAPConstants.FAILURE + ":" + exception.getMessage();
+        }
+        return ReCAPConstants.SUCCESS;
+    }
+
+    private String buildEddRequestInfoAndReplaceToSCSB(RequestItemEntity requestItemEntity) {
+        try {
+            ItemEntity itemEntity = requestItemEntity.getItemEntity();
+            ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
+            itemRequestInformation.setUsername(requestItemEntity.getCreatedBy());
+            itemRequestInformation.setItemBarcodes(Arrays.asList(itemEntity.getBarcode()));
+            itemRequestInformation.setPatronBarcode(requestItemEntity.getPatronId());
+            itemRequestInformation.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
+            itemRequestInformation.setEmailAddress(securityUtil.getDecryptedValue(requestItemEntity.getEmailId()));
+            itemRequestInformation.setItemOwningInstitution(itemEntity.getInstitutionEntity().getInstitutionCode());
+            itemRequestInformation.setRequestType(requestItemEntity.getRequestTypeEntity().getRequestTypeCode());
+            itemRequestInformation.setDeliveryLocation(requestItemEntity.getStopCode());
+
+            String notes = requestItemEntity.getNotes();
+            new BufferedReader(new StringReader(notes)).lines().forEach(line -> itemRequestServiceUtil.setEddInfoToScsbRequest(line, itemRequestInformation));
+
+            SearchResultRow searchResultRow = searchRecords(itemEntity);
+            itemRequestInformation.setTitleIdentifier(searchResultRow.getTitle());
+
+            String validationMessage = validateItemRequest(itemRequestInformation);
+            if (!ReCAPConstants.VALID_REQUEST.equals(validationMessage)) {
+                return ReCAPConstants.FAILURE + ":" + validationMessage;
+            }
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = objectMapper.writeValueAsString(itemRequestInformation);
+            producerTemplate.sendBodyAndHeader(ReCAPConstants.REQUEST_ITEM_QUEUE, json, ReCAPConstants.REQUEST_TYPE_QUEUE_HEADER, itemRequestInformation.getRequestType());
+        } catch (Exception exception) {
+            logger.error(ReCAPConstants.REQUEST_EXCEPTION, exception);
+            return ReCAPConstants.FAILURE + ":" + exception.getMessage();
+        }
+        return ReCAPConstants.SUCCESS;
     }
 }

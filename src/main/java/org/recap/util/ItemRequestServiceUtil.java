@@ -1,10 +1,13 @@
 package org.recap.util;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.recap.ReCAPConstants;
+import org.recap.gfa.model.TtitemEDDResponse;
 import org.recap.model.BulkRequestItem;
 import org.recap.model.BulkRequestItemEntity;
 import org.recap.model.ItemEntity;
+import org.recap.model.ItemRequestInformation;
 import org.recap.repository.BulkRequestItemDetailsRepository;
 import org.recap.request.EmailService;
 import org.recap.service.RestHeaderService;
@@ -99,5 +102,55 @@ public class ItemRequestServiceUtil {
     public void generateReportAndSendEmail(Integer bulkRequestId) {
         BulkRequestItemEntity bulkRequestItemEntity = bulkRequestItemDetailsRepository.findOne(bulkRequestId);
         emailService.sendBulkRequestEmail(String.valueOf(bulkRequestItemEntity.getBulkRequestId()), bulkRequestItemEntity.getBulkRequestName(), bulkRequestItemEntity.getBulkRequestFileName(), bulkRequestItemEntity.getBulkRequestStatus(), new String(bulkRequestItemEntity.getBulkRequestFileData()), "Bulk Request Process Report");
+    }
+
+    /**
+     * Builds edd info from request notes for LAS request queue.
+     * @param line
+     * @param ttitem001
+     */
+    public void setEddInfoToGfaRequest(String line, TtitemEDDResponse ttitem001) {
+        String[] splitData = line.split(":");
+        if (ArrayUtils.isNotEmpty(splitData) && splitData.length > 1) {
+            if ("Start Page".equals(splitData[0])) {
+                ttitem001.setStartPage(splitData[1].trim());
+            } else if ("End Page".equals(splitData[0])) {
+                ttitem001.setEndPage(splitData[1].trim());
+            } else if ("Volume Number".equals(splitData[0])) {
+                ttitem001.setArticleVolume(splitData[1].trim());
+            } else if ("Issue".equals(splitData[0])) {
+                ttitem001.setArticleIssue(splitData[1].trim());
+            } else if ("Article Author".equals(splitData[0])) {
+                ttitem001.setArticleAuthor(splitData[1].trim());
+            } else if ("Article/Chapter Title".equals(splitData[0])) {
+                ttitem001.setArticleTitle(splitData[1].trim());
+            }
+        }
+    }
+
+    /**
+     * Builds edd info from request notes for SCSB request queue.
+     * @param line
+     * @param itemRequestInformation
+     */
+    public void setEddInfoToScsbRequest(String line, ItemRequestInformation itemRequestInformation) {
+        String[] splitData = line.split(":");
+        if (ArrayUtils.isNotEmpty(splitData) && splitData.length > 1) {
+            if ("User".equals(splitData[0].trim())) {
+                itemRequestInformation.setRequestNotes(splitData[1].trim());
+            } else if ("Start Page".equals(splitData[0])) {
+                itemRequestInformation.setStartPage(splitData[1].trim());
+            } else if ("End Page".equals(splitData[0])) {
+                itemRequestInformation.setEndPage(splitData[1].trim());
+            } else if ("Volume Number".equals(splitData[0])) {
+                itemRequestInformation.setVolume(splitData[1].trim());
+            } else if ("Issue".equals(splitData[0])) {
+                itemRequestInformation.setIssue(splitData[1].trim());
+            } else if ("Article Author".equals(splitData[0])) {
+                itemRequestInformation.setAuthor(splitData[1].trim());
+            } else if ("Article/Chapter Title".equals(splitData[0])) {
+                itemRequestInformation.setChapterTitle(splitData[1].trim());
+            }
+        }
     }
 }

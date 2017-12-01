@@ -94,8 +94,8 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
      * @param requestIdTo
      * @return
      */
-    @Query(value = "SELECT request FROM RequestItemEntity as request WHERE request.requestId BETWEEN :requestIdFrom and :requestIdTo")
-    List<RequestItemEntity> getRequestsBasedOnRequestIdRange(@Param("requestIdFrom") Integer requestIdFrom, @Param("requestIdTo")Integer requestIdTo);
+    @Query(value = "SELECT request FROM RequestItemEntity as request inner join request.requestStatusEntity as rse WHERE rse.requestStatusCode= :requestStatusCode AND request.requestId BETWEEN :requestIdFrom and :requestIdTo")
+    List<RequestItemEntity> getRequestsBasedOnRequestIdRangeAndRequestStatusCode(@Param("requestIdFrom") Integer requestIdFrom, @Param("requestIdTo")Integer requestIdTo, @Param("requestStatusCode") String requestStatusCode);
 
     /**
      * Gets requests based on the last updated date range.
@@ -103,6 +103,6 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
      * @param createdDateTo
      * @return
      */
-    @Query(value = "SELECT request FROM RequestItemEntity as request WHERE request.createdDate BETWEEN :createdDateFrom and :createdDateTo")
-    List<RequestItemEntity> getRequestsBasedOnDateRange(@Param("createdDateFrom") Date createdDateFrom, @Param("createdDateTo") Date createdDateTo);
+    @Query(value = "SELECT request FROM RequestItemEntity as request inner join request.requestStatusEntity as rse WHERE rse.requestStatusCode= :requestStatusCode AND request.createdDate BETWEEN :createdDateFrom and :createdDateTo")
+    List<RequestItemEntity> getRequestsBasedOnDateRangeAndRequestStatusCode(@Param("createdDateFrom") Date createdDateFrom, @Param("createdDateTo") Date createdDateTo, @Param("requestStatusCode") String requestStatusCode);
 }
