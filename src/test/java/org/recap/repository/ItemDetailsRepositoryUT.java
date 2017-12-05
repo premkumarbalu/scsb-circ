@@ -12,7 +12,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by hemalathas on 16/11/16.
@@ -50,13 +51,13 @@ public class ItemDetailsRepositoryUT extends BaseTestCase {
     @Test
     public void testFindByAvailableStatusId(){
         List<ItemEntity> itemEntityList = new ArrayList<>();
-        long itemCount = itemDetailsRepository.getNotAvailableItemsCount(1,Arrays.asList(1,9));
+        long itemCount = itemDetailsRepository.getNotAvailableItemsCount(1,Arrays.asList(1,9,2,5),2);
         System.out.println("Total Records : {}"+ itemCount);
         int totalPagesCount = (int) (itemCount / 100);
         System.out.println("Total Pages : {}" + totalPagesCount);
         for(int pageNum = 0; pageNum < totalPagesCount + 1; pageNum++) {
             long from = pageNum * Long.valueOf(100);
-            itemEntityList =  itemDetailsRepository.getNotAvailableItems(1,Arrays.asList(1,9),0,100);
+            itemEntityList =  itemDetailsRepository.getNotAvailableItems(1,Arrays.asList(1,9,2,5),0,100,2);
         }
         assertNotNull(itemEntityList);
     }
