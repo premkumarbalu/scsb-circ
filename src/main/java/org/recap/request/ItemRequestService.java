@@ -1044,6 +1044,11 @@ public class ItemRequestService {
         return resultMap;
     }
 
+    /**
+     * Validates the request information and returns message.
+     * @param itemRequestInformation
+     * @return
+     */
     private String validateItemRequest(ItemRequestInformation itemRequestInformation) {
         ResponseEntity responseEntity = requestParamaterValidatorService.validateItemRequestParameters(itemRequestInformation);
         if (responseEntity == null) {
@@ -1052,6 +1057,11 @@ public class ItemRequestService {
         return responseEntity.getBody().toString();
     }
 
+    /**
+     * Builds retrieval request information and replaces them to SCSB queue.
+     * @param requestItemEntity
+     * @return
+     */
     private String buildRetrieveRequestInfoAndReplaceToSCSB(RequestItemEntity requestItemEntity) {
         try {
             ItemRequestInformation itemRequestInformation = new ItemRequestInformation();
@@ -1069,7 +1079,7 @@ public class ItemRequestService {
 
             String validationMessage = validateItemRequest(itemRequestInformation);
             if (!ReCAPConstants.VALID_REQUEST.equals(validationMessage)) {
-                return ReCAPConstants.FAILURE + ":" + validationMessage;
+                return ReCAPConstants.FAILURE + " : " + validationMessage;
             }
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -1079,9 +1089,14 @@ public class ItemRequestService {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, exception);
             return ReCAPConstants.FAILURE + ":" + exception.getMessage();
         }
-        return ReCAPConstants.SUCCESS;
+        return ReCAPConstants.SUCCESS + " : " + ReCAPConstants.REQUEST_MESSAGE_RECEVIED;
     }
 
+    /**
+     * Builds EDD request information and replaces them to SCSB queue.
+     * @param requestItemEntity
+     * @return
+     */
     private String buildEddRequestInfoAndReplaceToSCSB(RequestItemEntity requestItemEntity) {
         try {
             ItemEntity itemEntity = requestItemEntity.getItemEntity();
@@ -1113,6 +1128,6 @@ public class ItemRequestService {
             logger.error(ReCAPConstants.REQUEST_EXCEPTION, exception);
             return ReCAPConstants.FAILURE + ":" + exception.getMessage();
         }
-        return ReCAPConstants.SUCCESS;
+        return ReCAPConstants.SUCCESS + " : " + ReCAPConstants.REQUEST_MESSAGE_RECEVIED;
     }
 }
