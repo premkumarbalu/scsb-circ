@@ -561,6 +561,8 @@ public final class ReCAPConstants {
 
     public static final String BULK_REQUEST_ID_TEXT = "Bulk Request Id : ";
 
+    public static final String ITEM_STATUS_NOT_AVAILABLE = "Not Available";
+
     private ReCAPConstants() {
     }
 

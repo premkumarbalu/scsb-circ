@@ -334,17 +334,21 @@ public class GFAService {
 
     private void processMismatchStatus(List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList, List<ItemChangeLogEntity> itemChangeLogEntityList, String lasStatus, ItemEntity itemEntity) {
         StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
-        List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByitemId(itemEntity.getItemId(), Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD));
+        List<String> requestStatusCodes = Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ReCAPConstants.REQUEST_STATUS_EDD, ReCAPConstants.REQUEST_STATUS_CANCELED, ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD);
+        List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByitemId(itemEntity.getItemId(),requestStatusCodes);
         List<String> barcodeList = new ArrayList<>();
         List<Integer> requestIdList = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
         ItemStatusEntity itemStatusEntity = getItemStatusDetailsRepository().findByItemStatusId(itemEntity.getItemAvailabilityStatusId());
         if (!requestItemEntityList.isEmpty()) {
             for (RequestItemEntity requestItemEntity : requestItemEntityList) {
-                statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "yes", requestItemEntity.getRequestId().toString(), lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
-                barcodeList.add(itemEntity.getBarcode());
-                requestIdList.add(requestItemEntity.getRequestId());
-                logger.info("found mismatch in item status and refilled for the item id :{}", requestItemEntity.getItemId());
+                if (!requestItemEntity.getRequestStatusEntity().getRequestStatusCode().equalsIgnoreCase(ReCAPConstants.REQUEST_STATUS_CANCELED)){
+                    statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(lasStatus, itemEntity, barcodeList, requestIdList, simpleDateFormat, itemStatusEntity, requestItemEntity);
+                }else {
+                    if (StringUtils.containsIgnoreCase(requestItemEntity.getNotes(),"Cancel requested")){
+                        statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(lasStatus, itemEntity, barcodeList, requestIdList, simpleDateFormat, itemStatusEntity, requestItemEntity);
+                    }
+                }
             }
         } else {
             statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "No", null, lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
@@ -361,6 +365,14 @@ public class GFAService {
             itemRequestService.reFileItem(itemRefileRequest);
         }
         statusReconciliationCSVRecordList.add(statusReconciliationCSVRecord);
+    }
+
+    private StatusReconciliationCSVRecord getStatusReconciliationCSVRecord(String lasStatus, ItemEntity itemEntity, List<String> barcodeList, List<Integer> requestIdList, SimpleDateFormat simpleDateFormat, ItemStatusEntity itemStatusEntity, RequestItemEntity requestItemEntity) {
+        StatusReconciliationCSVRecord statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "yes", requestItemEntity.getRequestId().toString(), lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
+        barcodeList.add(itemEntity.getBarcode());
+        requestIdList.add(requestItemEntity.getRequestId());
+        logger.info("found mismatch in item status and refilled for the item id :{}", requestItemEntity.getItemId());
+        return statusReconciliationCSVRecord;
     }
 
     /**

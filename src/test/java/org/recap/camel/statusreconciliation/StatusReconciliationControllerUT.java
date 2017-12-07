@@ -1,24 +1,25 @@
 package org.recap.camel.statusreconciliation;
 
-import com.google.common.collect.Lists;
 import org.apache.camel.ProducerTemplate;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.recap.BaseTestCase;
+import org.recap.ReCAPConstants;
 import org.recap.gfa.model.*;
 import org.recap.model.ItemEntity;
+import org.recap.model.ItemStatusEntity;
 import org.recap.repository.*;
 import org.recap.request.GFAService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by hemalathas on 2/6/17.
@@ -83,6 +84,8 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
         itemEntityChunkList = Arrays.asList(itemEntityList);
         long from = 10 * Long.valueOf(batchSize);
         Date date = new Date();
+        ItemStatusEntity itemStatusEntity = new ItemStatusEntity();
+        itemStatusEntity.setItemStatusId(2);
         Mockito.when(gfaService.getGFAItemStatusCheckResponse(Mockito.any())).thenReturn(gfaItemStatusCheckResponse);
         Mockito.when(gfaService.getRequestItemDetailsRepository()).thenReturn(mockedRequestItemDetailsRepository);
         Mockito.when(gfaService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
@@ -90,7 +93,7 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
         Mockito.when(gfaService.getItemChangeLogDetailsRepository()).thenReturn(itemChangeLogDetailsRepository);
         Mockito.when(statusReconciliationController.getGfaService()).thenReturn(gfaService);
         Mockito.when(statusReconciliationController.getFromDate(0)).thenReturn(from);
-        Mockito.when(statusReconciliationController.getTotalPageCount(Arrays.asList(1,9))).thenReturn(itemCountAndStatusIdMap);
+        Mockito.when(statusReconciliationController.getTotalPageCount(Arrays.asList(1,9), itemStatusEntity.getItemStatusId())).thenReturn(itemCountAndStatusIdMap);
         Mockito.when(statusReconciliationController.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
         Mockito.when(statusReconciliationController.getBatchSize()).thenReturn(batchSize);
         Mockito.when(statusReconciliationController.getItemStatusDetailsRepository()).thenReturn(itemStatusDetailsRepository);
@@ -99,8 +102,9 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
         Mockito.when(statusReconciliationController.getStatusReconciliationLasBarcodeLimit()).thenReturn(statusReconciliationLasBarcodeLimit);
         Mockito.when(statusReconciliationController.getProducer()).thenReturn(producer);
         Mockito.when(statusReconciliationController.getGfaService().itemStatusComparison(Mockito.any(),Mockito.any())).thenCallRealMethod();
-        Mockito.when(statusReconciliationController.getItemDetailsRepository().getNotAvailableItems(statusReconciliationDayLimit,Arrays.asList(1,9),from,batchSize)).thenReturn(itemEntityList);
-        Mockito.when(statusReconciliationController.getTotalPageCount(Arrays.asList(1,9))).thenCallRealMethod();
+        Mockito.when(statusReconciliationController.getItemDetailsRepository().getNotAvailableItems(statusReconciliationDayLimit,Arrays.asList(1,9),from,batchSize,itemStatusEntity.getItemStatusId())).thenReturn(itemEntityList);
+        Mockito.when(statusReconciliationController.getTotalPageCount(Arrays.asList(1,9), itemStatusEntity.getItemStatusId())).thenCallRealMethod();
+        Mockito.when(statusReconciliationController.getItemStatusDetailsRepository().findByStatusCode(ReCAPConstants.ITEM_STATUS_NOT_AVAILABLE)).thenReturn(itemStatusEntity);
         Mockito.when(statusReconciliationController.itemStatusReconciliation()).thenCallRealMethod();
         ResponseEntity responseEntity = statusReconciliationController.itemStatusReconciliation();
         assertNotNull(responseEntity);
