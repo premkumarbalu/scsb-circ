@@ -544,12 +544,13 @@ public final class ReCAPConstants {
     public static final String INVALID_REQUEST = "InvalidRequest";
     public static final String NO_REQUESTS_FOUND = "No requests found.";
     public static final String IGNORE_REQUEST_TYPE_NOT_VALID = "Ignored as the request type is ";
-    public static final String REQUEST_STATUS_INVALID = "Provide request status value. Allowed values are : PENDING";
-    public static final String REQUEST_IDS_INVALID = "Provide comma separated request Ids.";
-    public static final String REQUEST_START_END_IDS_INVALID = "Provide start request id and end request id.";
-    public static final String REQUEST_DATES_INVALID = "Provide request from date and to date.";
+    public static final String REQUEST_STATUS_INVALID = "Provide request status value. Allowed values are : PENDING, EXCEPTION";
+    public static final String REQUEST_IDS_INVALID = "Provide comma separated request Ids or Provide request status value. Allowed values are : PENDING, EXCEPTION.";
+    public static final String REQUEST_START_END_IDS_INVALID = "Provide start request id and end request id or Provide request status value. Allowed values are : PENDING, EXCEPTION.";
+    public static final String REQUEST_DATES_INVALID = "Provide request from date and to date or Provide request status value. Allowed values are : PENDING, EXCEPTION.";
     public static final String REQUEST_REPLACE_BY_TYPE_INVALID = "Invalid replace request type. Allowed values for \"replaceRequestByType\" are :  RequestStatus, RequestIds, RangeOfRequestIds, RangeOfRequestDates";
     public static final String REQUEST_REPLACE_BY_TYPE_NOT_SELECTED = "Provide one of the values to \"replaceRequestByType\" :  RequestStatus, RequestIds, RangeOfRequestIds, RangeOfRequestDates";
+    public static final String REQUEST_MESSAGE_RECEVIED = "Message received, your request will be processed";
 
     /**
      * 0 = Initialise Polling Processess
