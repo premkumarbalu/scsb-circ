@@ -153,9 +153,12 @@ public interface ItemDetailsRepository extends JpaRepository<ItemEntity, ItemPK>
     @Query(value = "select count(*) from recap.request_item_t rit " +
             "inner join recap.item_t it on rit.ITEM_ID = it.ITEM_ID " +
             "where rit.REQUEST_STATUS_ID in (:requestStatusCodes) " +
-            "and date(rit.LAST_UPDATED_DATE) < DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY)", nativeQuery = true)
+            "and date(rit.LAST_UPDATED_DATE) < DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY) " +
+            "and it.IS_DELETED = 0 " +
+            "and it.ITEM_AVAIL_STATUS_ID = :notAvailableId", nativeQuery = true)
     Long getNotAvailableItemsCount(@Param("dateDifference") Integer dateDifference,
-                                   @Param("requestStatusCodes") List<Integer> requestStatusCodes);
+                                   @Param("requestStatusCodes") List<Integer> requestStatusCodes,
+                                   @Param("notAvailableId") Integer notAvailableId);
 
     /**
      * Gets item entities for the given date difference,status id, cataloging status and isDeleted.
@@ -169,11 +172,14 @@ public interface ItemDetailsRepository extends JpaRepository<ItemEntity, ItemPK>
             "inner join recap.item_t it on rit.ITEM_ID = it.ITEM_ID " +
             "where rit.REQUEST_STATUS_ID in (:requestStatusCodes) " +
             "and date(rit.LAST_UPDATED_DATE) < DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY) " +
+            "and it.IS_DELETED = 0 " +
+            "and it.ITEM_AVAIL_STATUS_ID = :notAvailableId " +
             "order by rit.LAST_UPDATED_DATE desc limit :getFrom , :batchSize", nativeQuery = true)
     List<ItemEntity> getNotAvailableItems(@Param("dateDifference") Integer dateDifference,
                                           @Param("requestStatusCodes") List<Integer> requestStatusCodes,
                                           @Param("getFrom") long getFrom ,
-                                          @Param("batchSize") long batchSize);
+                                          @Param("batchSize") long batchSize,
+                                          @Param("notAvailableId") Integer notAvailableId);
 
     /**
      * Updates the item availability status ,last updated date and last updated by for the given barcodes.
