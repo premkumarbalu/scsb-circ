@@ -30,6 +30,9 @@ public class SubmitCollectionReportHelperService {
     @Autowired
     private SetupDataService setupDataService;
 
+    @Autowired
+    private SubmitCollectionHelperService submitCollectionHelperService;
+
     @Value("${nonholdingid.institution}")
     private String nonHoldingIdInstitution;
 
@@ -54,31 +57,6 @@ public class SubmitCollectionReportHelperService {
         }
     }
 
-    /**
-     * Set submit collection report info for invalid dummy record.
-     *
-     * @param incomingBibliographicEntity    the incoming bibliographic entity
-     * @param submitCollectionReportInfoList the submit collection report info list
-     * @param fetchedCompleteItem            the fetched complete item
-     */
-    public void setSubmitCollectionReportInfoForInvalidDummyRecordBasedOnBarcode(BibliographicEntity incomingBibliographicEntity, List<SubmitCollectionReportInfo> submitCollectionReportInfoList, List<ItemEntity> fetchedCompleteItem){
-        Map<String,ItemEntity> incomingBarcodeItemEntityMap = getBarcodeItemEntityMap(incomingBibliographicEntity.getItemEntities());
-        Map<String,ItemEntity> fetchedBarcodeItemEntityMap = getBarcodeItemEntityMap(fetchedCompleteItem);
-        for(String barcode:incomingBarcodeItemEntityMap.keySet()){
-            ItemEntity incomingEntity = incomingBarcodeItemEntityMap.get(barcode);
-            ItemEntity fetchedItemEntity = fetchedBarcodeItemEntityMap.get(barcode);
-            String message;
-            if(fetchedItemEntity!=null){
-                message = ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD+" - Incoming item barcode "+barcode+ ", incoming owning institution bib id "+
-                        incomingBibliographicEntity.getOwningInstitutionBibId()+", is already attached with existing bib, owning institution bib id "+
-                        fetchedItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId()+", owning institution item id "+
-                        fetchedItemEntity.getOwningInstitutionItemId();
-            } else {
-                message = ReCAPConstants.SUBMIT_COLLECTION_EXCEPTION_RECORD;
-            }
-            setSubmitCollectionReportInfo(submitCollectionReportInfoList, incomingEntity, message,null);
-        }
-    }
 
     public void setSubmitCollectionReportInfoForOwningInstitutionBibIdMismatch(BibliographicEntity fetchedBibliographicEntity, BibliographicEntity incomingBibliographicEntity,
                                                                                Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap){
@@ -223,6 +201,7 @@ public class SubmitCollectionReportHelperService {
             }
         return false;
     }
+
     /**
      * Sets submit collection report info for invalid xml.
      *
@@ -251,8 +230,8 @@ public class SubmitCollectionReportHelperService {
         List<SubmitCollectionReportInfo> successSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST);
         List<SubmitCollectionReportInfo> rejectedSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST);
         List<SubmitCollectionReportInfo> failureSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST);
-        Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = getHoldingItemIdMap(fetchedBibliographicEntity);
-        Map<String,Map<String,ItemEntity>> incomingHoldingItemMap = getHoldingItemIdMap(incomingBibliographicEntity);
+        Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = submitCollectionHelperService.getHoldingItemIdMap(fetchedBibliographicEntity);
+        Map<String,Map<String,ItemEntity>> incomingHoldingItemMap = submitCollectionHelperService.getHoldingItemIdMap(incomingBibliographicEntity);
         String owningInstitution = (String) setupDataService.getInstitutionIdCodeMap().get(fetchedBibliographicEntity.getOwningInstitutionId());
         String[] nonHoldingIdInstitutionArray = nonHoldingIdInstitution.split(",");
         String institutionCode = (String) setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId());
@@ -361,18 +340,6 @@ public class SubmitCollectionReportHelperService {
         }
     }
 
-    private Map<String,Map<String,ItemEntity>> getHoldingItemIdMap(BibliographicEntity bibliographicEntity){
-        Map<String,Map<String,ItemEntity>> holdingItemMap = new HashMap<>();
-        for(HoldingsEntity holdingsEntity:bibliographicEntity.getHoldingsEntities()){
-            Map<String,ItemEntity> itemEntityMap = new HashMap<>();
-            for(ItemEntity itemEntity:holdingsEntity.getItemEntities()){
-                itemEntityMap.put(itemEntity.getOwningInstitutionItemId(),itemEntity);
-            }
-            holdingItemMap.put(holdingsEntity.getOwningInstitutionHoldingsId(),itemEntityMap);
-        }
-        return holdingItemMap;
-    }
-
     private Map<String,ItemEntity> getItemIdEntityMap(BibliographicEntity bibliographicEntity){
         Map<String,ItemEntity> itemEntityMap = new HashedMap();
         for(ItemEntity itemEntity:bibliographicEntity.getItemEntities()){
@@ -447,4 +414,45 @@ public class SubmitCollectionReportHelperService {
         }
         return false;
     }
+
+    public void updateSuccessMessage(List<BibliographicEntity> incomingBibliographicEntityList,List<BibliographicEntity> existingBibliographicEntityList,
+                                      String barcode,Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
+        Map<String,BibliographicEntity> incomingBibliographicEntityMap = incomingBibliographicEntityList.stream()
+                .collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
+        Map<String,BibliographicEntity> existingBibliographicEntityMap = existingBibliographicEntityList.stream()
+                .collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
+        List<String> newlyAddedOwningInstBibIdList = getNewlyAddedOwningInstBibIdList(incomingBibliographicEntityMap,existingBibliographicEntityMap);
+        String newlyAddedOwningInstBibIdString = newlyAddedOwningInstBibIdList.stream().collect(Collectors.joining(","));
+        StringBuilder successMessage = new StringBuilder();
+        successMessage.append(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD).append(" - ").append(" New bibs are attached to the item, newly attached owning institution bib id(s) - ")
+                .append(newlyAddedOwningInstBibIdString).append(", bib count before update ").append(existingBibliographicEntityList.size())
+                .append(", bib count after update ").append(incomingBibliographicEntityList.size());
+        List<SubmitCollectionReportInfo> successSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST);
+        for(SubmitCollectionReportInfo submitCollectionReportInfo:successSubmitCollectionReportInfoList){
+            if(submitCollectionReportInfo.getItemBarcode().equals(barcode)){
+                submitCollectionReportInfo.setMessage(successMessage.toString());
+            }
+        }
+    }
+
+    private List<String> getNewlyAddedOwningInstBibIdList(Map<String, BibliographicEntity> incomingBibliographicEntityMap, Map<String, BibliographicEntity> existingBibliographicEntityMap) {
+        List<String> newlyAddedOwningInstBibIdList = new ArrayList<>();
+        for(Map.Entry<String,BibliographicEntity> incomingBibliographicEntityMapEntry:incomingBibliographicEntityMap.entrySet()){
+            BibliographicEntity incomingBibliographicEntity = incomingBibliographicEntityMapEntry.getValue();
+            if(!existingBibliographicEntityMap.containsKey(incomingBibliographicEntity.getOwningInstitutionBibId())){
+                newlyAddedOwningInstBibIdList.add(incomingBibliographicEntity.getOwningInstitutionBibId());
+            }
+        }
+        return newlyAddedOwningInstBibIdList;
+    }
+
+    public void setSubmitCollectionReportInfo(List<SubmitCollectionReportInfo> submitCollectionReportInfoList,String barcode,String customerCode,String owningInstitution,String message){
+        SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
+        submitCollectionReportInfo.setItemBarcode(barcode);
+        submitCollectionReportInfo.setCustomerCode(customerCode);
+        submitCollectionReportInfo.setOwningInstitution(owningInstitution);
+        submitCollectionReportInfo.setMessage(message);
+        submitCollectionReportInfoList.add(submitCollectionReportInfo);
+    }
+
 }
