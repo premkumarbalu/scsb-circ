@@ -340,7 +340,7 @@ public class SubmitCollectionService {
                         reportDataEntities.add(itemBarcodeReportDataEntity);
 
                         ReportDataEntity customerCodeReportDataEntity = new ReportDataEntity();
-                        customerCodeReportDataEntity.setHeaderName(ReCAPConstants.SUBMIT_COLLECTION_CUSTOMER_CODE);
+                        customerCodeReportDataEntity.setHeaderName(ReCAPConstants.CUSTOMER_CODE);
                         customerCodeReportDataEntity.setHeaderValue(submitCollectionReportInfo.getCustomerCode()!=null?submitCollectionReportInfo.getCustomerCode():"");
                         reportDataEntities.add(customerCodeReportDataEntity);
 

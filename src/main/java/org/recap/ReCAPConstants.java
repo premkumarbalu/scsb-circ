@@ -160,7 +160,8 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_SUCCESS_REPORT = "Submit_Collection_Success_Report";
     public static final String SUBMIT_COLLECTION_FAILURE_REPORT = "SubmitCollection_Failure_Report";
     public static final String SUBMIT_COLLECTION_ITEM_BARCODE = "ItemBarcode";
-    public static final String SUBMIT_COLLECTION_CUSTOMER_CODE = CUSTOMER_CODE;
+    public static final String HYPHEN = " - ";
+
 
     public static final String SUBMIT_COLLECTION_COMPLETION_QUEUE_FROM = "scsbactivemq:queue:submitCollectionCompletionFromQueue";
     public static final String SUBMIT_COLLECTION_COMPLETION_QUEUE_TO = "scsbactivemq:queue:submitCollectionCompletionToQueue";

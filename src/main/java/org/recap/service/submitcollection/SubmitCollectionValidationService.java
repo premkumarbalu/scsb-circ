@@ -268,7 +268,7 @@ public class SubmitCollectionValidationService {
             }
         } else if(existingBibsNotInIncomingBibs.size() > 0){//if incoming does not have the existing bibinfo then error message is thrown
             StringBuilder message = new StringBuilder();
-            message.append(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD).append(" - ").append("Incoming bound-with item does not have matching bib that are available in the " +
+            message.append(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD).append(ReCAPConstants.HYPHEN).append("Incoming bound-with item does not have matching bib that are available in the " +
                     "existing record, bib id(s) that are not linked with incoming item ").append(existingBibsNotInIncomingBibs.stream().collect(Collectors.joining(",")));
             String barcode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getBarcode();
             String customerCode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getCustomerCode();
@@ -281,7 +281,7 @@ public class SubmitCollectionValidationService {
             String multipleHoldingIds = holdingsIdUniqueList.stream().collect(Collectors.joining(","));
             for(Map.Entry<String,String> owningBibIdOwnInstHoldingsIdMapForMismatchedOwnHoldingsIdEntry:owningBibIdOwnInstHoldingsIdMapForMismatchedOwnHoldingsId.entrySet()){
                 StringBuilder message = new StringBuilder();
-                message.append(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD).append(" - ").append("Incoming bound-with item has multiple owning institution holdings id attached to it, " +
+                message.append(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD).append(ReCAPConstants.HYPHEN).append("Incoming bound-with item has multiple owning institution holdings id attached to it, " +
                         "multiple owning institution holdings are ").append(multipleHoldingIds).append(" - incoming owning institution holdings id ")
                         .append(owningBibIdOwnInstHoldingsIdMapForMismatchedOwnHoldingsIdEntry.getValue()).append(", incoming owning institution item id ")
                         .append(incomingBibliographicEntityList.get(0).getItemEntities().get(0).getOwningInstitutionItemId()).append(", ")
@@ -351,6 +351,14 @@ public class SubmitCollectionValidationService {
         return ownInstBibIdList;
     }
 
+    public boolean isExistingBoundWithItem(ItemEntity itemEntity){
+        if (itemEntity != null) {
+            if(itemEntity.getBibliographicEntities().size()>1){
+                return true;
+            }
+        }
+        return false;
+    }
     public Map<String,BibliographicEntity> getOwnInstBibIdBibliographicEntityMap(List<BibliographicEntity> bibliographicEntityList){
         return bibliographicEntityList.stream().collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
 

@@ -424,7 +424,7 @@ public class SubmitCollectionReportHelperService {
         List<String> newlyAddedOwningInstBibIdList = getNewlyAddedOwningInstBibIdList(incomingBibliographicEntityMap,existingBibliographicEntityMap);
         String newlyAddedOwningInstBibIdString = newlyAddedOwningInstBibIdList.stream().collect(Collectors.joining(","));
         StringBuilder successMessage = new StringBuilder();
-        successMessage.append(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD).append(" - ").append(" New bibs are attached to the item, newly attached owning institution bib id(s) - ")
+        successMessage.append(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD).append(ReCAPConstants.HYPHEN).append(" New bibs are attached to the item, newly attached owning institution bib id(s) - ")
                 .append(newlyAddedOwningInstBibIdString).append(", bib count before update ").append(existingBibliographicEntityList.size())
                 .append(", bib count after update ").append(incomingBibliographicEntityList.size());
         List<SubmitCollectionReportInfo> successSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST);

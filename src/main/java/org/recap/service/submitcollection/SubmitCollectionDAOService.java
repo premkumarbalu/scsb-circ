@@ -81,7 +81,8 @@ public class SubmitCollectionDAOService {
             for (BibliographicEntity incomingBibliographicEntity : nonBoundWithBibliographicEntityObject.getBibliographicEntityList()) {
                 for (ItemEntity incomingItemEntity : incomingBibliographicEntity.getItemEntities()) {
                     ItemEntity fetchedItemEntity = fetchedBarcodeItemEntityMap.get(incomingItemEntity.getBarcode());
-                    if (fetchedItemEntity != null) {
+                    boolean isExistingItemABoundWith = submitCollectionValidationService.isExistingBoundWithItem(fetchedItemEntity);
+                    if (fetchedItemEntity != null && !isExistingItemABoundWith) {
                         List<BibliographicEntity> fetchedBibliographicEntityList = fetchedItemEntity.getBibliographicEntities();
                         for (BibliographicEntity fetchedBibliographicEntity : fetchedBibliographicEntityList) {
                             Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap = fetchedBarcodeBibliographicEntityMap.get(incomingItemEntity.getBarcode());
@@ -104,6 +105,19 @@ public class SubmitCollectionDAOService {
                                 submitCollectionReportHelperService.setSubmitCollectionReportInfoForOwningInstitutionBibIdMismatch(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap);
                             }
                         }
+                    } else if(isExistingItemABoundWith){
+                        String barcode = fetchedItemEntity.getBarcode();
+                        String customerCode = fetchedItemEntity.getCustomerCode();
+                        String owningInstitution = fetchedItemEntity.getInstitutionEntity().getInstitutionCode();
+                        String existingBoundWithOwnInstBibIds = submitCollectionHelperService.getBibliographicIdsInString(fetchedItemEntity.getBibliographicEntities());
+                        StringBuilder message = new StringBuilder();
+                        message.append(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD).append(ReCAPConstants.HYPHEN).append("Existing record is a bound-with, incoming record is a Single volume, ").append("incoming owning institution item id ")
+                        .append(incomingItemEntity.getOwningInstitutionItemId()).append(", incoming owning institution holdings id ").append(incomingBibliographicEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId())
+                        .append(", owning institution bib id ").append(incomingBibliographicEntity.getOwningInstitutionBibId()).append(", existing owning institution item id ")
+                        .append(fetchedItemEntity.getOwningInstitutionItemId()).append(", existing owning institution holdings id ").append(fetchedItemEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId())
+                        .append("' existing owning institution bib ids ").append(existingBoundWithOwnInstBibIds);
+                        submitCollectionReportHelperService.setSubmitCollectionReportInfo(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),
+                                barcode,customerCode,owningInstitution,message.toString());
                     }
                 }
             }

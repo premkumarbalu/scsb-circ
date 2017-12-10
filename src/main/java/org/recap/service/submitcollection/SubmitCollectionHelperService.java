@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by premkb on 7/12/17.
@@ -56,6 +58,11 @@ public class SubmitCollectionHelperService {
             holdingItemMap.put(holdingsEntity.getOwningInstitutionHoldingsId(),itemEntityMap);
         }
         return holdingItemMap;
+    }
+
+    public String getBibliographicIdsInString(List<BibliographicEntity> bibliographicEntityList){
+        List<String> owningInstitutionBibIdList = bibliographicEntityList.stream().map(BibliographicEntity::getOwningInstitutionBibId).collect(Collectors.toList());
+        return owningInstitutionBibIdList.stream().collect(Collectors.joining(","));
     }
 
     public RepositoryService getRepositoryService() {
