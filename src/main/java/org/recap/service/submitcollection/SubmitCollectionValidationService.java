@@ -257,8 +257,8 @@ public class SubmitCollectionValidationService {
         List<String> holdingsIdUniqueList = new ArrayList<>();
         String owningInstitutionCode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getInstitutionEntity().getInstitutionCode();
         String[] nonHoldingIdInstitutionArray = getNonHoldingIdInstitutionArray();
-        Map<String,String> owningBibIdOwnInstHoldingsIdMapForMismatchedOwnHoldingsId = getOwningBibIdOwnInstHoldingsIdIfAnyHoldingMismatch(incomingBibliographicEntityList,holdingsIdUniqueList);
-        if(matchedOwningInstBibIdList.size()>0 && existingBibsNotInIncomingBibs.size()==0 && owningBibIdOwnInstHoldingsIdMapForMismatchedOwnHoldingsId.size() == 0){
+        Map<String,String> owningBibIdOwnInstHoldingsIdMap = getOwningBibIdOwnInstHoldingsIdIfAnyHoldingMismatch(incomingBibliographicEntityList,holdingsIdUniqueList);
+        if(matchedOwningInstBibIdList.size() > 0 && existingBibsNotInIncomingBibs.size() == 0 && holdingsIdUniqueList.size() == 1){
             for (BibliographicEntity incomingBibliographicEntity : incomingBibliographicEntityList) {
                 if(matchedOwningInstBibIdList.contains(incomingBibliographicEntity.getOwningInstitutionBibId())){
                     BibliographicEntity existingBibliographicEntity = existingBibliographicEntityMap.get(incomingBibliographicEntity.getOwningInstitutionBibId());
@@ -272,20 +272,20 @@ public class SubmitCollectionValidationService {
                     "existing record, bib id(s) that are not linked with incoming item ").append(existingBibsNotInIncomingBibs.stream().collect(Collectors.joining(",")));
             String barcode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getBarcode();
             String customerCode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getCustomerCode();
-            String owningInstitution = existingBibliographicEntityList.get(0).getItemEntities().get(0).getInstitutionEntity().getInstitutionCode();
+            String owningInstitution = owningInstitutionCode;
             submitCollectionReportHelperService.setSubmitCollectionReportInfo(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),
                     barcode,customerCode,owningInstitution,message.toString());
             isValidRecordToProcess &= false;
         } else if(holdingsIdUniqueList.size() > 1 &&
                 !Arrays.asList(nonHoldingIdInstitutionArray).contains(owningInstitutionCode)){//Owning inst Holdings id mismatch with in the incoming bound-with record
             String multipleHoldingIds = holdingsIdUniqueList.stream().collect(Collectors.joining(","));
-            for(Map.Entry<String,String> owningBibIdOwnInstHoldingsIdMapForMismatchedOwnHoldingsIdEntry:owningBibIdOwnInstHoldingsIdMapForMismatchedOwnHoldingsId.entrySet()){
+            for(Map.Entry<String,String> owningBibIdOwnInstHoldingsIdEntry:owningBibIdOwnInstHoldingsIdMap.entrySet()){
                 StringBuilder message = new StringBuilder();
                 message.append(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD).append(ReCAPConstants.HYPHEN).append("Incoming bound-with item has multiple owning institution holdings id attached to it, " +
                         "multiple owning institution holdings are ").append(multipleHoldingIds).append(" - incoming owning institution holdings id ")
-                        .append(owningBibIdOwnInstHoldingsIdMapForMismatchedOwnHoldingsIdEntry.getValue()).append(", incoming owning institution item id ")
+                        .append(owningBibIdOwnInstHoldingsIdEntry.getValue()).append(", incoming owning institution item id ")
                         .append(incomingBibliographicEntityList.get(0).getItemEntities().get(0).getOwningInstitutionItemId()).append(", ")
-                        .append("incoming owning institution bib id ").append(owningBibIdOwnInstHoldingsIdMapForMismatchedOwnHoldingsIdEntry.getKey());
+                        .append("incoming owning institution bib id ").append(owningBibIdOwnInstHoldingsIdEntry.getKey());
                 String barcode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getBarcode();
                 String customerCode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getCustomerCode();
                 String owningInstitution = existingBibliographicEntityList.get(0).getItemEntities().get(0).getInstitutionEntity().getInstitutionCode();
@@ -296,6 +296,61 @@ public class SubmitCollectionValidationService {
         } else if(existingBibliographicEntityList.get(0).getOwningInstitutionBibId().substring(0, 1).equals("d")) {//validation to update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
             isValidRecordToProcess &= true;
         }
+        return isValidRecordToProcess;
+    }
+
+    public boolean validateIncomingItemHavingBibCountLesserThanExistingItem(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,
+                                                                            List<BibliographicEntity> incomingBibliographicEntityList,List<BibliographicEntity> existingBibliographicEntityList
+    ,List<String> incomingBibsNotInExistingBibs){
+        boolean isValidRecordToProcess = true;
+        List<String> matchedOwningInstBibIdList = getMatchedOwningInstBibId(incomingBibliographicEntityList,existingBibliographicEntityList);
+        Map<String,BibliographicEntity> incomingBibliographicEntityMap = incomingBibliographicEntityList.stream()
+                .collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
+        Map<String,BibliographicEntity> existingBibliographicEntityMap = existingBibliographicEntityList.stream()
+                .collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
+        incomingBibsNotInExistingBibs.addAll(getIncomingBibsNotInExistingBibs(incomingBibliographicEntityMap,existingBibliographicEntityMap));
+        List<String> holdingsIdUniqueList = new ArrayList<>();
+        String owningInstitutionCode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getInstitutionEntity().getInstitutionCode();
+        String[] nonHoldingIdInstitutionArray = getNonHoldingIdInstitutionArray();
+        Map<String,String> owningBibIdOwnInstHoldingsIdMap = getOwningBibIdOwnInstHoldingsIdIfAnyHoldingMismatch(incomingBibliographicEntityList,holdingsIdUniqueList);
+        if(matchedOwningInstBibIdList.size() > 0 && incomingBibsNotInExistingBibs.size() == 0 && holdingsIdUniqueList.size() == 1) {
+            for (BibliographicEntity incomingBibliographicEntity : incomingBibliographicEntityList) {
+                if(matchedOwningInstBibIdList.contains(incomingBibliographicEntity.getOwningInstitutionBibId())){
+                    BibliographicEntity existingBibliographicEntity = existingBibliographicEntityMap.get(incomingBibliographicEntity.getOwningInstitutionBibId());
+                    Boolean isValid = validateIncomingEntities(submitCollectionReportInfoMap,existingBibliographicEntity,incomingBibliographicEntity );
+                    isValidRecordToProcess &= isValid;
+                }
+            }
+        } else if(incomingBibsNotInExistingBibs.size() > 0){//if incoming does not have the existing bibinfo then error message is thrown
+            StringBuilder message = new StringBuilder();
+            message.append(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD).append(ReCAPConstants.HYPHEN).append("Incoming bound-with item with less bibs than the existing bibs which does not have matching bib that are available in the " +
+                    "existing record, bib id(s) that are not linked with incoming item ").append(incomingBibsNotInExistingBibs.stream().collect(Collectors.joining(",")));
+            String barcode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getBarcode();
+            String customerCode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getCustomerCode();
+            String owningInstitution = existingBibliographicEntityList.get(0).getItemEntities().get(0).getInstitutionEntity().getInstitutionCode();
+            submitCollectionReportHelperService.setSubmitCollectionReportInfo(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),
+                    barcode,customerCode,owningInstitution,message.toString());
+            isValidRecordToProcess &= false;
+        } else if(holdingsIdUniqueList.size() > 1 &&
+                !Arrays.asList(nonHoldingIdInstitutionArray).contains(owningInstitutionCode)){//Owning inst Holdings id mismatch with in the incoming bound-with record
+            String multipleHoldingIds = holdingsIdUniqueList.stream().collect(Collectors.joining(","));
+            for(Map.Entry<String,String> owningBibIdOwnInstHoldingsIdMapEntry:owningBibIdOwnInstHoldingsIdMap.entrySet()){
+                StringBuilder message = new StringBuilder();
+                message.append(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD).append(ReCAPConstants.HYPHEN).append("Incoming bound-with item has multiple owning institution holdings id attached to it, " +
+                        "multiple owning institution holdings are ").append(multipleHoldingIds).append(" - incoming owning institution holdings id ")
+                        .append(owningBibIdOwnInstHoldingsIdMapEntry.getValue()).append(", incoming owning institution item id ")
+                        .append(incomingBibliographicEntityList.get(0).getItemEntities().get(0).getOwningInstitutionItemId()).append(", ")
+                        .append("incoming owning institution bib id ").append(owningBibIdOwnInstHoldingsIdMapEntry.getKey());
+                String barcode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getBarcode();
+                String customerCode = existingBibliographicEntityList.get(0).getItemEntities().get(0).getCustomerCode();
+                String owningInstitution = existingBibliographicEntityList.get(0).getItemEntities().get(0).getInstitutionEntity().getInstitutionCode();
+                submitCollectionReportHelperService.setSubmitCollectionReportInfo(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),
+                        barcode,customerCode,owningInstitution,message.toString());
+            }
+            isValidRecordToProcess &= false;
+        } /*else if(existingBibliographicEntityList.get(0).getOwningInstitutionBibId().substring(0, 1).equals("d")) {//validation to update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
+            isValidRecordToProcess &= true;
+        }*/
         return isValidRecordToProcess;
     }
 
@@ -323,6 +378,16 @@ public class SubmitCollectionValidationService {
             }
         }
         return existingBibsNotInIncomingBibs;
+    }
+
+    public List<String> getIncomingBibsNotInExistingBibs(Map<String,BibliographicEntity> incomingBibliographicEntityMap,Map<String,BibliographicEntity> existingBibliographicEntityMap){
+        List<String> incomingBibsNotInExistingBibs = new ArrayList<>();
+        for(Map.Entry<String,BibliographicEntity> incomingBibliographicEntityMapEntry:incomingBibliographicEntityMap.entrySet()){
+            if(!existingBibliographicEntityMap.containsKey(incomingBibliographicEntityMapEntry.getKey())){
+                incomingBibsNotInExistingBibs.add(incomingBibliographicEntityMapEntry.getKey());
+            }
+        }
+        return incomingBibsNotInExistingBibs;
     }
 
     public void verifyAndSetMisMatchBoundWithOwnInstBibIdIfAny(List<BibliographicEntity> incomingBibliographicEntityList,List<BibliographicEntity> fetchedBibliographicEntityList

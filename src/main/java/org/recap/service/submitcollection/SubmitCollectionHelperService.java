@@ -28,6 +28,7 @@ public class SubmitCollectionHelperService {
 
     public void attachItemToExistingBib(BibliographicEntity existingBibliographicEntity, BibliographicEntity incomingBibliographicEntity){
         existingBibliographicEntity.getItemEntities().addAll(incomingBibliographicEntity.getItemEntities());
+        existingBibliographicEntity.setDeleted(false);
         String incomingOwningInstitutionHoldingsId = incomingBibliographicEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId();
         boolean isHoldingsExist = isHoldingsExist(existingBibliographicEntity,incomingOwningInstitutionHoldingsId);
         if (!isHoldingsExist){
