@@ -319,55 +319,21 @@ public class SubmitCollectionDAOService {
                         processedBibIds.add(updatedBibliographicEntity.getBibliographicId());
                     }
                 } else {
-
                     if(fetchedItemEntity.getBarcode().equals(barcode)){
                         fetchedBibliographicEntity.getItemEntities().remove(fetchedItemEntity);
                         if(fetchedBibliographicEntity.getItemEntities().size()==0){//when there is no item linked to the bib then bib is made as deleted
                             fetchedBibliographicEntity.setDeleted(true);
                         }
-                        /********************Needs to be reviewed after Rajesh changes for indexing */
                         Set<String> owningInstHoldingIdSet = fetchedItemEntity.getHoldingsEntities().stream().map(HoldingsEntity::getOwningInstitutionHoldingsId).collect(Collectors.toSet());
                         unlinkHoldingFromBib(fetchedBibliographicEntity.getHoldingsEntities(),owningInstHoldingIdSet);
-                        /********************/
                         logger.info("Unlinked bib - owning institution bib id {} from item barcode {}",fetchedBibliographicEntity.getBibliographicId(),barcode);
                         processedBibIds.add(fetchedBibliographicEntity.getBibliographicId());
                     }
-
-/*                    Iterator<ItemEntity> itemEntityIterator = fetchedBibliographicEntity.getItemEntities().iterator();
-                    //TODO need to remove item from holdings as well and make bib and holding deleted if not other item attached to it, NYPL need to remove all holdings that are linked with the item
-                    while(itemEntityIterator.hasNext()){
-                        ItemEntity itemEntity = itemEntityIterator.next();
-                        if(itemEntity.getBarcode().equals(barcode)){
-                            itemEntityIterator.remove();
-                            updatedBibliographicEntityList.add(fetchedBibliographicEntity);
-
-                            *//********************Needs to be reviewed after Rajesh changes for indexing *//*
-                            Set<String> owningInstHoldingIdSet = itemEntity.getHoldingsEntities().stream().map(HoldingsEntity::getOwningInstitutionHoldingsId).collect(Collectors.toSet());
-                            unlinkHoldingFromBib(fetchedBibliographicEntity.getHoldingsEntities(),owningInstHoldingIdSet);
-                            *//********************//*
-                            logger.info("Unlinked bib - owning institution bib id {} from item barcode {}",fetchedBibliographicEntity.getBibliographicId(),barcode);
-                            processedBibIds.add(fetchedBibliographicEntity.getBibliographicId());
-                        }
-                    }*/
                 }
             }
         }
         submitCollectionReportHelperService.updateSuccessMessageForRemovedBibs(boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList,
                     boundWithBibliographicEntityObject.getBarcode(),submitCollectionReportInfoMap);
-    }
-
-    private void unlinkItemFromHolding(List<HoldingsEntity> holdingsEntityList,String barcode){
-        //TODO make holding as deleted when no item attached to it
-        for(HoldingsEntity holdingsEntity:holdingsEntityList){
-            Iterator<ItemEntity> itemEntityIterator = holdingsEntity.getItemEntities().iterator();
-            while (itemEntityIterator.hasNext()){
-                ItemEntity itemEntity = itemEntityIterator.next();
-                if (itemEntity.getBarcode().equals(barcode)){
-                    logger.info("Unlinked holding - owning institution holdings id {} from item barcode {}",holdingsEntity.getOwningInstitutionHoldingsId(),barcode);
-                    itemEntityIterator.remove();
-                }
-            }
-        }
     }
 
     private void unlinkHoldingFromBib(List<HoldingsEntity> holdingsEntityList,Set<String> owningInstHoldingIdList){
