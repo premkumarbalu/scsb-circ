@@ -171,7 +171,7 @@ public class SubmitCollectionDAOService {
                     addNewBibToExistingItem(submitCollectionReportInfoMap, processedBibIds,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords, fetchedBarcodeItemEntityMap, updatedBibliographicEntityList, itemChangeLogEntityList, boundWithBibliographicEntityObject);
                 } else if (reducedIncomingBibCount){//Incoming bib count is < existing bib count - Unlinking bibs from existing item and there are less no bibs in the incoming record
                     logger.info("Processing incoming barcode {} have bib count less that the existing bib count",barcode);
-                    removeBibFromExistingItem(submitCollectionReportInfoMap, processedBibIds, fetchedBarcodeItemEntityMap, updatedBibliographicEntityList, itemChangeLogEntityList, boundWithBibliographicEntityObject);
+                    removeBibFromExistingItem(submitCollectionReportInfoMap, processedBibIds, idMapToRemoveIndexList, fetchedBarcodeItemEntityMap, updatedBibliographicEntityList, itemChangeLogEntityList, boundWithBibliographicEntityObject);
                 }
             }
         }
@@ -303,7 +303,7 @@ public class SubmitCollectionDAOService {
         }
     }
 
-    private void removeBibFromExistingItem(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Set<Integer> processedBibIds,
+    private void removeBibFromExistingItem(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList,
                                          Map<String, ItemEntity> fetchedBarcodeItemEntityMap, List<BibliographicEntity> updatedBibliographicEntityList,
                                          List<ItemChangeLogEntity> itemChangeLogEntityList, BoundWithBibliographicEntityObject boundWithBibliographicEntityObject) {
         ItemEntity existingItemEntity = fetchedBarcodeItemEntityMap.get(boundWithBibliographicEntityObject.getBarcode());
@@ -332,7 +332,7 @@ public class SubmitCollectionDAOService {
                             fetchedBibliographicEntity.setDeleted(true);
                         }
                         Set<String> owningInstHoldingIdSet = fetchedItemEntity.getHoldingsEntities().stream().map(HoldingsEntity::getOwningInstitutionHoldingsId).collect(Collectors.toSet());
-                        unlinkHoldingFromBib(fetchedBibliographicEntity.getHoldingsEntities(),owningInstHoldingIdSet);
+                        unlinkHoldingFromBib(fetchedBibliographicEntity, fetchedItemEntity.getItemId(), owningInstHoldingIdSet, idMapToRemoveIndexList);
                         logger.info("Unlinked bib - owning institution bib id {} from item barcode {}",fetchedBibliographicEntity.getBibliographicId(),barcode);
                         processedBibIds.add(fetchedBibliographicEntity.getBibliographicId());
                     }
@@ -344,11 +344,17 @@ public class SubmitCollectionDAOService {
         itemChangeLogEntityList.add(prepareItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, message,itemId));
     }
 
-    private void unlinkHoldingFromBib(List<HoldingsEntity> holdingsEntityList,Set<String> owningInstHoldingIdList){
-        Iterator<HoldingsEntity> holdingsEntityIterator = holdingsEntityList.iterator();
-        while (holdingsEntityIterator.hasNext()){
+    private void unlinkHoldingFromBib(BibliographicEntity fetchedBibliographicEntity, Integer itemId, Set<String> owningInstHoldingIdList, List<Map<String, String>> idMapToRemoveIndexList) {
+        Iterator<HoldingsEntity> holdingsEntityIterator = fetchedBibliographicEntity.getHoldingsEntities().iterator();
+        while (holdingsEntityIterator.hasNext()) {
             HoldingsEntity holdingsEntity = holdingsEntityIterator.next();
-            if (owningInstHoldingIdList.contains(holdingsEntity.getOwningInstitutionHoldingsId())){
+            if (owningInstHoldingIdList.contains(holdingsEntity.getOwningInstitutionHoldingsId())) {
+                Map<String, String> idMapToRemoveIndex = new HashMap<>();
+                idMapToRemoveIndex.put(ReCAPConstants.HOLDING_ID, String.valueOf(holdingsEntity.getHoldingsId()));
+                idMapToRemoveIndex.put(ReCAPConstants.ITEM_ID, String.valueOf(itemId));
+                idMapToRemoveIndex.put(ReCAPConstants.ROOT, String.valueOf(fetchedBibliographicEntity.getOwningInstitutionId() + fetchedBibliographicEntity.getOwningInstitutionBibId()));
+                idMapToRemoveIndexList.add(idMapToRemoveIndex);
+                logger.info("Added id to remove from solr - holding id - {}, item id - {}, root - {}", holdingsEntity.getHoldingsId(), itemId, fetchedBibliographicEntity.getOwningInstitutionId() + fetchedBibliographicEntity.getOwningInstitutionBibId());
                 holdingsEntityIterator.remove();
             }
         }
