@@ -201,6 +201,7 @@ public class SubmitCollectionDAOService {
                                                 List<Map<String, String>> idMapToRemoveIndexList, Set<String> processedBarcodeSetForDummyRecords,
                                                 Map<String, ItemEntity> fetchedBarcodeItemEntityMap, List<BibliographicEntity> updatedBibliographicEntityList,
                                                 List<ItemChangeLogEntity> itemChangeLogEntityList, BoundWithBibliographicEntityObject boundWithBibliographicEntityObject) {
+        logger.info("Processing items having bib count matched with the incoming and exisiting record");
         boolean isValidRecordToProcess = submitCollectionValidationService.validateIncomingItemHavingBibCountIsSameAsExistingItem(submitCollectionReportInfoMap,fetchedBarcodeItemEntityMap,
                 boundWithBibliographicEntityObject.getBibliographicEntityList());
         if (isValidRecordToProcess) {
@@ -240,6 +241,7 @@ public class SubmitCollectionDAOService {
         boolean isIncomingDummyRecord = false;
         boolean isValidRecordToProcess = submitCollectionValidationService.validateIncomingItemHavingBibCountGreaterThanExistingItem(submitCollectionReportInfoMap,
                 boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList);
+        int itemId = existingItemEntity.getItemId();
 
         if (isValidRecordToProcess) {
             for (BibliographicEntity incomingBibliographicEntity : boundWithBibliographicEntityObject.getBibliographicEntityList()) {
@@ -282,6 +284,10 @@ public class SubmitCollectionDAOService {
                                     updatedBibliographicEntityList.add(updatedBibliographicEntity);
                                 }
                             } else {
+                                incomingBibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
+                                //to maintain the original created date and created by for the holdings entity
+                                incomingBibliographicEntity.getHoldingsEntities().get(0).setCreatedDate(existingItemEntity.getHoldingsEntities().get(0).getCreatedDate());
+                                incomingBibliographicEntity.getHoldingsEntities().get(0).setCreatedBy(existingItemEntity.getHoldingsEntities().get(0).getCreatedBy());
                                 BibliographicEntity savedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().saveAndFlush(incomingBibliographicEntity);//Saving here to get the bibliographic id
                                 entityManager.refresh(savedBibliographicEntity);
                                 processedBibIds.add(savedBibliographicEntity.getBibliographicId());
@@ -291,8 +297,9 @@ public class SubmitCollectionDAOService {
                 }
             }
             if (!isIncomingDummyRecord) {
-                submitCollectionReportHelperService.updateSuccessMessageForAdditionalBibsAdded(boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList,
+                String message = submitCollectionReportHelperService.updateSuccessMessageForAdditionalBibsAdded(boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList,
                         boundWithBibliographicEntityObject.getBarcode(),submitCollectionReportInfoMap);
+                itemChangeLogEntityList.add(prepareItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, message,itemId));
             }
         }
     }
@@ -304,6 +311,7 @@ public class SubmitCollectionDAOService {
         List<BibliographicEntity> existingBibliographicEntityList = existingItemEntity.getBibliographicEntities();
         List<String> incomingBibsNotInExistingBibs = new ArrayList<>();
         String barcode = boundWithBibliographicEntityObject.getBarcode();
+        int itemId = existingItemEntity.getItemId();
         boolean isValidRecordToProcess = submitCollectionValidationService.validateIncomingItemHavingBibCountLesserThanExistingItem(submitCollectionReportInfoMap,
                 boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList,incomingBibsNotInExistingBibs);
         if (isValidRecordToProcess) {
@@ -332,8 +340,9 @@ public class SubmitCollectionDAOService {
                 }
             }
         }
-        submitCollectionReportHelperService.updateSuccessMessageForRemovedBibs(boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList,
+        String message = submitCollectionReportHelperService.updateSuccessMessageForRemovedBibs(boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList,
                     boundWithBibliographicEntityObject.getBarcode(),submitCollectionReportInfoMap);
+        itemChangeLogEntityList.add(prepareItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, message,itemId));
     }
 
     private void unlinkHoldingFromBib(List<HoldingsEntity> holdingsEntityList,Set<String> owningInstHoldingIdList){
@@ -628,6 +637,7 @@ public class SubmitCollectionDAOService {
                     bibliographicEntityToSave = updateExistingRecordForDummy(fetchedBibliographicEntity, incomingBibliographicEntity);
                 }
                 savedBibliographicEntity = bibliographicEntityToSave;
+                //TODO need to change the item change log message for boundwith dummy record
                 List<ItemChangeLogEntity> preparedItemChangeLogEntityList = prepareItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, ReCAPConstants.SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE, savedBibliographicEntity.getItemEntities());
                 itemChangeLogEntityList.addAll(preparedItemChangeLogEntityList);
                 setProcessedBarcode(incomingBibliographicEntity, processedBarcodeSet);
@@ -1007,6 +1017,16 @@ public class SubmitCollectionDAOService {
             itemChangeLogEntityList.add(itemChangeLogEntity);
         }
         return itemChangeLogEntityList;
+    }
+
+    private ItemChangeLogEntity prepareItemChangeLogEntity(String operationType, String message, Integer itemId) {
+        ItemChangeLogEntity itemChangeLogEntity = new ItemChangeLogEntity();
+        itemChangeLogEntity.setOperationType(ReCAPConstants.SUBMIT_COLLECTION);
+        itemChangeLogEntity.setUpdatedBy(operationType);
+        itemChangeLogEntity.setUpdatedDate(new Date());
+        itemChangeLogEntity.setRecordId(itemId);
+        itemChangeLogEntity.setNotes(message);
+        return itemChangeLogEntity;
     }
 
     private void updateCustomerCode(BibliographicEntity dummyBibliographicEntity, BibliographicEntity updatedBibliographicEntity) {

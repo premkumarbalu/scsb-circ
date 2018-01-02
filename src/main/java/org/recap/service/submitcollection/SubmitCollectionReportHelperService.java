@@ -415,7 +415,7 @@ public class SubmitCollectionReportHelperService {
         return false;
     }
 
-    public void updateSuccessMessageForAdditionalBibsAdded(List<BibliographicEntity> incomingBibliographicEntityList, List<BibliographicEntity> existingBibliographicEntityList,
+    public String updateSuccessMessageForAdditionalBibsAdded(List<BibliographicEntity> incomingBibliographicEntityList, List<BibliographicEntity> existingBibliographicEntityList,
                                                            String barcode, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
         Map<String,BibliographicEntity> incomingBibliographicEntityMap = incomingBibliographicEntityList.stream()
                 .collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
@@ -423,19 +423,20 @@ public class SubmitCollectionReportHelperService {
                 .collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
         List<String> newlyAddedOwningInstBibIdList = getNewlyAddedOwningInstBibIdList(incomingBibliographicEntityMap,existingBibliographicEntityMap);
         String newlyAddedOwningInstBibIdString = newlyAddedOwningInstBibIdList.stream().collect(Collectors.joining(","));
-        StringBuilder successMessage = new StringBuilder();
-        successMessage.append(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD).append(ReCAPConstants.HYPHEN).append(" New bibs are attached to the item, newly attached owning institution bib id(s) - ")
+        StringBuilder message = new StringBuilder();
+        message.append(" New bibs are attached to the item, newly attached owning institution bib id(s) - ")
                 .append(newlyAddedOwningInstBibIdString).append(", bib count before update ").append(existingBibliographicEntityList.size())
                 .append(", bib count after update ").append(incomingBibliographicEntityList.size());
         List<SubmitCollectionReportInfo> successSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST);
         for(SubmitCollectionReportInfo submitCollectionReportInfo:successSubmitCollectionReportInfoList){
             if(submitCollectionReportInfo.getItemBarcode().equals(barcode)){
-                submitCollectionReportInfo.setMessage(successMessage.toString());
+                submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD+ReCAPConstants.HYPHEN+message);
             }
         }
+        return message.toString();
     }
 
-    public void updateSuccessMessageForRemovedBibs(List<BibliographicEntity> incomingBibliographicEntityList, List<BibliographicEntity> existingBibliographicEntityList,
+    public String updateSuccessMessageForRemovedBibs(List<BibliographicEntity> incomingBibliographicEntityList, List<BibliographicEntity> existingBibliographicEntityList,
                                                            String barcode, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
         Map<String,BibliographicEntity> incomingBibliographicEntityMap = incomingBibliographicEntityList.stream()
                 .collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
@@ -443,16 +444,17 @@ public class SubmitCollectionReportHelperService {
                 .collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
         List<String> unlinkedOwningInstBibIdList = getUnlinkedOwningInstBibIdList(incomingBibliographicEntityMap,existingBibliographicEntityMap);
         String unlinkedOwningInstBibIdsString = unlinkedOwningInstBibIdList.stream().collect(Collectors.joining(","));
-        StringBuilder successMessage = new StringBuilder();
-        successMessage.append(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD).append(ReCAPConstants.HYPHEN).append(" Bib(s) are unlinked from the item, unlinked owning institution bib id(s) - ")
+        StringBuilder message = new StringBuilder();
+        message.append(" Bib(s) are unlinked from the item, unlinked owning institution bib id(s) - ")
                 .append(unlinkedOwningInstBibIdsString).append(", bib count before update ").append(existingBibliographicEntityList.size())
                 .append(", bib count after update ").append(incomingBibliographicEntityList.size());
         List<SubmitCollectionReportInfo> successSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST);
         for(SubmitCollectionReportInfo submitCollectionReportInfo:successSubmitCollectionReportInfoList){
             if(submitCollectionReportInfo.getItemBarcode().equals(barcode)){
-                submitCollectionReportInfo.setMessage(successMessage.toString());
+                submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD+ReCAPConstants.HYPHEN+message);
             }
         }
+        return message.toString();
     }
 
     private List<String> getNewlyAddedOwningInstBibIdList(Map<String, BibliographicEntity> incomingBibliographicEntityMap, Map<String, BibliographicEntity> existingBibliographicEntityMap) {
