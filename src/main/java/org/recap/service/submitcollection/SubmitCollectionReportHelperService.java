@@ -313,14 +313,24 @@ public class SubmitCollectionReportHelperService {
         }
     }
 
-    private void setReportInfoForMatchedRecord(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<SubmitCollectionReportInfo> successSubmitCollectionReportInfoList, List<SubmitCollectionReportInfo> rejectedSubmitCollectionReportInfoList, String owningInstitution, ItemEntity incomingItemEntity, ItemEntity fetchedItemEntity) {
+    private void setReportInfoForMatchedRecord(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<SubmitCollectionReportInfo> successSubmitCollectionReportInfoList,
+                                               List<SubmitCollectionReportInfo> rejectedSubmitCollectionReportInfoList, String owningInstitution, ItemEntity incomingItemEntity, ItemEntity fetchedItemEntity) {
         if(!isAvailableItem(fetchedItemEntity.getItemAvailabilityStatusId()) && !fetchedItemEntity.isDeleted() && fetchedItemEntity.getCatalogingStatus().equals(ReCAPConstants.COMPLETE_STATUS)){//Rejection report
-            SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
-            submitCollectionReportInfo.setItemBarcode(fetchedItemEntity.getBarcode());
-            submitCollectionReportInfo.setCustomerCode(fetchedItemEntity.getCustomerCode());
-            submitCollectionReportInfo.setOwningInstitution(owningInstitution);
-            submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_RECORD);
-            rejectedSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
+            boolean isMessageAlreadyAdded = false;
+            for(SubmitCollectionReportInfo submitCollectionRejectionReportInfo:rejectedSubmitCollectionReportInfoList){
+                if(submitCollectionRejectionReportInfo.getItemBarcode().equals(fetchedItemEntity.getBarcode())){
+                    isMessageAlreadyAdded = true;
+                }
+            }
+            if (!isMessageAlreadyAdded) {
+                SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
+                submitCollectionReportInfo.setItemBarcode(fetchedItemEntity.getBarcode());
+                submitCollectionReportInfo.setCustomerCode(fetchedItemEntity.getCustomerCode());
+                submitCollectionReportInfo.setOwningInstitution(owningInstitution);
+                submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_RECORD);
+                rejectedSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
+            }
+
         } else {//Success report
             SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
             submitCollectionReportInfo.setItemBarcode(fetchedItemEntity.getBarcode());
@@ -416,7 +426,7 @@ public class SubmitCollectionReportHelperService {
     }
 
     public String updateSuccessMessageForAdditionalBibsAdded(List<BibliographicEntity> incomingBibliographicEntityList, List<BibliographicEntity> existingBibliographicEntityList,
-                                                           String barcode, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
+                                                           ItemEntity existingItemEntity, String barcode, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,boolean isItemAvailable) {
         Map<String,BibliographicEntity> incomingBibliographicEntityMap = incomingBibliographicEntityList.stream()
                 .collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
         Map<String,BibliographicEntity> existingBibliographicEntityMap = existingBibliographicEntityList.stream()
@@ -428,16 +438,40 @@ public class SubmitCollectionReportHelperService {
                 .append(newlyAddedOwningInstBibIdString).append(", bib count before update ").append(existingBibliographicEntityList.size())
                 .append(", bib count after update ").append(incomingBibliographicEntityList.size());
         List<SubmitCollectionReportInfo> successSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST);
-        for(SubmitCollectionReportInfo submitCollectionReportInfo:successSubmitCollectionReportInfoList){
-            if(submitCollectionReportInfo.getItemBarcode().equals(barcode)){
+        List<SubmitCollectionReportInfo> rejectionSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_LIST);
+        boolean isSuccessMessageAdded = false;
+        boolean isRejectedMessageAdded = false;
+        for (SubmitCollectionReportInfo submitCollectionReportInfo : successSubmitCollectionReportInfoList) {//Added to update the success message with added bibs for bound-with items
+            if (submitCollectionReportInfo.getItemBarcode().equals(barcode)) {
+                submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD + ReCAPConstants.HYPHEN + message);
+                isSuccessMessageAdded = true;
+            }
+        }
+        for (SubmitCollectionReportInfo submitCollectionReportInfo : rejectionSubmitCollectionReportInfoList) {//Added to update the success message with added bibs for bound-with items
+            if (submitCollectionReportInfo.getItemBarcode().equals(barcode)) {
+                submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_RECORD + ReCAPConstants.HYPHEN + message);
+                isRejectedMessageAdded = true;
+            }
+        }
+
+        if(!isSuccessMessageAdded && !isRejectedMessageAdded){//Added to add the success message if there were no success message already for the bound-with item
+            SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
+            submitCollectionReportInfo.setItemBarcode(barcode);
+            submitCollectionReportInfo.setOwningInstitution(existingItemEntity.getInstitutionEntity().getInstitutionCode());
+            submitCollectionReportInfo.setCustomerCode(existingItemEntity.getCustomerCode());
+            if(isItemAvailable) {
                 submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD+ReCAPConstants.HYPHEN+message);
+                successSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
+            } else {
+                submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_REJECTION_RECORD+", "+message);
+                rejectionSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
             }
         }
         return message.toString();
     }
 
     public String updateSuccessMessageForRemovedBibs(List<BibliographicEntity> incomingBibliographicEntityList, List<BibliographicEntity> existingBibliographicEntityList,
-                                                           String barcode, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
+                                                     ItemEntity existingItemEntity,String barcode, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
         Map<String,BibliographicEntity> incomingBibliographicEntityMap = incomingBibliographicEntityList.stream()
                 .collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
         Map<String,BibliographicEntity> existingBibliographicEntityMap = existingBibliographicEntityList.stream()
@@ -449,10 +483,21 @@ public class SubmitCollectionReportHelperService {
                 .append(unlinkedOwningInstBibIdsString).append(", bib count before update ").append(existingBibliographicEntityList.size())
                 .append(", bib count after update ").append(incomingBibliographicEntityList.size());
         List<SubmitCollectionReportInfo> successSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_LIST);
+        boolean isMessageAdded = false;
         for(SubmitCollectionReportInfo submitCollectionReportInfo:successSubmitCollectionReportInfoList){
             if(submitCollectionReportInfo.getItemBarcode().equals(barcode)){
                 submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD+ReCAPConstants.HYPHEN+message);
+                isMessageAdded = true;
             }
+        }
+        if(!isMessageAdded){//Added to add the success message if there were no success message already for the bound-with item
+            SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
+            submitCollectionReportInfo.setItemBarcode(barcode);
+            submitCollectionReportInfo.setOwningInstitution(existingItemEntity.getInstitutionEntity().getInstitutionCode());
+            submitCollectionReportInfo.setCustomerCode(existingItemEntity.getCustomerCode());
+            submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_SUCCESS_RECORD+ReCAPConstants.HYPHEN+message);
+            successSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
+
         }
         return message.toString();
     }
