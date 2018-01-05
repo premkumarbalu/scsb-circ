@@ -160,7 +160,8 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_SUCCESS_REPORT = "Submit_Collection_Success_Report";
     public static final String SUBMIT_COLLECTION_FAILURE_REPORT = "SubmitCollection_Failure_Report";
     public static final String SUBMIT_COLLECTION_ITEM_BARCODE = "ItemBarcode";
-    public static final String SUBMIT_COLLECTION_CUSTOMER_CODE = CUSTOMER_CODE;
+    public static final String HYPHEN = " - ";
+
 
     public static final String SUBMIT_COLLECTION_COMPLETION_QUEUE_FROM = "scsbactivemq:queue:submitCollectionCompletionFromQueue";
     public static final String SUBMIT_COLLECTION_COMPLETION_QUEUE_TO = "scsbactivemq:queue:submitCollectionCompletionToQueue";
@@ -187,6 +188,8 @@ public final class ReCAPConstants {
     public static final String BIB_ID = "BibId";
     public static final String HOLDING_ID = "HoldingId";
     public static final String ITEM_ID = "ItemId";
+    public static final String ROOT = "_root_";
+    public static final String IS_DELETED_BIB = "IsDeletedBib";
     public static final String BIBLIOGRAPHIC_ENTITY = "bibliographicEntity";
 
     public static final String GUEST_USER = "Guest";

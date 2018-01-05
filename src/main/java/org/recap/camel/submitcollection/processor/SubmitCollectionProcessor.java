@@ -98,10 +98,11 @@ public class SubmitCollectionProcessor {
         Set<Integer> processedBibIds = new HashSet<>();
         Set<String> updatedBoundWithDummyRecordOwnInstBibIdSet = new HashSet<>();
         List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
+        List<Map<String,String>> bibIdMapToRemoveIndexList = new ArrayList<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
         Integer institutionId = (Integer) setupDataService.getInstitutionCodeIdMap().get(institutionCode);
         try {
-            submitCollectionBatchService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndexList,xmlFileName,reportRecordNumList, false, isCGDProtection,updatedBoundWithDummyRecordOwnInstBibIdSet);
+            submitCollectionBatchService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,xmlFileName,reportRecordNumList, false, isCGDProtection,updatedBoundWithDummyRecordOwnInstBibIdSet);
             logger.info("Submit Collection : Solr indexing started for {} records", processedBibIds.size());
             logger.info("idMapToRemoveIndex--->"+idMapToRemoveIndexList.size());
             if (processedBibIds.size()>0) {
@@ -112,12 +113,13 @@ public class SubmitCollectionProcessor {
                 logger.info("Updated boudwith dummy record own inst bib id size-->{}",updatedBoundWithDummyRecordOwnInstBibIdSet.size());
                 submitCollectionService.indexDataUsingOwningInstBibId(new ArrayList<>(updatedBoundWithDummyRecordOwnInstBibIdSet),institutionId);
             }
-            if (idMapToRemoveIndexList.size()>0) {//remove the incomplete record from solr index
+            if (idMapToRemoveIndexList.size() > 0 || bibIdMapToRemoveIndexList.size() > 0) {//remove the incomplete record from solr index
                 StopWatch stopWatchRemovingDummy = new StopWatch();
                 stopWatchRemovingDummy.start();
                 logger.info("Calling indexing to remove dummy records");
                 new Thread(() -> {
                     try {
+                        submitCollectionBatchService.removeBibFromSolrIndex(bibIdMapToRemoveIndexList);
                         submitCollectionBatchService.removeSolrIndex(idMapToRemoveIndexList);
                         logger.info("Removed dummy records from solr");
                     } catch (Exception e) {

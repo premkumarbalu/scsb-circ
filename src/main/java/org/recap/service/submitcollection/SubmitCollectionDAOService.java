@@ -39,12 +39,29 @@ public class SubmitCollectionDAOService {
     @Autowired
     private SubmitCollectionReportHelperService submitCollectionReportHelperService;
 
+    @Autowired
+    private SubmitCollectionValidationService submitCollectionValidationService;
+
+    @Autowired
+    private SubmitCollectionHelperService submitCollectionHelperService;
+
     @PersistenceContext
     private EntityManager entityManager;
 
     @Value("${nonholdingid.institution}")
     private String nonHoldingIdInstitution;
 
+    /**
+     * Update bibliographic entity in batch for non bound with list.
+     *
+     * @param nonBoundWithBibliographicEntityObjectList the non bound with bibliographic entity object list
+     * @param owningInstitutionId                       the owning institution id
+     * @param submitCollectionReportInfoMap             the submit collection report info map
+     * @param processedBibIds                           the processed bib ids
+     * @param idMapToRemoveIndexList                    the id map to remove index list
+     * @param processedBarcodeSetForDummyRecords        the processed barcode set for dummy records
+     * @return the list
+     */
     public List<BibliographicEntity> updateBibliographicEntityInBatchForNonBoundWith(List<NonBoundWithBibliographicEntityObject> nonBoundWithBibliographicEntityObjectList, Integer owningInstitutionId,
                                                                                      Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap
             , Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList, Set<String> processedBarcodeSetForDummyRecords) {
@@ -64,7 +81,8 @@ public class SubmitCollectionDAOService {
             for (BibliographicEntity incomingBibliographicEntity : nonBoundWithBibliographicEntityObject.getBibliographicEntityList()) {
                 for (ItemEntity incomingItemEntity : incomingBibliographicEntity.getItemEntities()) {
                     ItemEntity fetchedItemEntity = fetchedBarcodeItemEntityMap.get(incomingItemEntity.getBarcode());
-                    if (fetchedItemEntity != null) {
+                    boolean isExistingItemABoundWith = submitCollectionValidationService.isExistingBoundWithItem(fetchedItemEntity);
+                    if (fetchedItemEntity != null && !isExistingItemABoundWith) {
                         List<BibliographicEntity> fetchedBibliographicEntityList = fetchedItemEntity.getBibliographicEntities();
                         for (BibliographicEntity fetchedBibliographicEntity : fetchedBibliographicEntityList) {
                             Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap = fetchedBarcodeBibliographicEntityMap.get(incomingItemEntity.getBarcode());
@@ -87,6 +105,19 @@ public class SubmitCollectionDAOService {
                                 submitCollectionReportHelperService.setSubmitCollectionReportInfoForOwningInstitutionBibIdMismatch(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap);
                             }
                         }
+                    } else if(isExistingItemABoundWith){//Error message when existing is a bound-with item and incoming is a single volume
+                        String barcode = fetchedItemEntity.getBarcode();
+                        String customerCode = fetchedItemEntity.getCustomerCode();
+                        String owningInstitution = fetchedItemEntity.getInstitutionEntity().getInstitutionCode();
+                        String existingBoundWithOwnInstBibIds = submitCollectionHelperService.getBibliographicIdsInString(fetchedItemEntity.getBibliographicEntities());
+                        StringBuilder message = new StringBuilder();
+                        message.append(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD).append(ReCAPConstants.HYPHEN).append("Existing record is a bound-with, incoming record is a Single volume, ").append("incoming owning institution item id ")
+                        .append(incomingItemEntity.getOwningInstitutionItemId()).append(", incoming owning institution holdings id ").append(incomingBibliographicEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId())
+                        .append(", owning institution bib id ").append(incomingBibliographicEntity.getOwningInstitutionBibId()).append(", existing owning institution item id ")
+                        .append(fetchedItemEntity.getOwningInstitutionItemId()).append(", existing owning institution holdings id ").append(fetchedItemEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId())
+                        .append("' existing owning institution bib ids ").append(existingBoundWithOwnInstBibIds);
+                        submitCollectionReportHelperService.setSubmitCollectionReportInfo(submitCollectionReportInfoMap.get(ReCAPConstants.SUBMIT_COLLECTION_FAILURE_LIST),
+                                barcode,customerCode,owningInstitution,message.toString());
                     }
                 }
             }
@@ -99,9 +130,20 @@ public class SubmitCollectionDAOService {
         return updatedBibliographicEntityList;
     }
 
+    /**
+     * Update bibliographic entity in batch for bound with list.
+     *
+     * @param boundWithBibliographicEntityObjectList the bound with bibliographic entity object list
+     * @param owningInstitutionId                    the owning institution id
+     * @param submitCollectionReportInfoMap          the submit collection report info map
+     * @param processedBibIds                        the processed bib ids
+     * @param idMapToRemoveIndexList                 the id map to remove index list
+     * @param processedBarcodeSetForDummyRecords     the processed barcode set for dummy records
+     * @return the list
+     */
     public List<BibliographicEntity> updateBibliographicEntityInBatchForBoundWith(List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList, Integer owningInstitutionId,
                                                                                   Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap
-            , Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList, Set<String> processedBarcodeSetForDummyRecords) {
+            , Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList, List<Map<String, String>> bibIdMapToRemoveIndexList, Set<String> processedBarcodeSetForDummyRecords) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         List<String> incomingItemBarcodeList = new ArrayList<>();
@@ -114,6 +156,54 @@ public class SubmitCollectionDAOService {
         List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
         List<ItemChangeLogEntity> itemChangeLogEntityList = new ArrayList<>();
         for(BoundWithBibliographicEntityObject boundWithBibliographicEntityObject : boundWithBibliographicEntityObjectList){
+            String barcode = boundWithBibliographicEntityObject.getBarcode();
+            ItemEntity existingItemEntity = fetchedBarcodeItemEntityMap.get(barcode);
+            if (existingItemEntity != null) {
+                Integer incomingBibCountForBoundWithItem = boundWithBibliographicEntityObject.getBibliographicEntityList().size();
+                boolean singleVolumeToBoundWith = isSingleVolumeToBoundWith(existingItemEntity.getBibliographicEntities().size(),incomingBibCountForBoundWithItem);
+                boolean boundWithBibIncreased = isBoundWithBibIncreased(existingItemEntity.getBibliographicEntities().size(),incomingBibCountForBoundWithItem);
+                boolean isNoOfIncomingBibsOfAnItemMatchesExistingBibsOfAnItemMatched = existingItemEntity.getBibliographicEntities().size() == incomingBibCountForBoundWithItem ;
+                boolean reducedIncomingBibCount = existingItemEntity.getBibliographicEntities().size() > incomingBibCountForBoundWithItem;
+                if (isNoOfIncomingBibsOfAnItemMatchesExistingBibsOfAnItemMatched) {//Bib counts are equal - Same number of bib for incoming and existing records
+                    iterateAndUpdateBoundWithItems(submitCollectionReportInfoMap, processedBibIds, fetchedBarcodeItemEntityMap, updatedBibliographicEntityList, itemChangeLogEntityList, boundWithBibliographicEntityObject);
+                } else if (singleVolumeToBoundWith || boundWithBibIncreased){//Incoming bib count is > existing bib count - New bibs are added in the Incoming
+                    logger.info("Processing incoming barcode {} have additional bib count compared to the existing bib count",barcode);
+                    addNewBibToExistingItem(submitCollectionReportInfoMap, processedBibIds,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords, fetchedBarcodeItemEntityMap, updatedBibliographicEntityList, itemChangeLogEntityList, boundWithBibliographicEntityObject);
+                } else if (reducedIncomingBibCount){//Incoming bib count is < existing bib count - Unlinking bibs from existing item and there are less no bibs in the incoming record
+                    logger.info("Processing incoming barcode {} have bib count less that the existing bib count",barcode);
+                    removeBibFromExistingItem(submitCollectionReportInfoMap, processedBibIds, idMapToRemoveIndexList, fetchedBarcodeItemEntityMap, updatedBibliographicEntityList, itemChangeLogEntityList, boundWithBibliographicEntityObject);
+                }
+            }
+        }
+        prepareExceptionReport(incomingItemBarcodeList,fetchedItemBarcodeList,incomingBarcodeItemEntityMapFromBibliographicEntityList,submitCollectionReportInfoMap);
+        stopWatch.stop();
+        saveUpdatedBibliographicEntityListAndItemChangeLogList(updatedBibliographicEntityList,itemChangeLogEntityList);
+        logger.info("Total bibs to update in the current batch--->{}", updatedBibliographicEntityList.size());
+        logger.info("Time taken to update in batches----->{}", stopWatch.getTotalTimeSeconds());
+        return updatedBibliographicEntityList;
+    }
+
+    private boolean isSingleVolumeToBoundWith(Integer existingBibCount,Integer incomingBibCountForBoundWithItem){
+        if(existingBibCount == 1 && (incomingBibCountForBoundWithItem > existingBibCount)){
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isBoundWithBibIncreased(Integer existingBibCount,Integer incomingBibCountForBoundWithItem){
+        if(existingBibCount > 1 && (incomingBibCountForBoundWithItem > existingBibCount)){
+            return true;
+        }
+        return false;
+    }
+
+    private void iterateAndUpdateBoundWithItems(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Set<Integer> processedBibIds,
+                                                Map<String, ItemEntity> fetchedBarcodeItemEntityMap, List<BibliographicEntity> updatedBibliographicEntityList,
+                                                List<ItemChangeLogEntity> itemChangeLogEntityList, BoundWithBibliographicEntityObject boundWithBibliographicEntityObject) {
+        logger.info("Processing items having bib count matched with the incoming and exisiting record");
+        boolean isValidRecordToProcess = submitCollectionValidationService.validateIncomingItemHavingBibCountIsSameAsExistingItem(submitCollectionReportInfoMap,fetchedBarcodeItemEntityMap,
+                boundWithBibliographicEntityObject.getBibliographicEntityList());
+        if (isValidRecordToProcess) {
             for (BibliographicEntity incomingBibliographicEntity : boundWithBibliographicEntityObject.getBibliographicEntityList()) {
                 for (ItemEntity incomingItemEntity : incomingBibliographicEntity.getItemEntities()) {
                     ItemEntity fetchedItemEntity = fetchedBarcodeItemEntityMap.get(incomingItemEntity.getBarcode());
@@ -121,18 +211,12 @@ public class SubmitCollectionDAOService {
                         List<BibliographicEntity> fetchedBibliographicEntityList = fetchedItemEntity.getBibliographicEntities();
                         List<String> notMatchedIncomingOwnInstBibId = new ArrayList<>();
                         List<String> notMatchedFetchedOwnInstBibId = new ArrayList<>();
-                        verifyAndSetMisMatchBoundWithOwnInstBibIdIfAny(boundWithBibliographicEntityObject.getBibliographicEntityList(),fetchedBibliographicEntityList
+                        submitCollectionValidationService.verifyAndSetMisMatchBoundWithOwnInstBibIdIfAny(boundWithBibliographicEntityObject.getBibliographicEntityList(),fetchedBibliographicEntityList
                         ,notMatchedIncomingOwnInstBibId,notMatchedFetchedOwnInstBibId);
                         if(notMatchedIncomingOwnInstBibId.isEmpty() && notMatchedFetchedOwnInstBibId.isEmpty()){
-                            Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap = getOwnInstBibIdBibliographicEntityMap(fetchedBibliographicEntityList);
+                            Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap = submitCollectionValidationService.getOwnInstBibIdBibliographicEntityMap(fetchedBibliographicEntityList);
                             BibliographicEntity fetchedBibliographicEntity = fetchedOwnInstBibIdBibliographicEntityMap.get(incomingBibliographicEntity.getOwningInstitutionBibId());
                             BibliographicEntity updatedBibliographicEntity = updateExistingRecordToEntityObject(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap, processedBibIds,itemChangeLogEntityList);
-                            if (updatedBibliographicEntity != null) {
-                                updatedBibliographicEntityList.add(updatedBibliographicEntity);
-                            }
-                        } else if(fetchedBibliographicEntityList.get(0).getOwningInstitutionBibId().substring(0, 1).equals("d")) {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
-                            BibliographicEntity updatedBibliographicEntity = null;
-                            updatedBibliographicEntity = updateDummyRecordForBoundWith(incomingBibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, updatedBibliographicEntity, fetchedBibliographicEntityList.get(0),itemChangeLogEntityList);
                             if (updatedBibliographicEntity != null) {
                                 updatedBibliographicEntityList.add(updatedBibliographicEntity);
                             }
@@ -146,12 +230,145 @@ public class SubmitCollectionDAOService {
                 }
             }
         }
-        prepareExceptionReport(incomingItemBarcodeList,fetchedItemBarcodeList,incomingBarcodeItemEntityMapFromBibliographicEntityList,submitCollectionReportInfoMap);
-        stopWatch.stop();
-        saveUpdatedBibliographicEntityListAndItemChangeLogList(updatedBibliographicEntityList,itemChangeLogEntityList);
-        logger.info("Total bibs to update in the current batch--->{}", updatedBibliographicEntityList.size());
-        logger.info("Time taken to update in batches----->{}", stopWatch.getTotalTimeSeconds());
-        return updatedBibliographicEntityList;
+    }
+
+    private void addNewBibToExistingItem(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Set<Integer> processedBibIds,List<Map<String, String>> idMapToRemoveIndexList, List<Map<String, String>> bibIdMapToRemoveIndexList, Set<String> processedBarcodeSetForDummyRecords,
+                                         Map<String, ItemEntity> fetchedBarcodeItemEntityMap, List<BibliographicEntity> updatedBibliographicEntityList,
+                                         List<ItemChangeLogEntity> itemChangeLogEntityList, BoundWithBibliographicEntityObject boundWithBibliographicEntityObject) {
+        ItemEntity existingItemEntity = fetchedBarcodeItemEntityMap.get(boundWithBibliographicEntityObject.getBarcode());
+        List<BibliographicEntity> existingBibliographicEntityList = existingItemEntity.getBibliographicEntities();
+        boolean isIncomingDummyRecord = false;
+        boolean isValidRecordToProcess = submitCollectionValidationService.validateIncomingItemHavingBibCountGreaterThanExistingItem(submitCollectionReportInfoMap,
+                boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList);
+        int itemId = existingItemEntity.getItemId();
+
+        if (isValidRecordToProcess) {
+            for (BibliographicEntity incomingBibliographicEntity : boundWithBibliographicEntityObject.getBibliographicEntityList()) {
+                for (ItemEntity incomingItemEntity : incomingBibliographicEntity.getItemEntities()) {
+                    ItemEntity fetchedItemEntity = fetchedBarcodeItemEntityMap.get(incomingItemEntity.getBarcode());
+                    if (fetchedItemEntity != null) {
+                        List<BibliographicEntity> fetchedBibliographicEntityList = fetchedItemEntity.getBibliographicEntities();
+                        Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap = submitCollectionValidationService.getOwnInstBibIdBibliographicEntityMap(fetchedBibliographicEntityList);
+                        BibliographicEntity fetchedBibliographicEntity = fetchedOwnInstBibIdBibliographicEntityMap.get(incomingBibliographicEntity.getOwningInstitutionBibId());
+                        if(fetchedBibliographicEntityList.get(0).getOwningInstitutionBibId().substring(0, 1).equals("d")) {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
+                            isIncomingDummyRecord = true;
+                            BibliographicEntity updatedBibliographicEntity = null;
+                            updatedBibliographicEntity = updateDummyRecordForBoundWith(incomingBibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, updatedBibliographicEntity, fetchedBibliographicEntityList.get(0),itemChangeLogEntityList);
+                            if (updatedBibliographicEntity != null) {
+                                updatedBibliographicEntityList.add(updatedBibliographicEntity);
+                            }
+                        } else if (fetchedBibliographicEntity !=null) {
+                            BibliographicEntity updatedBibliographicEntity = updateExistingRecordToEntityObject(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap, processedBibIds,itemChangeLogEntityList);
+                            if (updatedBibliographicEntity != null) {
+                                updatedBibliographicEntityList.add(updatedBibliographicEntity);
+                                processedBibIds.add(updatedBibliographicEntity.getBibliographicId());
+                            }
+                        } else {//check is bib already exist, if exist then attach item to the bib,if not add a new bib
+                            BibliographicEntity existingBibliographicEntity = submitCollectionHelperService.getBibliographicEntityIfExist(incomingBibliographicEntity.getOwningInstitutionBibId()
+                                    ,incomingBibliographicEntity.getOwningInstitutionId());
+                            incomingBibliographicEntity.getItemEntities().get(0).setCustomerCode(fetchedItemEntity.getCustomerCode());//Since CUL data may not have CC in the xml, so pulling CC from the existing data in SCSB
+                            incomingBibliographicEntity.getItemEntities().get(0).setItemAvailabilityStatusId(fetchedItemEntity.getItemAvailabilityStatusId());
+                            incomingBibliographicEntity.getItemEntities().get(0).setCatalogingStatus(fetchedItemEntity.getCatalogingStatus());
+                            incomingBibliographicEntity.getItemEntities().get(0).setCreatedBy(fetchedItemEntity.getCreatedBy());
+                            incomingBibliographicEntity.getItemEntities().get(0).setCreatedDate(fetchedItemEntity.getCreatedDate());
+                            boolean isItemAvailable = isAvailableItem(existingItemEntity.getItemAvailabilityStatusId());
+                            if(!isItemAvailable){//To maintain cgd and use restriction as in the existing item record when the item in not available
+                                incomingBibliographicEntity.getItemEntities().get(0).setCollectionGroupId(existingItemEntity.getCollectionGroupId());
+                                incomingBibliographicEntity.getItemEntities().get(0).setUseRestrictions(existingItemEntity.getUseRestrictions());
+                            }
+                            if(existingBibliographicEntity != null) {
+                                submitCollectionHelperService.attachItemToExistingBib(existingBibliographicEntity,incomingBibliographicEntity);//here just only linking bib
+                                Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
+                                bibIdMapToRemoveIndex.put(ReCAPConstants.BIB_ID, String.valueOf(existingBibliographicEntity.getBibliographicId()));
+                                bibIdMapToRemoveIndex.put(ReCAPConstants.IS_DELETED_BIB, Boolean.toString(true));
+                                bibIdMapToRemoveIndexList.add(bibIdMapToRemoveIndex);
+                                logger.info("Added id to remove from solr - bib id - {}, is deleted bib - {}", existingBibliographicEntity.getBibliographicId(), true);
+                                repositoryService.getBibliographicDetailsRepository().saveAndFlush(existingBibliographicEntity);
+                                entityManager.refresh(existingBibliographicEntity);
+                                processedBibIds.add(existingBibliographicEntity.getBibliographicId());
+                                //here updating the bib after linking with the item
+                                fetchedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(existingBibliographicEntity.getOwningInstitutionId(),existingBibliographicEntity.getOwningInstitutionBibId());
+                                BibliographicEntity updatedBibliographicEntity = updateExistingRecordToEntityObject(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap, processedBibIds,itemChangeLogEntityList);
+                                if (updatedBibliographicEntity != null) {
+                                    updatedBibliographicEntityList.add(updatedBibliographicEntity);
+                                }
+                            } else {
+                                incomingBibliographicEntity.setCatalogingStatus(ReCAPConstants.COMPLETE_STATUS);
+                                //to maintain the original created date and created by for the holdings entity
+                                incomingBibliographicEntity.getHoldingsEntities().get(0).setCreatedDate(existingItemEntity.getHoldingsEntities().get(0).getCreatedDate());
+                                incomingBibliographicEntity.getHoldingsEntities().get(0).setCreatedBy(existingItemEntity.getHoldingsEntities().get(0).getCreatedBy());
+                                BibliographicEntity savedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().saveAndFlush(incomingBibliographicEntity);//Saving here to get the bibliographic id
+                                entityManager.refresh(savedBibliographicEntity);
+                                processedBibIds.add(savedBibliographicEntity.getBibliographicId());
+                            }
+                        }
+                    }
+                }
+            }
+            if (!isIncomingDummyRecord) {
+                boolean isAvailableItem = isAvailableItem(existingItemEntity.getItemAvailabilityStatusId());
+                String message = submitCollectionReportHelperService.updateSuccessMessageForAdditionalBibsAdded(boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList,existingItemEntity,
+                        boundWithBibliographicEntityObject.getBarcode(),submitCollectionReportInfoMap,isAvailableItem);
+                itemChangeLogEntityList.add(prepareItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, message,itemId));
+            }
+        }
+    }
+
+    private void removeBibFromExistingItem(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList,
+                                         Map<String, ItemEntity> fetchedBarcodeItemEntityMap, List<BibliographicEntity> updatedBibliographicEntityList,
+                                         List<ItemChangeLogEntity> itemChangeLogEntityList, BoundWithBibliographicEntityObject boundWithBibliographicEntityObject) {
+        ItemEntity existingItemEntity = fetchedBarcodeItemEntityMap.get(boundWithBibliographicEntityObject.getBarcode());
+        List<BibliographicEntity> existingBibliographicEntityList = existingItemEntity.getBibliographicEntities();
+        List<String> incomingBibsNotInExistingBibs = new ArrayList<>();
+        String barcode = boundWithBibliographicEntityObject.getBarcode();
+        int itemId = existingItemEntity.getItemId();
+        boolean isValidRecordToProcess = submitCollectionValidationService.validateIncomingItemHavingBibCountLesserThanExistingItem(submitCollectionReportInfoMap,
+                boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList,incomingBibsNotInExistingBibs,existingItemEntity);
+        if (isValidRecordToProcess) {
+            ItemEntity fetchedItemEntity = fetchedBarcodeItemEntityMap.get(boundWithBibliographicEntityObject.getBarcode());
+            List<BibliographicEntity> incomingBibliographicEntityList = boundWithBibliographicEntityObject.getBibliographicEntityList();
+            Map<String,BibliographicEntity> incomingOwnInstBibIdBibliographicEntityMap = submitCollectionValidationService.getOwnInstBibIdBibliographicEntityMap(incomingBibliographicEntityList);
+            for(BibliographicEntity fetchedBibliographicEntity:fetchedItemEntity.getBibliographicEntities()){
+                BibliographicEntity incomingBibliographicEntity = incomingOwnInstBibIdBibliographicEntityMap.get(fetchedBibliographicEntity.getOwningInstitutionBibId());
+                if(incomingBibliographicEntity != null){
+                    BibliographicEntity updatedBibliographicEntity = updateExistingRecordToEntityObject(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap, processedBibIds,itemChangeLogEntityList);
+                    if (updatedBibliographicEntity != null) {
+                        updatedBibliographicEntityList.add(updatedBibliographicEntity);
+                        processedBibIds.add(updatedBibliographicEntity.getBibliographicId());
+                    }
+                } else {
+                    if(fetchedItemEntity.getBarcode().equals(barcode)){
+                        fetchedBibliographicEntity.getItemEntities().remove(fetchedItemEntity);
+                        if(fetchedBibliographicEntity.getItemEntities().size()==0){//when there is no item linked to the bib then bib is made as deleted
+                            fetchedBibliographicEntity.setDeleted(true);
+                        }
+                        Set<String> owningInstHoldingIdSet = fetchedItemEntity.getHoldingsEntities().stream().map(HoldingsEntity::getOwningInstitutionHoldingsId).collect(Collectors.toSet());
+                        unlinkHoldingFromBib(fetchedBibliographicEntity, fetchedItemEntity.getItemId(), owningInstHoldingIdSet, idMapToRemoveIndexList);
+                        logger.info("Unlinked bib - owning institution bib id {} from item barcode {}",fetchedBibliographicEntity.getBibliographicId(),barcode);
+                        processedBibIds.add(fetchedBibliographicEntity.getBibliographicId());
+                    }
+                }
+            }
+            String message = submitCollectionReportHelperService.updateSuccessMessageForRemovedBibs(boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList,existingItemEntity,
+                    boundWithBibliographicEntityObject.getBarcode(),submitCollectionReportInfoMap);
+            itemChangeLogEntityList.add(prepareItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, message,itemId));
+        }
+    }
+
+    private void unlinkHoldingFromBib(BibliographicEntity fetchedBibliographicEntity, Integer itemId, Set<String> owningInstHoldingIdList, List<Map<String, String>> idMapToRemoveIndexList) {
+        Iterator<HoldingsEntity> holdingsEntityIterator = fetchedBibliographicEntity.getHoldingsEntities().iterator();
+        while (holdingsEntityIterator.hasNext()) {
+            HoldingsEntity holdingsEntity = holdingsEntityIterator.next();
+            if (owningInstHoldingIdList.contains(holdingsEntity.getOwningInstitutionHoldingsId())) {
+                Map<String, String> idMapToRemoveIndex = new HashMap<>();
+                idMapToRemoveIndex.put(ReCAPConstants.HOLDING_ID, String.valueOf(holdingsEntity.getHoldingsId()));
+                idMapToRemoveIndex.put(ReCAPConstants.ITEM_ID, String.valueOf(itemId));
+                idMapToRemoveIndex.put(ReCAPConstants.ROOT, String.valueOf(fetchedBibliographicEntity.getOwningInstitutionId() + fetchedBibliographicEntity.getOwningInstitutionBibId()));
+                idMapToRemoveIndexList.add(idMapToRemoveIndex);
+                logger.info("Added id to remove from solr - holding id - {}, item id - {}, root - {}", holdingsEntity.getHoldingsId(), itemId, fetchedBibliographicEntity.getOwningInstitutionId() + fetchedBibliographicEntity.getOwningInstitutionBibId());
+                holdingsEntityIterator.remove();
+            }
+        }
     }
 
     private void saveUpdatedBibliographicEntityListAndItemChangeLogList(List<BibliographicEntity> updatedBibliographicEntityList,List<ItemChangeLogEntity> itemChangeLogEntityList){
@@ -189,32 +406,14 @@ public class SubmitCollectionDAOService {
         repositoryService.getItemChangeLogDetailsRepository().save(itemChangeLogEntityList);
     }
 
-    private void verifyAndSetMisMatchBoundWithOwnInstBibIdIfAny(List<BibliographicEntity> incomingBibliographicEntityList,List<BibliographicEntity> fetchedBibliographicEntityList
-            ,List<String> notMatchedIncomingOwnInstBibId,List<String> notMatchedFetchedOwnInstBibId){
-        List<String> incomingOwnInstBibIdList = getOwnInstBibIdList(incomingBibliographicEntityList);
-        List<String> fetchedOwnInstBibIdList = getOwnInstBibIdList(fetchedBibliographicEntityList);
-
-        for(String incomingOwnInstBibId:incomingOwnInstBibIdList){
-            if(!fetchedOwnInstBibIdList.contains(incomingOwnInstBibId)){
-                notMatchedIncomingOwnInstBibId.add(incomingOwnInstBibId);
-            }
-        }
-
-        for (String fetchedOwnInstBibId:fetchedOwnInstBibIdList){
-            if(!incomingOwnInstBibIdList.contains(fetchedOwnInstBibId)){
-                notMatchedFetchedOwnInstBibId.add(fetchedOwnInstBibId);
-            }
-        }
-    }
-
-    private List<String> getOwnInstBibIdList(List<BibliographicEntity> bibliographicEntityList){
-        List<String> ownInstBibIdList = new ArrayList<>();
-        for(BibliographicEntity bibliographicEntity:bibliographicEntityList){
-            ownInstBibIdList.add(bibliographicEntity.getOwningInstitutionBibId());
-        }
-        return ownInstBibIdList;
-    }
-
+    /**
+     * Prepare exception report.
+     *
+     * @param incomingItemBarcodeList                                 the incoming item barcode list
+     * @param fetchedItemBarcodeList                                  the fetched item barcode list
+     * @param incomingBarcodeItemEntityMapFromBibliographicEntityList the incoming barcode item entity map from bibliographic entity list
+     * @param submitCollectionReportInfoMap                           the submit collection report info map
+     */
     public void prepareExceptionReport(List<String> incomingItemBarcodeList,List<String> fetchedItemBarcodeList,Map<String,ItemEntity> incomingBarcodeItemEntityMapFromBibliographicEntityList
             ,Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap){
         for(String incomingBarcode:incomingItemBarcodeList) {
@@ -228,16 +427,23 @@ public class SubmitCollectionDAOService {
         }
     }
 
+    /**
+     * Gets barcode set from item entity list.
+     *
+     * @param itemEntityList the item entity list
+     * @return the barcode set from item entity list
+     */
     public Collection<? extends String> getBarcodeSetFromItemEntityList(List<ItemEntity> itemEntityList) {
         Set<String> barcodeList = itemEntityList.stream().map(ItemEntity::getBarcode).collect(Collectors.toSet());
         return barcodeList;
     }
 
-    private Map<String,BibliographicEntity> getOwnInstBibIdBibliographicEntityMap(List<BibliographicEntity> bibliographicEntityList){
-        return bibliographicEntityList.stream().collect(Collectors.toMap(BibliographicEntity::getOwningInstitutionBibId,bibliographicEntity -> bibliographicEntity));
-
-    }
-
+    /**
+     * Get barcode bibliographic entity map map.
+     *
+     * @param itemEntityList the item entity list
+     * @return the map
+     */
     public Map<String,Map<String,BibliographicEntity>> getBarcodeBibliographicEntityMap(List<ItemEntity> itemEntityList){
         Map<String,Map<String,BibliographicEntity>> barcodeBibliographicEntityMap = new HashedMap();
         for(ItemEntity itemEntity:itemEntityList){
@@ -250,6 +456,12 @@ public class SubmitCollectionDAOService {
         return barcodeBibliographicEntityMap;
     }
 
+    /**
+     * Get barcode item entity map from non bound with bibliographic entity list map.
+     *
+     * @param nonBoundWithBibliographicEntityObjectList the non bound with bibliographic entity object list
+     * @return the map
+     */
     public Map<String,ItemEntity> getBarcodeItemEntityMapFromNonBoundWithBibliographicEntityList(List<NonBoundWithBibliographicEntityObject> nonBoundWithBibliographicEntityObjectList){
         Map<String,ItemEntity> barcodeItemEntityMapFromBibliographicEntityList = new HashedMap();
         for(NonBoundWithBibliographicEntityObject nonBoundWithBibliographicEntityObject : nonBoundWithBibliographicEntityObjectList){
@@ -272,6 +484,12 @@ public class SubmitCollectionDAOService {
         return barcodeItemEntityMapFromBibliographicEntityList;
     }
 
+    /**
+     * Get barcode item entity map map.
+     *
+     * @param itemEntityList the item entity list
+     * @return the map
+     */
     public Map<String,ItemEntity> getBarcodeItemEntityMap(List<ItemEntity> itemEntityList){
         return itemEntityList.stream().collect(Collectors.toMap(ItemEntity::getBarcode,itemEntity -> itemEntity));
     }
@@ -279,9 +497,10 @@ public class SubmitCollectionDAOService {
     /**
      * This method updates the Bib, Holding and Item information for the given input xml
      *
-     * @param bibliographicEntity           the bibliographic entity
-     * @param submitCollectionReportInfoMap the submit collection report info map
-     * @param idMapToRemoveIndexList            the id map to remove index
+     * @param bibliographicEntity                the bibliographic entity
+     * @param submitCollectionReportInfoMap      the submit collection report info map
+     * @param idMapToRemoveIndexList             the id map to remove index
+     * @param processedBarcodeSetForDummyRecords the processed barcode set for dummy records
      * @return the bibliographic entity
      */
     public BibliographicEntity updateBibliographicEntity(BibliographicEntity bibliographicEntity, Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String,String>> idMapToRemoveIndexList,
@@ -303,6 +522,13 @@ public class SubmitCollectionDAOService {
         return savedBibliographicEntity;
     }
 
+    /**
+     * Add exception report.
+     *
+     * @param itemEntityList                the item entity list
+     * @param submitCollectionReportInfoMap the submit collection report info map
+     * @param message                       the message
+     */
     public void addExceptionReport(List<ItemEntity> itemEntityList, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap,String message) {
         boolean isBarcodeAlreadyAdded = submitCollectionReportHelperService.isBarcodeAlreadyAdded(itemEntityList.get(0).getBarcode(),submitCollectionReportInfoMap);
         if (!isBarcodeAlreadyAdded) {//This is to avoid repeated error message for non-existing boundwith records
@@ -310,6 +536,17 @@ public class SubmitCollectionDAOService {
         }
     }
 
+    /**
+     * Update dummy record bibliographic entity.
+     *
+     * @param bibliographicEntity           the bibliographic entity
+     * @param submitCollectionReportInfoMap the submit collection report info map
+     * @param idMapToRemoveIndexList        the id map to remove index list
+     * @param processedBarcodeSet           the processed barcode set
+     * @param savedBibliographicEntity      the saved bibliographic entity
+     * @param fetchBibliographicEntity      the fetch bibliographic entity
+     * @return the bibliographic entity
+     */
     public BibliographicEntity updateDummyRecord(BibliographicEntity bibliographicEntity, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<Map<String, String>> idMapToRemoveIndexList, Set<String> processedBarcodeSet, BibliographicEntity savedBibliographicEntity, BibliographicEntity fetchBibliographicEntity) {
         List<ItemEntity> fetchedItemBasedOnOwningInstitutionItemId = submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(bibliographicEntity.getItemEntities());
         boolean boundWith = isBoundWithItem(bibliographicEntity,processedBarcodeSet);
@@ -340,6 +577,18 @@ public class SubmitCollectionDAOService {
         return savedBibliographicEntity;
     }
 
+    /**
+     * Update dummy record for non bound with bibliographic entity.
+     *
+     * @param incomingBibliographicEntity   the incoming bibliographic entity
+     * @param submitCollectionReportInfoMap the submit collection report info map
+     * @param idMapToRemoveIndexList        the id map to remove index list
+     * @param processedBarcodeSet           the processed barcode set
+     * @param savedBibliographicEntity      the saved bibliographic entity
+     * @param fetchBibliographicEntity      the fetch bibliographic entity
+     * @param itemChangeLogEntityList       the item change log entity list
+     * @return the bibliographic entity
+     */
     public BibliographicEntity updateDummyRecordForNonBoundWith(BibliographicEntity incomingBibliographicEntity, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap
             , List<Map<String, String>> idMapToRemoveIndexList, Set<String> processedBarcodeSet, BibliographicEntity savedBibliographicEntity
             , BibliographicEntity fetchBibliographicEntity,List<ItemChangeLogEntity> itemChangeLogEntityList) {
@@ -372,6 +621,18 @@ public class SubmitCollectionDAOService {
         return savedBibliographicEntity;
     }
 
+    /**
+     * Update dummy record for bound with bibliographic entity.
+     *
+     * @param incomingBibliographicEntity   the incoming bibliographic entity
+     * @param submitCollectionReportInfoMap the submit collection report info map
+     * @param idMapToRemoveIndexList        the id map to remove index list
+     * @param processedBarcodeSet           the processed barcode set
+     * @param savedBibliographicEntity      the saved bibliographic entity
+     * @param fetchBibliographicEntity      the fetch bibliographic entity
+     * @param itemChangeLogEntityList       the item change log entity list
+     * @return the bibliographic entity
+     */
     public BibliographicEntity updateDummyRecordForBoundWith(BibliographicEntity incomingBibliographicEntity, Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap
             , List<Map<String, String>> idMapToRemoveIndexList, Set<String> processedBarcodeSet, BibliographicEntity savedBibliographicEntity
             , BibliographicEntity fetchBibliographicEntity,List<ItemChangeLogEntity> itemChangeLogEntityList) {
@@ -392,6 +653,7 @@ public class SubmitCollectionDAOService {
                     bibliographicEntityToSave = updateExistingRecordForDummy(fetchedBibliographicEntity, incomingBibliographicEntity);
                 }
                 savedBibliographicEntity = bibliographicEntityToSave;
+                //TODO need to change the item change log message for boundwith dummy record
                 List<ItemChangeLogEntity> preparedItemChangeLogEntityList = prepareItemChangeLogEntity(ReCAPConstants.SUBMIT_COLLECTION, ReCAPConstants.SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE, savedBibliographicEntity.getItemEntities());
                 itemChangeLogEntityList.addAll(preparedItemChangeLogEntityList);
                 setProcessedBarcode(incomingBibliographicEntity, processedBarcodeSet);
@@ -437,7 +699,7 @@ public class SubmitCollectionDAOService {
     private BibliographicEntity updateExistingRecord(BibliographicEntity fetchBibliographicEntity, BibliographicEntity incomingBibliographicEntity,
                                                      Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap) {
         BibliographicEntity savedOrUnsavedBibliographicEntity = null;
-        logger.info("Processing bib owning institution bibid - ",incomingBibliographicEntity.getOwningInstitutionBibId());
+        logger.info("Processing bib owning institution bibid - {}",incomingBibliographicEntity.getOwningInstitutionBibId());
         copyBibliographicEntity(fetchBibliographicEntity, incomingBibliographicEntity);
         List<HoldingsEntity> fetchedHoldingsEntityList = fetchBibliographicEntity.getHoldingsEntities();
         List<HoldingsEntity> incomingHoldingsEntityList = new ArrayList<>(incomingBibliographicEntity.getHoldingsEntities());
@@ -515,10 +777,20 @@ public class SubmitCollectionDAOService {
         }
     }
 
+    /**
+     * Update existing record to entity object bibliographic entity.
+     *
+     * @param fetchBibliographicEntity      the fetch bibliographic entity
+     * @param incomingBibliographicEntity   the incoming bibliographic entity
+     * @param submitCollectionReportInfoMap the submit collection report info map
+     * @param processedBibIds               the processed bib ids
+     * @param itemChangeLogEntityList       the item change log entity list
+     * @return the bibliographic entity
+     */
     public BibliographicEntity updateExistingRecordToEntityObject(BibliographicEntity fetchBibliographicEntity, BibliographicEntity incomingBibliographicEntity,
             Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Set<Integer> processedBibIds,List<ItemChangeLogEntity> itemChangeLogEntityList) {
         BibliographicEntity bibliographicEntityToSave = null;
-        logger.info("Processing bib owning institution bibid - ",incomingBibliographicEntity.getOwningInstitutionBibId());
+        logger.info("Processing bib owning institution bibid - {}",incomingBibliographicEntity.getOwningInstitutionBibId());
         copyBibliographicEntity(fetchBibliographicEntity, incomingBibliographicEntity);
         List<HoldingsEntity> fetchedHoldingsEntityList = fetchBibliographicEntity.getHoldingsEntities();
         List<HoldingsEntity> incomingHoldingsEntityList = new ArrayList<>(incomingBibliographicEntity.getHoldingsEntities());
@@ -657,10 +929,23 @@ public class SubmitCollectionDAOService {
         return fetchedBibliographicEntity;
     }
 
+    /**
+     * Get item entity list using barcode list list.
+     *
+     * @param itemBarcodeList     the item barcode list
+     * @param owningInstitutionId the owning institution id
+     * @return the list
+     */
     public List<ItemEntity> getItemEntityListUsingBarcodeList(List<String> itemBarcodeList,Integer owningInstitutionId){
         return repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,owningInstitutionId);
     }
 
+    /**
+     * Get barcode set from non bound with bibliographic entity set.
+     *
+     * @param nonBoundWithBibliographicEntityObjectList the non bound with bibliographic entity object list
+     * @return the set
+     */
     public Set<String> getBarcodeSetFromNonBoundWithBibliographicEntity(List<NonBoundWithBibliographicEntityObject> nonBoundWithBibliographicEntityObjectList){
         Set<String> itemBarcodeList = new HashSet<>();
         for(NonBoundWithBibliographicEntityObject nonBoundWithBibliographicEntityObject :nonBoundWithBibliographicEntityObjectList){
@@ -748,6 +1033,16 @@ public class SubmitCollectionDAOService {
             itemChangeLogEntityList.add(itemChangeLogEntity);
         }
         return itemChangeLogEntityList;
+    }
+
+    private ItemChangeLogEntity prepareItemChangeLogEntity(String operationType, String message, Integer itemId) {
+        ItemChangeLogEntity itemChangeLogEntity = new ItemChangeLogEntity();
+        itemChangeLogEntity.setOperationType(ReCAPConstants.SUBMIT_COLLECTION);
+        itemChangeLogEntity.setUpdatedBy(operationType);
+        itemChangeLogEntity.setUpdatedDate(new Date());
+        itemChangeLogEntity.setRecordId(itemId);
+        itemChangeLogEntity.setNotes(message);
+        return itemChangeLogEntity;
     }
 
     private void updateCustomerCode(BibliographicEntity dummyBibliographicEntity, BibliographicEntity updatedBibliographicEntity) {
