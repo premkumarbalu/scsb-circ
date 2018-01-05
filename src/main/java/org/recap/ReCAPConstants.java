@@ -189,6 +189,7 @@ public final class ReCAPConstants {
     public static final String HOLDING_ID = "HoldingId";
     public static final String ITEM_ID = "ItemId";
     public static final String ROOT = "_root_";
+    public static final String IS_DELETED_BIB = "IsDeletedBib";
     public static final String BIBLIOGRAPHIC_ENTITY = "bibliographicEntity";
 
     public static final String GUEST_USER = "Guest";

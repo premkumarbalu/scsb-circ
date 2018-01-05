@@ -143,7 +143,7 @@ public class SubmitCollectionDAOService {
      */
     public List<BibliographicEntity> updateBibliographicEntityInBatchForBoundWith(List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList, Integer owningInstitutionId,
                                                                                   Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap
-            , Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList, Set<String> processedBarcodeSetForDummyRecords) {
+            , Set<Integer> processedBibIds, List<Map<String, String>> idMapToRemoveIndexList, List<Map<String, String>> bibIdMapToRemoveIndexList, Set<String> processedBarcodeSetForDummyRecords) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         List<String> incomingItemBarcodeList = new ArrayList<>();
@@ -168,7 +168,7 @@ public class SubmitCollectionDAOService {
                     iterateAndUpdateBoundWithItems(submitCollectionReportInfoMap, processedBibIds, fetchedBarcodeItemEntityMap, updatedBibliographicEntityList, itemChangeLogEntityList, boundWithBibliographicEntityObject);
                 } else if (singleVolumeToBoundWith || boundWithBibIncreased){//Incoming bib count is > existing bib count - New bibs are added in the Incoming
                     logger.info("Processing incoming barcode {} have additional bib count compared to the existing bib count",barcode);
-                    addNewBibToExistingItem(submitCollectionReportInfoMap, processedBibIds,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords, fetchedBarcodeItemEntityMap, updatedBibliographicEntityList, itemChangeLogEntityList, boundWithBibliographicEntityObject);
+                    addNewBibToExistingItem(submitCollectionReportInfoMap, processedBibIds,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords, fetchedBarcodeItemEntityMap, updatedBibliographicEntityList, itemChangeLogEntityList, boundWithBibliographicEntityObject);
                 } else if (reducedIncomingBibCount){//Incoming bib count is < existing bib count - Unlinking bibs from existing item and there are less no bibs in the incoming record
                     logger.info("Processing incoming barcode {} have bib count less that the existing bib count",barcode);
                     removeBibFromExistingItem(submitCollectionReportInfoMap, processedBibIds, idMapToRemoveIndexList, fetchedBarcodeItemEntityMap, updatedBibliographicEntityList, itemChangeLogEntityList, boundWithBibliographicEntityObject);
@@ -232,7 +232,7 @@ public class SubmitCollectionDAOService {
         }
     }
 
-    private void addNewBibToExistingItem(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Set<Integer> processedBibIds,List<Map<String, String>> idMapToRemoveIndexList, Set<String> processedBarcodeSetForDummyRecords,
+    private void addNewBibToExistingItem(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Set<Integer> processedBibIds,List<Map<String, String>> idMapToRemoveIndexList, List<Map<String, String>> bibIdMapToRemoveIndexList, Set<String> processedBarcodeSetForDummyRecords,
                                          Map<String, ItemEntity> fetchedBarcodeItemEntityMap, List<BibliographicEntity> updatedBibliographicEntityList,
                                          List<ItemChangeLogEntity> itemChangeLogEntityList, BoundWithBibliographicEntityObject boundWithBibliographicEntityObject) {
         ItemEntity existingItemEntity = fetchedBarcodeItemEntityMap.get(boundWithBibliographicEntityObject.getBarcode());
@@ -278,6 +278,11 @@ public class SubmitCollectionDAOService {
                             }
                             if(existingBibliographicEntity != null) {
                                 submitCollectionHelperService.attachItemToExistingBib(existingBibliographicEntity,incomingBibliographicEntity);//here just only linking bib
+                                Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
+                                bibIdMapToRemoveIndex.put(ReCAPConstants.BIB_ID, String.valueOf(existingBibliographicEntity.getBibliographicId()));
+                                bibIdMapToRemoveIndex.put(ReCAPConstants.IS_DELETED_BIB, Boolean.toString(true));
+                                bibIdMapToRemoveIndexList.add(bibIdMapToRemoveIndex);
+                                logger.info("Added id to remove from solr - bib id - {}, is deleted bib - {}", existingBibliographicEntity.getBibliographicId(), true);
                                 repositoryService.getBibliographicDetailsRepository().saveAndFlush(existingBibliographicEntity);
                                 entityManager.refresh(existingBibliographicEntity);
                                 processedBibIds.add(existingBibliographicEntity.getBibliographicId());

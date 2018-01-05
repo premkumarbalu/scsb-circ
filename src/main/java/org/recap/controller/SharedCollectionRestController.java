@@ -62,11 +62,12 @@ public class SharedCollectionRestController {
 
         List<Integer> reportRecordNumberList = new ArrayList<>();
         Set<Integer> processedBibIdSet = new HashSet<>();
-        List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
+        List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();//Added to remove dummy record in solr
+        List<Map<String,String>> bibIdMapToRemoveIndexList = new ArrayList<>();//Added to remove orphan record while unlinking
         Set<String> updatedBoundWithDummyRecordOwnInstBibIdSet = new HashSet<>();
         List<SubmitCollectionResponse> submitCollectionResponseList;
         try {
-            submitCollectionResponseList = submitCollectionBatchService.process(institution,inputRecords,processedBibIdSet,idMapToRemoveIndexList,"",reportRecordNumberList, true,isCGDProtection,updatedBoundWithDummyRecordOwnInstBibIdSet);
+            submitCollectionResponseList = submitCollectionBatchService.process(institution,inputRecords,processedBibIdSet,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,"",reportRecordNumberList, true,isCGDProtection,updatedBoundWithDummyRecordOwnInstBibIdSet);
             if (!processedBibIdSet.isEmpty()) {
                 logger.info("Calling indexing service to update data");
                 submitCollectionService.indexData(processedBibIdSet);
@@ -75,9 +76,10 @@ public class SharedCollectionRestController {
                 logger.info("Updated boudwith dummy record own inst bib id size-->{}",updatedBoundWithDummyRecordOwnInstBibIdSet.size());
                 submitCollectionService.indexDataUsingOwningInstBibId(new ArrayList<>(updatedBoundWithDummyRecordOwnInstBibIdSet),institutionId);
             }
-            if (!idMapToRemoveIndexList.isEmpty()) {//remove the incomplete record from solr index
+            if (!idMapToRemoveIndexList.isEmpty() || !bibIdMapToRemoveIndexList.isEmpty()) {//remove the incomplete record from solr index
                 logger.info("Calling indexing to remove dummy records");
                 new Thread(() -> {
+                    submitCollectionService.removeBibFromSolrIndex(bibIdMapToRemoveIndexList);
                     submitCollectionService.removeSolrIndex(idMapToRemoveIndexList);
                     logger.info("Removed dummy records from solr");
                 }).start();
