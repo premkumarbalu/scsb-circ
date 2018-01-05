@@ -324,6 +324,7 @@ public class DeAccessionService {
                     if (CollectionUtils.isNotEmpty(requestItemEntities)) {
                         RequestItemEntity activeRetrievalRequest = null;
                         RequestItemEntity activeRecallRequest = null;
+                        RequestItemEntity initialLoadRequest = null;
                         for (RequestItemEntity requestItemEntity : requestItemEntities) { // Get active retrieval and recall requests.
                             if (ReCAPConstants.RETRIEVAL.equals(requestItemEntity.getRequestTypeEntity().getRequestTypeCode()) && ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED.equals(requestItemEntity.getRequestStatusEntity().getRequestStatusCode())) {
                                 activeRetrievalRequest = requestItemEntity;
@@ -331,6 +332,13 @@ public class DeAccessionService {
                             if (ReCAPConstants.REQUEST_TYPE_RECALL.equals(requestItemEntity.getRequestTypeEntity().getRequestTypeCode()) && ReCAPConstants.REQUEST_STATUS_RECALLED.equals(requestItemEntity.getRequestStatusEntity().getRequestStatusCode())) {
                                 activeRecallRequest = requestItemEntity;
                             }
+                            if (ReCAPConstants.RETRIEVAL.equals(requestItemEntity.getRequestTypeEntity().getRequestTypeCode()) && ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD.equals(requestItemEntity.getRequestStatusEntity().getRequestStatusCode())) {
+                                initialLoadRequest = requestItemEntity;
+                            }
+                        }
+                        if (initialLoadRequest != null) {
+                            updateRequestAsCanceled(initialLoadRequest, username);
+                            barcodeAndStopCodeMap.put(itemBarcode, deliveryLocation);
                         }
                         if (activeRetrievalRequest != null && activeRecallRequest != null) {
                             String retrievalRequestingInstitution = activeRetrievalRequest.getInstitutionEntity().getInstitutionCode();
@@ -418,19 +426,31 @@ public class DeAccessionService {
         itemRequestInformation.setDeliveryLocation(requestItemEntity.getStopCode());
         itemRequestInformation.setUsername(username);
         ItemHoldResponse itemCancelHoldResponse = (ItemHoldResponse) requestItemController.cancelHoldItem(itemRequestInformation, itemRequestInformation.getRequestingInstitution());
+        logger.info("Deaccession Item - Cancel request status : {}", itemCancelHoldResponse.getScreenMessage());
         if (itemCancelHoldResponse.isSuccess()) {
-            RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
-            requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
-            if (requestItemEntity.getRequestTypeEntity().getRequestTypeCode().equalsIgnoreCase(ReCAPConstants.REQUEST_TYPE_RETRIEVAL)) {
-                requestItemEntity.getItemEntity().setItemAvailabilityStatusId(1);
-            }
-            RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
-            saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), username, ReCAPConstants.REQUEST_ITEM_CANCEL_DEACCESSION_ITEM, ReCAPConstants.REQUEST_ITEM_CANCELED_FOR_DEACCESSION + savedRequestItemEntity.getItemId());
-            itemRequestServiceUtil.updateSolrIndex(savedRequestItemEntity.getItemEntity());
+            updateRequestAsCanceled(requestItemEntity, username);
             itemCancelHoldResponse.setSuccess(true);
             itemCancelHoldResponse.setScreenMessage(ReCAPConstants.REQUEST_CANCELLATION_SUCCCESS);
         }
         return itemCancelHoldResponse;
+    }
+
+    /**
+     * Updates request status to canceled.
+     *
+     * @param requestItemEntity
+     * @param username
+     */
+    private void updateRequestAsCanceled(RequestItemEntity requestItemEntity, String username) {
+        RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
+        requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+        requestItemEntity.getItemEntity().setItemAvailabilityStatusId(2);
+        String requestNotes = requestItemEntity.getNotes();
+        requestNotes = requestNotes + "\n" + "SCSB : " + ReCAPConstants.REQUEST_ITEM_CANCELED_FOR_DEACCESSION;
+        requestItemEntity.setNotes(requestNotes);
+        RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
+        saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), username, ReCAPConstants.REQUEST_ITEM_CANCEL_DEACCESSION_ITEM, ReCAPConstants.REQUEST_ITEM_CANCELED_FOR_DEACCESSION + savedRequestItemEntity.getItemId());
+        itemRequestServiceUtil.updateSolrIndex(savedRequestItemEntity.getItemEntity());
     }
 
     private void saveItemChangeLogEntity(Integer requestId, String deaccessionUser, String operationType, String notes) {
