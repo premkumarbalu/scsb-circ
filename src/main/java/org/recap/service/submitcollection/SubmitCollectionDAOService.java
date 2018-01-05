@@ -250,18 +250,18 @@ public class SubmitCollectionDAOService {
                         List<BibliographicEntity> fetchedBibliographicEntityList = fetchedItemEntity.getBibliographicEntities();
                         Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap = submitCollectionValidationService.getOwnInstBibIdBibliographicEntityMap(fetchedBibliographicEntityList);
                         BibliographicEntity fetchedBibliographicEntity = fetchedOwnInstBibIdBibliographicEntityMap.get(incomingBibliographicEntity.getOwningInstitutionBibId());
-                        if (fetchedBibliographicEntity !=null) {
-                            BibliographicEntity updatedBibliographicEntity = updateExistingRecordToEntityObject(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap, processedBibIds,itemChangeLogEntityList);
-                            if (updatedBibliographicEntity != null) {
-                                updatedBibliographicEntityList.add(updatedBibliographicEntity);
-                                processedBibIds.add(updatedBibliographicEntity.getBibliographicId());
-                            }
-                        } else if(fetchedBibliographicEntityList.get(0).getOwningInstitutionBibId().substring(0, 1).equals("d")) {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
+                        if(fetchedBibliographicEntityList.get(0).getOwningInstitutionBibId().substring(0, 1).equals("d")) {//update existing dummy record if any (Removes existing dummy record and creates new record for the same barcode based on the input xml)
                             isIncomingDummyRecord = true;
                             BibliographicEntity updatedBibliographicEntity = null;
                             updatedBibliographicEntity = updateDummyRecordForBoundWith(incomingBibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, updatedBibliographicEntity, fetchedBibliographicEntityList.get(0),itemChangeLogEntityList);
                             if (updatedBibliographicEntity != null) {
                                 updatedBibliographicEntityList.add(updatedBibliographicEntity);
+                            }
+                        } else if (fetchedBibliographicEntity !=null) {
+                            BibliographicEntity updatedBibliographicEntity = updateExistingRecordToEntityObject(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap, processedBibIds,itemChangeLogEntityList);
+                            if (updatedBibliographicEntity != null) {
+                                updatedBibliographicEntityList.add(updatedBibliographicEntity);
+                                processedBibIds.add(updatedBibliographicEntity.getBibliographicId());
                             }
                         } else {//check is bib already exist, if exist then attach item to the bib,if not add a new bib
                             BibliographicEntity existingBibliographicEntity = submitCollectionHelperService.getBibliographicEntityIfExist(incomingBibliographicEntity.getOwningInstitutionBibId()
