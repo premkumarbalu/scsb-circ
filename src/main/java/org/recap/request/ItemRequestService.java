@@ -747,7 +747,7 @@ public class ItemRequestService {
         String lTitle;
         String returnTitle = "";
         try {
-            if (itemEntity != null && itemEntity.getUseRestrictions() != null) {
+            if (itemEntity != null && StringUtils.isNotBlank(itemEntity.getUseRestrictions())) {
                 useRestrictions = itemEntity.getUseRestrictions();
             }
             if (!(title != null && title.trim().length() > 0)) {
