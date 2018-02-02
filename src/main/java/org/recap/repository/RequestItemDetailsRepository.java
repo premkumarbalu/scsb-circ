@@ -105,4 +105,19 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
      */
     @Query(value = "SELECT request FROM RequestItemEntity as request inner join request.requestStatusEntity as rse WHERE rse.requestStatusCode= :requestStatusCode AND request.createdDate BETWEEN :createdDateFrom and :createdDateTo")
     List<RequestItemEntity> getRequestsBasedOnDateRangeAndRequestStatusCode(@Param("createdDateFrom") Date createdDateFrom, @Param("createdDateTo") Date createdDateTo, @Param("requestStatusCode") String requestStatusCode);
+
+    /**
+     *Gets request id based on the day limit,item id and request status codes.
+     *
+     * @param itemId
+     * @param requestStatusCodes
+     * @param dateDifference
+     * @return requestId
+     */
+    @Query(value =  "select request_id from recap.request_item_t " +
+                    "where ITEM_ID = :itemId " +
+                    "and REQUEST_STATUS_ID in (:requestStatusCodes) " +
+                    "and date(LAST_UPDATED_DATE) < DATE_SUB(date(curdate()), INTERVAL :dateDifference DAY) ",nativeQuery = true)
+    List<Integer> getRequestItemEntitiesBasedOnDayLimit(@Param("itemId") Integer itemId, @Param("requestStatusCodes") List<Integer> requestStatusCodes,@Param("dateDifference") Integer dateDifference);
+
 }
