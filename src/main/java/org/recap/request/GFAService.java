@@ -3,7 +3,6 @@ package org.recap.request;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.ProducerTemplate;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.camel.statusreconciliation.StatusReconciliationCSVRecord;
@@ -33,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by sudhishk on 27/1/17.
@@ -335,7 +335,10 @@ public class GFAService {
     private void processMismatchStatus(List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList, List<ItemChangeLogEntity> itemChangeLogEntityList, String lasStatus, ItemEntity itemEntity) {
         StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
         List<String> requestStatusCodes = Arrays.asList(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ReCAPConstants.REQUEST_STATUS_EDD, ReCAPConstants.REQUEST_STATUS_CANCELED, ReCAPConstants.REQUEST_STATUS_INITIAL_LOAD);
-        List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByitemId(itemEntity.getItemId(),requestStatusCodes);
+        List<RequestStatusEntity> requestStatusEntityList = requestItemStatusDetailsRepository.findByRequestStatusCodeIn(requestStatusCodes);
+        List<Integer> requestStatusIds = requestStatusEntityList.stream().map(RequestStatusEntity::getRequestStatusId).collect(Collectors.toList());
+        List<Integer> requestid = getRequestItemDetailsRepository().getRequestItemEntitiesBasedOnDayLimit(itemEntity.getItemId(),requestStatusIds,statusReconciliationDayLimit);
+        List<RequestItemEntity> requestItemEntityList = getRequestItemDetailsRepository().findByRequestIdIn(requestid);
         List<String> barcodeList = new ArrayList<>();
         List<Integer> requestIdList = new ArrayList<>();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
@@ -347,6 +350,11 @@ public class GFAService {
                 }else {
                     if (StringUtils.containsIgnoreCase(requestItemEntity.getNotes(),"Cancel requested")){
                         statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(lasStatus, itemEntity, barcodeList, requestIdList, simpleDateFormat, itemStatusEntity, requestItemEntity);
+                    }else{
+                        RequestStatusEntity byRequestStatusCode = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_REFILED);
+                        requestItemEntity.setRequestStatusId(byRequestStatusCode.getRequestStatusId());
+                        requestItemDetailsRepository.save(requestItemEntity);
+                        logger.info("request status updated from cancel to refile for the request id : {}",requestItemEntity.getRequestId());
                     }
                 }
             }
