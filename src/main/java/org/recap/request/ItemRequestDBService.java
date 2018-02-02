@@ -288,7 +288,12 @@ public class ItemRequestDBService {
 
     private Date getExpirationDate(String expirationDate, String requestingInstitutionId) throws ParseException {
         if (StringUtils.isNotBlank(expirationDate)) {
-            return simpleDateFormat.parse(expirationDate);
+            logger.info("Expiration date from response : {}", expirationDate);
+            try {
+                return simpleDateFormat.parse(expirationDate);
+            } catch (Exception ex) {
+                logger.error(ReCAPConstants.REQUEST_EXCEPTION, ex);
+            }
         }
         return null;
     }
