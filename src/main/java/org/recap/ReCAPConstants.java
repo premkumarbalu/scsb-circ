@@ -39,6 +39,7 @@ public final class ReCAPConstants {
     public static final String MULTIPLE_ITEMS_NOT_ALLOWED_FOR_EDD = "EDD requests must be done on a single item.";
     public static final String WRONG_ITEM_BARCODE = "Item Barcode(s) not available in database.";
     public static final String RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM = "Item not available for request.";
+    public static final String INTERNAL_ERROR_DURING_REQUEST = "Internal error occured while processing the request";
     public static final String RECALL_NOT_FOR_AVAILABLE_ITEM = "Recall not available for this item.";
     public static final String RECALL_FOR_ITEM_EXISTS = "Recall for this item already exists.";
     public static final String INITIAL_LOAD_ITEM_EXISTS = "Initial load item(s) cannot be requested/recalled.";

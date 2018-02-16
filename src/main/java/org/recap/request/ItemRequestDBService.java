@@ -66,7 +66,6 @@ public class ItemRequestDBService {
      * @return the integer
      */
     public Integer updateRecapRequestItem(ItemRequestInformation itemRequestInformation, ItemEntity itemEntity, String requestStatusCode, BulkRequestItemEntity bulkRequestItemEntity) {
-
         RequestItemEntity requestItemEntity = new RequestItemEntity();
         if (null != bulkRequestItemEntity) {
             requestItemEntity.setBulkRequestItemEntity(bulkRequestItemEntity);

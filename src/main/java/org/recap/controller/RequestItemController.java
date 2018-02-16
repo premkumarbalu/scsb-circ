@@ -1,5 +1,6 @@
 package org.recap.controller;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.recap.ils.JSIPConnectorFactory;
@@ -148,17 +149,16 @@ public class RequestItemController {
      */
     @RequestMapping(value = "/cancelHoldItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem cancelHoldItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
-        ItemHoldResponse itemHoldCancelResponse;
-        String itembarcode = "";
+        ItemHoldResponse itemHoldCancelResponse = null;
         String callInst = callingInsttution(callInstitition, itemRequestInformation);
-        if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
-            itembarcode = itemRequestInformation.getItemBarcodes().get(0);
+        if (CollectionUtils.isNotEmpty(itemRequestInformation.getItemBarcodes())) {
+            String itembarcode = itemRequestInformation.getItemBarcodes().get(0);
+            itemHoldCancelResponse = (ItemHoldResponse) getJsipConectorFactory().getJSIPConnector(callInst).cancelHold(itembarcode, itemRequestInformation.getPatronBarcode(),
+                    itemRequestInformation.getRequestingInstitution(),
+                    itemRequestInformation.getExpirationDate(),
+                    itemRequestInformation.getBibId(),
+                    getPickupLocationDB(itemRequestInformation, callInst), itemRequestInformation.getTrackingId());
         }
-        itemHoldCancelResponse = (ItemHoldResponse) getJsipConectorFactory().getJSIPConnector(callInst).cancelHold(itembarcode, itemRequestInformation.getPatronBarcode(),
-                itemRequestInformation.getRequestingInstitution(),
-                itemRequestInformation.getExpirationDate(),
-                itemRequestInformation.getBibId(),
-                getPickupLocationDB(itemRequestInformation, callInst), itemRequestInformation.getTrackingId());
         return itemHoldCancelResponse;
     }
 
@@ -173,7 +173,7 @@ public class RequestItemController {
     public AbstractResponseItem createBibliogrphicItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemCreateBibResponse itemCreateBibResponse;
         String itemBarcode;
-        logger.info("ESIP CALL FOR -> " + callInstitition);
+        logger.info("ESIP CALL FOR CREATE BIB -> " + callInstitition);
         String callInst = callingInsttution(callInstitition, itemRequestInformation);
         if (!itemRequestInformation.getItemBarcodes().isEmpty()) {
             itemBarcode = itemRequestInformation.getItemBarcodes().get(0);
@@ -219,7 +219,7 @@ public class RequestItemController {
     @RequestMapping(value = "/recallItem", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AbstractResponseItem recallItem(@RequestBody ItemRequestInformation itemRequestInformation, String callInstitition) {
         ItemRecallResponse itemRecallResponse;
-        logger.info("ESIP CALL FOR -> " + callInstitition);
+        logger.info("ESIP CALL FOR RECALL ITEM -> " + callInstitition);
         String callInst = callingInsttution(callInstitition, itemRequestInformation);
         String itembarcode = itemRequestInformation.getItemBarcodes().get(0);
         itemRecallResponse = (ItemRecallResponse) getJsipConectorFactory().getJSIPConnector(callInst).recallItem(itembarcode, itemRequestInformation.getPatronBarcode(),
