@@ -112,23 +112,28 @@ public class ItemEDDRequestService {
                     // Change Item Availablity
                     isItemStatusAvailable = getItemRequestService().updateItemAvailabilutyStatus(itemEntities, itemRequestInfo.getUsername());
                 }
-                if (isItemStatusAvailable) {
-                    requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
-                    itemRequestInfo.setRequestId(requestId);
 
+                requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
+                itemRequestInfo.setRequestId(requestId);
+                itemResponseInformation.setRequestId(requestId);
+
+                if (requestId == 0) {
+                    itemResponseInformation.setScreenMessage(ReCAPConstants.INTERNAL_ERROR_DURING_REQUEST);
+                    itemResponseInformation.setSuccess(false);
+                } else if (!isItemStatusAvailable) {
+                    itemResponseInformation.setScreenMessage(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM);
+                    itemResponseInformation.setSuccess(false);
+                } else {
+                    // Process
                     if (getItemRequestService().getGfaService().isUseQueueLasCall()) {
-                        requestId = getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
+                        getItemRequestService().updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PENDING);
                     }
                     itemRequestInfo.setRequestNotes(userNotes);
                     itemResponseInformation.setItemId(itemEntity.getItemId());
                     itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
-                    itemResponseInformation.setRequestId(requestId);
                     itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
-                } else {
-                    itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_SCSB_EXCEPTION + ReCAPConstants.WRONG_ITEM_BARCODE);
-                    itemResponseInformation.setSuccess(false);
+                    itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
                 }
-                itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
             } else {
                 itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
                 itemResponseInformation.setSuccess(false);
@@ -145,7 +150,7 @@ public class ItemEDDRequestService {
             itemResponseInformation.setDeliveryLocation(itemRequestInfo.getDeliveryLocation());
             itemResponseInformation.setUsername(itemRequestInfo.getUsername());
             if (!itemResponseInformation.isSuccess()) {
-                itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes() + "\nException - " + itemResponseInformation.getScreenMessage());
+                itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes() + "\n" + ReCAPConstants.REQUEST_SCSB_EXCEPTION + itemResponseInformation.getScreenMessage());
                 getItemRequestService().updateChangesToDb(itemResponseInformation, ReCAPConstants.REQUEST_TYPE_EDD + "-" + itemResponseInformation.getRequestingInstitution());
                 getItemRequestService().rollbackUpdateItemAvailabilutyStatus(itemEntity,ReCAPConstants.GUEST_USER);
             } else {

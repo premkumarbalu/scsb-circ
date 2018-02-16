@@ -176,12 +176,16 @@ public class ItemRequestService {
                 itemRequestInfo.setRequestId(requestId);
                 itemResponseInformation.setRequestId(requestId);
 
-                if (isItemStatusAvailable) {
-                    // Process
-                    itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity);
-                } else {
+                if (requestId == 0) {
+                    rollbackUpdateItemAvailabilutyStatus(itemEntity, itemRequestInfo.getUsername());
+                    itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_EXCEPTION + ReCAPConstants.INTERNAL_ERROR_DURING_REQUEST);
+                    itemResponseInformation.setSuccess(false);
+                } else if (!isItemStatusAvailable) {
                     itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_SCSB_EXCEPTION + ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM);
                     itemResponseInformation.setSuccess(false);
+                } else {
+                    // Process
+                    itemResponseInformation = checkOwningInstitution(itemRequestInfo, itemResponseInformation, itemEntity);
                 }
             } else {
                 itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_SCSB_EXCEPTION + ReCAPConstants.WRONG_ITEM_BARCODE);
@@ -212,12 +216,10 @@ public class ItemRequestService {
      * @param operationType
      */
     public void updateChangesToDb(ItemInformationResponse itemResponseInformation, String operationType) {
-        Integer intRecordId = 0;
         if (itemResponseInformation.getRequestId() != null && itemResponseInformation.getRequestId() > 0) {
-            intRecordId = itemResponseInformation.getRequestId();
+            saveItemChangeLogEntity(itemResponseInformation.getRequestId(), getUser(itemResponseInformation.getUsername()), operationType, itemResponseInformation.getRequestNotes());
+            updateRecapRequestItem(itemResponseInformation);
         }
-        saveItemChangeLogEntity(intRecordId, getUser(itemResponseInformation.getUsername()), operationType, itemResponseInformation.getRequestNotes());
-        updateRecapRequestItem(itemResponseInformation);
     }
 
     /**
@@ -247,9 +249,16 @@ public class ItemRequestService {
                 itemResponseInformation.setItemId(itemEntity.getItemId());
                 Integer requestId = updateRecapRequestItem(itemRequestInfo, itemEntity, ReCAPConstants.REQUEST_STATUS_PROCESSING);
                 itemRequestInfo.setRequestId(requestId);
-                itemResponseInformation = checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity);
+                itemResponseInformation.setRequestId(requestId);
+
+                if (requestId == 0) {
+                    itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_EXCEPTION + ReCAPConstants.INTERNAL_ERROR_DURING_REQUEST);
+                    itemResponseInformation.setSuccess(false);
+                } else {
+                    itemResponseInformation = checkOwningInstitutionRecall(itemRequestInfo, itemResponseInformation, itemEntity);
+                }
             } else {
-                itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
+                itemResponseInformation.setScreenMessage(ReCAPConstants.REQUEST_SCSB_EXCEPTION + ReCAPConstants.WRONG_ITEM_BARCODE);
                 itemResponseInformation.setSuccess(false);
             }
             logger.info(ReCAPConstants.FINISH_PROCESSING);
@@ -633,12 +642,12 @@ public class ItemRequestService {
                     } else {
                         messagePublish = recallError(itemRecallResponse);
                         bsuccess = false;
+                        requestItemController.cancelHoldItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
+                        saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, itemRequestInfo.getPatronBarcode() + " - " + itemResponseInformation.getScreenMessage());
                     }
                 } else { // If Hold command Failure
                     messagePublish = itemResponseInformation.getScreenMessage();
                     bsuccess = false;
-                    requestItemController.cancelHoldItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
-                    saveItemChangeLogEntity(itemEntity.getItemId(), getUser(itemRequestInfo.getUsername()), ReCAPConstants.REQUEST_ITEM_HOLD_FAILURE, itemRequestInfo.getPatronBarcode() + " - " + itemResponseInformation.getScreenMessage());
                 }
             }
         } else {
