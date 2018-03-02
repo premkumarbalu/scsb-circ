@@ -336,6 +336,7 @@ public class ItemRequestService {
                         itemRequestInfo.setRequestNotes(requestItemEntityRecalled.getNotes());
                         itemRequestInfo.setUsername(requestItemEntityRecalled.getCreatedBy());
                         itemRequestInfo.setDeliveryLocation(requestItemEntityRecalled.getStopCode());
+                        itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
                         ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
                         // Put back the Recall order to LAS. On success from LAS, recall order is updated to retrieval.
                         updateScsbAndGfa(itemRequestInfo, itemInformationResponse, itemEntity);
