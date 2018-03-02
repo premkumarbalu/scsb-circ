@@ -120,6 +120,7 @@ public class ItemEDDRequestService {
                 if (requestId == 0) {
                     itemResponseInformation.setScreenMessage(ReCAPConstants.INTERNAL_ERROR_DURING_REQUEST);
                     itemResponseInformation.setSuccess(false);
+                    getItemRequestService().rollbackUpdateItemAvailabilutyStatus(itemEntity,ReCAPConstants.GUEST_USER);
                 } else if (!isItemStatusAvailable) {
                     itemResponseInformation.setScreenMessage(ReCAPConstants.RETRIEVAL_NOT_FOR_UNAVAILABLE_ITEM);
                     itemResponseInformation.setSuccess(false);
@@ -133,6 +134,9 @@ public class ItemEDDRequestService {
                     itemResponseInformation.setPatronBarcode(itemRequestInfo.getPatronBarcode());
                     itemResponseInformation = getItemRequestService().updateGFA(itemRequestInfo, itemResponseInformation);
                     itemRequestInfo.setRequestNotes(getNotes(itemRequestInfo));
+                    if (!itemResponseInformation.isSuccess()){
+                        getItemRequestService().rollbackUpdateItemAvailabilutyStatus(itemEntity,ReCAPConstants.GUEST_USER);
+                    }
                 }
             } else {
                 itemResponseInformation.setScreenMessage(ReCAPConstants.WRONG_ITEM_BARCODE);
@@ -152,7 +156,6 @@ public class ItemEDDRequestService {
             if (!itemResponseInformation.isSuccess()) {
                 itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes() + "\n" + ReCAPConstants.REQUEST_SCSB_EXCEPTION + itemResponseInformation.getScreenMessage());
                 getItemRequestService().updateChangesToDb(itemResponseInformation, ReCAPConstants.REQUEST_TYPE_EDD + "-" + itemResponseInformation.getRequestingInstitution());
-                getItemRequestService().rollbackUpdateItemAvailabilutyStatus(itemEntity,ReCAPConstants.GUEST_USER);
             } else {
                 itemResponseInformation.setRequestNotes(itemRequestInfo.getRequestNotes());
                 if(itemEntity != null) {
