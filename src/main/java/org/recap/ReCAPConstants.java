@@ -555,6 +555,7 @@ public final class ReCAPConstants {
     public static final String REQUEST_REPLACE_BY_TYPE_INVALID = "Invalid replace request type. Allowed values for \"replaceRequestByType\" are :  RequestStatus, RequestIds, RangeOfRequestIds, RangeOfRequestDates";
     public static final String REQUEST_REPLACE_BY_TYPE_NOT_SELECTED = "Provide one of the values to \"replaceRequestByType\" :  RequestStatus, RequestIds, RangeOfRequestIds, RangeOfRequestDates";
     public static final String REQUEST_MESSAGE_RECEVIED = "Message received, your request will be processed";
+    public static final String DEACCESSION = "Deaccession";
 
     /**
      * 0 = Initialise Polling Processess
