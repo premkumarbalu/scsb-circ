@@ -297,6 +297,11 @@ public class ItemRequestService {
             RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_REFILED);
             if (itemEntity.getItemAvailabilityStatusId() == 2) { // Only Item Not Availability, Status is Processed
                 itemBarcode = itemEntity.getBarcode();
+                ItemRequestInformation itemRequestInfo = new ItemRequestInformation();
+                itemRequestInfo.setItemBarcodes(Collections.singletonList(itemBarcode));
+                itemRequestInfo.setItemOwningInstitution(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
+                itemRequestInfo.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
+
                 RequestItemEntity requestItemEntityRecalled = requestItemDetailsRepository.findByItemBarcodeAndRequestStaCode(itemBarcode, ReCAPConstants.REQUEST_STATUS_RECALLED);
                 if (requestItemEntityRecalled == null) { // Recall Request Does not Exist
                     requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
@@ -306,7 +311,7 @@ public class ItemRequestService {
                     itemRequestServiceUtil.updateSolrIndex(itemEntity);
                     bSuccess = true;
                 } else { // Recall Request Exist
-                    if (requestItemEntityRecalled.getRequestingInstitutionId().intValue() == requestItemEntityRecalled.getItemEntity().getOwningInstitutionId().intValue()) { // Borrowing Inst same as Owning
+                    if (requestItemEntityRecalled.getRequestingInstitutionId().intValue() == requestItemEntity.getRequestingInstitutionId().intValue()) { // Borrowed Inst same as Recall Requesting Inst
                         requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
                         requestItemEntity.setLastUpdatedDate(new Date());
                         requestItemEntityRecalled.setRequestStatusId(requestStatusEntity.getRequestStatusId());
@@ -316,33 +321,29 @@ public class ItemRequestService {
                         rollbackUpdateItemAvailabilutyStatus(requestItemEntity.getItemEntity(), ReCAPConstants.GUEST_USER);
                         itemRequestServiceUtil.updateSolrIndex(requestItemEntity.getItemEntity());
                         bSuccess = true;
-                    } else { // Borrowing Inst not same as Owning, Change Retrieval Status to Refiled
+                    } else { // Borrowed Inst not same as Recall Requesting Inst, Change Retrieval Order Status to Refiled.
                         requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
                         requestItemDetailsRepository.save(requestItemEntity);
-                        RequestStatusEntity requestStatusRO = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED);
+
+                        // Checkout the item in Princeton and NYPL for the Recall order
                         if (!requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
-                            ItemRequestInformation itemRequestInfo = new ItemRequestInformation();
-                            ArrayList barcodes = new ArrayList();
-                            barcodes.add(requestItemEntity.getItemEntity().getBarcode());
-                            itemRequestInfo.setItemBarcodes(barcodes);
-                            itemRequestInfo.setItemOwningInstitution(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
-                            itemRequestInfo.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
                             itemRequestInfo.setPatronBarcode(getPatronIdBorrwingInsttution(itemRequestInfo.getRequestingInstitution(), itemRequestInfo.getItemOwningInstitution()));
                             requestItemController.checkoutItem(itemRequestInfo, itemRequestInfo.getItemOwningInstitution());
                         }
-                        // Change Existing Recall to Retrieval Order
-                        requestItemEntityRecalled.setRequestStatusId(requestStatusRO.getRequestStatusId());
-                        requestItemEntityRecalled.setLastUpdatedDate(new Date());
-                        requestItemDetailsRepository.save(requestItemEntityRecalled);
+
+                        itemRequestInfo.setRequestId(requestItemEntityRecalled.getRequestId());
+                        itemRequestInfo.setRequestType(ReCAPConstants.REQUEST_TYPE_RETRIEVAL);
+                        itemRequestInfo.setRequestNotes(requestItemEntityRecalled.getNotes());
+                        itemRequestInfo.setUsername(requestItemEntityRecalled.getCreatedBy());
+                        itemRequestInfo.setDeliveryLocation(requestItemEntityRecalled.getStopCode());
+                        itemRequestInfo.setCustomerCode(itemEntity.getCustomerCode());
+                        ItemInformationResponse itemInformationResponse = new ItemInformationResponse();
+                        // Put back the Recall order to LAS. On success from LAS, recall order is updated to retrieval.
+                        updateScsbAndGfa(itemRequestInfo, itemInformationResponse, itemEntity);
                         bSuccess = true;
                     }
                 }
                 logger.info("Refile Request Id = {} Refile Barcode = {}", requestItemEntity.getRequestId(), itemBarcode);
-                ItemRequestInformation itemRequestInfo = new ItemRequestInformation();
-                itemRequestInfo.setItemBarcodes(Arrays.asList(itemBarcode));
-                itemRequestInfo.setItemOwningInstitution(requestItemEntity.getItemEntity().getInstitutionEntity().getInstitutionCode());
-                itemRequestInfo.setRequestingInstitution(requestItemEntity.getInstitutionEntity().getInstitutionCode());
-
                 if (itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.PRINCETON) || itemRequestInfo.getRequestingInstitution().equalsIgnoreCase(ReCAPConstants.COLUMBIA)) {
                     itemRequestInfo.setPatronBarcode(requestItemEntity.getPatronId());
                     requestItemController.checkinItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
@@ -526,7 +527,7 @@ public class ItemRequestService {
             if (itemRequestInfo.isOwningInstitutionItem()) {
                 itemResponseInformation = holdItem(itemRequestInfo.getItemOwningInstitution(), itemRequestInfo, itemResponseInformation, itemEntity);
             } else {// Not the Owning Institute
-                // Get Temporary bibI from SCSB DB
+                // Get Temporary bibId from SCSB DB
                 ItemCreateBibResponse createBibResponse;
                 if (!ReCAPConstants.NYPL.equalsIgnoreCase(itemRequestInfo.getRequestingInstitution())) {
                     createBibResponse = (ItemCreateBibResponse) requestItemController.createBibliogrphicItem(itemRequestInfo, itemRequestInfo.getRequestingInstitution());
