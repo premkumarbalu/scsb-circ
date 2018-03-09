@@ -7,6 +7,7 @@ import org.recap.model.InstitutionEntity;
 import org.recap.model.ItemEntity;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.repository.InstitutionDetailsRepository;
+import org.recap.repository.ItemDetailsRepository;
 import org.recap.service.common.SetupDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,9 @@ public class SubmitCollectionValidationService {
 
     @Autowired
     private InstitutionDetailsRepository institutionDetailsRepository;
+
+    @Autowired
+    private ItemDetailsRepository itemDetailsRepository;
 
     @Autowired
     private SetupDataService setupDataService;
@@ -87,12 +91,12 @@ public class SubmitCollectionValidationService {
                 Map<String,ItemEntity> incomingItemEntityMap = getItemIdEntityMap(incomingBibliographicEntity);
                 Map<String,ItemEntity> fetchedItemEntityMap = getItemIdEntityMap(fetchedBibliographicEntity);
                 for(Map.Entry<String,ItemEntity> incomingItemEntityMapEntry:incomingItemEntityMap.entrySet()){
-                    isValid = validateMatchedAndUnmatchedRecords(submitCollectionReportInfoMap, failureSubmitCollectionReportInfoList, owningInstitution, fetchedItemEntityMap, incomingItemEntityMapEntry);
+                    isValid = validateMatchedAndUnmatchedRecords(submitCollectionReportInfoMap, failureSubmitCollectionReportInfoList, owningInstitution, fetchedItemEntityMap, incomingItemEntityMapEntry,incomingHoldingItemMapEntry.getKey());
                     isValidToProcess &= isValid;
                 }
             } else if (fetchedOwningItemIdEntityMap != null && !fetchedHoldingItemMap.isEmpty()) {
                 for(Map.Entry<String,ItemEntity> incomingOwningItemIdEntityMapEntry:incomingOwningItemIdEntityMap.entrySet()){
-                    isValid = validateMatchedAndUnmatchedRecords(submitCollectionReportInfoMap, failureSubmitCollectionReportInfoList, owningInstitution, fetchedOwningItemIdEntityMap, incomingOwningItemIdEntityMapEntry);
+                    isValid = validateMatchedAndUnmatchedRecords(submitCollectionReportInfoMap, failureSubmitCollectionReportInfoList, owningInstitution, fetchedOwningItemIdEntityMap, incomingOwningItemIdEntityMapEntry,incomingHoldingItemMapEntry.getKey());
                     isValidToProcess &= isValid;
                 }
             } else {//Failure report - holding id mismatch and for dummy record not having CGD in the incoming data
@@ -131,7 +135,7 @@ public class SubmitCollectionValidationService {
     }
 
     private Boolean validateMatchedAndUnmatchedRecords(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, List<SubmitCollectionReportInfo> failureSubmitCollectionReportInfoList, String owningInstitution, Map<String, ItemEntity> fetchedOwningItemIdEntityMap, Map.Entry<String,
-            ItemEntity> incomingOwningItemIdEntityMapEntry) {
+            ItemEntity> incomingOwningItemIdEntityMapEntry, String incomingOwningInstHoldingsId) {
         Boolean isValid;
         ItemEntity incomingItemEntity = incomingOwningItemIdEntityMapEntry.getValue();
         ItemEntity fetchedItemEntity = fetchedOwningItemIdEntityMap.get(incomingOwningItemIdEntityMapEntry.getKey());
@@ -148,6 +152,15 @@ public class SubmitCollectionValidationService {
                         + " , existing owning institution item id " + misMatchedItemEntity.getOwningInstitutionItemId()
                         + ", existing owning institution holding id " + misMatchedItemEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId() + ", existing owning institution bib id "
                         + misMatchedItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
+                failureSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
+            } else if(fetchedItemEntity==null){
+                List<ItemEntity> existingBarcodeDetails = itemDetailsRepository.findByBarcode(incomingItemEntity.getBarcode());
+                ItemEntity existingItemEntity = existingBarcodeDetails.get(0);
+                submitCollectionReportInfo.setOwningInstitution(existingItemEntity.getInstitutionEntity().getInstitutionCode());
+                submitCollectionReportInfo.setCustomerCode(existingItemEntity.getCustomerCode());
+                submitCollectionReportInfo.setItemBarcode(existingItemEntity.getBarcode());
+                submitCollectionReportInfo.setMessage(ReCAPConstants.SUBMIT_COLLECTION_FAILED_RECORD + " - Owning institution holdings id mismatch - incoming owning institution holdings id " + incomingOwningInstHoldingsId + ", existing owning institution item id " + existingItemEntity.getOwningInstitutionItemId()
+                        + ", existing owning institution holdings id " + existingItemEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId() + ", existing owning institution bib id : " + existingItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId());
                 failureSubmitCollectionReportInfoList.add(submitCollectionReportInfo);
             }
             isValid = false;
