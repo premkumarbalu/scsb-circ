@@ -10,6 +10,7 @@ public class DeAccessionRequest {
 
     private List<DeAccessionItem> deAccessionItems = new ArrayList<>();
     private String username;
+    private String notes;
 
     /**
      * Gets de accession items.
@@ -45,5 +46,23 @@ public class DeAccessionRequest {
      */
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    /**
+     * Gets notes.
+     *
+     * @return the notes
+     */
+    public String getNotes() {
+        return notes;
+    }
+
+    /**
+     * Sets notes.
+     *
+     * @param notes the notes
+     */
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

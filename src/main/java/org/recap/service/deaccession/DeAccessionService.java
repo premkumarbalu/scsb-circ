@@ -15,7 +15,6 @@ import org.recap.model.deaccession.DeAccessionRequest;
 import org.recap.model.deaccession.DeAccessionSolrRequest;
 import org.recap.repository.*;
 import org.recap.request.GFAService;
-import org.recap.request.ItemRequestService;
 import org.recap.service.RestHeaderService;
 import org.recap.util.ItemRequestServiceUtil;
 import org.slf4j.Logger;
@@ -102,6 +101,9 @@ public class DeAccessionService {
     @Autowired
     RestHeaderService restHeaderService;
 
+    @Autowired
+    private DeaccesionItemChangeLogDetailsRepository deaccesionItemChangeLogDetailsRepository;
+
     public RestHeaderService getRestHeaderService(){
         return restHeaderService;
     }
@@ -142,6 +144,7 @@ public class DeAccessionService {
             rollbackLASRejectedItems(deAccessionDBResponseEntities, username);
             deAccessionItemsInSolr(deAccessionDBResponseEntities, resultMap);
             processAndSaveReportEntities(deAccessionDBResponseEntities);
+            processAndSaveDeaccessionChangeLog(deAccessionRequest,username,deAccessionDBResponseEntities);
         } else {
             resultMap.put("", ReCAPConstants.DEACCESSION_NO_BARCODE_ERROR);
             return resultMap;
@@ -174,7 +177,7 @@ public class DeAccessionService {
             }
             if (CollectionUtils.isNotEmpty(itemIds)) {
                 itemDetailsRepository.markItemsAsNotDeleted(itemIds, username, currentDate);
-                saveItemChangeLogEntities(itemIds, username, ReCAPConstants.DEACCESSION_ROLLBACK, currentDate, ReCAPConstants.DEACCESSION_ROLLBACK_NOTES, itemIdAndMessageMap);
+                saveDeAccessionItemChangeLogEntities(itemIds, username, ReCAPConstants.DEACCESSION_ROLLBACK, currentDate, ReCAPConstants.DEACCESSION_ROLLBACK_NOTES, itemIdAndMessageMap);
             }
         }
     }
@@ -449,32 +452,32 @@ public class DeAccessionService {
         requestNotes = requestNotes + "\n" + "SCSB : " + ReCAPConstants.REQUEST_ITEM_CANCELED_FOR_DEACCESSION;
         requestItemEntity.setNotes(requestNotes);
         RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.save(requestItemEntity);
-        saveItemChangeLogEntity(savedRequestItemEntity.getRequestId(), username, ReCAPConstants.REQUEST_ITEM_CANCEL_DEACCESSION_ITEM, ReCAPConstants.REQUEST_ITEM_CANCELED_FOR_DEACCESSION + savedRequestItemEntity.getItemId());
+        saveDeAccessionItemChangeLogEntity(savedRequestItemEntity.getRequestId(), username, ReCAPConstants.REQUEST_ITEM_CANCEL_DEACCESSION_ITEM, ReCAPConstants.REQUEST_ITEM_CANCELED_FOR_DEACCESSION + savedRequestItemEntity.getItemId());
         itemRequestServiceUtil.updateSolrIndex(savedRequestItemEntity.getItemEntity());
     }
 
-    private void saveItemChangeLogEntity(Integer requestId, String deaccessionUser, String operationType, String notes) {
-        ItemChangeLogEntity itemChangeLogEntity = new ItemChangeLogEntity();
+    private void saveDeAccessionItemChangeLogEntity(Integer requestId, String deaccessionUser, String operationType, String notes) {
+        DeaccessionItemChangeLog itemChangeLogEntity = new DeaccessionItemChangeLog();
         itemChangeLogEntity.setUpdatedBy(deaccessionUser);
-        itemChangeLogEntity.setUpdatedDate(new Date());
+        itemChangeLogEntity.setCreatedDate(new Date());
         itemChangeLogEntity.setOperationType(operationType);
         itemChangeLogEntity.setRecordId(requestId);
         itemChangeLogEntity.setNotes(notes);
-        itemChangeLogDetailsRepository.save(itemChangeLogEntity);
+        deaccesionItemChangeLogDetailsRepository.save(itemChangeLogEntity);
     }
 
-    private void saveItemChangeLogEntities(List<Integer> itemIds, String deaccessionUser, String operationType, Date updatedDate, String notes, Map<Integer, String> itemIdAndMessageMap) {
-        List<ItemChangeLogEntity> itemChangeLogEntities = new ArrayList<>();
+    private void saveDeAccessionItemChangeLogEntities(List<Integer> itemIds, String deaccessionUser, String operationType, Date updatedDate, String notes, Map<Integer, String> itemIdAndMessageMap) {
+        List<DeaccessionItemChangeLog> itemChangeLogEntities = new ArrayList<>();
         for (Integer itemId : itemIds) {
-            ItemChangeLogEntity itemChangeLogEntity = new ItemChangeLogEntity();
+            DeaccessionItemChangeLog itemChangeLogEntity = new DeaccessionItemChangeLog();
             itemChangeLogEntity.setUpdatedBy(deaccessionUser);
-            itemChangeLogEntity.setUpdatedDate(updatedDate);
+            itemChangeLogEntity.setCreatedDate(updatedDate);
             itemChangeLogEntity.setOperationType(operationType);
             itemChangeLogEntity.setRecordId(itemId);
             itemChangeLogEntity.setNotes(itemIdAndMessageMap.get(itemId) + notes);
             itemChangeLogEntities.add(itemChangeLogEntity);
         }
-        itemChangeLogDetailsRepository.save(itemChangeLogEntities);
+        deaccesionItemChangeLogDetailsRepository.save(itemChangeLogEntities);
     }
 
     private int getHoldQueueLength(ItemInformationResponse itemInformationResponse) {
@@ -732,6 +735,23 @@ public class DeAccessionService {
             }
         } catch (Exception e) {
             logger.error("Exception : ", e);
+        }
+    }
+
+    private void processAndSaveDeaccessionChangeLog(DeAccessionRequest deAccessionRequest, String userName, List<DeAccessionDBResponseEntity> deAccessionDBResponseEntities) {
+        if (CollectionUtils.isNotEmpty(deAccessionDBResponseEntities)) {
+            for (DeAccessionDBResponseEntity deAccessionItem : deAccessionDBResponseEntities) {
+                if (deAccessionItem.getStatus().contains(ReCAPConstants.SUCCESS)) {
+                    DeaccessionItemChangeLog itemChangeLogEntity = new DeaccessionItemChangeLog();
+                    itemChangeLogEntity.setUpdatedBy(userName);
+                    itemChangeLogEntity.setCreatedDate(new Date());
+                    itemChangeLogEntity.setOperationType(ReCAPConstants.DEACCESSION);
+                    itemChangeLogEntity.setRecordId(deAccessionItem.getItemId());
+                    String notes = deAccessionRequest.getNotes() != null ? deAccessionRequest.getNotes() : "";
+                    itemChangeLogEntity.setNotes(notes);
+                    deaccesionItemChangeLogDetailsRepository.save(itemChangeLogEntity);
+                }
+            }
         }
     }
 }
