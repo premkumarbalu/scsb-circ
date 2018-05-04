@@ -353,6 +353,7 @@ public class GFAService {
                     }else{
                         RequestStatusEntity byRequestStatusCode = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_REFILED);
                         requestItemEntity.setRequestStatusId(byRequestStatusCode.getRequestStatusId());
+                        requestItemEntity.setLastUpdatedDate(new Date());
                         requestItemDetailsRepository.save(requestItemEntity);
                         logger.info("request status updated from cancel to refile for the request id : {}",requestItemEntity.getRequestId());
                     }
