@@ -447,6 +447,7 @@ public class DeAccessionService {
     private void updateRequestAsCanceled(RequestItemEntity requestItemEntity, String username) {
         RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findByRequestStatusCode(ReCAPConstants.REQUEST_STATUS_CANCELED);
         requestItemEntity.setRequestStatusId(requestStatusEntity.getRequestStatusId());
+        requestItemEntity.setLastUpdatedDate(new Date());
         requestItemEntity.getItemEntity().setItemAvailabilityStatusId(2);
         String requestNotes = requestItemEntity.getNotes();
         requestNotes = requestNotes + "\n" + "SCSB : " + ReCAPConstants.REQUEST_ITEM_CANCELED_FOR_DEACCESSION;
