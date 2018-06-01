@@ -62,8 +62,8 @@ public class AccessionReconciliationProcessor {
      */
     public void processInput(Exchange exchange) {
         HashMap<String,String> barcodesAndCustomerCodes=new HashMap<>();
-        ArrayList<BarcodeReconcilitaionReport> test = exchange.getIn().getBody(ArrayList.class);
-        for (BarcodeReconcilitaionReport barcodeReconcilitaionReport : test) {
+        ArrayList<BarcodeReconcilitaionReport> barcodeReconcilitaionReportArrayList = exchange.getIn().getBody(ArrayList.class);
+        for (BarcodeReconcilitaionReport barcodeReconcilitaionReport : barcodeReconcilitaionReportArrayList) {
            barcodesAndCustomerCodes.put(barcodeReconcilitaionReport.getBarcode(),barcodeReconcilitaionReport.getCustomerCode());
         }
         Integer index = (Integer) exchange.getProperty(ReCAPConstants.CAMEL_SPLIT_INDEX);
