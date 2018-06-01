@@ -4,6 +4,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.BindyType;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
@@ -95,6 +96,7 @@ public class AccessionReconciliationRouteBuilder {
                             .noAutoStartup()
                             .log("accession reconciliation pul started")
                             .split(body().tokenize("\n",1000,true))
+                            .unmarshal().bindy(BindyType.Csv,BarcodeReconcilitaionReport.class)
                             .bean(applicationContext.getBean(AccessionReconciliationProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_PUL),ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()
@@ -129,6 +131,7 @@ public class AccessionReconciliationRouteBuilder {
                             .noAutoStartup()
                             .log("accession reconciliation cul started")
                             .split(body().tokenize("\n",1000,true))
+                            .unmarshal().bindy(BindyType.Csv,BarcodeReconcilitaionReport.class)
                             .bean(applicationContext.getBean(AccessionReconciliationProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_CUL),ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()
@@ -162,6 +165,7 @@ public class AccessionReconciliationRouteBuilder {
                             .noAutoStartup()
                             .log("accession reconciliation nypl started")
                             .split(body().tokenize("\n",1000,true))
+                            .unmarshal().bindy(BindyType.Csv,BarcodeReconcilitaionReport.class)
                             .bean(applicationContext.getBean(AccessionReconciliationProcessor.class,ReCAPConstants.REQUEST_INITIAL_LOAD_NYPL),ReCAPConstants.PROCESS_INPUT)
                             .end()
                             .onCompletion()

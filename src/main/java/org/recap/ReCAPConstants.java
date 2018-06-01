@@ -536,6 +536,9 @@ public final class ReCAPConstants {
     public static final String SUBMIT_COLLECTION_JOB_INITIATE_ROUTE_ID = "scsbactivemq:queue:submitCollectionInitiateRoute";
     public static final String SUBMIT_COLLECTION_JOB_COMPLETION_OUTGOING_QUEUE = "scsbactivemq:queue:submitCollectionCompletionOutgoingQ";
     public static final String BARCODE_NOT_FOUND_IN_LAS = "Barcode not found in LAS";
+    public static final String CUSTOMER_CODE_HEADER = "Customer Code mentioned in LAS";
+    public static final String TAB = "\t";
+    public static final String NEW_LINE = "\n";
     public static String LAS_ITEM_STATUS_REST_SERVICE = "http://recapgfa-dev.princeton.edu:9092/lasapi/rest/lasapiSvc/itemStatus";
 
     public static final String DEFAULT_DATE_FORMAT = "dd-MM-yyyy hh:mm";

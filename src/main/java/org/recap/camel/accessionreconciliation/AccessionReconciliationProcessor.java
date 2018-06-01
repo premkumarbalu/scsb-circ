@@ -2,7 +2,6 @@ package org.recap.camel.accessionreconciliation;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.commons.lang3.StringUtils;
 import org.recap.ReCAPConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,14 +14,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by akulak on 16/5/17.
@@ -59,21 +61,22 @@ public class AccessionReconciliationProcessor {
      * @param exchange the exchange
      */
     public void processInput(Exchange exchange) {
-        String barcode = exchange.getIn().getBody(String.class);
-        Integer index = (Integer) exchange.getProperty(ReCAPConstants.CAMEL_SPLIT_INDEX);
-        String[] split = barcode.split("\n");
-        Set<String> barcodes = new HashSet<>();
-        for(String s :split){
-            String[] split1 = s.split(",");
-            barcodes.add(split1[0]);
+        HashMap<String,String> barcodesAndCustomerCodes=new HashMap<>();
+        ArrayList<BarcodeReconcilitaionReport> test = exchange.getIn().getBody(ArrayList.class);
+        for (BarcodeReconcilitaionReport barcodeReconcilitaionReport : test) {
+           barcodesAndCustomerCodes.put(barcodeReconcilitaionReport.getBarcode(),barcodeReconcilitaionReport.getCustomerCode());
         }
-        String joinedBarcodes = StringUtils.join(barcodes, ",");
-        HttpEntity httpEntity = new HttpEntity(joinedBarcodes);
+        Integer index = (Integer) exchange.getProperty(ReCAPConstants.CAMEL_SPLIT_INDEX);
+        HttpEntity httpEntity = new HttpEntity(barcodesAndCustomerCodes);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Set> responseEntity = restTemplate.exchange(solrSolrClientUrl+ReCAPConstants.ACCESSION_RECONCILATION_SOLR_CLIENT_URL, HttpMethod.POST, httpEntity,Set.class);
-        Set<String> body = responseEntity.getBody();
+        ResponseEntity<Map> responseEntity = restTemplate.exchange(solrSolrClientUrl+ReCAPConstants.ACCESSION_RECONCILATION_SOLR_CLIENT_URL, HttpMethod.POST, httpEntity,Map.class);
+        HashMap<String,String> body = (HashMap<String, String>) responseEntity.getBody();
+        String barcodesAndCustomerCodesForReportFile = body.entrySet().stream().map(Object::toString).collect(Collectors.joining("\n")).replaceAll("=","\t");
+        byte[] barcodesAndCustomerCodesForReportFileBytes =barcodesAndCustomerCodesForReportFile.getBytes(Charset.forName("UTF-8"));
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ReCAPConstants.BARCODE_RECONCILIATION_FILE_DATE_FORMAT);
         try {
+            String line=ReCAPConstants.NEW_LINE;
+            byte[] newLine=line.getBytes(Charset.forName("UTF-8"));
             Path filePath = Paths.get(accessionFilePath+"/"+institutionCode+"/"+ReCAPConstants.ACCESSION_RECONCILATION_FILE_NAME+institutionCode+simpleDateFormat.format(new Date())+".csv");
             if (!filePath.toFile().exists()) {
                 Files.createDirectories(filePath.getParent());
@@ -81,16 +84,18 @@ public class AccessionReconciliationProcessor {
                 logger.info("Accession Reconciliation File Created {} ",filePath);
             }
             if(index == 0){
-                Set<String> headerSet = new HashSet<>();
-                headerSet.add(ReCAPConstants.ACCESSION_RECONCILIATION_HEADER);
+                ArrayList<String> headerSet = new ArrayList<>();
+                headerSet.add(ReCAPConstants.ACCESSION_RECONCILIATION_HEADER+ReCAPConstants.TAB+ReCAPConstants.CUSTOMER_CODE_HEADER);
                 Files.write(filePath,headerSet, StandardOpenOption.APPEND);
             }
-            Files.write(filePath,body,StandardOpenOption.APPEND);
+            else if (index > 0){
+                Files.write(filePath,newLine,StandardOpenOption.APPEND);
+            }
+            Files.write(filePath,barcodesAndCustomerCodesForReportFileBytes,StandardOpenOption.APPEND);
         }
         catch (Exception e){
             logger.error(ReCAPConstants.LOG_ERROR+e);
         }
-
         startFileSystemRoutesForAccessionReconciliation(exchange,index);
     }
 
