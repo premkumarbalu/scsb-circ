@@ -46,6 +46,8 @@ public class AccessionReconciliationProcessor {
 
     private String institutionCode;
 
+    int noOfLinesInFile=0;
+
     /**
      * Instantiates a new Accession reconcilation processor.
      *
@@ -70,7 +72,7 @@ public class AccessionReconciliationProcessor {
         HttpEntity httpEntity = new HttpEntity(barcodesAndCustomerCodes);
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Map> responseEntity = restTemplate.exchange(solrSolrClientUrl+ReCAPConstants.ACCESSION_RECONCILATION_SOLR_CLIENT_URL, HttpMethod.POST, httpEntity,Map.class);
-        HashMap<String,String> body = (HashMap<String, String>) responseEntity.getBody();
+        Map<String,String> body = (HashMap<String, String>) responseEntity.getBody();
         String barcodesAndCustomerCodesForReportFile = body.entrySet().stream().map(Object::toString).collect(Collectors.joining("\n")).replaceAll("=","\t");
         byte[] barcodesAndCustomerCodesForReportFileBytes =barcodesAndCustomerCodesForReportFile.getBytes(Charset.forName("UTF-8"));
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ReCAPConstants.BARCODE_RECONCILIATION_FILE_DATE_FORMAT);
@@ -83,15 +85,20 @@ public class AccessionReconciliationProcessor {
                 Files.createFile(filePath);
                 logger.info("Accession Reconciliation File Created {} ",filePath);
             }
+            if(filePath.toFile().exists()){
+                noOfLinesInFile= Files.readAllLines(filePath).size();
+            }
             if(index == 0){
                 ArrayList<String> headerSet = new ArrayList<>();
                 headerSet.add(ReCAPConstants.ACCESSION_RECONCILIATION_HEADER+ReCAPConstants.TAB+ReCAPConstants.CUSTOMER_CODE_HEADER);
                 Files.write(filePath,headerSet, StandardOpenOption.APPEND);
             }
-            else if (index > 0){
+            else if (index > 0 && body.size()>0 && noOfLinesInFile>1){
                 Files.write(filePath,newLine,StandardOpenOption.APPEND);
             }
-            Files.write(filePath,barcodesAndCustomerCodesForReportFileBytes,StandardOpenOption.APPEND);
+            if(body.size()>0) {
+                Files.write(filePath,barcodesAndCustomerCodesForReportFileBytes,StandardOpenOption.APPEND);
+            }
         }
         catch (Exception e){
             logger.error(ReCAPConstants.LOG_ERROR+e);
