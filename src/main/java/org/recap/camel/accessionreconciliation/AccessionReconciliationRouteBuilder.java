@@ -212,7 +212,7 @@ public class AccessionReconciliationRouteBuilder {
                             .to(ReCAPConstants.SFTP+ ftpUserName +  ReCAPConstants.AT + accessionReconciliationFtpNyplProcessed + ReCAPConstants.PRIVATE_KEY_FILE + ftpPrivateKey + ReCAPConstants.KNOWN_HOST_FILE + ftpKnownHost+"&fileName=BarcodeReconciliation_NYPL_${date:now:yyyyMMdd_HHmmss}.csv")
                             .onCompletion()
                             .bean(applicationContext.getBean(AccessionReconciliationEmailService.class,ReCAPConstants.NYPL),ReCAPConstants.PROCESS_INPUT)
-                            .process(new StopRouteProcessor(ReCAPConstants.ACCESSION_RECONCILATION_FTP_NYPL_ROUTE))
+                            .process(new StopRouteProcessor(ReCAPConstants.ACCESSION_RECONCILATION_FS_NYPL_ROUTE))
                             .log("accession reconciliation nypl completed");
                 }
             });
