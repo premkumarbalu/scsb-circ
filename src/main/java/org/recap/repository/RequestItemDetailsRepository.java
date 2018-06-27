@@ -77,8 +77,8 @@ public interface RequestItemDetailsRepository extends JpaRepository<RequestItemE
 
     @Transactional
     @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE recap.request_item_t SET EMAIL_ID ='' where REQUEST_TYPE_ID in (?1) AND DATEDIFF(?2,CREATED_DATE)>=?3", nativeQuery = true)
-    int purgeEmailId(@Param("requestTypeIdList") List<Integer> requestTypeIdList, @Param("createdDate") Date createdDate, @Param("dateDifference") Integer dateDifference);
+    @Query(value = "UPDATE recap.request_item_t requestItem inner join recap.request_item_status_t requestItemStatus on requestItem.REQUEST_STATUS_ID = requestItemStatus.REQUEST_STATUS_ID SET EMAIL_ID ='' where (requestItemStatus.REQUEST_STATUS_CODE = ?4 and DATEDIFF(?2,LAST_UPDATED_DATE)>?3) and REQUEST_TYPE_ID in (?1) and EMAIL_ID is not null and EMAIL_ID not in ('')", nativeQuery = true)
+    int purgeEmailId(@Param("requestTypeIdList") List<Integer> requestTypeIdList, @Param("lastUpdatedDate") Date lastUpdatedDate, @Param("dateDifference") Integer dateDifference,@Param("requestStatusCode") String requestStatusCode);
 
     @Transactional
     @Modifying(clearAutomatically = true)

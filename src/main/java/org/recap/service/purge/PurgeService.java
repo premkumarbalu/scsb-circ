@@ -60,8 +60,8 @@ public class PurgeService {
                     physicalRequestTypeIdList.add(requestTypeEntity.getRequestTypeId());
                 }
             }
-            int noOfUpdatedRecordsForEddRequest = requestItemDetailsRepository.purgeEmailId(eddRequestTypeIdList, new Date(), purgeEmailEddRequestDayLimit);
-            int noOfUpdatedRecordsForPhysicalRequest = requestItemDetailsRepository.purgeEmailId(physicalRequestTypeIdList, new Date(), purgeEmailPhysicalRequestDayLimit);
+            int noOfUpdatedRecordsForEddRequest = requestItemDetailsRepository.purgeEmailId(eddRequestTypeIdList, new Date(), purgeEmailEddRequestDayLimit,ReCAPConstants.REFILED_REQUEST);
+            int noOfUpdatedRecordsForPhysicalRequest = requestItemDetailsRepository.purgeEmailId(physicalRequestTypeIdList, new Date(), purgeEmailPhysicalRequestDayLimit,ReCAPConstants.REFILED_REQUEST);
             responseMap.put(ReCAPConstants.STATUS, ReCAPConstants.SUCCESS);
             responseMap.put(ReCAPConstants.PURGE_EDD_REQUEST, String.valueOf(noOfUpdatedRecordsForEddRequest));
             responseMap.put(ReCAPConstants.PURGE_PHYSICAL_REQUEST, String.valueOf(noOfUpdatedRecordsForPhysicalRequest));

@@ -26,6 +26,7 @@ public final class ReCAPConstants {
     public static final String INVALID_REQUEST_TYPE = "Please enter the valid request type";
     public static final String RETRIEVAL = "RETRIEVAL";
     public static final String EDD_REQUEST = "EDD";
+    public static final String REFILED_REQUEST = "REFILED";
     public static final String BORROW_DIRECT = "BORROW DIRECT";
     public static final String VALID_REQUEST = "All request parameters are valid.Patron is eligible to raise a request";
     public static final String INVALID_PATRON = "Patron not on file in ILS";
